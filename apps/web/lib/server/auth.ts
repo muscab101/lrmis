@@ -1,0 +1,86 @@
+import "server-only";
+import type { PermissionKey } from "@dhulka/core/permissions";
+import type { User } from "@supabase/supabase-js";
+import { forbidden } from "next/navigation";
+import { cache } from "react";
+import { redirect } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export interface Profile {
+  user_id: string;
+  kind: "staff" | "citizen";
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  status: "active" | "invited" | "suspended" | "deleted";
+  must_change_password: boolean;
+  locale: "so" | "en";
+}
+
+export interface Viewer {
+  user: User;
+  profile: Profile;
+  permissions: ReadonlySet<string>;
+  aal: "aal1" | "aal2";
+  mfaRequired: boolean;
+  isSuperAdmin: boolean;
+  can: (perm: PermissionKey) => boolean;
+}
+
+/** The signed-in user with profile + effective permissions. Cached per request. */
+export const getViewer = cache(async (): Promise<Viewer | null> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const [profileRes, permsRes, aalRes, stateRes, superRes] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("user_id, kind, full_name, email, phone, status, must_change_password, locale")
+      .eq("user_id", user.id)
+      .single(),
+    supabase.rpc("my_permissions"),
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    supabase.rpc("my_session_state"),
+    supabase.from("user_roles").select("roles!inner(grants_all)").eq("user_id", user.id).eq("roles.grants_all", true),
+  ]);
+  if (!profileRes.data) return null;
+
+  const permissions = new Set<string>((permsRes.data as string[] | null) ?? []);
+  const state = stateRes.data as { mfa_required?: boolean } | null;
+  return {
+    user,
+    profile: profileRes.data as Profile,
+    permissions,
+    aal: aalRes.data?.currentLevel === "aal2" ? "aal2" : "aal1",
+    mfaRequired: Boolean(state?.mfa_required),
+    isSuperAdmin: (superRes.data?.length ?? 0) > 0,
+    can: (perm) => permissions.has(perm),
+  };
+});
+
+/** Page guard for staff areas. The middleware already redirects; this is the server-side check. */
+export async function requireStaff(locale: string): Promise<Viewer> {
+  const viewer = await getViewer();
+  if (!viewer) redirect({ href: "/login", locale });
+  const v = viewer as Viewer;
+  if (v.profile.kind !== "staff") redirect({ href: "/my-properties", locale });
+  if (v.profile.must_change_password || v.profile.status === "invited") redirect({ href: "/change-password", locale });
+  if (v.mfaRequired && v.aal !== "aal2") redirect({ href: "/mfa", locale });
+  return v;
+}
+
+/** 403 when the permission is missing (renders app/[locale]/forbidden.tsx). */
+export async function requirePermission(locale: string, perm: PermissionKey): Promise<Viewer> {
+  const viewer = await requireStaff(locale);
+  if (!viewer.can(perm)) forbidden();
+  return viewer;
+}
+
+export async function requireCitizen(locale: string): Promise<Viewer> {
+  const viewer = await getViewer();
+  if (!viewer) redirect({ href: "/citizen/login", locale });
+  return viewer as Viewer;
+}

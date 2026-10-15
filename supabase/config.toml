@@ -1,0 +1,79 @@
+# Supabase CLI config for local development (`supabase start`).
+project_id = "dhulka"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+# Staff accounts are created by admins only; citizens sign up with phone OTP.
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 10
+# Strength + breach checks are enforced by the app (packages/core/src/password.ts).
+password_requirements = ""
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "60s"
+
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+template = "Koodhkaaga Dhulka waa {{ .Code }}. Your Dhulka code is {{ .Code }}."
+max_frequency = "60s"
+
+# Local testing: any phone matching these numbers gets the fixed OTP (no SMS sent).
+[auth.sms.test_otp]
+252610000001 = "123456"
+252610000002 = "123456"
+
+[auth.mfa]
+max_enrolled_factors = 5
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+redirect_uri = "http://localhost:54321/auth/v1/callback"
+skip_nonce_check = true
+
+[storage]
+enabled = true
+file_size_limit = "20MiB"
