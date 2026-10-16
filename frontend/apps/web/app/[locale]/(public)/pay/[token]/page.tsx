@@ -5,6 +5,8 @@ import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { availableOnlineProviders } from "@/lib/server/providers";
+import { PayForm } from "./pay-form";
 
 export async function generateMetadata() {
   const t = await getTranslations("pay");
@@ -25,8 +27,9 @@ interface Pub {
 }
 
 /** Opened from the QR code on an invoice. Shows only non-personal details. */
-export default async function PayPage({ params }: { params: Promise<{ locale: string; token: string }> }) {
+export default async function PayPage({ params, searchParams }: { params: Promise<{ locale: string; token: string }>; searchParams: Promise<{ intent?: string }> }) {
   const { locale, token } = await params;
+  const { intent } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("pay");
   const tc = await getTranslations("common");
@@ -35,6 +38,7 @@ export default async function PayPage({ params }: { params: Promise<{ locale: st
   const supabase = await createClient();
   const { data } = /^[0-9a-f]{64}$/.test(token) ? await supabase.rpc("invoice_by_token", { p_token: token }) : { data: null };
   const inv = data as Pub | null;
+  const providers = inv && Number(inv.balance) > 0 ? await availableOnlineProviders() : [];
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
@@ -71,9 +75,12 @@ export default async function PayPage({ params }: { params: Promise<{ locale: st
               {Number(inv.balance) <= 0 ? (
                 <Alert tone="success" title={t("paidInFull")} />
               ) : (
-                <Alert tone="info" title={t("howToPay")}>
-                  {t("howToPayBody", { pun: inv.pun ?? "" })}
-                </Alert>
+                <>
+                  <PayForm token={token} providers={providers} initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null} />
+                  <Alert tone="info" title={t("howToPay")}>
+                    {t("howToPayBody", { pun: inv.pun ?? "" })}
+                  </Alert>
+                </>
               )}
             </CardContent>
           </Card>

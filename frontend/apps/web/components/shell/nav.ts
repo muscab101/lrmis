@@ -65,9 +65,9 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "valuation", href: "/valuation", icon: Scale, permission: "valuation.view" },
       { key: "billing", href: "/billing/runs", icon: FileStack, permission: "billing.view" },
       { key: "invoices", href: "/invoices", icon: Receipt, permission: "invoices.view" },
-      { key: "payments", href: "/payments", icon: Banknote, permission: "payments.view", phase: 7 },
-      { key: "cashier", href: "/cashier", icon: Wallet, permission: "cashier.view", phase: 7 },
-      { key: "accounting", href: "/accounting", icon: Landmark, permission: "accounting.view", phase: 7 },
+      { key: "payments", href: "/payments", icon: Banknote, permission: "payments.view" },
+      { key: "cashier", href: "/cashier", icon: Wallet, permission: "cashier.view" },
+      { key: "accounting", href: "/accounting", icon: Landmark, permission: "accounting.view" },
     ],
   },
   {

@@ -37,6 +37,11 @@ Defaults used until the administration decides. Each is easy to change.
 25. **Billing period** is the year for property tax; quarterly/monthly periods are accepted by the schema for future fee types.
 26. **Payment plans** are monthly; the last instalment absorbs rounding. Instalment tracking against payments arrives with Phase 7.
 
+27. **WaafiPay**: integrated through API_PURCHASE (synchronous push to the payer's phone). The signature scheme for merchant-number/USSD notifications is assumed to be HMAC-SHA256 of the body in `x-waafi-signature`; confirm with WaafiPay when the merchant account is opened.
+28. **Webhooks** run as a Next.js route handler (`/api/payments/webhook/<provider>`) rather than a Supabase Edge Function; the database function is the same either way.
+29. **Exchange rates** are entered by accounting (SOS per USD, per day); the ledger is kept in USD.
+30. **Refunds** are full reversals with second-person approval; partial refunds of overpayments use the customer credit instead.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).
