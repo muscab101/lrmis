@@ -7,7 +7,7 @@ export default function GlobalNotFound() {
       <body style={{ fontFamily: "system-ui", padding: 40 }}>
         <h1>404</h1>
         <p>Boggan lama helin · Page not found</p>
-        <Link href="/so">Dhulka</Link>
+        <Link href="/so">LRMIS</Link>
       </body>
     </html>
   );

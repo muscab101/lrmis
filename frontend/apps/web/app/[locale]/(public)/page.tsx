@@ -60,7 +60,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       <LandingHeader>
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:gap-4 sm:px-5">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <BrandMark className="size-7" />
+            <BrandMark className="size-9" />
             <span className="hidden text-lg min-[380px]:inline">{tc("appShortName")}</span>
           </Link>
           <p className="hidden truncate text-center text-sm font-medium md:block">
@@ -79,6 +79,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       <section className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden">
         <ArrowField className="absolute inset-0 -z-10 h-full w-full" />
         <div className="px-5 text-center text-white">
+          <BrandMark title={t("barOrg")} className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none mx-auto mb-6 size-20 drop-shadow-[0_6px_24px_rgba(11,42,143,0.45)] sm:size-24" />
           <h1 className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none text-[clamp(72px,15vw,208px)] leading-[0.9] font-semibold tracking-[-0.045em] [text-shadow:0_8px_40px_rgba(11,42,143,0.35)]">
             {tc("appShortName")}
           </h1>

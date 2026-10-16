@@ -1,7 +1,7 @@
 {
   "common": {
-    "appName": "Dhulka — Diiwaangelinta Dhulka, Canshuurta Hantida & GIS",
-    "appShortName": "Dhulka",
+    "appName": "LRMIS — Nidaamka Maaraynta iyo Diiwaangelinta Dhulka",
+    "appShortName": "LRMIS",
     "orgName": "Maamulka Gobolka Banaadir",
     "appTagline": "Diiwaangelinta dhulka, canshuurta hantida iyo khariidadaha Muqdisho.",
     "save": "Kaydi",
@@ -232,7 +232,7 @@
     "passwordChanged": "Furaha sirta waa la beddelay",
     "resetTitle": "Deji fure cusub",
     "resetBody": "Dooro fure sir ah oo cusub akoonkaaga.",
-    "inviteTitle": "Ku soo dhowow Dhulka",
+    "inviteTitle": "Ku soo dhowow LRMIS",
     "inviteBody": "Dooro fure sir ah si aad u firfircoonayso akoonkaaga shaqaalaha.",
     "mfaTitle": "Xaqiijinta laba-tallaabo",
     "mfaBody": "Akoonnada shaqaalaha waxaa lagu ilaaliyaa koodh ka yimaada app xaqiijin (Google Authenticator, Microsoft Authenticator, Authy…).",
@@ -265,7 +265,7 @@
     "trackCta": "La soco codsiga",
     "citizenCta": "Bogga muwaadinka",
     "staffCta": "Gelitaanka shaqaalaha",
-    "whatTitle": "Waxa Dhulka qabto",
+    "whatTitle": "Waxa LRMIS qabto",
     "whatBody": "Hal diiwaan dadweyne oo loogu talagalay dhul kasta oo Muqdisho ah: khariidadda lagu sahamiyay, xafiiska dhulka hubiyay, loo daabacay diidmooyin, kadibna lagu diiwaangeliyay lambar gaar ah oo lagu kalsoonaan karo.",
     "features": {
       "register": {
@@ -739,7 +739,7 @@
   },
   "design": {
     "title": "Nidaamka naqshadeynta",
-    "subtitle": "Calaamadaha iyo qaybaha laga isticmaalo Dhulka. Beddel muuqaalka iyo luqadda si aad labadaba u hubiso.",
+    "subtitle": "Calaamadaha iyo qaybaha laga isticmaalo LRMIS. Beddel muuqaalka iyo luqadda si aad labadaba u hubiso.",
     "colours": "Midabada & xaaladaha",
     "statusDraft": "Qabyo",
     "statusPending": "Sugaya",
@@ -1144,7 +1144,7 @@
     "assign": "Xilsaar sahamiye",
     "reassign": "Beddel sahamiyaha",
     "assignTitle": "Xilsaar sahamiye",
-    "assignBody": "Dooro sahamiye degmadan, ama u daa Dhulka inuu doorto kan ugu shaqo yar.",
+    "assignBody": "Dooro sahamiye degmadan, ama u daa LRMIS inuu doorto kan ugu shaqo yar.",
     "assigned": "Sahamiyaha waa la xilsaaray waana la ogeysiiyay.",
     "surveyor": "Sahamiye",
     "autoAssign": "Sahamiyaha ugu shaqada yar (si toos ah)",

@@ -187,8 +187,8 @@ export const mfaStartAction = defineAction("auth.mfa_start", z.object({}), async
   }
   const { data, error } = await ctx.supabase.auth.mfa.enroll({
     factorType: "totp",
-    friendlyName: `Dhulka ${new Date().toISOString().slice(0, 10)}`,
-    issuer: "Dhulka Banaadir",
+    friendlyName: `LRMIS ${new Date().toISOString().slice(0, 10)}`,
+    issuer: "LRMIS Banaadir",
   });
   if (error) throw new Error(`mfa enroll: ${error.message}`);
   return { mode: "enroll" as const, factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret };

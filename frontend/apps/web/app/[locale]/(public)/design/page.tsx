@@ -58,7 +58,7 @@ export default async function DesignPage({ params }: { params: Promise<{ locale:
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t("typography")}</h2>
         <Card className="space-y-2 p-5">
-          <p className="text-3xl font-semibold tracking-tight">Dhulka — Gobolka Banaadir</p>
+          <p className="text-3xl font-semibold tracking-tight">LRMIS — Gobolka Banaadir</p>
           <p className="text-base">Inter · {t("bodyText")}</p>
           <p className="text-sm text-muted-foreground">{t("mutedText")}</p>
           <p>

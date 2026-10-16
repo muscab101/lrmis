@@ -1,7 +1,7 @@
 {
   "common": {
-    "appName": "Dhulka — Land Registry, Property Tax & GIS",
-    "appShortName": "Dhulka",
+    "appName": "LRMIS — Land Registration & Management Information System",
+    "appShortName": "LRMIS",
     "orgName": "Banadir Regional Administration",
     "appTagline": "Land registration, property tax and maps for Mogadishu.",
     "save": "Save",
@@ -232,7 +232,7 @@
     "passwordChanged": "Password changed",
     "resetTitle": "Set a new password",
     "resetBody": "Choose a new password for your account.",
-    "inviteTitle": "Welcome to Dhulka",
+    "inviteTitle": "Welcome to LRMIS",
     "inviteBody": "Choose a password to activate your staff account.",
     "mfaTitle": "Two-factor authentication",
     "mfaBody": "Staff accounts are protected with a code from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy…).",
@@ -265,7 +265,7 @@
     "trackCta": "Track application",
     "citizenCta": "Citizen portal",
     "staffCta": "Staff sign in",
-    "whatTitle": "What Dhulka does",
+    "whatTitle": "What LRMIS does",
     "whatBody": "One public register for every plot in Mogadishu: surveyed on the map, checked by the land office, published for objections, then registered with a unique number you can rely on.",
     "features": {
       "register": {
@@ -350,7 +350,7 @@
     "footerNotices": "Public notices"
   },
   "portal": {
-    "title": "My Dhulka",
+    "title": "My land",
     "myProperties": "My properties",
     "myPropertiesBody": "Your registered parcels, bills and requests.",
     "emptyTitle": "No applications yet",
@@ -739,7 +739,7 @@
   },
   "design": {
     "title": "Design system",
-    "subtitle": "Tokens and components used across Dhulka. Switch theme and language to check both.",
+    "subtitle": "Tokens and components used across LRMIS. Switch theme and language to check both.",
     "colours": "Colours & status",
     "statusDraft": "Draft",
     "statusPending": "Pending",
@@ -1144,7 +1144,7 @@
     "assign": "Assign surveyor",
     "reassign": "Reassign",
     "assignTitle": "Assign a surveyor",
-    "assignBody": "Choose a surveyor for this district, or let Dhulka pick the least busy one.",
+    "assignBody": "Choose a surveyor for this district, or let LRMIS pick the least busy one.",
     "assigned": "Surveyor assigned and notified.",
     "surveyor": "Surveyor",
     "autoAssign": "Least busy surveyor (automatic)",

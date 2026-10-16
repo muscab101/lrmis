@@ -1,19 +1,17 @@
 import { cn } from "../lib/cn";
 
-/**
- * Dhulka mark: a surveyed parcel (offset squares, like a plot on a cadastral map)
- * with the five-pointed star of the Somali flag.
- */
+/** Banadir Regional Administration emblem (served from the web app's /brand folder). */
 export function BrandMark({ className, title }: { className?: string; title?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn("size-8", className)} role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-      <rect x="1" y="1" width="30" height="30" rx="5" fill="var(--flag)" />
-      <path d="M7 9.5 L22.5 7 L25 22.5 L9.5 25 Z" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="1.4" strokeLinejoin="round" />
-      <path
-        d="M16 9.2l1.75 4.6 4.9.22-3.83 3.08 1.31 4.74L16 19.12l-4.13 2.72 1.31-4.74-3.83-3.08 4.9-.22z"
-        fill="white"
-      />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element -- shared package, plain img keeps it framework-agnostic
+    <img
+      src="/brand/banadir-emblem-256.png"
+      width={32}
+      height={33}
+      alt={title ?? ""}
+      aria-hidden={title ? undefined : true}
+      className={cn("size-8 shrink-0 object-contain", className)}
+    />
   );
 }
 
