@@ -19,7 +19,9 @@
     "db:login": "supabase login",
     "db:link": "supabase link",
     "db:push": "supabase db push --include-seed",
-    "db:types": "supabase gen types typescript --linked --schema public > packages/core/src/database.types.ts"
+    "db:types": "supabase gen types typescript --linked --schema public > packages/core/src/database.types.ts",
+    "import-legacy": "tsx scripts/import-legacy.ts",
+    "load-test": "k6 run tests/load/public.js"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.118.0",

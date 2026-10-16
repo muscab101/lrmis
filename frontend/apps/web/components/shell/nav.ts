@@ -96,7 +96,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "loginHistory", href: "/admin/login-history", icon: History, permission: "audit.view" },
       { key: "audit", href: "/audit", icon: ScrollText, permission: "audit.view" },
       { key: "settings", href: "/admin/settings", icon: Settings, permission: "settings.view" },
-      { key: "health", href: "/admin/health", icon: Activity, permission: "settings.view", phase: 12 },
+      { key: "health", href: "/admin/health", icon: Activity, permission: "settings.view" },
     ],
   },
 ];

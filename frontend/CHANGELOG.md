@@ -97,3 +97,13 @@
 - WhatsApp `/api/whatsapp/webhook` (Cloud API, verify token + `X-Hub-Signature-256`): BALANCE/HARAA, PAY/BIXI, TRACK/RAADI, VERIFY/HUBI, with replies in the language of the keyword. Replies go out through the dispatcher's WhatsApp provider (`WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`).
 - Tests: 128 database tests (6 new). Checked against Supabase through the dev server: every USSD menu path in both languages, a stranger's number, the certificate check, signed and forged WhatsApp calls, and both replies sent by the log provider.
 
+## Phase 12 — Go-live readiness (2026-10-16)
+
+- Security review (`docs/security-review.md`): Supabase advisors plus a sweep of every definer function callable by `anon` or `authenticated`. No unguarded function was found. The one open item is the Supabase Auth "leaked-password protection" switch, which the project owner has to turn on.
+- Migration 0024: RLS policies on `billing_runs` and `messages` now evaluate `auth.uid()` once per query; 53 foreign-key indexes; `system_health()` checks: balanced ledger, debtors vs open bills, message queue (failed, oldest waiting, stuck), failed jobs, unmatched payments, overdue intents, bad or unprocessed webhooks, staff without 2FA, pg_cron last runs, database size and counts.
+- `/admin/health`: those checks with a hint for each problem, scheduled jobs, which integrations are configured (presence only) and database figures.
+- Migration 0025 and `pnpm import-legacy <file.csv> --actor <email> [--commit]`: legacy records become draft office applications with their owner (people are reused when the ID, legacy id or phone and name match). Dry run by default; writes a per-row report; safe to re-run (`applications.legacy_ref`). Sample in `docs/samples/legacy-import.csv`.
+- Load test: `tests/load/public.js` (k6, ramping to 200 users on landing, verify, tiles and health, with p95 thresholds), run with `pnpm load-test`.
+- `docs/go-live.md` (readiness checklist, data migration, pilot cut-over, rollback), `docs/runbook.md` (symptoms → actions, secret rotation, backup drills), `docs/training/` (one guide per role, with exercises).
+- Tests: 132 database tests (4 new). Verified on Supabase: health checks are correct (ledger balanced, debtors 0, 5 cron jobs running); the legacy import dry run on the sample passes.
+

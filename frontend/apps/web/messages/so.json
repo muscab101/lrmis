@@ -185,7 +185,8 @@
       "too_many_recipients": "Dad aad u badan hal olole. Yaree.",
       "date_range": "Hubi taariikhaha: dhammaadku waa inuu ka dambeeyaa bilowga, ugu badnaan 10 sano.",
       "reports": "Ma haysatid fasax warbixinada.",
-      "dashboard": "Ma haysatid fasax dashboard-ka."
+      "dashboard": "Ma haysatid fasax dashboard-ka.",
+      "health": "Ma haysatid fasax caafimaadka nidaamka."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -822,6 +823,105 @@
       "key": "Fure",
       "value": "Qiime",
       "description": "Sharaxaad"
+    },
+    "health": {
+      "title": "Caafimaadka nidaamka",
+      "subtitle": "La hubiyay {time}. Dib u cusbooneysii bogga si aad mar kale u hubiso.",
+      "overall": {
+        "ok": "Wax walba waa hagaagsan yihiin",
+        "warn": "Waxay u baahan tahay fiiro",
+        "fail": "Tallaabo ayaa loo baahan yahay"
+      },
+      "states": {
+        "ok": "Hagaag",
+        "warn": "Hubi",
+        "fail": "Dhibaato"
+      },
+      "check": "Hubinta",
+      "value": "Qiimaha",
+      "state": "Xaaladda",
+      "cronTitle": "Hawlaha jadwaleysan",
+      "job": "Hawsha",
+      "schedule": "Jadwalka",
+      "lastRun": "Markii ugu dambeysay",
+      "notYet": "Weli lama samayn",
+      "configTitle": "Dejinta",
+      "configHelp": "In isku-xir kasta lagu dejiyay server-kan. Qiimayaasha marnaba lama muujiyo.",
+      "on": "La dejiyay",
+      "off": "Lama dejin",
+      "dbTitle": "Kaydka xogta",
+      "checks": {
+        "ledger_balanced": {
+          "label": "Buugga xisaabta waa isku dheellitiran yahay",
+          "fix": "Jooji diiwaangelinta oo la xiriir maaliyadda: qoraal xisaabeed ayaan isku dheellitirnayn."
+        },
+        "debtors_match": {
+          "label": "Koontada deymaha waxay la mid tahay biilasha furan",
+          "fix": "Ka samee isu-dheellitirka Xisaabaadka; hubi qoraallada gacanta ee koontada 1200."
+        },
+        "messages_failed": {
+          "label": "Fariimaha fashilmay",
+          "fix": "Fur Fariimaha → Fashilmay, hubi khaladka bixiyaha, kadib isku day mar kale."
+        },
+        "messages_oldest_queued_min": {
+          "label": "Fariinta ugu dheer ee sugaysa (daqiiqado)",
+          "fix": "Diraha ma shaqaynayo. Hubi jadwalka u yeera /api/messages/dispatch."
+        },
+        "messages_stuck": {
+          "label": "Fariimo ku xayiran dirista",
+          "fix": "Si toos ah ayay safka ugu soo noqdaan 10 daqiiqo gudahood."
+        },
+        "jobs_failed": {
+          "label": "Hawlaha gadaasha ee fashilmay",
+          "fix": "Ka hubi shaxda jobs khaladka oo mar kale saf geli."
+        },
+        "payments_unmatched": {
+          "label": "Lacag-bixinno aan dhul lagu xirin",
+          "fix": "Ku xir Lacag-bixinta → Aan la xirin."
+        },
+        "intents_overdue": {
+          "label": "Lacag-bixinno online ah oo dhacay",
+          "fix": "Hawsha saacadlaha ah ayaa nadiifisa; hubi pg_cron."
+        },
+        "webhooks_bad_signature_24h": {
+          "label": "Webhook saxiix khaldan leh (24 saac)",
+          "fix": "Dhowr waa baaritaan. Haddii ay badan yihiin waa sir khaldan ama weerar: hubi dejinta bixiyaha."
+        },
+        "webhooks_unprocessed": {
+          "label": "Webhook saxiixan oo aan la farsamayn",
+          "fix": "Hubi diiwaanka server-ka ee jidka webhook-ga."
+        },
+        "staff_without_2fa": {
+          "label": "Shaqaale firfircoon oo aan lahayn 2FA",
+          "fix": "Waxaa la weydiinayaa marka xigta ee ay soo galaan. La soco cidda aan weli samayn."
+        },
+        "cron_last_runs": {
+          "label": "Hawlaha jadwaleysan",
+          "fix": "Hawl ayaa ku fashilantay mar dambe. Eeg shaxda hoose."
+        }
+      },
+      "config": {
+        "supabase": "Kaydka xogta iyo furaha adeegga",
+        "siteUrl": "Cinwaanka goobta dadweynaha",
+        "maps": "Khariidadaha MapTiler",
+        "waafipay": "WaafiPay",
+        "stripe": "Stripe",
+        "paymentsTestMode": "Habka tijaabada lacag-bixinta (waa inuu dansan yahay wax-soo-saarka)",
+        "sms": "Bixiyaha SMS",
+        "dispatch": "Sirta diraha fariimaha",
+        "ussd": "Furaha USSD",
+        "whatsapp": "WhatsApp",
+        "assistant": "Kaaliyaha warbixinada"
+      },
+      "db": {
+        "size_mb": "Cabbirka kaydka (MB)",
+        "parcels": "Dhulal",
+        "parties": "Dad iyo hay'ado",
+        "invoices": "Biilal",
+        "payments": "Lacag-bixinno",
+        "audit_rows": "Diiwaanka hubinta",
+        "active_staff": "Shaqaale firfircoon"
+      }
     }
   },
   "audit": {

@@ -66,6 +66,12 @@ Defaults used until the administration decides. Each is easy to change.
 43. **WhatsApp** replies are free-form text, allowed only within 24 hours of the person's message. Proactive WhatsApp (reminders) would need Meta-approved templates and stays on SMS for now.
 44. **Public address** for links defaults to `https://lrmis.so` (`site.public_url`); change it once the domain is decided.
 
+## Phase 12 assumptions
+
+45. **Legacy records** are imported as applications, not as registered parcels: nothing gets a PUN without a survey and a public notice. If the administration wants old deeds registered directly, that needs a separate, audited "grandfathered" path.
+46. **Pilot district** is Hodan, two weeks in parallel with paper, then two districts a week (`docs/go-live.md`).
+47. **Penetration test** by an outside firm is recommended before go-live; it isn't part of this build.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).

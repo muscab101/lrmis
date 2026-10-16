@@ -185,7 +185,8 @@
       "too_many_recipients": "Too many people for one campaign. Narrow it down.",
       "date_range": "Check the dates: the end must be after the start, at most 10 years apart.",
       "reports": "You don't have access to reports.",
-      "dashboard": "You don't have access to the dashboard."
+      "dashboard": "You don't have access to the dashboard.",
+      "health": "You don't have access to system health."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -822,6 +823,105 @@
       "key": "Key",
       "value": "Value",
       "description": "Description"
+    },
+    "health": {
+      "title": "System health",
+      "subtitle": "Checked at {time}. Refresh the page to check again.",
+      "overall": {
+        "ok": "All good",
+        "warn": "Needs attention",
+        "fail": "Action required"
+      },
+      "states": {
+        "ok": "OK",
+        "warn": "Check",
+        "fail": "Problem"
+      },
+      "check": "Check",
+      "value": "Value",
+      "state": "State",
+      "cronTitle": "Scheduled jobs",
+      "job": "Job",
+      "schedule": "Schedule",
+      "lastRun": "Last run",
+      "notYet": "Not run yet",
+      "configTitle": "Configuration",
+      "configHelp": "Whether each integration is set on this server. Values are never shown.",
+      "on": "Set",
+      "off": "Not set",
+      "dbTitle": "Database",
+      "checks": {
+        "ledger_balanced": {
+          "label": "Ledger balanced (debits − credits)",
+          "fix": "Stop posting and contact finance: a journal entry is unbalanced."
+        },
+        "debtors_match": {
+          "label": "Debtors account matches open bills",
+          "fix": "Run reconciliation in Accounting; check manual journals on account 1200."
+        },
+        "messages_failed": {
+          "label": "Messages that failed",
+          "fix": "Open Messages → Failed, check the provider error, then retry."
+        },
+        "messages_oldest_queued_min": {
+          "label": "Oldest waiting message (minutes)",
+          "fix": "The dispatcher isn't running. Check the scheduler calling /api/messages/dispatch."
+        },
+        "messages_stuck": {
+          "label": "Messages stuck while sending",
+          "fix": "They return to the queue automatically within 10 minutes."
+        },
+        "jobs_failed": {
+          "label": "Background jobs that failed",
+          "fix": "Check the jobs table for the error and re-queue."
+        },
+        "payments_unmatched": {
+          "label": "Payments not matched to a parcel",
+          "fix": "Match them in Payments → Unmatched."
+        },
+        "intents_overdue": {
+          "label": "Online payments past their expiry",
+          "fix": "The hourly expiry job should clear these; check pg_cron."
+        },
+        "webhooks_bad_signature_24h": {
+          "label": "Webhooks with a bad signature (24 h)",
+          "fix": "A few can be probes. Many means a wrong secret or an attack: check the provider settings."
+        },
+        "webhooks_unprocessed": {
+          "label": "Signed webhooks not processed",
+          "fix": "Check the server logs for the webhook route."
+        },
+        "staff_without_2fa": {
+          "label": "Active staff without 2FA",
+          "fix": "They are asked to enrol at next sign-in. Follow up with anyone who hasn't."
+        },
+        "cron_last_runs": {
+          "label": "Scheduled jobs",
+          "fix": "A job's last run failed. Check the table below."
+        }
+      },
+      "config": {
+        "supabase": "Database and service key",
+        "siteUrl": "Public site address",
+        "maps": "MapTiler base maps",
+        "waafipay": "WaafiPay",
+        "stripe": "Stripe",
+        "paymentsTestMode": "Payments test mode (must be off in production)",
+        "sms": "SMS provider",
+        "dispatch": "Message dispatcher secret",
+        "ussd": "USSD callback key",
+        "whatsapp": "WhatsApp",
+        "assistant": "Reporting assistant"
+      },
+      "db": {
+        "size_mb": "Database size (MB)",
+        "parcels": "Parcels",
+        "parties": "People and organisations",
+        "invoices": "Bills",
+        "payments": "Payments",
+        "audit_rows": "Audit log entries",
+        "active_staff": "Active staff"
+      }
     }
   },
   "audit": {
