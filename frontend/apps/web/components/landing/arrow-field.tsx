@@ -4,12 +4,13 @@ import { useEffect, useRef } from "react";
 
 const GAP = 13; // px between arrows
 const SIZE = 4; // half-length of an arrow
-const LEAN_RADIUS = 170; // how far the pointer reaches
+const RADIUS = 190; // how far the pointer pushes
+const PUSH = 34; // max px an arrow is pushed away
+const SPRING = 0.14; // how fast arrows follow / return (0–1 per frame)
 const RIPPLE_SPEED = 0.9; // px per ms
-const RIPPLE_WIDTH = 70;
+const RIPPLE_WIDTH = 80;
+const RIPPLE_PUSH = 26;
 const RIPPLE_LIFE = 1400; // ms
-const SWAY = 0.38; // radians of idle sway
-const SWAY_SPEED = 0.0011; // per ms
 
 interface Ripple {
   x: number;
@@ -18,9 +19,9 @@ interface Ripple {
 }
 
 /**
- * Field of tiny arrows over a navy-to-white sky. Arrows lean away from the pointer
- * and a click sends a ripple through them. At rest a slow wave sways the field and the light
- * drifts. Static (no animation) for reduced motion; paused while off screen.
+ * Field of tiny arrows over a navy-to-white sky. Arrows scatter out of the pointer's way,
+ * turning to point away from it, and spring back when it leaves; a click sends a ripple
+ * through them. Static for reduced motion.
  */
 export function ArrowField({ className, flip = false }: { className?: string; /** White at the top, navy at the bottom. */ flip?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -35,12 +36,13 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
     let w = 0;
     let h = 0;
     let dpr = 1;
+    let cols = 0;
     let pointer: { x: number; y: number } | null = null;
     const ripples: Ripple[] = [];
     let frame = 0;
     let running = false;
-    // Smoothed lean per arrow so movement eases instead of snapping.
-    let lean = new Float32Array(0);
+    // Per arrow: current offset (ox, oy) and turn toward "away" (tx, ty), eased each frame.
+    let state = new Float32Array(0);
 
     const resize = () => {
       const r = el.getBoundingClientRect();
@@ -49,12 +51,14 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
       h = r.height;
       el.width = Math.round(w * dpr);
       el.height = Math.round(h * dpr);
-      lean = new Float32Array(Math.ceil(w / GAP + 1) * Math.ceil(h / GAP + 1) * 2);
+      cols = Math.ceil(w / GAP) + 1;
+      state = new Float32Array(cols * (Math.ceil(h / GAP) + 1) * 4);
       draw(performance.now());
     };
 
-    function draw(now: number) {
-      if (!ctx) return;
+    /** Draws one frame; returns true while anything is still moving. */
+    function draw(now: number): boolean {
+      if (!ctx) return false;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const sky = flip ? ctx.createLinearGradient(0, h, 0, 0) : ctx.createLinearGradient(0, 0, 0, h);
       sky.addColorStop(0, "#0b2a8f");
@@ -65,92 +69,102 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
       ctx.fillRect(0, 0, w, h);
 
       // Soft light in the middle so the headline reads.
-      const gx0 = w / 2 + (reduced ? 0 : Math.sin(now * 0.00023) * w * 0.12);
-      const gy0 = h * 0.5 + (reduced ? 0 : Math.cos(now * 0.00017) * h * 0.06);
-      const glow = ctx.createRadialGradient(gx0, gy0, 0, gx0, gy0, Math.max(w, h) * 0.45);
+      const glow = ctx.createRadialGradient(w / 2, h * 0.5, 0, w / 2, h * 0.5, Math.max(w, h) * 0.45);
       glow.addColorStop(0, "rgba(160,190,255,0.55)");
       glow.addColorStop(1, "rgba(160,190,255,0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
       ripples.splice(0, ripples.length, ...ripples.filter((r) => now - r.t0 < RIPPLE_LIFE));
-      const cols = Math.ceil(w / GAP + 1);
+      let moving = ripples.length > 0;
       ctx.lineWidth = 1.25;
       ctx.lineCap = "round";
 
-      for (let gy = 0, row = 0; gy <= h + GAP; gy += GAP, row++) {
+      for (let gy = 0, row = 0; gy <= h; gy += GAP, row++) {
         const fy = flip ? 1 - gy / h : gy / h; // 0 = navy edge → 1 = white edge
-        // Light arrows on the dark top, blue arrows on the light bottom.
-        const stroke = fy < 0.6 ? `rgba(196,214,255,${0.62 - fy * 0.55})` : `rgba(42,85,214,${0.22 + (fy - 0.6) * 0.75})`;
-        ctx.strokeStyle = stroke;
+        // Light arrows on the dark part, blue arrows on the light part.
+        ctx.strokeStyle = fy < 0.6 ? `rgba(196,214,255,${0.62 - fy * 0.55})` : `rgba(42,85,214,${0.22 + (fy - 0.6) * 0.75})`;
         ctx.beginPath();
-        for (let gx = 0, col = 0; gx <= w + GAP; gx += GAP, col++) {
-          const x = gx + (row % 2 ? GAP / 2 : 0);
-          const y = gy;
-          let dx = 0;
-          let dy = 0;
-          let scale = 1;
+        for (let gx = 0, col = 0; gx <= w; gx += GAP, col++) {
+          // Where the pointer and ripples want this arrow: pushed outward and turned away.
+          let pushX = 0;
+          let pushY = 0;
+          let turn = 0;
+          let awayX = 0;
+          let awayY = 0;
           if (pointer) {
-            const px = x - pointer.x;
-            const py = y - pointer.y;
+            const px = gx - pointer.x;
+            const py = gy - pointer.y;
             const d = Math.hypot(px, py);
-            if (d < LEAN_RADIUS && d > 0.01) {
-              const f = (1 - d / LEAN_RADIUS) ** 2;
-              dx += (px / d) * f * 1.6;
-              dy += (py / d) * f * 1.6;
-              scale += f * 0.6;
+            if (d < RADIUS) {
+              const f = (1 - d / RADIUS) ** 2;
+              const nx = d > 0.01 ? px / d : 0;
+              const ny = d > 0.01 ? py / d : -1;
+              pushX += nx * f * PUSH;
+              pushY += ny * f * PUSH;
+              awayX += nx * f;
+              awayY += ny * f;
+              turn = Math.max(turn, f);
             }
           }
           for (const r of ripples) {
             const age = now - r.t0;
-            const radius = age * RIPPLE_SPEED;
-            const px = x - r.x;
-            const py = y - r.y;
+            const px = gx - r.x;
+            const py = gy - r.y;
             const d = Math.hypot(px, py);
-            const band = 1 - Math.abs(d - radius) / RIPPLE_WIDTH;
+            const band = 1 - Math.abs(d - age * RIPPLE_SPEED) / RIPPLE_WIDTH;
             if (band > 0 && d > 0.01) {
               const f = band * (1 - age / RIPPLE_LIFE);
-              dx += (px / d) * f * 2.4;
-              dy += (py / d) * f * 2.4;
-              scale += f * 0.9;
+              pushX += (px / d) * f * RIPPLE_PUSH;
+              pushY += (py / d) * f * RIPPLE_PUSH;
+              awayX += (px / d) * f;
+              awayY += (py / d) * f;
+              turn = Math.max(turn, f);
             }
           }
-          // Ease toward the target lean.
-          const i = (row * cols + col) * 2;
-          const lx = (lean[i] ?? 0) + (dx - (lean[i] ?? 0)) * 0.18;
-          const ly = (lean[i + 1] ?? 0) + (dy - (lean[i + 1] ?? 0)) * 0.18;
-          lean[i] = lx;
-          lean[i + 1] = ly;
 
-          // Resting arrow points up-right (↗), swayed by a slow travelling wave; the lean bends it.
-          const sway = reduced ? 0 : Math.sin(now * SWAY_SPEED - x * 0.011 + y * 0.006) * SWAY;
-          let ax = Math.cos(-Math.PI / 4 + sway) + lx;
-          let ay = Math.sin(-Math.PI / 4 + sway) + ly;
+          // Spring toward that target, so arrows glide out and settle back.
+          const i = (row * cols + col) * 4;
+          const ox = state[i]! + (pushX - state[i]!) * SPRING;
+          const oy = state[i + 1]! + (pushY - state[i + 1]!) * SPRING;
+          const al = Math.hypot(awayX, awayY);
+          const tx = state[i + 2]! + ((al > 0 ? (awayX / al) * turn : 0) - state[i + 2]!) * SPRING;
+          const ty = state[i + 3]! + ((al > 0 ? (awayY / al) * turn : 0) - state[i + 3]!) * SPRING;
+          state[i] = ox;
+          state[i + 1] = oy;
+          state[i + 2] = tx;
+          state[i + 3] = ty;
+          if (Math.abs(ox - pushX) + Math.abs(oy - pushY) > 0.05 || Math.abs(ox) + Math.abs(oy) > 0.05) moving = true;
+
+          // At rest the arrow points up-right (↗); pushed arrows turn to point away.
+          const tl = Math.min(1, Math.hypot(tx, ty));
+          let ax = 0.7071 * (1 - tl) + tx;
+          let ay = -0.7071 * (1 - tl) + ty;
           const len = Math.hypot(ax, ay) || 1;
           ax /= len;
           ay /= len;
-          const s = SIZE * Math.min(scale, 2);
-          const tx = x + ax * s;
-          const ty = y + ay * s;
+          const x = gx + ox;
+          const y = gy + oy;
+          const s = SIZE * (1 + tl * 0.5);
+          const headX = x + ax * s;
+          const headY = y + ay * s;
           ctx.moveTo(x - ax * s, y - ay * s);
-          ctx.lineTo(tx, ty);
-          // Head
-          const hx = -ax * 2.4;
-          const hy = -ay * 2.4;
-          ctx.moveTo(tx, ty);
-          ctx.lineTo(tx + hx * 0.7071 - hy * 0.7071, ty + hx * 0.7071 + hy * 0.7071);
-          ctx.moveTo(tx, ty);
-          ctx.lineTo(tx + hx * 0.7071 + hy * 0.7071, ty - hx * 0.7071 + hy * 0.7071);
+          ctx.lineTo(headX, headY);
+          const bx = -ax * 2.4;
+          const by = -ay * 2.4;
+          ctx.moveTo(headX, headY);
+          ctx.lineTo(headX + bx * 0.7071 - by * 0.7071, headY + bx * 0.7071 + by * 0.7071);
+          ctx.moveTo(headX, headY);
+          ctx.lineTo(headX + bx * 0.7071 + by * 0.7071, headY - bx * 0.7071 + by * 0.7071);
         }
         ctx.stroke();
       }
+      return moving;
     }
 
-    let visible = true;
     const loop = (now: number) => {
-      draw(now);
-      // The idle wave keeps the field alive while it is on screen.
-      if (visible && !document.hidden) frame = requestAnimationFrame(loop);
+      const moving = draw(now);
+      if (moving || pointer) frame = requestAnimationFrame(loop);
       else running = false;
     };
     const kick = () => {
@@ -177,13 +191,6 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
 
     const ro = new ResizeObserver(resize);
     ro.observe(el);
-    const io = new IntersectionObserver(([entry]) => {
-      visible = !!entry?.isIntersecting;
-      if (visible) kick();
-    });
-    io.observe(el);
-    const onVisibility = () => !document.hidden && kick();
-    document.addEventListener("visibilitychange", onVisibility);
     if (!reduced) {
       host.addEventListener("pointermove", onMove);
       host.addEventListener("pointerleave", onLeave);
@@ -192,8 +199,6 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
     return () => {
       cancelAnimationFrame(frame);
       ro.disconnect();
-      io.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
       host.removeEventListener("pointerdown", onDown);
