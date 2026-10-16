@@ -82,8 +82,8 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "insight",
     items: [
-      { key: "reports", href: "/reports", icon: BarChart3, permission: "reports.view", phase: 10 },
-      { key: "messages", href: "/messages", icon: MessageSquare, permission: "messages.view", phase: 10 },
+      { key: "reports", href: "/reports", icon: BarChart3, permission: "reports.view" },
+      { key: "messages", href: "/messages", icon: MessageSquare, permission: "messages.view" },
       { key: "locations", href: "/locations", icon: MapPinned, permission: "locations.view" },
     ],
   },

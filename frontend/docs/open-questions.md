@@ -52,6 +52,13 @@ Defaults used until the administration decides. Each is easy to change.
 35. **Leases** are only for public land, one active lease per parcel; rent isn't invoiced automatically yet.
 36. **Permit fee** is a flat `building_permit` fee type (USD 50) until a schedule by floor area is agreed.
 
+## Phase 10 assumptions
+
+37. **SMS provider**: Twilio is wired as the default because its API is public and it reaches Somali numbers. A local gateway (Hormuud, Somtel) can be added as another provider once a contract and API docs exist (open question 4).
+38. **Assistant data**: questions and aggregated report figures (including cashier names in the cashiers report) are sent to Anthropic's API. Leave `ANTHROPIC_API_KEY` empty if the administration doesn't approve sending data abroad.
+39. **Campaign approval** is given to the Admin role (`messages.approve`). Customer Service creates campaigns but can't approve them.
+40. **Scheduler**: the dispatcher needs an external cron hitting `/api/messages/dispatch` every minute (Vercel Cron or similar). pg_cron only requeues stuck messages.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).

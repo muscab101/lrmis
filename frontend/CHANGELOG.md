@@ -78,3 +78,14 @@
 - Pages: `/transfers` (status tabs) and `/transfers/[id]` (owners before/after, duty, submit/approve/reject/cancel); `/disputes` (disputes, active liens, active court orders, parcel change approvals); `/permits` (approve with conditions, validity from `permits.valid_months`); `/parcels/[id]/subdivide` (Terra Draw editor that snaps to the parent's corners and shows live areas); a Legal card on the parcel page with blockers and all actions. Blocker errors list the reasons in plain words.
 - Tests: 116 database tests (10 new). Verified on Supabase: a lien blocks transfer and subdivision, and releasing it clears the blockers.
 
+## Phase 10 — Dashboards, reports, messages, assistant (2026-10-16)
+
+- Migration 0022: SMS outbox (`messages`) with templates in Somali and English, retries with growing back-off, stale-claim recovery (pg_cron), and dedupe keys so an event never texts twice. Event messages: application steps (also in-app), payment receipts, certificate ready. Officers get an in-app notice when their transfer, permit or parcel change is decided.
+- Campaigns `MSG-`: overdue reminders (minimum days overdue), tax-due notices by year, or a free-text notice to all registered owners in a district. Preview shows the count and a sample. A second officer (`messages.approve`, now on Admin) approves before anything is queued. Limit `messages.campaign_limit`.
+- Dashboard (`dashboard_kpis`): collections this month and year, outstanding, overdue, collection rate, six-month trend, registry counts, and a "Waiting for you" list (surveys, approvals, campaigns, failed messages). Everything is limited to the user's districts and permissions.
+- Reports (`/reports`): revenue by month and fee type, arrears ageing by district, collection rate, registrations with median days, cashier takings and differences. Date and district filters, CSV export (`reports.export`, formula-safe). The report functions check permission and districts themselves, so executives see totals without row access.
+- Reporting assistant on `/reports`: Claude answers questions using only the report functions, run as the signed-in user; off unless `ANTHROPIC_API_KEY` is set; 30 questions per user per hour.
+- `/messages`: outbox (masked numbers, retry, cancel), campaigns (create, approve or reject), templates (edit both languages, switch off).
+- `/api/messages/dispatch`: sends queued SMS through the configured provider (`SMS_PROVIDER=twilio`, or `log` in development only), behind a bearer secret. Run it every minute from a scheduler.
+- Tests: 122 database tests (6 new). Verified on Supabase: dashboard and report figures match the ledger (353.24 collected, 100 % collection); a queued test message was claimed, sent through the log provider and marked sent.
+
