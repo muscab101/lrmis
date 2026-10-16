@@ -42,6 +42,9 @@ Defaults used until the administration decides. Each is easy to change.
 29. **Exchange rates** are entered by accounting (SOS per USD, per day); the ledger is kept in USD.
 30. **Refunds** are full reversals with second-person approval; partial refunds of overpayments use the customer credit instead.
 
+31. **Owner photos** aren't captured yet (parties have `photo_path` but no upload); certificates and cards show the holder's initials until the photo step is added.
+32. **E-signature** is the registrar's name plus the document's verification code; a cryptographic signature (PKI) can replace it once the administration has a signing key.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).

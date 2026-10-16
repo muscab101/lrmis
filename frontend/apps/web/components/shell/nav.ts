@@ -76,7 +76,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "transfers", href: "/transfers", icon: Home, permission: "transfers.view", phase: 9 },
       { key: "disputes", href: "/disputes", icon: Gavel, permission: "disputes.view", phase: 9 },
       { key: "permits", href: "/permits", icon: Building2, permission: "permits.view", phase: 9 },
-      { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view", phase: 8 },
+      { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
     ],
   },
   {

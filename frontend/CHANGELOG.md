@@ -59,3 +59,12 @@
 - Reversals (request → second-person approval), unmatched-payment matching, bank/cheque recording, settlement-report reconciliation (matched / amount differs / missing on either side), provider on/off switches.
 - Pages: `/payments` (payments, unmatched, reversals, cashier shifts, reconciliation, providers), `/payments/[id]`, printable 80 mm receipt, `/cashier`, `/accounting` (trial balance, journal, accounts, exchange rates, periods), "Pay now" on `/pay/[token]`.
 - Tests: 100 database tests (12 new: ledger balanced after every step, debtors = open invoices, discount, credit, SOS, shifts, webhooks, unmatched, reversals, reconciliation, period lock). Verified on Supabase: cash and test-provider payments, webhook route (signed 200, duplicate, forged 401).
+
+## Phase 8 — Certificates, ID cards, printing, verification (2026-10-16)
+
+- Migration 0020: issued documents (title certificates `CERT-<year>-<n>`, property ID cards `IDC-<year>-<n>` per owner, 5-year expiry) with a frozen snapshot of the register at issue time (owners, PUN, area, use, centroid, geometry, adjacent parcels, survey boundaries, registrar); 12-character verification codes; one valid certificate per parcel and one valid card per owner (partial unique indexes).
+- Eligibility (configurable): registered, not disputed, no open/upheld objection, an owner on record, and nothing left to pay (`certificates.require_full_payment`, otherwise nothing overdue).
+- Print log: the first print is recorded once; later prints need a reprint request (reason + certificate-fee invoice), approval by someone else after the fee is paid, which cancels the old document and issues a new serial. Cancellation with reason (maker-checker).
+- Public `verify_document`: valid / cancelled / expired / not found, with initials only — no ID numbers, phones or geometry.
+- Pages: `/documents/print` (to issue with eligibility, to print, issued, reprints), `/documents/[id]` (print log, reprint, cancel), print page with A4 certificate (emblem, owners table, facts, scale-true map extract with neighbours, north arrow and scale bar, boundaries, corner coordinates, e-signature, QR) and CR80 ID card front/back; on-screen PREVIEW watermark until the official print is logged; public `/verify` and `/verify/[code]`; certificate card on the parcel page.
+- Tests: 106 database tests (6 new). Verified on Supabase: CERT-2026-000001 + IDC-2026-000001 issued for the paid test parcel; public verify page checked in the browser.
