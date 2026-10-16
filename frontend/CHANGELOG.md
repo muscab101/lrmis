@@ -68,3 +68,13 @@
 - Public `verify_document`: valid / cancelled / expired / not found, with initials only — no ID numbers, phones or geometry.
 - Pages: `/documents/print` (to issue with eligibility, to print, issued, reprints), `/documents/[id]` (print log, reprint, cancel), print page with A4 certificate (emblem, owners table, facts, scale-true map extract with neighbours, north arrow and scale bar, boundaries, corner coordinates, e-signature, QR) and CR80 ID card front/back; on-screen PREVIEW watermark until the official print is logged; public `/verify` and `/verify/[code]`; certificate card on the parcel page.
 - Tests: 106 database tests (6 new). Verified on Supabase: CERT-2026-000001 + IDC-2026-000001 issued for the paid test parcel; public verify page checked in the browser.
+
+## Phase 9 — Transfers, disputes, encumbrances, parcel changes, permits, leases (2026-10-16)
+
+- Migration 0021: disputes `DSP-`, court orders (freeze / transfer / release), liens and mortgages, transfers `TRF-` (sale, gift, inheritance, court order) with frozen from/to owner lists, parcel changes `PCH-` (subdivision, merge, change of use), building permits `PRM-` with a fee invoice, leases of public land `LSE-`. RLS by parcel visibility; every write through checked RPCs.
+- One blocker check (`private.parcel_blockers`) used everywhere: open dispute, freeze order, active lien, unpaid balance, pending change, archived, not registered.
+- Transfers: draft → submitted (stamp duty invoice: `transfers.stamp_duty_pct` of the declared value, fixed duty for inheritance) → approved by a second officer once the duty is paid. Old owners are closed and new ones opened with shares totalling 100 %, and the parcel's documents are cancelled for reissue.
+- Subdivision: child polygons must be valid, inside the parent, non-overlapping and within 1 % of its area. On approval the parent is archived and children get new PUNs and the same owners. Merge needs touching parcels in one neighbourhood with identical owners. Change of use updates the land use. All maker-checker.
+- Pages: `/transfers` (status tabs) and `/transfers/[id]` (owners before/after, duty, submit/approve/reject/cancel); `/disputes` (disputes, active liens, active court orders, parcel change approvals); `/permits` (approve with conditions, validity from `permits.valid_months`); `/parcels/[id]/subdivide` (Terra Draw editor that snaps to the parent's corners and shows live areas); a Legal card on the parcel page with blockers and all actions. Blocker errors list the reasons in plain words.
+- Tests: 116 database tests (10 new). Verified on Supabase: a lien blocks transfer and subdivision, and releasing it clears the blockers.
+

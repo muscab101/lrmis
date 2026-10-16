@@ -11,6 +11,8 @@ import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
+import { ParcelLegalCard } from "@/components/legal/parcel-legal";
+import { parcelLegal } from "@/lib/server/legal";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,6 +33,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   if (!p) notFound();
   const showValuation = viewer.can("valuation.view");
   const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
+  const showLegal = viewer.can("transfers.view") || viewer.can("disputes.view") || viewer.can("permits.view");
+  const legal = showLegal && p.pun ? await parcelLegal(p.id) : null;
   const owners = p.parcel_owners.filter((o) => !o.valid_to);
   const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
   const facts: [string, React.ReactNode][] = [
@@ -122,6 +126,23 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
         {viewer.can("certificates.view") && p.pun && (
           <div className="md:col-span-2">
             <ParcelCertificate parcelId={p.id} pun={p.pun} canIssue={viewer.can("certificates.approve")} />
+          </div>
+        )}
+        {legal && (
+          <div className="md:col-span-2">
+            <ParcelLegalCard
+              parcel={{ id: p.id, pun: p.pun!, ownership: p.ownership, land_use: p.land_use, status: p.status }}
+              data={legal}
+              me={viewer.user.id}
+              can={{
+                transfer: viewer.can("transfers.create"),
+                legal: viewer.can("disputes.create"),
+                legalApprove: viewer.can("disputes.approve"),
+                change: viewer.can("parcels.update"),
+                permit: viewer.can("permits.create"),
+                lease: viewer.can("parcels.approve"),
+              }}
+            />
           </div>
         )}
         {viewer.can("invoices.view") && (

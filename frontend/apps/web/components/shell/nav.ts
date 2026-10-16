@@ -73,9 +73,9 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "legal",
     items: [
-      { key: "transfers", href: "/transfers", icon: Home, permission: "transfers.view", phase: 9 },
-      { key: "disputes", href: "/disputes", icon: Gavel, permission: "disputes.view", phase: 9 },
-      { key: "permits", href: "/permits", icon: Building2, permission: "permits.view", phase: 9 },
+      { key: "transfers", href: "/transfers", icon: Home, permission: "transfers.view" },
+      { key: "disputes", href: "/disputes", icon: Gavel, permission: "disputes.view" },
+      { key: "permits", href: "/permits", icon: Building2, permission: "permits.view" },
       { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
     ],
   },

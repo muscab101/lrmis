@@ -26,6 +26,10 @@ export function useErrorMessage() {
       const values = { minutes: 15, remaining: 0, detail: "", ...(error.values ?? {}) };
       // Some codes carry a machine detail ("notice_running") with its own sentence.
       const detail = typeof values.detail === "string" ? values.detail.replace(/\s+/g, "_") : "";
+      if (detail.startsWith("blocked:")) {
+        const list = detail.slice(8).split(",").map((b) => (te.has(`blockers.${b}`) ? te(`blockers.${b}`) : b));
+        return te("details.blocked", { list: list.join(", ") });
+      }
       if (detail && te.has(`details.${detail}`)) return te(`details.${detail}`, values);
       return te.has(`codes.${error.code}`) ? te(`codes.${error.code}`, values) : te("codes.UNKNOWN", values);
     },

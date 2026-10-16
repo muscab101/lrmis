@@ -45,6 +45,13 @@ Defaults used until the administration decides. Each is easy to change.
 31. **Owner photos** aren't captured yet (parties have `photo_path` but no upload); certificates and cards show the holder's initials until the photo step is added.
 32. **E-signature** is the registrar's name plus the document's verification code; a cryptographic signature (PKI) can replace it once the administration has a signing key.
 
+## Phase 9 assumptions
+
+33. **Stamp duty** defaults to 2 % of the declared value (minimum from `transfers.stamp_duty_min`); inheritance pays the fixed `transfers.inheritance_duty`. Rates are settings until the finance office confirms them.
+34. **Subdivision tolerance** is 1 % of the parent's area (`changes.subdivision_tolerance_pct`); children inherit the parent's owners and shares, and the parent is archived, not deleted.
+35. **Leases** are only for public land, one active lease per parcel; rent isn't invoiced automatically yet.
+36. **Permit fee** is a flat `building_permit` fee type (USD 50) until a schedule by floor area is agreed.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).
