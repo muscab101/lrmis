@@ -59,6 +59,13 @@ Defaults used until the administration decides. Each is easy to change.
 39. **Campaign approval** is given to the Admin role (`messages.approve`). Customer Service creates campaigns but can't approve them.
 40. **Scheduler**: the dispatcher needs an external cron hitting `/api/messages/dispatch` every minute (Vercel Cron or similar). pg_cron only requeues stuck messages.
 
+## Phase 11 assumptions
+
+41. **Who may ask by phone**: USSD and WhatsApp answer only for parties whose registered phone matches the caller. Shared family phones see every parcel linked to that number.
+42. **USSD gateway**: built for the Africa's Talking request format; the short code and the operator (Hormuud / Somtel) still need to be arranged. Gateways don't sign requests, so the callback URL carries a secret key and should also be IP-restricted at the gateway.
+43. **WhatsApp** replies are free-form text, allowed only within 24 hours of the person's message. Proactive WhatsApp (reminders) would need Meta-approved templates and stays on SMS for now.
+44. **Public address** for links defaults to `https://lrmis.so` (`site.public_url`); change it once the domain is decided.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).

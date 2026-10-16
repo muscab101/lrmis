@@ -52,6 +52,31 @@ const twilioProvider: MessageProvider = {
   },
 };
 
+/** WhatsApp Cloud API: free-form text inside the 24-hour window after the person writes to us. */
+const whatsappProvider: MessageProvider = {
+  code: "whatsapp",
+  async send(m) {
+    const token = process.env.WHATSAPP_TOKEN;
+    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    if (!token || !phoneId) return { ok: false, error: "whatsapp not configured" };
+    const res = await fetch(`https://graph.facebook.com/v21.0/${encodeURIComponent(phoneId)}/messages`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", to: m.to_address.replace(/^\+/, ""), type: "text", text: { body: m.body, preview_url: true } }),
+      signal: AbortSignal.timeout(15_000),
+    }).catch((err: Error) => ({ ok: false, status: 0, json: async () => ({ error: { message: err.message } }) }) as const);
+    const data = (await res.json().catch(() => ({}))) as { messages?: { id: string }[]; error?: { message?: string; code?: number } };
+    return res.ok && data.messages?.[0]?.id ? { ok: true, ref: data.messages[0].id } : { ok: false, error: `${res.status} ${data.error?.code ?? ""} ${data.error?.message ?? ""}`.trim() };
+  },
+};
+
+/** Provider for a message's channel, or null when that channel is switched off. */
+export function providerFor(channel: OutgoingMessage["channel"]): MessageProvider | null {
+  if (channel === "sms") return smsProvider();
+  if (channel === "whatsapp") return process.env.WHATSAPP_TOKEN ? whatsappProvider : process.env.NODE_ENV !== "production" ? logProvider : null;
+  return null;
+}
+
 /** The configured SMS provider, or null when sending is switched off. */
 export function smsProvider(): MessageProvider | null {
   const code = process.env.SMS_PROVIDER ?? (process.env.NODE_ENV === "production" ? "" : "log");

@@ -89,3 +89,11 @@
 - `/api/messages/dispatch`: sends queued SMS through the configured provider (`SMS_PROVIDER=twilio`, or `log` in development only), behind a bearer secret. Run it every minute from a scheduler.
 - Tests: 122 database tests (6 new). Verified on Supabase: dashboard and report figures match the ledger (353.24 collected, 100 % collection); a queued test message was claimed, sent through the log provider and marked sent.
 
+## Phase 11 — Citizen portal, USSD, WhatsApp (2026-10-16)
+
+- Migration 0023: `citizen_overview` gives the signed-in owner their parcels (place, use, share, balance, overdue), bills with pay links, valid documents with verify codes, receipts and SMS in one call. Channel functions (service role only) answer only about records linked to the caller's own phone number: balance, open bills, application status, a pay link by SMS (`pay_link`, once an hour per bill), WhatsApp replies via the outbox. Per-phone limit `channels.hourly_limit` (30 an hour); requests are logged for 90 days. `site.public_url` sets the address used in links.
+- Portal: home now shows property cards (amount to pay, overdue, Pay now, title issued), applications, receipts, messages, and how to use USSD and WhatsApp. New `/portal/parcels/[id]` page with map, bills, documents (verify links) and receipts.
+- USSD `/api/ussd` (Africa's Talking-style `CON`/`END`, `?key=` callback secret): 1 balance, 2 pay (pick a bill, get an SMS link), 3 track application, 4 verify certificate, 5 switch Somali/English.
+- WhatsApp `/api/whatsapp/webhook` (Cloud API, verify token + `X-Hub-Signature-256`): BALANCE/HARAA, PAY/BIXI, TRACK/RAADI, VERIFY/HUBI, with replies in the language of the keyword. Replies go out through the dispatcher's WhatsApp provider (`WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`).
+- Tests: 128 database tests (6 new). Checked against Supabase through the dev server: every USSD menu path in both languages, a stranger's number, the certificate check, signed and forged WhatsApp calls, and both replies sent by the log provider.
+

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { smsProvider, type OutgoingMessage } from "@/lib/server/messaging";
+import { providerFor, smsProvider, type OutgoingMessage } from "@/lib/server/messaging";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -22,8 +22,7 @@ function authorised(request: NextRequest) {
  */
 async function dispatch(request: NextRequest) {
   if (!authorised(request)) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
-  const provider = smsProvider();
-  if (!provider) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
+  if (!smsProvider() && !providerFor("whatsapp")) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
   const admin = await createAdminClient();
   const { data, error } = await admin.rpc("messages_claim", { p_limit: BATCH });
   if (error) return NextResponse.json({ code: "INTERNAL" }, { status: 500 });
@@ -33,10 +32,11 @@ async function dispatch(request: NextRequest) {
   for (let i = 0; i < batch.length; i += PARALLEL) {
     await Promise.all(
       batch.slice(i, i + PARALLEL).map(async (m) => {
-        const r = m.channel === "sms" ? await provider.send(m).catch((e: Error) => ({ ok: false, error: e.message, ref: null })) : { ok: false, error: `channel ${m.channel} not supported`, ref: null };
+        const provider = providerFor(m.channel);
+        const r = provider ? await provider.send(m).catch((e: Error) => ({ ok: false, error: e.message, ref: null })) : { ok: false, error: `channel ${m.channel} not configured`, ref: null };
         if (r.ok) sent++;
         else failed++;
-        await admin.rpc("message_result", { p_id: m.id, p_ok: r.ok, p_provider: provider.code, p_ref: r.ref ?? null, p_error: r.ok ? null : (r.error ?? "failed") });
+        await admin.rpc("message_result", { p_id: m.id, p_ok: r.ok, p_provider: provider?.code ?? "none", p_ref: r.ref ?? null, p_error: r.ok ? null : (r.error ?? "failed") });
       }),
     );
   }
