@@ -243,7 +243,10 @@
     "mfaEnable": "Turn on 2FA",
     "panelTitle": "Every plot in Banadir, on one register.",
     "panelBody": "Registration, property tax and maps for the people of Mogadishu.",
-    "secureNote": "Protected with two-factor sign-in"
+    "secureNote": "Protected with two-factor sign-in",
+    "panelCta": "See land on public notice",
+    "panelCredit": "3D model: Overture Maps (ODbL), Meta & WRI canopy heights, OpenGeoHub terrain (CC BY 4.0) via topoexport.",
+    "panelLicence": "Licence"
   },
   "setup": {
     "title": "First-time setup",

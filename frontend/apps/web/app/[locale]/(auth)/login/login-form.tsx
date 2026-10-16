@@ -54,7 +54,7 @@ export function LoginForm({ next, initialError, googleEnabled }: { next?: string
             {t("forgotPassword")}
           </Link>
         </div>
-        <Button type="submit" className="w-full" size="lg" loading={form.formState.isSubmitting}>
+        <Button type="submit" className="h-12 w-full rounded-[10px] text-base" size="lg" loading={form.formState.isSubmitting}>
           {t("signIn")}
         </Button>
       </form>

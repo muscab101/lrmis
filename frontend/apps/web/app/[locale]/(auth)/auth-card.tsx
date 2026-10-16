@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 export function AuthCard({ title, description, children }: { title: ReactNode; description?: ReactNode; children: ReactNode }) {
   return (
     <section>
-      <div className="mb-8 space-y-2">
-        <h1 className="text-[28px] leading-tight font-semibold">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <div className="mb-10 space-y-3">
+        <h1 className="text-3xl leading-[1.05] font-medium tracking-[-0.04em] sm:text-4xl lg:text-[42px]">{title}</h1>
+        {description && <p className="text-base leading-snug text-muted-foreground sm:text-lg">{description}</p>}
       </div>
       {children}
     </section>

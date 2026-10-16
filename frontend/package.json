@@ -15,6 +15,7 @@
     "test:e2e": "pnpm --filter @dhulka/web test:e2e",
     "format": "prettier --write .",
     "create-super-admin": "tsx scripts/create-super-admin.ts",
+    "reset-admin-password": "tsx scripts/reset-admin-password.ts",
     "db:login": "supabase login",
     "db:link": "supabase link",
     "db:push": "supabase db push --include-seed",

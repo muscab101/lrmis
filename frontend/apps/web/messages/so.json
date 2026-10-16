@@ -243,7 +243,10 @@
     "mfaEnable": "Shid 2FA",
     "panelTitle": "Dhul kasta oo Banaadir ah, hal diiwaan.",
     "panelBody": "Diiwaangelinta, canshuurta hantida iyo khariidadaha dadka Muqdisho.",
-    "secureNote": "Waxaa lagu ilaaliyaa galitaan laba-tallaabo ah"
+    "secureNote": "Waxaa lagu ilaaliyaa galitaan laba-tallaabo ah",
+    "panelCta": "Eeg dhulka ku jira ogeysiiska",
+    "panelCredit": "Moodelka 3D: Overture Maps (ODbL), dhererka dhirta Meta & WRI, dhulka OpenGeoHub (CC BY 4.0) iyadoo loo marayo topoexport.",
+    "panelLicence": "Shatiga"
   },
   "setup": {
     "title": "Dejinta koowaad",
