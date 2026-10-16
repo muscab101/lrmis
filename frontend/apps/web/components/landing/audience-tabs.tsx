@@ -28,7 +28,7 @@ export function AudienceTabs({ items, label }: { items: { key: string; label: st
           </button>
         ))}
       </div>
-      <p id="aud-panel" role="tabpanel" aria-labelledby={`aud-${active}`} className="mt-8 max-w-4xl text-3xl leading-[1.18] font-medium text-balance text-[#8a93a6] sm:text-[44px]">
+      <p key={active} id="aud-panel" role="tabpanel" aria-labelledby={`aud-${active}`} className="mt-8 max-w-4xl animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none text-3xl leading-[1.18] font-medium text-balance text-[#8a93a6] sm:text-[44px]">
         {current?.text}
       </p>
     </div>

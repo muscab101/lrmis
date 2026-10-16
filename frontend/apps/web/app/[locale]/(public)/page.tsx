@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowField } from "@/components/landing/arrow-field";
 import { AudienceTabs } from "@/components/landing/audience-tabs";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { Reveal } from "@/components/landing/reveal";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -78,11 +79,11 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       <section className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden">
         <ArrowField className="absolute inset-0 -z-10 h-full w-full" />
         <div className="px-5 text-center text-white">
-          <h1 className="text-[clamp(72px,15vw,208px)] leading-[0.9] font-semibold tracking-[-0.045em] [text-shadow:0_8px_40px_rgba(11,42,143,0.35)]">
+          <h1 className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none text-[clamp(72px,15vw,208px)] leading-[0.9] font-semibold tracking-[-0.045em] [text-shadow:0_8px_40px_rgba(11,42,143,0.35)]">
             {tc("appShortName")}
           </h1>
-          <p className="mx-auto mt-6 max-w-md text-lg leading-snug font-medium text-balance sm:text-2xl">{t("heroLead")}</p>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <p className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none mx-auto mt-6 max-w-md text-lg [animation-delay:200ms] leading-snug font-medium text-balance sm:text-2xl">{t("heroLead")}</p>
+          <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none mt-10 flex flex-wrap justify-center gap-3 [animation-delay:400ms]">
             <Link href="/citizen/login" className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-[#0b2a8f] shadow-lg shadow-[#0b2a8f]/20 transition-transform hover:-translate-y-0.5">
               {t("citizenCta")}
               <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
@@ -96,32 +97,45 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
 
       {/* What Dhulka does */}
       <section className="mx-auto max-w-7xl px-5 py-24 sm:py-32">
-        <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("whatTitle")}</h2>
-        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("whatBody")}</p>
+        <Reveal>
+          <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("whatTitle")}</h2>
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("whatBody")}</p>
+        </Reveal>
         <div className="mt-16 grid gap-12 sm:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div key={f}>
-              <FeatureGlyph kind={f} />
+          {FEATURES.map((f, i) => (
+            <Reveal key={f} delay={i * 120} className="group">
+              <div className="transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-4deg]">
+                <FeatureGlyph kind={f} />
+              </div>
               <h3 className="mt-8 font-semibold">{t(`features.${f}.title`)}</h3>
               <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#4a5468]">{t(`features.${f}.body`)}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* Who it's for */}
       <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
-        <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">{t("whoTitle")}</h2>
-        <AudienceTabs label={t("whoTitle")} items={AUDIENCES.map((a) => ({ key: a, label: t(`audiences.${a}.label`), text: t(`audiences.${a}.text`) }))} />
+        <Reveal>
+          <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">{t("whoTitle")}</h2>
+          <AudienceTabs label={t("whoTitle")} items={AUDIENCES.map((a) => ({ key: a, label: t(`audiences.${a}.label`), text: t(`audiences.${a}.text`) }))} />
+        </Reveal>
       </section>
 
       {/* How registration works */}
       <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
-        <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("howTitle")}</h2>
-        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("howBody")}</p>
+        <Reveal>
+          <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("howTitle")}</h2>
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("howBody")}</p>
+        </Reveal>
         <ol className="mt-12 border-t border-black/10">
           {STEPS.map((s, i) => (
-            <li key={s.key} className="grid grid-cols-[3.5rem_1fr] items-center gap-x-6 gap-y-1 border-b border-black/10 py-5 sm:grid-cols-[7rem_1fr_auto]">
+            <Reveal
+              as="li"
+              key={s.key}
+              delay={i * 70}
+              className="grid grid-cols-[3.5rem_1fr] items-center gap-x-6 gap-y-1 border-b border-black/10 py-5 hover:bg-[#2a55d6]/[0.03] sm:grid-cols-[7rem_1fr_auto]"
+            >
               <div>
                 <div className="text-sm font-semibold tabular-nums">0{i + 1}</div>
                 <div className="text-xs text-[#6b7487]">{t(`steps.${s.key}.when`)}</div>
@@ -131,7 +145,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
                 <div className="text-sm text-[#6b7487]">{t(`steps.${s.key}.body`)}</div>
               </div>
               <span className={`col-start-2 w-fit rounded-sm px-2 py-0.5 text-xs font-medium sm:col-start-3 ${TAG_CLASS[s.tag]}`}>{t(`tags.${s.tag}`)}</span>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </section>
@@ -139,7 +153,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       {/* Band */}
       <section className="relative isolate overflow-hidden">
         <ArrowField flip className="absolute inset-0 -z-10 h-full w-full" />
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 pt-32 pb-20 text-white sm:grid-cols-[1fr_auto] sm:items-end">
+        <Reveal className="mx-auto grid max-w-7xl gap-10 px-5 pt-32 pb-20 text-white sm:grid-cols-[1fr_auto] sm:items-end">
           <div>
             <p className="text-6xl font-semibold tracking-tight tabular-nums sm:text-8xl">{noticeCount}</p>
             <p className="mt-2 max-w-md text-lg font-medium">{t("bandNotices", { count: noticeCount })}</p>
@@ -156,7 +170,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
               {t("citizenCta")}
             </Link>
           </div>
-        </div>
+        </Reveal>
         <footer className="border-t border-white/15">
           <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-5 py-6 text-xs text-white/70">
             <span>

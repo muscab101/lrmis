@@ -8,6 +8,8 @@ const LEAN_RADIUS = 170; // how far the pointer reaches
 const RIPPLE_SPEED = 0.9; // px per ms
 const RIPPLE_WIDTH = 70;
 const RIPPLE_LIFE = 1400; // ms
+const SWAY = 0.38; // radians of idle sway
+const SWAY_SPEED = 0.0011; // per ms
 
 interface Ripple {
   x: number;
@@ -17,7 +19,8 @@ interface Ripple {
 
 /**
  * Field of tiny arrows over a navy-to-white sky. Arrows lean away from the pointer
- * and a click sends a ripple through them. Static (no animation) for reduced motion.
+ * and a click sends a ripple through them. At rest a slow wave sways the field and the light
+ * drifts. Static (no animation) for reduced motion; paused while off screen.
  */
 export function ArrowField({ className, flip = false }: { className?: string; /** White at the top, navy at the bottom. */ flip?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -62,14 +65,15 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
       ctx.fillRect(0, 0, w, h);
 
       // Soft light in the middle so the headline reads.
-      const glow = ctx.createRadialGradient(w / 2, h * 0.5, 0, w / 2, h * 0.5, Math.max(w, h) * 0.45);
+      const gx0 = w / 2 + (reduced ? 0 : Math.sin(now * 0.00023) * w * 0.12);
+      const gy0 = h * 0.5 + (reduced ? 0 : Math.cos(now * 0.00017) * h * 0.06);
+      const glow = ctx.createRadialGradient(gx0, gy0, 0, gx0, gy0, Math.max(w, h) * 0.45);
       glow.addColorStop(0, "rgba(160,190,255,0.55)");
       glow.addColorStop(1, "rgba(160,190,255,0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
       ripples.splice(0, ripples.length, ...ripples.filter((r) => now - r.t0 < RIPPLE_LIFE));
-      let moving = ripples.length > 0;
       const cols = Math.ceil(w / GAP + 1);
       ctx.lineWidth = 1.25;
       ctx.lineCap = "round";
@@ -117,11 +121,11 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
           const ly = (lean[i + 1] ?? 0) + (dy - (lean[i + 1] ?? 0)) * 0.18;
           lean[i] = lx;
           lean[i + 1] = ly;
-          if (Math.abs(lx - dx) > 0.01 || Math.abs(ly - dy) > 0.01) moving = true;
 
-          // Resting arrow points up-right (↗); the lean bends it.
-          let ax = 0.7071 + lx;
-          let ay = -0.7071 + ly;
+          // Resting arrow points up-right (↗), swayed by a slow travelling wave; the lean bends it.
+          const sway = reduced ? 0 : Math.sin(now * SWAY_SPEED - x * 0.011 + y * 0.006) * SWAY;
+          let ax = Math.cos(-Math.PI / 4 + sway) + lx;
+          let ay = Math.sin(-Math.PI / 4 + sway) + ly;
           const len = Math.hypot(ax, ay) || 1;
           ax /= len;
           ay /= len;
@@ -140,12 +144,13 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
         }
         ctx.stroke();
       }
-      return moving;
     }
 
+    let visible = true;
     const loop = (now: number) => {
-      const moving = draw(now);
-      if (moving || pointer) frame = requestAnimationFrame(loop);
+      draw(now);
+      // The idle wave keeps the field alive while it is on screen.
+      if (visible && !document.hidden) frame = requestAnimationFrame(loop);
       else running = false;
     };
     const kick = () => {
@@ -172,6 +177,13 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
 
     const ro = new ResizeObserver(resize);
     ro.observe(el);
+    const io = new IntersectionObserver(([entry]) => {
+      visible = !!entry?.isIntersecting;
+      if (visible) kick();
+    });
+    io.observe(el);
+    const onVisibility = () => !document.hidden && kick();
+    document.addEventListener("visibilitychange", onVisibility);
     if (!reduced) {
       host.addEventListener("pointermove", onMove);
       host.addEventListener("pointerleave", onLeave);
@@ -180,6 +192,8 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
     return () => {
       cancelAnimationFrame(frame);
       ro.disconnect();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
       host.removeEventListener("pointerdown", onDown);
