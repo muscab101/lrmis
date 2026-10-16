@@ -259,40 +259,95 @@
     "lockedBody": "Maamule Sare ayaa hore u jiray, sidaa darteed boggan waa xiran yahay."
   },
   "landing": {
-    "headline": "Diiwaangelinta dhulka, canshuurta hantida iyo khariidadaha — hal meel.",
-    "lead": "Codso diiwaangelin, la soco codsigaaga, ku bixi canshuurta hantida lacagta mobilka oo soo deji shahaadadaada.",
-    "citizenTitle": "Milkiilayaasha",
-    "citizenBody": "Ku gal lambarka telefoonkaaga si aad u aragto hantidaada, biilashaada iyo codsiyadaada.",
+    "barOrg": "Maamulka Gobolka Banaadir",
+    "barCity": "Muqdisho",
+    "heroLead": "Dhulkaaga, khariidadda iyo diiwaanka ku jira.",
+    "trackCta": "La soco codsiga",
     "citizenCta": "Bogga muwaadinka",
-    "staffTitle": "Shaqaalaha",
-    "staffBody": "Diiwaanka, dakhliga, GIS iyo maamulka shaqaalaha Banaadir.",
-    "staffCta": "Galitaanka shaqaalaha",
-    "verifyTitle": "Hubi shahaado",
-    "verifyBody": "Sawir koodhka QR ee shahaadada lahaanshaha ama kaadhka si aad u hubiso inay ansax tahay.",
-    "eyebrow": "Maamulka Gobolka Banaadir",
-    "entriesTitle": "Xaggee ayaad u socotaa?",
-    "steps": {
-      "apply": {
-        "title": "Codso",
-        "body": "Online, xafiiska ama sarkaal goobta jooga."
-      },
-      "survey": {
-        "title": "Sahan",
-        "body": "Dhulkaaga waa la cabbirayaa oo khariidadda lagu sawirayaa."
-      },
+    "staffCta": "Gelitaanka shaqaalaha",
+    "whatTitle": "Waxa Dhulka qabto",
+    "whatBody": "Hal diiwaan dadweyne oo loogu talagalay dhul kasta oo Muqdisho ah: khariidadda lagu sahamiyay, xafiiska dhulka hubiyay, loo daabacay diidmooyin, kadibna lagu diiwaangeliyay lambar gaar ah oo lagu kalsoonaan karo.",
+    "features": {
       "register": {
-        "title": "Diiwaangeli",
-        "body": "Waa la xaqiijinayaa oo la siinayaa PUN gaar ah."
+        "title": "Diiwaangeli dhulkaaga",
+        "body": "Ka codso onlayn ama xafiiska degmada. Sahamiye ayaa sawiraya dhulkaaga, waxaadna helaysaa Lambarka Gaarka ah ee Dhulka (PUN)."
       },
       "pay": {
-        "title": "Bixi",
-        "body": "EVC Plus, Zaad, Sahal, eDahab, bangi ama kaash."
+        "title": "Bixi canshuurta hantida",
+        "body": "Eeg biilkaaga oo ku bixi EVC Plus, Zaad, Sahal, eDahab, bangi ama lacag caddaan ah, rasiidna mar kasta."
+      },
+      "verify": {
+        "title": "Hubi ka hor intaadan iibsan",
+        "body": "Dhul kasta oo diiwaangashan marka hore wuxuu maraa ogeysiis dadweyne, shahaado kastana waxay leedahay QR qof walba hubin karo."
+      }
+    },
+    "whoTitle": "Cidda loogu talagalay",
+    "audiences": {
+      "owner": {
+        "label": "Milkiilayaasha",
+        "text": "Dhulkaagu wuxuu helayaa xuduud, lambar iyo diiwaanka milkiilayaashiisa — si aan cidna si qarsoodi ah u iibin waxa adiga kuu gaar ah."
+      },
+      "buyer": {
+        "label": "Iibsadayaasha",
+        "text": "Ka hor intaadan lacag bixin, raadi dhulka, hubi cidda leh iyo in qof diiday ama muran furan yahay."
+      },
+      "bank": {
+        "label": "Bangiyada",
+        "text": "Lahaansho la hubiyay oo xuduud la yaqaan leh waa wax lagu amaahin karo. Rahaamadda iyo wareejinta isla diiwaanka ayaa lagu qoraa."
+      },
+      "staff": {
+        "label": "Shaqaalaha degmada",
+        "text": "Codsiyada, sahanka, hubinta iyo diiwaangelinta hal meel, go'aan kastana waa la diiwaangeliyaa oo qof labaad ayaa hubiya."
+      }
+    },
+    "howTitle": "Sida diiwaangelintu u shaqeyso",
+    "howBody": "Toddoba tallaabo, mid kastana waa la diiwaangeliyaa. Codsigaaga waad la socon kartaa mar kasta adoo isticmaalaya lambarkiisa.",
+    "steps": {
+      "apply": {
+        "when": "Maalinta 1",
+        "title": "Codso",
+        "body": "Milkiilayaasha, dukumentiyada iyo calaamad khariidadda — onlayn, xafiiska ama sarkaal goobta jooga."
+      },
+      "fee": {
+        "when": "Maalinta 1–3",
+        "title": "Khidmadda codsiga",
+        "body": "Lagu bixiyo lacag mobile ama khasnajiga, ama maaliyadda ayaa ka dhaafta sabab la qoray."
+      },
+      "survey": {
+        "when": "2 toddobaad gudahood",
+        "title": "Sahan",
+        "body": "Sahamiye ayaa goobta ku cabbira dhulka oo sawira xuduuddiisa; isdul-fuulka deriska halkan ayaa lagu ogaadaa."
+      },
+      "verify": {
+        "when": "Sahanka kadib",
+        "title": "Hubin",
+        "body": "Sarkaalka dhulka ayaa hubiya dukumentiyada, aqoonsiga iyo sahanka."
+      },
+      "notice": {
+        "when": "14 maalmood",
+        "title": "Ogeysiis dadweyne",
+        "body": "Dhulka waa la daabacaa si qof kasta oo sheegasho leh u diido ka hor diiwaangelinta."
+      },
+      "register": {
+        "when": "Ogeysiiska kadib",
+        "title": "Diiwaangelin",
+        "body": "Diiwaangeliyaha ayaa ansixiya, dhulkuna wuxuu helayaa PUN iyo lambar akoon."
       },
       "certificate": {
+        "when": "Diiwaangelinta kadib",
         "title": "Shahaado",
-        "body": "Lahaansho iyo kaadh leh hubinta QR."
+        "body": "Qaado shahaadada lahaanshaha iyo kaarka aqoonsiga hantida, mid kastana QR leh."
       }
-    }
+    },
+    "tags": {
+      "you": "Adiga",
+      "office": "Xafiiska dhulka",
+      "field": "Goobta",
+      "public": "Dadweynaha"
+    },
+    "bandNotices": "{count, plural, =0 {dhul ayaa hadda ku jira ogeysiis dadweyne} one {dhul ayaa hadda ku jira ogeysiis dadweyne} other {dhul ayaa hadda ku jira ogeysiis dadweyne}}",
+    "bandNoticesCta": "Eeg looxa ogeysiisyada",
+    "footerNotices": "Ogeysiisyada dadweynaha"
   },
   "portal": {
     "title": "Dhulkayga",

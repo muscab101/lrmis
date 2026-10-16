@@ -1,102 +1,179 @@
-import { BrandLockup } from "@dhulka/ui/brand";
-import { Button } from "@dhulka/ui/button";
+import { BrandMark } from "@dhulka/ui/brand";
 import { ArrowRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ParcelArt } from "@/components/brand/parcel-art";
+import { ArrowField } from "@/components/landing/arrow-field";
+import { AudienceTabs } from "@/components/landing/audience-tabs";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
-import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Link } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-const STEPS = ["apply", "survey", "register", "pay", "certificate"] as const;
+const FEATURES = ["register", "pay", "verify"] as const;
+const AUDIENCES = ["owner", "buyer", "bank", "staff"] as const;
+const STEPS = [
+  { key: "apply", tag: "you" },
+  { key: "fee", tag: "office" },
+  { key: "survey", tag: "field" },
+  { key: "verify", tag: "office" },
+  { key: "notice", tag: "public" },
+  { key: "register", tag: "office" },
+  { key: "certificate", tag: "you" },
+] as const;
+
+const TAG_CLASS: Record<string, string> = {
+  you: "bg-[#e6f04a]/60 text-[#3d4210]",
+  office: "bg-[#2a55d6]/10 text-[#1f45b8]",
+  field: "bg-emerald-600/10 text-emerald-800",
+  public: "bg-amber-500/15 text-amber-800",
+};
+
+/** Gradient glyphs for the three features (no image assets). */
+function FeatureGlyph({ kind }: { kind: (typeof FEATURES)[number] }) {
+  const id = `g-${kind}`;
+  return (
+    <svg viewBox="0 0 48 48" className="size-12" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#9db8ff" />
+          <stop offset="1" stopColor="#1f45b8" />
+        </linearGradient>
+      </defs>
+      {kind === "register" && <path d="M8 14 24 6l16 8v20l-16 8-16-8z M24 6v36 M8 14l16 8 16-8" fill="none" stroke={`url(#${id})`} strokeWidth="5" strokeLinejoin="round" />}
+      {kind === "pay" && <circle cx="24" cy="24" r="15" fill="none" stroke={`url(#${id})`} strokeWidth="7" />}
+      {kind === "verify" && <path d="M9 25l10 10 20-22" fill="none" stroke={`url(#${id})`} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
+  );
+}
 
 export default async function Landing({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("landing");
   const tc = await getTranslations("common");
-
-  const entries = [
-    { title: t("citizenTitle"), body: t("citizenBody"), href: "/citizen/login", cta: t("citizenCta") },
-    { title: t("staffTitle"), body: t("staffBody"), href: "/login", cta: t("staffCta") },
-    { title: t("verifyTitle"), body: t("verifyBody"), href: null, cta: tc("comingInPhase", { n: 8 }) },
-  ];
+  const supabase = await createClient();
+  const { data: notices } = await supabase.rpc("public_notices_active");
+  const noticeCount = (notices as unknown[] | null)?.length ?? 0;
 
   return (
-    <div className="min-h-dvh bg-background">
-      <section className="relative overflow-hidden bg-ink text-ink-foreground">
-        <div className="bg-register-grid absolute inset-0" aria-hidden />
-        <header className="relative mx-auto flex h-20 max-w-6xl items-center justify-between px-5">
-          <BrandLockup name={tc("appShortName")} sub={tc("orgName")} inverted />
-          <div className="flex items-center gap-1 [&_button]:text-ink-foreground [&_button:hover]:bg-white/10">
+    <div className="min-h-dvh bg-white text-[#0b1a3a]">
+      <LandingHeader>
+        <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 sm:gap-4 sm:px-5">
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+            <BrandMark className="size-7" />
+            <span className="hidden text-lg min-[380px]:inline">{tc("appShortName")}</span>
+          </Link>
+          <p className="hidden truncate text-center text-sm font-medium md:block">
+            {t("barOrg")} <span className="mx-2 opacity-50">|</span> {t("barCity")}
+          </p>
+          <div className="flex items-center justify-end gap-1 [&_button]:text-current [&_button:hover]:bg-black/5">
             <LocaleSwitch />
-            <ThemeToggle />
+            <Link href="/track" className="rounded-md bg-[#e6f04a] px-3 py-2 text-[13px] font-medium whitespace-nowrap text-[#1d2208] transition-colors hover:bg-[#dbe63a] sm:px-3.5 sm:text-sm">
+              {t("trackCta")}
+            </Link>
           </div>
-        </header>
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-10 pb-20 lg:grid-cols-[1.15fr_1fr] lg:pt-16 lg:pb-28">
-          <div>
-            <p className="label-caps text-flag">{t("eyebrow")}</p>
-            <h1 className="mt-4 text-4xl leading-[1.08] font-semibold text-balance sm:text-[56px]">{t("headline")}</h1>
-            <p className="mt-6 max-w-xl text-base text-ink-foreground/70 sm:text-lg">{t("lead")}</p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Button size="lg" asChild className="bg-flag text-white hover:bg-flag/90">
-                <Link href="/citizen/login">
-                  {t("citizenCta")}
-                  <ArrowRight className="rtl:rotate-180" aria-hidden />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="border-white/25 bg-transparent text-ink-foreground hover:border-white/50 hover:bg-white/5">
-                <Link href="/login">{t("staffCta")}</Link>
-              </Button>
-            </div>
+        </div>
+      </LandingHeader>
+
+      {/* Hero */}
+      <section className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden">
+        <ArrowField className="absolute inset-0 -z-10 h-full w-full" />
+        <div className="px-5 text-center text-white">
+          <h1 className="text-[clamp(72px,15vw,208px)] leading-[0.9] font-semibold tracking-[-0.045em] [text-shadow:0_8px_40px_rgba(11,42,143,0.35)]">
+            {tc("appShortName")}
+          </h1>
+          <p className="mx-auto mt-6 max-w-md text-lg leading-snug font-medium text-balance sm:text-2xl">{t("heroLead")}</p>
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
+            <Link href="/citizen/login" className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-[#0b2a8f] shadow-lg shadow-[#0b2a8f]/20 transition-transform hover:-translate-y-0.5">
+              {t("citizenCta")}
+              <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
+            </Link>
+            <Link href="/login" className="inline-flex items-center rounded-md border border-[#0b2a8f]/25 bg-white/40 px-5 py-3 text-sm font-semibold text-[#0b2a8f] backdrop-blur transition-colors hover:bg-white/60">
+              {t("staffCta")}
+            </Link>
           </div>
-          <ParcelArt pun="BN-HDN-012-000123" className="mx-auto h-auto w-full max-w-[440px] text-ink-foreground" />
         </div>
       </section>
 
-      <section className="border-b bg-card">
-        <ol className="mx-auto grid max-w-6xl sm:grid-cols-5">
-          {STEPS.map((step, i) => (
-            <li key={step} className="border-b px-5 py-7 sm:border-e sm:border-b-0 last:border-0">
-              <div className="font-mono text-xs text-flag">0{i + 1}</div>
-              <div className="mt-2 font-semibold">{t(`steps.${step}.title`)}</div>
-              <p className="mt-1 text-[13px] text-muted-foreground">{t(`steps.${step}.body`)}</p>
+      {/* What Dhulka does */}
+      <section className="mx-auto max-w-7xl px-5 py-24 sm:py-32">
+        <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("whatTitle")}</h2>
+        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("whatBody")}</p>
+        <div className="mt-16 grid gap-12 sm:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div key={f}>
+              <FeatureGlyph kind={f} />
+              <h3 className="mt-8 font-semibold">{t(`features.${f}.title`)}</h3>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#4a5468]">{t(`features.${f}.body`)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
+        <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">{t("whoTitle")}</h2>
+        <AudienceTabs label={t("whoTitle")} items={AUDIENCES.map((a) => ({ key: a, label: t(`audiences.${a}.label`), text: t(`audiences.${a}.text`) }))} />
+      </section>
+
+      {/* How registration works */}
+      <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
+        <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("howTitle")}</h2>
+        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("howBody")}</p>
+        <ol className="mt-12 border-t border-black/10">
+          {STEPS.map((s, i) => (
+            <li key={s.key} className="grid grid-cols-[3.5rem_1fr] items-center gap-x-6 gap-y-1 border-b border-black/10 py-5 sm:grid-cols-[7rem_1fr_auto]">
+              <div>
+                <div className="text-sm font-semibold tabular-nums">0{i + 1}</div>
+                <div className="text-xs text-[#6b7487]">{t(`steps.${s.key}.when`)}</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{t(`steps.${s.key}.title`)}</div>
+                <div className="text-sm text-[#6b7487]">{t(`steps.${s.key}.body`)}</div>
+              </div>
+              <span className={`col-start-2 w-fit rounded-sm px-2 py-0.5 text-xs font-medium sm:col-start-3 ${TAG_CLASS[s.tag]}`}>{t(`tags.${s.tag}`)}</span>
             </li>
           ))}
         </ol>
       </section>
 
-      <main className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="label-caps text-muted-foreground">{t("entriesTitle")}</h2>
-        <ul className="mt-4 divide-y border-y">
-          {entries.map((e) => (
-            <li key={e.title}>
-              {e.href ? (
-                <Link href={e.href} className="group grid gap-1 py-6 sm:grid-cols-[220px_1fr_auto] sm:items-center sm:gap-8">
-                  <span className="text-lg font-semibold">{e.title}</span>
-                  <span className="text-sm text-muted-foreground">{e.body}</span>
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary group-hover:underline">
-                    {e.cta}
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" aria-hidden />
-                  </span>
-                </Link>
-              ) : (
-                <div className="grid gap-1 py-6 sm:grid-cols-[220px_1fr_auto] sm:items-center sm:gap-8">
-                  <span className="text-lg font-semibold">{e.title}</span>
-                  <span className="text-sm text-muted-foreground">{e.body}</span>
-                  <span className="text-sm text-muted-foreground">{e.cta}</span>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </main>
-
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-5 py-6 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} {tc("orgName")}</span>
-          <span>Muqdisho · Mogadishu</span>
+      {/* Band */}
+      <section className="relative isolate overflow-hidden">
+        <ArrowField flip className="absolute inset-0 -z-10 h-full w-full" />
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 pt-32 pb-20 text-white sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <p className="text-6xl font-semibold tracking-tight tabular-nums sm:text-8xl">{noticeCount}</p>
+            <p className="mt-2 max-w-md text-lg font-medium">{t("bandNotices", { count: noticeCount })}</p>
+            <Link href="/notices" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-4 hover:underline">
+              {t("bandNoticesCta")}
+              <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/track" className="rounded-md bg-[#e6f04a] px-5 py-3 text-sm font-semibold text-[#1d2208] hover:bg-[#dbe63a]">
+              {t("trackCta")}
+            </Link>
+            <Link href="/citizen/login" className="rounded-md bg-white px-5 py-3 text-sm font-semibold text-[#0b2a8f] hover:bg-white/90">
+              {t("citizenCta")}
+            </Link>
+          </div>
         </div>
-      </footer>
+        <footer className="border-t border-white/15">
+          <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-2 px-5 py-6 text-xs text-white/70">
+            <span>
+              © {new Date().getFullYear()} {tc("orgName")}
+            </span>
+            <span className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link href="/notices" className="hover:text-white">
+                {t("footerNotices")}
+              </Link>
+              <Link href="/login" className="hover:text-white">
+                {t("staffCta")}
+              </Link>
+              <span>Muqdisho · Mogadishu</span>
+            </span>
+          </div>
+        </footer>
+      </section>
     </div>
   );
 }

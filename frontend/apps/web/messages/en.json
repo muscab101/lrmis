@@ -259,40 +259,95 @@
     "lockedBody": "A Super Admin already exists, so this page is locked."
   },
   "landing": {
-    "headline": "Land registration, property tax and maps — in one place.",
-    "lead": "Apply for registration, follow your request, pay your property tax by mobile money and download your certificate.",
-    "citizenTitle": "Property owners",
-    "citizenBody": "Sign in with your phone number to see your properties, bills and requests.",
+    "barOrg": "Banadir Regional Administration",
+    "barCity": "Mogadishu",
+    "heroLead": "Your land, on the map and in the register.",
+    "trackCta": "Track application",
     "citizenCta": "Citizen portal",
-    "staffTitle": "Staff",
-    "staffBody": "Registry, revenue, GIS and administration for Banadir staff.",
     "staffCta": "Staff sign in",
-    "verifyTitle": "Verify a certificate",
-    "verifyBody": "Scan the QR code on a title certificate or ID card to check it is valid.",
-    "eyebrow": "Banadir Regional Administration",
-    "entriesTitle": "Where do you want to go?",
-    "steps": {
-      "apply": {
-        "title": "Apply",
-        "body": "Online, at the office or with a field officer."
-      },
-      "survey": {
-        "title": "Survey",
-        "body": "Your plot is measured and drawn on the map."
-      },
+    "whatTitle": "What Dhulka does",
+    "whatBody": "One public register for every plot in Mogadishu: surveyed on the map, checked by the land office, published for objections, then registered with a unique number you can rely on.",
+    "features": {
       "register": {
-        "title": "Register",
-        "body": "Verified and given a unique PUN."
+        "title": "Register your land",
+        "body": "Apply online or at the district office. A surveyor draws your plot and you get a Parcel Unique Number (PUN)."
       },
       "pay": {
-        "title": "Pay",
-        "body": "EVC Plus, Zaad, Sahal, eDahab, bank or cash."
+        "title": "Pay property tax",
+        "body": "See your bill and pay by EVC Plus, Zaad, Sahal, eDahab, bank or cash, with a receipt every time."
+      },
+      "verify": {
+        "title": "Check before you buy",
+        "body": "Every registered plot is on public notice first, and every certificate carries a QR code anyone can verify."
+      }
+    },
+    "whoTitle": "Who it's for",
+    "audiences": {
+      "owner": {
+        "label": "Property owners",
+        "text": "Your plot gets a boundary, a number and a record of its owners — so nobody can quietly sell what is yours."
+      },
+      "buyer": {
+        "label": "Buyers",
+        "text": "Before you pay, look the plot up, check who owns it and whether anyone has objected or a dispute is open."
+      },
+      "bank": {
+        "label": "Banks",
+        "text": "A verified title with a known boundary is something you can lend against. Liens and transfers are recorded on the same register."
+      },
+      "staff": {
+        "label": "District staff",
+        "text": "Applications, surveys, verification and registration in one workspace, with every decision recorded and checked by a second person."
+      }
+    },
+    "howTitle": "How registration works",
+    "howBody": "Seven steps, each recorded. You can follow your application at any time with its number.",
+    "steps": {
+      "apply": {
+        "when": "Day 1",
+        "title": "Apply",
+        "body": "Owners, documents and a pin on the map — online, at the office or with a field officer."
+      },
+      "fee": {
+        "when": "Day 1–3",
+        "title": "Application fee",
+        "body": "Paid by mobile money or at the cashier, or waived by finance with a recorded reason."
+      },
+      "survey": {
+        "when": "Within 2 weeks",
+        "title": "Survey",
+        "body": "A surveyor measures the plot on site and draws its boundary; overlaps with neighbours are caught here."
+      },
+      "verify": {
+        "when": "After survey",
+        "title": "Verification",
+        "body": "A land officer checks documents, identities and the survey."
+      },
+      "notice": {
+        "when": "14 days",
+        "title": "Public notice",
+        "body": "The plot is published so anyone with a claim can object before it is registered."
+      },
+      "register": {
+        "when": "After notice",
+        "title": "Registration",
+        "body": "The registrar approves and the plot gets its PUN and account number."
       },
       "certificate": {
+        "when": "After registration",
         "title": "Certificate",
-        "body": "Title and ID card with a QR check."
+        "body": "Collect your title certificate and property ID card, each with a QR check."
       }
-    }
+    },
+    "tags": {
+      "you": "You",
+      "office": "Land office",
+      "field": "Field",
+      "public": "Public"
+    },
+    "bandNotices": "{count, plural, =0 {plots on public notice right now} one {plot on public notice right now} other {plots on public notice right now}}",
+    "bandNoticesCta": "See the notice board",
+    "footerNotices": "Public notices"
   },
   "portal": {
     "title": "My Dhulka",
