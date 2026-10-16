@@ -77,7 +77,8 @@
       "loginHistory": "Login history",
       "audit": "Audit log",
       "settings": "Settings",
-      "health": "System health"
+      "health": "System health",
+      "assistant": "AI assistant"
     }
   },
   "status": {
@@ -591,7 +592,17 @@
       "disputes": "Open disputes",
       "campaigns": "SMS campaigns to approve",
       "messages_failed": "Messages that failed"
-    }
+    },
+    "pipeline": "Applications by stage",
+    "cashFlowTitle": "Money in and out",
+    "cashFlowBody": "Last six months, from the ledger: payments received, refunds and reversals paid out, and income earned.",
+    "moneyIn": "Money in",
+    "moneyOut": "Money out",
+    "earned": "Income earned",
+    "byFeeTitle": "Revenue by type (this year)",
+    "noData": "No figures yet.",
+    "arrearsTitle": "Unpaid bills by age",
+    "byDistrictTitle": "Collected by district (this year)"
   },
   "admin": {
     "users": {
@@ -2668,14 +2679,16 @@
       "arrears": "Arrears",
       "collection": "Collection rate",
       "registrations": "Registrations",
-      "cashiers": "Cashiers"
+      "cashiers": "Cashiers",
+      "income": "Income & outgoings"
     },
     "notes": {
       "revenue": "Money received, by the month it was received, split by what it paid for. Unallocated credit is money not yet matched to a bill.",
       "arrears": "Open balances today, by how long they are past the due date. Dates don't apply.",
       "collection": "Bills issued in the period and how much of them has been paid or credited.",
       "registrations": "Applications submitted and parcels registered per month. Median days runs from submission to registration.",
-      "cashiers": "Shifts opened in the period, what each cashier took, and cash differences at close."
+      "cashiers": "Shifts opened in the period, what each cashier took, and cash differences at close.",
+      "income": "From the ledger. Income is what was billed and earned; money in is what reached cash, mobile money, card or bank; money out is refunds and reversals."
     },
     "buckets": {
       "not_due": "Not due",
@@ -2724,7 +2737,19 @@
       "failed": "The assistant couldn't answer just now.",
       "offline": "No connection. Check your network.",
       "disclaimer": "AI can make mistakes. Check important figures in the table before you use them."
-    }
+    },
+    "cashFlow": "Money in vs money out",
+    "cashIn": "Money in",
+    "cashOut": "Money out",
+    "earned": "Income vs expenses",
+    "incomeLabel": "Income",
+    "expensesLabel": "Expenses",
+    "netCash": "Net cash",
+    "byAccount": "By ledger account",
+    "account": "Account",
+    "debit": "Debit",
+    "credit": "Credit",
+    "net": "Net"
   },
   "messages": {
     "title": "Messages",
@@ -2843,5 +2868,107 @@
     "waAskApp": "Send TRACK and your application number, e.g. TRACK APP-2026-000123",
     "waAskCode": "Send VERIFY and the 12-character code from the certificate.",
     "waMenu": "LRMIS Banadir. Send:\n• BALANCE — what you owe\n• PAY — get a payment link\n• TRACK APP-… — application status\n• VERIFY code — check a certificate\nSoomaali: HARAA, BIXI, RAADI, HUBI"
+  },
+  "assistantPage": {
+    "title": "AI assistant",
+    "subtitle": "Ask about income, outgoings, collections, arrears and registrations. Answers use the same reports you can open, limited to your districts.",
+    "help": "For example, compare this month with last month, or find which district owes the most.",
+    "placeholder": "Ask a question about the figures…",
+    "ask": "Ask",
+    "thinking": "Looking at the figures…",
+    "disclaimer": "AI can make mistakes. Check important figures in Reports before you use them.",
+    "suggestions": {
+      "q1": "How much money came in and went out this month?",
+      "q2": "What is our income this year by type, compared with last year?",
+      "q3": "Which district has the most unpaid bills, and how old are they?",
+      "q4": "Summarise this year's finances in five bullet points."
+    },
+    "notConfigured": "The assistant isn't switched on yet. An administrator needs to add the AI key on the server.",
+    "limit": "You've asked a lot of questions this hour. Try again later.",
+    "failed": "The assistant couldn't answer just now.",
+    "offline": "No connection. Check your network."
+  },
+  "portalAssistant": {
+    "title": "Help assistant",
+    "subtitle": "Ask about your property, bills, documents or application. It only sees your own records.",
+    "help": "Ask in Somali or English.",
+    "placeholder": "Ask a question…",
+    "ask": "Ask",
+    "thinking": "Checking your records…",
+    "disclaimer": "AI can make mistakes. For anything official, contact your district office.",
+    "suggestions": {
+      "q1": "How much do I owe and when is it due?",
+      "q2": "Where is my application now and what happens next?",
+      "q3": "How do I get my title certificate?",
+      "q4": "What are the fees and taxes for a house?"
+    },
+    "notConfigured": "The assistant isn't available yet. Please contact your district office.",
+    "limit": "You've asked a lot of questions this hour. Try again later.",
+    "failed": "The assistant couldn't answer just now.",
+    "offline": "No connection. Check your network."
+  },
+  "portalNav": {
+    "label": "Portal",
+    "home": "Home",
+    "bills": "Bills & pay",
+    "track": "Track",
+    "assistant": "Help assistant"
+  },
+  "portalBills": {
+    "title": "Bills & pay",
+    "subtitle": "Every bill for your properties. Pay with mobile money here, or at a district cashier.",
+    "toPay": "To pay",
+    "overdue": "Overdue",
+    "paidThisYear": "Paid this year",
+    "none": "No bills",
+    "noneBody": "Bills appear here once your property is registered and assessed.",
+    "lateSince": "Overdue since {date}",
+    "dueOn": "Due {date}",
+    "paidInFull": "Paid in full",
+    "ofTotal": "of {total}",
+    "pay": "Pay",
+    "otherWays": "Other ways to pay",
+    "otherWaysBody": "Pay at any district cashier with the bill number, or dial the LRMIS USSD code and choose 2 to get a payment link by SMS."
+  },
+  "portalTrack": {
+    "title": "Track",
+    "subtitle": "Where your applications are, and the state of your houses.",
+    "myHouses": "My houses",
+    "titleIssued": "title issued",
+    "noTitleYet": "no title yet",
+    "owes": "{amount} to pay",
+    "applications": "Applications",
+    "none": "No applications",
+    "noneBody": "Start an application to register your property.",
+    "apply": "Apply for registration",
+    "returned": "Sent back to you: open the application to see what to fix.",
+    "draft": "Not submitted yet: open it and submit when ready.",
+    "progress": "Progress",
+    "history": "History ({n})",
+    "steps": {
+      "submitted": "Submitted",
+      "fee": "Fee",
+      "survey": "Survey",
+      "checks": "Checks",
+      "notice": "Public notice",
+      "registered": "Registered"
+    },
+    "events": {
+      "created": "Application started",
+      "document_added": "Document added",
+      "document_removed": "Document removed",
+      "imported": "Brought in from the old register",
+      "notice_closed": "Public notice ended",
+      "objection_filed": "Objection filed",
+      "registered": "Registered",
+      "survey_assigned": "Surveyor assigned",
+      "survey_gis_accepted": "Boundary checked",
+      "survey_overlap": "Boundary overlap being checked",
+      "survey_returned": "Survey sent back for correction",
+      "survey_submitted": "Survey done",
+      "verified": "Checks passed",
+      "fee_paid": "Fee paid",
+      "fee_waived": "Fee waived"
+    }
   }
 }

@@ -23,7 +23,7 @@ export async function dashboardKpis(): Promise<Kpis> {
   return unwrap(await supabase.rpc("dashboard_kpis"), "dashboard") as Kpis;
 }
 
-export const REPORTS = ["revenue", "arrears", "collection", "registrations", "cashiers"] as const;
+export const REPORTS = ["revenue", "income", "arrears", "collection", "registrations", "cashiers"] as const;
 export type ReportName = (typeof REPORTS)[number];
 
 export interface ReportArgs {
@@ -45,6 +45,8 @@ export async function runReport(name: ReportName, args: ReportArgs, client?: Sup
       return unwrap(await supabase.rpc("report_collection", { p_from: args.from, p_to: args.to }), "report") as CollectionRow[];
     case "registrations":
       return unwrap(await supabase.rpc("report_registrations", { p_from: args.from, p_to: args.to, p_district: d }), "report") as RegistrationRow[];
+    case "income":
+      return unwrap(await supabase.rpc("report_income_expense", { p_from: args.from, p_to: args.to, p_district: d }), "report") as IncomeRow[];
     case "cashiers":
       return unwrap(await supabase.rpc("report_cashiers", { p_from: args.from, p_to: args.to }), "report") as CashierRow[];
   }
@@ -54,6 +56,14 @@ export interface RevenueRow { month: string; fee_type: string; fee_name_so: stri
 export interface ArrearsRow { district_id: string; district_so: string; district_en: string; invoices: number; not_due: number; d1_30: number; d31_90: number; d91_180: number; d180: number; total: number }
 export interface CollectionRow { district_id: string; district_so: string; district_en: string; invoices: number; billed: number; collected: number; credited: number; outstanding: number; rate: number }
 export interface RegistrationRow { month: string; submitted: number; registered: number; rejected: number; median_days: number | null }
+export interface IncomeRow { month: string; income: number; expenses: number; cash_in: number; cash_out: number; net: number }
+export interface AccountRow { code: string; name_so: string; name_en: string; type: string; debit: number; credit: number; net: number }
+
+export async function accountTotals(from: string, to: string, client?: SupabaseClient) {
+  const supabase = client ?? (await createClient());
+  return unwrap(await supabase.rpc("report_accounts", { p_from: from, p_to: to }), "report") as AccountRow[];
+}
+
 export interface CashierRow { cashier_id: string; cashier_name: string; shifts: number; payments: number; amount: number; difference: number }
 
 /** Default range: the current year to date. Accepts ?from=&to= in ISO dates. */

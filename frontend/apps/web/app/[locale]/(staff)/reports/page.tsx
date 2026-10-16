@@ -2,17 +2,20 @@ import { Button } from "@dhulka/ui/button";
 import { Card, CardContent } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
-import { EmptyState, PageHeader } from "@dhulka/ui/misc";
+import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { BarChart3, Download } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { AssistantPanel } from "@/components/reports/assistant-panel";
 import { BarChart } from "@/components/reports/bar-chart";
+import { GroupedBars } from "@/components/reports/charts";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import {
+  accountTotals,
   REPORTS,
   reportRange,
+  type IncomeRow,
   runReport,
   type ArrearsRow,
   type CashierRow,
@@ -46,7 +49,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const name = (r: { district_so: string; district_en: string }) => (lang === "so" ? r.district_so : r.district_en);
   const qs = new URLSearchParams({ r: report, from, to, ...(district ? { district } : {}) }).toString();
   const usesRange = report !== "arrears";
-  const usesDistrict = report === "revenue" || report === "arrears" || report === "registrations";
+  const usesDistrict = report === "revenue" || report === "income" || report === "arrears" || report === "registrations";
   const monthLabel = (m: string) => format.dateTime(new Date(`${m}-01T00:00:00`), { month: "short", year: "2-digit" });
 
   let body: React.ReactNode;
@@ -85,6 +88,100 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             </TableRow>
           </TableBody>
         </Table>
+      </>
+    );
+  } else if (report === "income") {
+    const r = rows as IncomeRow[];
+    const accounts = (await accountTotals(from, to)).filter((a) => Number(a.debit) !== 0 || Number(a.credit) !== 0);
+    const sum = (k: keyof IncomeRow) => r.reduce((s2, x) => s2 + Number(x[k]), 0);
+    body = (
+      <>
+        <CardContent className="grid gap-6 pt-5 lg:grid-cols-2">
+          <div>
+            <h3 className="mb-2 text-sm font-medium">{t("cashFlow")}</h3>
+            <GroupedBars
+              label={t("cashFlow")}
+              format={usd0}
+              categories={r.map((x) => monthLabel(x.month))}
+              series={[
+                { label: t("cashIn"), values: r.map((x) => Number(x.cash_in)), color: "var(--color-status-approved)" },
+                { label: t("cashOut"), values: r.map((x) => Number(x.cash_out)), color: "var(--color-status-rejected)" },
+              ]}
+            />
+          </div>
+          <div>
+            <h3 className="mb-2 text-sm font-medium">{t("earned")}</h3>
+            <GroupedBars
+              label={t("earned")}
+              format={usd0}
+              categories={r.map((x) => monthLabel(x.month))}
+              series={[
+                { label: t("incomeLabel"), values: r.map((x) => Number(x.income)) },
+                { label: t("expensesLabel"), values: r.map((x) => Number(x.expenses)), color: "var(--color-status-pending)" },
+              ]}
+            />
+          </div>
+        </CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("month")}</TableHead>
+              <TableHead className="text-end">{t("incomeLabel")}</TableHead>
+              <TableHead className="text-end">{t("expensesLabel")}</TableHead>
+              <TableHead className="text-end">{t("cashIn")}</TableHead>
+              <TableHead className="text-end">{t("cashOut")}</TableHead>
+              <TableHead className="text-end">{t("netCash")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {r.map((x) => (
+              <TableRow key={x.month}>
+                <TableCell className="font-mono text-sm">{x.month}</TableCell>
+                <TableCell className="text-end text-sm tabular-nums">{usd(x.income)}</TableCell>
+                <TableCell className="text-end text-sm tabular-nums">{usd(x.expenses)}</TableCell>
+                <TableCell className="text-end text-sm tabular-nums">{usd(x.cash_in)}</TableCell>
+                <TableCell className="text-end text-sm tabular-nums">{usd(x.cash_out)}</TableCell>
+                <TableCell className="text-end text-sm font-medium tabular-nums">{usd(x.net)}</TableCell>
+              </TableRow>
+            ))}
+            <TableRow>
+              <TableCell className="font-medium">{t("total")}</TableCell>
+              {(["income", "expenses", "cash_in", "cash_out", "net"] as const).map((k) => (
+                <TableCell key={k} className="text-end font-medium tabular-nums">
+                  {usd(sum(k))}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableBody>
+        </Table>
+        {accounts.length > 0 && (
+          <>
+            <h3 className="border-t px-4 pt-4 text-sm font-medium">{t("byAccount")}</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("account")}</TableHead>
+                  <TableHead className="text-end">{t("debit")}</TableHead>
+                  <TableHead className="text-end">{t("credit")}</TableHead>
+                  <TableHead className="text-end">{t("net")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {accounts.map((a) => (
+                  <TableRow key={a.code}>
+                    <TableCell className="text-sm">
+                      <Mono className="me-2 text-xs">{a.code}</Mono>
+                      {lang === "so" ? a.name_so : a.name_en}
+                    </TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{usd(a.debit)}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{usd(a.credit)}</TableCell>
+                    <TableCell className="text-end text-sm font-medium tabular-nums">{usd(a.net)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
       </>
     );
   } else if (report === "arrears") {

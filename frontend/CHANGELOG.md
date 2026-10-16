@@ -107,3 +107,11 @@
 - `docs/go-live.md` (readiness checklist, data migration, pilot cut-over, rollback), `docs/runbook.md` (symptoms → actions, secret rotation, backup drills), `docs/training/` (one guide per role, with exercises).
 - Tests: 132 database tests (4 new). Verified on Supabase: health checks are correct (ledger balanced, debtors 0, 5 cron jobs running); the legacy import dry run on the sample passes.
 
+## Citizen sign-in fix, portal pages, AI assistants, dashboard charts (2026-10-16)
+
+- Citizen sign-in: Supabase phone auth was refusing every request (no SMS gateway connected). LRMIS now sends the code itself (migration 0026: hashed codes, 5-minute expiry, 3 per phone per 10 minutes, 10 per IP per hour, 5 attempts) and signs the person in with a server-side one-time token. In development the code is shown on screen. Migration 0027 stores profile phones as +E.164; the first visit links the citizen to the owner already on the register with that phone.
+- Portal: top navigation (Home, Bills & pay, Track, Help assistant); Bills & pay lists every bill with totals and pays inside the portal; Track shows each application's progress and history plus the state of each house; the help assistant answers from the person's own properties, bills, documents and applications only.
+- Staff: `/assistant` (AI assistant, `reports.view`) for income, outgoings, collections and arrears, with ledger tools; Reports has a new "Income & outgoings" tab (money in vs out, income vs expenses, totals by ledger account; migration 0028).
+- Dashboard charts for report roles: money in and out, revenue by type, unpaid bills by age, collected by district, applications by stage.
+- Tests: 137 database tests.
+

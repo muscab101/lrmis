@@ -3,9 +3,10 @@ import { Alert, KpiChip, PageHeader } from "@dhulka/ui/misc";
 import { CheckCircle2 } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { BarChart } from "@/components/reports/bar-chart";
+import { Donut, GroupedBars, HBars } from "@/components/reports/charts";
 import { Link } from "@/i18n/navigation";
 import { requireStaff } from "@/lib/server/auth";
-import { dashboardKpis } from "@/lib/server/reports";
+import { dashboardKpis, runReport, type ArrearsRow, type CollectionRow, type IncomeRow, type RevenueRow } from "@/lib/server/reports";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
@@ -43,6 +44,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const kpis = await dashboardKpis();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   const rate = kpis.finance && Number(kpis.finance.billed_year) > 0 ? Math.round((1000 * Number(kpis.finance.paid_year)) / Number(kpis.finance.billed_year)) / 10 : null;
+  const tr = await getTranslations("reports");
+  const charts = viewer.can("reports.view") ? await loadCharts(locale, (k) => tr(k)) : null;
   const tasks = (Object.keys(TASK_LINKS) as (keyof typeof TASK_LINKS)[])
     .map((k) => [k, Number(kpis.tasks[k] ?? 0), TASK_LINKS[k]] as const)
     .filter(([, n]) => n > 0);
@@ -109,19 +112,71 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                   {kpis.parcels && <KpiChip label={t("kpiDisputed")} value={kpis.parcels.disputed} tone={kpis.parcels.disputed > 0 ? "warning" : "default"} />}
                 </div>
                 {kpis.applications && Object.keys(kpis.applications.by_status).length > 0 && (
-                  <ul className="grid gap-x-8 text-sm sm:grid-cols-2">
-                    {Object.entries(kpis.applications.by_status).map(([s, n]) => (
-                      <li key={s} className="flex justify-between border-b py-2">
-                        <Link href={`/applications?status=${s}`} className="hover:text-primary">
-                          {ta.has(`status.${s}`) ? ta(`status.${s}`) : s}
-                        </Link>
-                        <span className="font-mono tabular-nums">{n}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <h3 className="mb-3 text-sm font-medium">{t("pipeline")}</h3>
+                    <HBars
+                      label={t("pipeline")}
+                      format={(n) => String(n)}
+                      data={Object.entries(kpis.applications.by_status)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([s2, n]) => ({ label: ta.has(`status.${s2}`) ? ta(`status.${s2}`) : s2, value: n, href: `/${locale}/applications?status=${s2}` }))}
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>
+          )}
+          {charts && (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("cashFlowTitle")}</CardTitle>
+                  <CardDescription>{t("cashFlowBody")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GroupedBars
+                    label={t("cashFlowTitle")}
+                    format={(n) => format.number(n, { style: "currency", currency: "USD", notation: "compact" })}
+                    categories={charts.flow.map((m) => format.dateTime(new Date(`${m.month}-01T00:00:00`), { month: "short" }))}
+                    series={[
+                      { label: t("moneyIn"), values: charts.flow.map((m) => Number(m.cash_in)), color: "var(--color-status-approved)" },
+                      { label: t("moneyOut"), values: charts.flow.map((m) => Number(m.cash_out)), color: "var(--color-status-rejected)" },
+                      { label: t("earned"), values: charts.flow.map((m) => Number(m.income)) },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t("byFeeTitle")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {charts.byFee.length ? (
+                      <Donut label={t("byFeeTitle")} format={usd} data={charts.byFee} center={usd(charts.byFee.reduce((a, b) => a + b.value, 0))} />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t("noData")}</p>
+                    )}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t("arrearsTitle")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <BarChart label={t("arrearsTitle")} format={(n) => format.number(n, { style: "currency", currency: "USD", notation: "compact" })} data={charts.arrears} height={140} />
+                  </CardContent>
+                </Card>
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{t("byDistrictTitle")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HBars label={t("byDistrictTitle")} format={usd} data={charts.byDistrict} empty={t("noData")} />
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
 
@@ -176,4 +231,35 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </div>
     </>
   );
+}
+
+/** Chart data for report roles. A failing report hides its chart instead of breaking the page. */
+async function loadCharts(locale: string, tr: (k: string) => string) {
+  const today = new Date();
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const to = iso(today);
+  const sixAgo = iso(new Date(today.getFullYear(), today.getMonth() - 5, 1));
+  const yearStart = `${to.slice(0, 4)}-01-01`;
+  const [flow, revenue, arrears, collection] = await Promise.allSettled([
+    runReport("income", { from: sixAgo, to }),
+    runReport("revenue", { from: yearStart, to }),
+    runReport("arrears", { from: to, to }),
+    runReport("collection", { from: yearStart, to }),
+  ]);
+  const ok = <T,>(r: PromiseSettledResult<unknown>) => (r.status === "fulfilled" ? (r.value as T) : ([] as unknown as T));
+  const fees = new Map<string, number>();
+  for (const r of ok<RevenueRow[]>(revenue)) {
+    const k = locale === "so" ? r.fee_name_so : r.fee_name_en;
+    fees.set(k, (fees.get(k) ?? 0) + Number(r.amount));
+  }
+  const buckets = ["not_due", "d1_30", "d31_90", "d91_180", "d180"] as const;
+  const ar = ok<ArrearsRow[]>(arrears);
+  return {
+    flow: ok<IncomeRow[]>(flow),
+    byFee: [...fees.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
+    arrears: buckets.map((b) => ({ label: tr(`buckets.${b}`), value: ar.reduce((s, x) => s + Number(x[b]), 0) })),
+    byDistrict: ok<CollectionRow[]>(collection)
+      .map((c) => ({ label: locale === "so" ? c.district_so : c.district_en, value: Number(c.collected) }))
+      .sort((a, b) => b.value - a.value),
+  };
 }

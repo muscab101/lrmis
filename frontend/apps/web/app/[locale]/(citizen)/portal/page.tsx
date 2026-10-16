@@ -5,7 +5,7 @@ import { ClipboardList, Home, Plus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { Link } from "@/i18n/navigation";
-import { queryApplications } from "@/lib/server/applications";
+import { citizenApplications } from "@/lib/server/portal-track";
 import { citizenOverview } from "@/lib/server/portal";
 
 export default async function PortalHome({ params }: { params: Promise<{ locale: string }> }) {
@@ -16,7 +16,7 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
   const ts = await getTranslations("stage");
   const format = await getFormatter();
   const lang = await getLocale();
-  const [{ rows }, me] = await Promise.all([queryApplications({ q: "", status: "any", type: "", district: "", page: 1 }, { citizenOnly: true }), citizenOverview()]);
+  const [rows, me] = await Promise.all([citizenApplications(), citizenOverview()]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const owed = me.parcels.reduce((s, p) => s + Number(p.balance), 0);
   const name = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en) : "");
@@ -106,11 +106,11 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
                       <div className="min-w-0 flex-1">
                         <Mono>{a.number}</Mono>
                         <div className="text-sm text-muted-foreground">
-                          {ta(`types.${a.type}`)} · {a.district?.name_so}
-                          {a.neighbourhood ? `, ${a.neighbourhood.name_so}` : ""}
+                          {ta(`types.${a.type}`)} · {name(a.district)}
+                          {a.pun ? ` · ${a.pun}` : ""}
                         </div>
                       </div>
-                      <ApplicationStatusBadge status={a.status} />
+                      <ApplicationStatusBadge status={a.status as "draft"} />
                       <span className="text-xs text-muted-foreground">{format.relativeTime(new Date(a.submitted_at ?? a.created_at))}</span>
                     </Link>
                   </li>

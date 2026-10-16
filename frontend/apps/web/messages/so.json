@@ -77,7 +77,8 @@
       "loginHistory": "Taariikhda galitaanka",
       "audit": "Diiwaanka hubinta",
       "settings": "Dejinta",
-      "health": "Caafimaadka nidaamka"
+      "health": "Caafimaadka nidaamka",
+      "assistant": "Kaaliyaha AI"
     }
   },
   "status": {
@@ -591,7 +592,17 @@
       "disputes": "Murannada furan",
       "campaigns": "Ololaha SMS ee la ansixinayo",
       "messages_failed": "Fariimaha fashilmay"
-    }
+    },
+    "pipeline": "Codsiyada heer kasta",
+    "cashFlowTitle": "Lacagta soo gashay iyo tan baxday",
+    "cashFlowBody": "Lixdii bilood ee la soo dhaafay, buugga xisaabta: lacagaha la helay, celinta iyo dib-u-celinta la bixiyay, iyo dakhliga la kasbaday.",
+    "moneyIn": "Lacag soo gashay",
+    "moneyOut": "Lacag baxday",
+    "earned": "Dakhli la kasbaday",
+    "byFeeTitle": "Dakhliga nooc kasta (sannadkan)",
+    "noData": "Weli tiro ma jirto.",
+    "arrearsTitle": "Biilasha aan la bixin, da'dooda",
+    "byDistrictTitle": "Inta la ururiyay degmo kasta (sannadkan)"
   },
   "admin": {
     "users": {
@@ -2668,14 +2679,16 @@
       "arrears": "Deymaha",
       "collection": "Heerka ururinta",
       "registrations": "Diiwaangelinta",
-      "cashiers": "Khasnajiyada"
+      "cashiers": "Khasnajiyada",
+      "income": "Dakhliga iyo kharashka"
     },
     "notes": {
       "revenue": "Lacagta la helay, bisha la helay, loona kala qaybiyay waxa ay bixisay. Lacagta aan la qoondeyn waa lacag aan weli biil lagu xirin.",
       "arrears": "Haraaga furan maanta, inta uu ka dambeeyay waqtiga. Taariikhuhu khuseeyn.",
       "collection": "Biilasha la soo saaray muddadan iyo inta laga bixiyay ama laga dhimay.",
       "registrations": "Codsiyada la gudbiyay iyo dhulalka la diiwaangeliyay bil kasta. Maalmaha dhexe waa gudbinta ilaa diiwaangelinta.",
-      "cashiers": "Wareegyada la furay muddadan, inta khasnaji kasta qaaday, iyo farqiga lacagta marka la xiro."
+      "cashiers": "Wareegyada la furay muddadan, inta khasnaji kasta qaaday, iyo farqiga lacagta marka la xiro.",
+      "income": "Buugga xisaabta. Dakhligu waa waxa la biilay ee la kasbaday; lacagta soo gashay waa waxa gaaray khasnadda, lacagta mobilka, kaarka ama bangiga; lacagta baxday waa celinta iyo dib-u-celinta."
     },
     "buckets": {
       "not_due": "Waqtigii ma gaarin",
@@ -2724,7 +2737,19 @@
       "failed": "Kaaliyuhu hadda ma jawaabi karo.",
       "offline": "Xiriir ma jiro. Hubi shabakaddaada.",
       "disclaimer": "AI wuu khaldami karaa. Hubi tirooyinka muhiimka ah ee shaxda ka hor intaadan isticmaalin."
-    }
+    },
+    "cashFlow": "Lacag soo gashay iyo mid baxday",
+    "cashIn": "Soo gashay",
+    "cashOut": "Baxday",
+    "earned": "Dakhli iyo kharash",
+    "incomeLabel": "Dakhli",
+    "expensesLabel": "Kharash",
+    "netCash": "Lacagta saafiga ah",
+    "byAccount": "Koontooyinka xisaabta",
+    "account": "Koonto",
+    "debit": "Deyn",
+    "credit": "Daain",
+    "net": "Saafi"
   },
   "messages": {
     "title": "Fariimaha",
@@ -2843,5 +2868,107 @@
     "waAskApp": "Dir RAADI iyo lambarka codsigaaga, tusaale RAADI APP-2026-000123",
     "waAskCode": "Dir HUBI iyo koodka 12-ka xaraf ah ee shahaadada.",
     "waMenu": "LRMIS Banaadir. Dir:\n• HARAA — inta lagugu leeyahay\n• BIXI — xiriirka lacag-bixinta\n• RAADI APP-… — xaaladda codsiga\n• HUBI kood — hubi shahaado\nEnglish: BALANCE, PAY, TRACK, VERIFY"
+  },
+  "assistantPage": {
+    "title": "Kaaliyaha AI",
+    "subtitle": "Weydii dakhliga, kharashka, ururinta, deymaha iyo diiwaangelinta. Jawaabuhu waxay isticmaalaan warbixinada aad furi karto, degmooyinkaaga oo keliya.",
+    "help": "Tusaale ahaan, isbarbardhig bishan iyo bishii hore, ama ogow degmada ugu deyn badan.",
+    "placeholder": "Weydii su'aal ku saabsan tirooyinka…",
+    "ask": "Weydii",
+    "thinking": "Tirooyinka ayaan eegayaa…",
+    "disclaimer": "AI wuu khaldami karaa. Ka hubi tirooyinka muhiimka ah Warbixinada ka hor intaadan isticmaalin.",
+    "suggestions": {
+      "q1": "Immisa lacag ayaa soo gashay oo baxday bishan?",
+      "q2": "Waa maxay dakhligeenna sannadkan nooc kasta, marka la barbardhigo sannadkii hore?",
+      "q3": "Degmadee ayaa leh biilasha ugu badan ee aan la bixin, immisa ayayse jiraan?",
+      "q4": "Ku soo koob maaliyadda sannadkan shan qodob."
+    },
+    "notConfigured": "Kaaliyaha weli lama shidin. Maamule ayaa u baahan inuu furaha AI ku daro server-ka.",
+    "limit": "Saacaddan su'aalo badan ayaad weydiisay. Mar dambe isku day.",
+    "failed": "Kaaliyuhu hadda ma jawaabi karo.",
+    "offline": "Xiriir ma jiro. Hubi shabakaddaada."
+  },
+  "portalAssistant": {
+    "title": "Kaaliyaha caawinta",
+    "subtitle": "Weydii hantidaada, biilasha, dukumentiyada ama codsigaaga. Wuxuu arkaa diiwaankaaga oo keliya.",
+    "help": "Ku weydii Soomaali ama Ingiriis.",
+    "placeholder": "Weydii su'aal…",
+    "ask": "Weydii",
+    "thinking": "Diiwaankaaga ayaan hubinayaa…",
+    "disclaimer": "AI wuu khaldami karaa. Wixii rasmi ah la xiriir xafiiska degmadaada.",
+    "suggestions": {
+      "q1": "Immisa ayaa lagu leeyahay, goormaanse la bixinayaa?",
+      "q2": "Xaggee ayuu marayaa codsigaygu, maxaase xiga?",
+      "q3": "Sideen ku helaa shahaadada lahaanshaha?",
+      "q4": "Waa maxay khidmadaha iyo canshuuraha guriga?"
+    },
+    "notConfigured": "Kaaliyuhu weli ma diyaarsana. Fadlan la xiriir xafiiska degmadaada.",
+    "limit": "Saacaddan su'aalo badan ayaad weydiisay. Mar dambe isku day.",
+    "failed": "Kaaliyuhu hadda ma jawaabi karo.",
+    "offline": "Xiriir ma jiro. Hubi shabakaddaada."
+  },
+  "portalNav": {
+    "label": "Bogga muwaadinka",
+    "home": "Hoyga",
+    "bills": "Biilasha & bixinta",
+    "track": "La soco",
+    "assistant": "Kaaliyaha caawinta"
+  },
+  "portalBills": {
+    "title": "Biilasha & bixinta",
+    "subtitle": "Biil kasta oo hantidaada ah. Halkan ku bixi lacagta mobilka, ama khasnajiga degmada.",
+    "toPay": "Bixin",
+    "overdue": "Dib u dhacay",
+    "paidThisYear": "La bixiyay sannadkan",
+    "none": "Biil ma jiro",
+    "noneBody": "Biilashu halkan ayay ka muuqdaan marka hantidaada la diiwaangeliyo oo la qiimeeyo.",
+    "lateSince": "Dib u dhacay laga bilaabo {date}",
+    "dueOn": "Waqtiga {date}",
+    "paidInFull": "Dhammaan waa la bixiyay",
+    "ofTotal": "ee {total}",
+    "pay": "Bixi",
+    "otherWays": "Habab kale oo lagu bixiyo",
+    "otherWaysBody": "Ku bixi khasnaji kasta oo degmo lambarka biilka, ama garaac koodka USSD ee LRMIS oo dooro 2 si aad SMS ugu hesho xiriirka lacag-bixinta."
+  },
+  "portalTrack": {
+    "title": "La soco",
+    "subtitle": "Halka ay marayaan codsiyadaadu, iyo xaaladda guryahaaga.",
+    "myHouses": "Guryahayga",
+    "titleIssued": "shahaado la siiyay",
+    "noTitleYet": "weli shahaado ma jirto",
+    "owes": "{amount} bixin",
+    "applications": "Codsiyada",
+    "none": "Codsi ma jiro",
+    "noneBody": "Bilow codsi si aad hantidaada u diiwaangeliso.",
+    "apply": "Codso diiwaangelin",
+    "returned": "Dib ayaa laguu soo celiyay: fur codsiga si aad u aragto waxa la saxayo.",
+    "draft": "Weli lama gudbin: fur oo gudbi marka uu diyaar yahay.",
+    "progress": "Horumarka",
+    "history": "Taariikhda ({n})",
+    "steps": {
+      "submitted": "La gudbiyay",
+      "fee": "Khidmad",
+      "survey": "Sahan",
+      "checks": "Hubin",
+      "notice": "Ogeysiis",
+      "registered": "La diiwaangeliyay"
+    },
+    "events": {
+      "created": "Codsiga waa la bilaabay",
+      "document_added": "Dukumenti ayaa lagu daray",
+      "document_removed": "Dukumenti ayaa laga saaray",
+      "imported": "Laga keenay diiwaankii hore",
+      "notice_closed": "Ogeysiiska dadweynaha waa dhammaaday",
+      "objection_filed": "Diidmo ayaa la gudbiyay",
+      "registered": "Waa la diiwaangeliyay",
+      "survey_assigned": "Sahamiye ayaa loo xilsaaray",
+      "survey_gis_accepted": "Xuduudda waa la hubiyay",
+      "survey_overlap": "Is-dul-saarka xuduudda waa la hubinayaa",
+      "survey_returned": "Sahanka dib ayaa loogu celiyay sixid",
+      "survey_submitted": "Sahanka waa la dhammeeyay",
+      "verified": "Hubinta waa la dhaafay",
+      "fee_paid": "Khidmadda waa la bixiyay",
+      "fee_waived": "Khidmadda waa laga cafiyay"
+    }
   }
 }

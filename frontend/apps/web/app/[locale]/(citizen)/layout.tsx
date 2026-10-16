@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { UserMenu } from "@/components/shell/user-menu";
+import { PortalNav } from "@/components/portal/portal-nav";
 import { Link } from "@/i18n/navigation";
 import { requireCitizen } from "@/lib/server/auth";
 
@@ -29,6 +30,7 @@ export default async function CitizenLayout({ children, params }: { children: Re
             <UserMenu name={viewer.profile.full_name || viewer.profile.phone || ""} email={viewer.profile.phone} />
           </div>
         </div>
+        <PortalNav />
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
     </div>

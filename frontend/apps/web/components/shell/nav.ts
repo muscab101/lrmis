@@ -22,6 +22,7 @@ import {
   ScrollText,
   Settings,
   ShieldCheck,
+  Sparkles,
   Users,
   Wallet,
   type LucideIcon,
@@ -83,6 +84,7 @@ export const STAFF_NAV: NavGroup[] = [
     key: "insight",
     items: [
       { key: "reports", href: "/reports", icon: BarChart3, permission: "reports.view" },
+      { key: "assistant", href: "/assistant", icon: Sparkles, permission: "reports.view" },
       { key: "messages", href: "/messages", icon: MessageSquare, permission: "messages.view" },
       { key: "locations", href: "/locations", icon: MapPinned, permission: "locations.view" },
     ],

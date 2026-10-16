@@ -157,3 +157,21 @@ describe("messages and reports (Phase 10)", () => {
     expect(tasks.tasks.messages_failed).toBe(0);
   });
 });
+
+describe("income and outgoings, citizen tracking", () => {
+  it("income vs cash per month from the ledger, for report roles only", async () => {
+    const rows = await asUser(db, exec, (tx) => tx.query<{ income: string; cash_in: string; cash_out: string }>(`select * from public.report_income_expense(current_date - 60, current_date)`));
+    // The fixture invoice has no lines, so nothing was booked to income; the payment was.
+    expect(rows.rows.reduce((s, r) => s + Number(r.cash_in), 0)).toBe(40);
+    expect(rows.rows.reduce((s, r) => s + Number(r.cash_out), 0)).toBe(0);
+    const acc = await asUser(db, exec, (tx) => tx.query<{ code: string; net: string }>(`select * from public.report_accounts(current_date - 60, current_date)`));
+    expect(Number(acc.rows.find((a) => a.code === "1100")?.net)).toBe(40);
+    expect(acc.rows[0]!.code.startsWith("4")).toBe(true);
+    await expect(asUser(db, agent, (tx) => tx.query(`select * from public.report_income_expense(current_date - 60, current_date)`))).rejects.toThrow(/^PERMISSION_DENIED/);
+  });
+
+  it("citizens see their own applications with history", async () => {
+    const apps = await asUser(db, citizen, (tx) => scalar<{ number: string; events: unknown[] }[]>(tx, `select public.citizen_applications()`), "aal1");
+    expect(apps.map((a) => a.number)).toContain("APP-2026-000001");
+  });
+});
