@@ -186,7 +186,9 @@
       "date_range": "Hubi taariikhaha: dhammaadku waa inuu ka dambeeyaa bilowga, ugu badnaan 10 sano.",
       "reports": "Ma haysatid fasax warbixinada.",
       "dashboard": "Ma haysatid fasax dashboard-ka.",
-      "health": "Ma haysatid fasax caafimaadka nidaamka."
+      "health": "Ma haysatid fasax caafimaadka nidaamka.",
+      "sms_unavailable": "Hadda SMS lama diri karo. Dhowr daqiiqo kadib isku day.",
+      "signin_unavailable": "Gelitaanku hadda ma shaqaynayo. Wax yar kadib isku day."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -289,7 +291,8 @@
     "too_many_recipients": "Dad aad u badan. Yaree.",
     "body": "Geli fariinta labada luqadoodba.",
     "body_long": "Fariintu ha ka badnaan 640 xaraf.",
-    "year": "Geli sannad sida 2026."
+    "year": "Geli sannad sida 2026.",
+    "staff_use_email": "Lambarkan wuxuu leeyahay akoon shaqaale. Ku gal iimaylkaaga."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -347,7 +350,8 @@
     "secureNote": "Waxaa lagu ilaaliyaa galitaan laba-tallaabo ah",
     "panelCta": "Eeg dhulka ku jira ogeysiiska",
     "panelCredit": "Moodelka 3D: Overture Maps (ODbL), dhererka dhirta Meta & WRI, dhulka OpenGeoHub (CC BY 4.0) iyadoo loo marayo topoexport.",
-    "panelLicence": "Shatiga"
+    "panelLicence": "Shatiga",
+    "devCode": "Habka horumarinta, SMS lama dirin. Koodkaagu:"
   },
   "setup": {
     "title": "Dejinta koowaad",

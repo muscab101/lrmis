@@ -29,5 +29,7 @@ export interface CitizenOverview {
 /** Everything linked to the signed-in citizen (owned parcels, bills with pay links, documents, receipts, SMS). */
 export async function citizenOverview(): Promise<CitizenOverview> {
   const supabase = await createClient();
+  // Links the account to the owner already on the register with the same phone (first visit).
+  await supabase.rpc("my_party");
   return unwrap(await supabase.rpc("citizen_overview"), "overview") as CitizenOverview;
 }

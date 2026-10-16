@@ -98,3 +98,34 @@ describe("citizen portal and channels (Phase 11)", () => {
     expect(await scalar<string>(db, `select channel::text from public.messages where id = $1`, [id])).toBe("whatsapp");
   });
 });
+
+describe("citizen sign-in codes", () => {
+  it("rate-limits per phone, allows 5 attempts and consumes once", async () => {
+    const store = (h: string) => asService(db, (tx) => scalar<boolean>(tx, `select public.citizen_otp_store('+252615550222', $1, '198.51.100.1')`, [h]));
+    const consume = (h: string) => asService(db, (tx) => scalar<boolean>(tx, `select public.citizen_otp_consume('+252615550222', $1)`, [h]));
+    expect(await store("h1")).toBe(true);
+    expect(await store("h2")).toBe(true);
+    expect(await consume("h1")).toBe(false); // replaced by h2
+    expect(await consume("h2")).toBe(true);
+    expect(await consume("h2")).toBe(false); // used
+    expect(await store("h3")).toBe(true);
+    expect(await store("h4")).toBe(false); // 4th in 10 minutes
+    for (let i = 0; i < 5; i++) expect(await consume("wrong")).toBe(false);
+    expect(await consume("h3")).toBe(false); // locked after 5 wrong tries
+    await expect(asUser(db, citizen, (tx) => tx.query(`select public.citizen_otp_consume('+252615550222', 'x')`), "aal1")).rejects.toThrow(/permission denied/);
+  });
+
+  it("first sign-in links the citizen to the owner already on the register", async () => {
+    await db.query(`insert into public.parties (full_name, phone) values ('Office Owner', '+252615550333')`);
+    const newcomer = await createAuthUser(db, { phone: "+252615550333", fullName: "" });
+    const linked = await asUser(db, newcomer, (tx) => scalar<string>(tx, `select public.my_party()`), "aal1");
+    expect(await scalar<string>(db, `select full_name from public.parties where id = $1`, [linked])).toBe("Office Owner");
+  });
+});
+
+describe("phone format from Supabase Auth", () => {
+  it("profiles store +E.164 even though auth stores digits only", async () => {
+    const id = await createAuthUser(db, { phone: "252615550444", fullName: "" });
+    expect(await scalar<string>(db, `select phone from public.profiles where user_id = $1`, [id])).toBe("+252615550444");
+  });
+});

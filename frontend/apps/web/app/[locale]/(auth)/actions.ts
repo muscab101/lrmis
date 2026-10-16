@@ -20,6 +20,7 @@ import { log } from "@/lib/server/log";
 import { requestContext } from "@/lib/server/request";
 import { createAdminClient, createIsolatedClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { checkCode, citizenLoginToken, issueCode } from "@/lib/server/citizen-otp";
 
 async function recordLogin(
   email: string | null,
@@ -209,14 +210,16 @@ export const mfaVerifyAction = defineAction("auth.mfa_verify", totpCodeSchema, a
 // ---------------------------------------------------------------------------
 export const otpRequestAction = defineAction(
   "auth.otp_request",
-  otpRequestSchema,
-  async (input, ctx) => {
-    const { error } = await ctx.supabase.auth.signInWithOtp({ phone: input.phone, options: { channel: "sms" } });
-    if (error) {
-      if (error.status === 429) fail("RATE_LIMITED");
-      throw new Error(`otp: ${error.code} ${error.message}`);
+  otpRequestSchema.extend({ locale: z.enum(["so", "en"]).default("so") }),
+  async (input) => {
+    const ctx = await requestContext();
+    const res = await issueCode(input.phone, ctx.ip, input.locale);
+    if (!res.ok) {
+      if (res.reason === "rate_limited") fail("RATE_LIMITED");
+      log("error", "otp.send_failed", { reason: res.reason });
+      fail("UNKNOWN", { detail: "sms_unavailable" });
     }
-    return null;
+    return { devCode: res.devCode ?? null };
   },
   { public: true },
 );
@@ -225,11 +228,23 @@ export const otpVerifyAction = defineAction(
   "auth.otp_verify",
   otpVerifySchema,
   async (input, ctx) => {
-    const { data, error } = await ctx.supabase.auth.verifyOtp({ phone: input.phone, token: input.token, type: "sms" });
-    if (error || !data.user) {
-      await recordLogin(input.phone, null, "otp", false, error?.code ?? "invalid");
+    if (!(await checkCode(input.phone, input.token))) {
+      await recordLogin(input.phone, null, "otp", false, "invalid");
       throw new AppFailure("VALIDATION", undefined, { token: ["validation.otp_wrong"] });
     }
+    const login = await citizenLoginToken(input.phone);
+    if ("error" in login) {
+      await recordLogin(input.phone, null, "otp", false, login.error);
+      if (login.error === "staff_account") throw new AppFailure("VALIDATION", undefined, { token: ["validation.staff_use_email"] });
+      fail("UNKNOWN", { detail: "signin_unavailable" });
+    }
+    const { data, error } = await ctx.supabase.auth.verifyOtp({ token_hash: login.tokenHash, type: "magiclink" });
+    if (error || !data.user) {
+      await recordLogin(input.phone, null, "otp", false, error?.code ?? "session");
+      fail("UNKNOWN", { detail: "signin_unavailable" });
+    }
+    // Link to the owner record already on the register, if there is one.
+    await ctx.supabase.rpc("my_party");
     await recordLogin(input.phone, data.user.id, "otp", true, null);
     return null;
   },

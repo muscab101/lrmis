@@ -186,7 +186,9 @@
       "date_range": "Check the dates: the end must be after the start, at most 10 years apart.",
       "reports": "You don't have access to reports.",
       "dashboard": "You don't have access to the dashboard.",
-      "health": "You don't have access to system health."
+      "health": "You don't have access to system health.",
+      "sms_unavailable": "We couldn't send the SMS right now. Try again in a few minutes.",
+      "signin_unavailable": "Sign-in isn't available right now. Try again shortly."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -289,7 +291,8 @@
     "too_many_recipients": "Too many people. Narrow it down.",
     "body": "Enter the message in both languages.",
     "body_long": "Keep the message to 640 characters.",
-    "year": "Enter a year like 2026."
+    "year": "Enter a year like 2026.",
+    "staff_use_email": "This number belongs to a staff account. Sign in with your email instead."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -347,7 +350,8 @@
     "secureNote": "Protected with two-factor sign-in",
     "panelCta": "See land on public notice",
     "panelCredit": "3D model: Overture Maps (ODbL), Meta & WRI canopy heights, OpenGeoHub terrain (CC BY 4.0) via topoexport.",
-    "panelLicence": "Licence"
+    "panelLicence": "Licence",
+    "devCode": "Development mode, no SMS sent. Your code:"
   },
   "setup": {
     "title": "First-time setup",
