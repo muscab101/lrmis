@@ -62,7 +62,7 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "revenue",
     items: [
-      { key: "valuation", href: "/valuation", icon: Scale, permission: "valuation.view", phase: 5 },
+      { key: "valuation", href: "/valuation", icon: Scale, permission: "valuation.view" },
       { key: "billing", href: "/billing/runs", icon: FileStack, permission: "billing.view", phase: 6 },
       { key: "invoices", href: "/invoices", icon: Receipt, permission: "invoices.view", phase: 6 },
       { key: "payments", href: "/payments", icon: Banknote, permission: "payments.view", phase: 7 },

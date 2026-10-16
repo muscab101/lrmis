@@ -7,6 +7,8 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getParcel } from "@/lib/server/parcels";
+import { getParcelValuation, listGrades } from "@/lib/server/valuation";
+import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ParcelPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "parcels.view");
+  const viewer = await requirePermission(locale, "parcels.view");
   const t = await getTranslations("parcels");
   const ts = await getTranslations("stage");
   const ta = await getTranslations("applications");
@@ -25,6 +27,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const lang = await getLocale();
   const p = await getParcel(id);
   if (!p) notFound();
+  const showValuation = viewer.can("valuation.view");
+  const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
   const owners = p.parcel_owners.filter((o) => !o.valid_to);
   const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
   const facts: [string, React.ReactNode][] = [
@@ -113,6 +117,17 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </ol>
           </CardContent>
         </Card>
+        {valuation && (
+          <div className="md:col-span-2">
+            <ParcelValuation
+              parcelId={p.id}
+              registered={p.status === "registered" || p.status === "disputed"}
+              data={valuation}
+              grades={grades}
+              can={{ edit: viewer.can("valuation.update"), assess: viewer.can("valuation.create") }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

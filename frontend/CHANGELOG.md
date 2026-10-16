@@ -34,3 +34,11 @@
 - Application page: progress panel for fee waiver, surveyor assignment, verification checklist, notice with objections (record, dismiss, uphold), registration with land use, and the parcel on a map.
 - `/parcels` search (PUN, account, owner) and parcel page (facts, owners, history, map). Public `/notices` board with objection filing for signed-in users.
 - Tests: 70 database tests including the full Phase 4 golden path.
+
+## Phase 5 — Valuation, rates, assessments, appeals (2026-10-16)
+
+- Migration 0017: property grades (villa, storey, brick house, cariish, baraako, jiingad, shop, warehouse) and fee types with pay intervals; neighbourhood rates per land use and developed/undeveloped with `valid_from` history (past rates are never edited); buildings on parcels; exemptions (mosque, school, hospital, government, hardship) with maker-checker approval; assessments numbered `ASM-<year>-<serial>` with a stored breakdown, one live assessment per parcel and year; appeals (owner or staff on their behalf) that block re-assessment while open and, when upheld, issue a corrected assessment.
+- Formula (§4.6): `rate[use][developed] × area + Σ(grade amount × units) − exemption % of (land + buildings) + service charge`; the rate in force on 1 January applies; with no neighbourhood rate the `valuation.default_rate_m2` setting is used.
+- `/valuation`: assessments (search, year, assess a whole neighbourhood), rates (history per neighbourhood, add rate), property grades and fee types (add/edit), exemptions and appeals queues with decisions.
+- Parcel page: valuation card with buildings, live tax calculation for a chosen year, issue assessment, assessment history, exemption request and appeal recording.
+- Tests: 78 database tests (8 new for valuation). Anonymous callers can't execute any valuation RPC.

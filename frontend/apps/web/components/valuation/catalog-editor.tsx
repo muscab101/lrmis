@@ -1,0 +1,135 @@
+"use client";
+
+import { Button } from "@dhulka/ui/button";
+import { Field } from "@dhulka/ui/field";
+import { NativeSelect, Switch } from "@dhulka/ui/form-controls";
+import { Input } from "@dhulka/ui/input";
+import { Mono } from "@dhulka/ui/misc";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
+import { Pencil, Plus } from "lucide-react";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+import { saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
+import { FormDialog } from "@/components/forms/form-dialog";
+import type { FeeType, Grade } from "@/lib/server/valuation";
+
+const INTERVALS = ["annual", "biannual", "quarterly", "monthly", "one_off"] as const;
+type Item = Grade & { interval?: FeeType["interval"] };
+
+/** Property grades or fee types: list + add/edit dialog. */
+export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees"; items: Item[]; canEdit: boolean }) {
+  const t = useTranslations("valuation");
+  const format = useFormatter();
+  const locale = useLocale();
+  const blank = { id: null as string | null, code: "", nameSo: "", nameEn: "", amount: "0", active: true, sort: "100", interval: "annual" as FeeType["interval"] };
+  const [form, setForm] = useState<typeof blank | null>(null);
+  const set = (k: keyof typeof blank, v: string | boolean) => setForm((f) => (f ? { ...f, [k]: v } : f));
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 border-b p-4">
+        <p className="text-sm text-muted-foreground">{t(kind === "grades" ? "gradesHelp" : "feesHelp")}</p>
+        {canEdit && (
+          <Button size="sm" onClick={() => setForm(blank)}>
+            <Plus aria-hidden />
+            {t(kind === "grades" ? "addGrade" : "addFee")}
+          </Button>
+        )}
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("code")}</TableHead>
+            <TableHead>{t("name")}</TableHead>
+            {kind === "fees" && <TableHead>{t("interval")}</TableHead>}
+            <TableHead className="text-end">{t(kind === "grades" ? "amountPerUnit" : "defaultAmount")}</TableHead>
+            <TableHead>{t("statusLabel")}</TableHead>
+            {canEdit && <TableHead className="w-12" />}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((i) => (
+            <TableRow key={i.id}>
+              <TableCell>
+                <Mono>{i.code}</Mono>
+              </TableCell>
+              <TableCell className="text-sm">{locale === "so" ? i.name_so : i.name_en}</TableCell>
+              {kind === "fees" && <TableCell className="text-sm">{t(`intervals.${i.interval}`)}</TableCell>}
+              <TableCell className="text-end text-sm tabular-nums">{format.number(Number(i.amount), { style: "currency", currency: "USD" })}</TableCell>
+              <TableCell className="text-sm">{i.active ? t("active") : t("inactive")}</TableCell>
+              {canEdit && (
+                <TableCell>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={t("edit")}
+                    onClick={() =>
+                      setForm({ id: i.id, code: i.code, nameSo: i.name_so, nameEn: i.name_en, amount: String(i.amount), active: i.active, sort: String(i.sort), interval: i.interval ?? "annual" })
+                    }
+                  >
+                    <Pencil aria-hidden />
+                  </Button>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <FormDialog
+        open={form !== null}
+        onOpenChange={(o) => !o && setForm(null)}
+        title={form?.id ? t("editItem") : t(kind === "grades" ? "addGrade" : "addFee")}
+        confirmLabel={t("save")}
+        successMessage={t("saved")}
+        submit={() => {
+          const f = form!;
+          const base = { id: f.id, code: f.code, nameSo: f.nameSo, nameEn: f.nameEn, amount: f.amount, active: f.active, sort: f.sort };
+          return kind === "grades" ? saveGradeAction(base) : saveFeeTypeAction({ ...base, interval: f.interval });
+        }}
+      >
+        {(fe) =>
+          form && (
+            <>
+              <Field id="code" label={t("code")} hint={t("codeHint")} error={fe("code")} required>
+                <Input value={form.code} disabled={!!form.id} onChange={(e) => set("code", e.target.value)} />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field id="nameSo" label={t("nameSo")} error={fe("nameSo")} required>
+                  <Input value={form.nameSo} onChange={(e) => set("nameSo", e.target.value)} />
+                </Field>
+                <Field id="nameEn" label={t("nameEn")} error={fe("nameEn")} required>
+                  <Input value={form.nameEn} onChange={(e) => set("nameEn", e.target.value)} />
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field id="amount" label={t(kind === "grades" ? "amountPerUnit" : "defaultAmount")} error={fe("amount")} required>
+                  <Input type="number" min={0} step="0.01" value={form.amount} onChange={(e) => set("amount", e.target.value)} />
+                </Field>
+                {kind === "fees" ? (
+                  <Field id="interval" label={t("interval")}>
+                    <NativeSelect value={form.interval} onChange={(e) => set("interval", e.target.value)}>
+                      {INTERVALS.map((iv) => (
+                        <option key={iv} value={iv}>
+                          {t(`intervals.${iv}`)}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                ) : (
+                  <Field id="sort" label={t("sort")}>
+                    <Input type="number" min={0} value={form.sort} onChange={(e) => set("sort", e.target.value)} />
+                  </Field>
+                )}
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={form.active} onCheckedChange={(v) => set("active", v)} />
+                {t("active")}
+              </label>
+            </>
+          )
+        }
+      </FormDialog>
+    </div>
+  );
+}

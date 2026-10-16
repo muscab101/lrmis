@@ -29,6 +29,10 @@ Defaults used until the administration decides. Each is easy to change.
 19. **Objections** are filed by signed-in users (citizens via phone OTP, or staff recording one received in person); anonymous objections are not accepted.
 20. **Snapping** in the survey workspace is to corners of parcels visible on screen; the server still rejects overlaps above `survey.overlap_tolerance_m2`.
 
+21. **Tax amounts** (grade amounts, default land rate 0.25 USD/m², service charges) are placeholders until the administration confirms its schedule (open question 1); all are editable on `/valuation`.
+22. **Exemptions** reduce land + building tax by the approved percentage but not the service charge.
+23. **Appeals** can only lower an assessment; an upheld appeal issues a new assessment that records the decision note.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).
