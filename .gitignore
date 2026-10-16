@@ -1,17 +1,1 @@
-node_modules
-.next
-out
-dist
-coverage
-.env
-.env.local
-.env.*.local
-*.tsbuildinfo
-next-env.d.ts
-playwright-report
-test-results
-supabase/.branches
-supabase/.temp
 .DS_Store
-supabase/backups
-.next-build
