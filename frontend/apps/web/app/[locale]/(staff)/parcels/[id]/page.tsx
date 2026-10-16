@@ -9,6 +9,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { getParcel } from "@/lib/server/parcels";
 import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
+import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -117,6 +118,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </ol>
           </CardContent>
         </Card>
+        {viewer.can("invoices.view") && (
+          <div className="md:col-span-2">
+            <ParcelInvoices parcelId={p.id} canCreate={viewer.can("invoices.create")} />
+          </div>
+        )}
         {valuation && (
           <div className="md:col-span-2">
             <ParcelValuation

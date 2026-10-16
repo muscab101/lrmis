@@ -42,3 +42,10 @@
 - `/valuation`: assessments (search, year, assess a whole neighbourhood), rates (history per neighbourhood, add rate), property grades and fee types (add/edit), exemptions and appeals queues with decisions.
 - Parcel page: valuation card with buildings, live tax calculation for a chosen year, issue assessment, assessment history, exemption request and appeal recording.
 - Tests: 78 database tests (8 new for valuation). Anonymous callers can't execute any valuation RPC.
+
+## Phase 6 — Billing runs, invoices, penalties, payment plans (2026-10-16)
+
+- Migration 0018: billing runs (`BR-<year>-<n>`: draft with preview → submitted → approved by someone else → generate → issued, or cancelled with a reason); invoices (`INV-<year>-<n>`) with lines, generated balance and status, **unique (parcel, fee type, period)** so generation is idempotent; one-off fee invoices; credit notes (`CN-`) with maker-checker approval; one-time late penalty after due date + grace (daily pg_cron job), skipped for invoices in a pending/active plan; early-payment discount window stored on each invoice for Phase 7; payment plans (`PP-`) with equal monthly instalments and approval; SMS jobs queued per invoice.
+- Each invoice has a secret 64-character pay token in a locked table; `/pay/[token]` (public) shows only number, PUN, period, amount due and how to pay. `private.invoice_apply_payment()` is the hand-off for Phase 7 payments.
+- `/billing/runs` (KPIs, new-run wizard, list), `/billing/runs/[id]` (preview with exceptions, submit / approve / generate / cancel, generated invoices), `/invoices` (open / overdue / paid / cancelled, search by number or PUN; credit-note and payment-plan queues), `/invoices/[id]` (lines, totals, discount, credit notes, plans; print, plan, credit note, cancel), printable A4 invoice with QR code, invoices card on the parcel page.
+- Tests: 88 database tests (10 new for billing).

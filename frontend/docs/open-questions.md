@@ -33,6 +33,10 @@ Defaults used until the administration decides. Each is easy to change.
 22. **Exemptions** reduce land + building tax by the approved percentage but not the service charge.
 23. **Appeals** can only lower an assessment; an upheld appeal issues a new assessment that records the decision note.
 
+24. **Penalty and discount** defaults (5 % once after 30 days' grace; 5 % for paying in full within 30 days of issue) are settings until finance confirms them.
+25. **Billing period** is the year for property tax; quarterly/monthly periods are accepted by the schema for future fee types.
+26. **Payment plans** are monthly; the last instalment absorbs rounding. Instalment tracking against payments arrives with Phase 7.
+
 ## Open questions (from the brief, defaults unchanged)
 
 1. Exact tax formula and rates per neighbourhood/use (default §4.6).
