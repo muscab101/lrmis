@@ -109,11 +109,21 @@ export const releaseLienAction = defineAction("disputes.release", z.object({ id,
 export const requestChangeAction = defineAction(
   "parcels.change",
   z.object({
-    kind: z.enum(["subdivide", "merge", "change_of_use"]),
+    kind: z.enum(["subdivide", "merge", "change_of_use", "correction"]),
     parcelIds: z.array(id).min(1),
     otherPuns: z.array(z.string().trim().max(40)).default([]),
     landUse: z.enum(["residential", "commercial", "state", "mixed", "agricultural", "other"]).nullable().default(null),
     children: z.array(z.object({ type: z.literal("Polygon"), coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))) })).default([]),
+    correction: z
+      .object({
+        plot_no: z.string().trim().max(40).optional(),
+        deed_no: z.string().trim().max(60).optional(),
+        govt_file_no: z.string().trim().max(60).optional(),
+        ownership: z.enum(["public", "private"]).optional(),
+        developed: z.boolean().optional(),
+        geom: z.object({ type: z.literal("Polygon"), coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))) }).optional(),
+      })
+      .default({}),
     reason: z.string().trim().min(5, "validation.reason").max(1000),
   }),
   async (v, ctx) => {
@@ -124,7 +134,8 @@ export const requestChangeAction = defineAction(
       if (found.length !== v.otherPuns.filter(Boolean).length) throw new AppFailure("VALIDATION", undefined, { otherPuns: ["validation.pun_not_found"] });
       ids = [...ids, ...found.map((p) => p.id)];
     }
-    const payload = v.kind === "change_of_use" ? { land_use: v.landUse } : v.kind === "subdivide" ? { children: v.children } : {};
+    const payload =
+      v.kind === "change_of_use" ? { land_use: v.landUse } : v.kind === "subdivide" ? { children: v.children } : v.kind === "correction" ? v.correction : {};
     return rpc(ctx, "parcel_change_request", { p_kind: v.kind, p_parcels: ids, p_payload: payload, p_reason: v.reason }, {
       land_use: "landUse",
       merge_owners: "otherPuns",
@@ -135,6 +146,9 @@ export const requestChangeAction = defineAction(
       child_outside: "children",
       child_invalid: "children",
       children: "children",
+      correction_empty: "correction",
+      still_overlapping: "children",
+      outside_neighbourhood: "children",
     });
   },
 );

@@ -189,7 +189,14 @@
       "dashboard": "Ma haysatid fasax dashboard-ka.",
       "health": "Ma haysatid fasax caafimaadka nidaamka.",
       "sms_unavailable": "Hadda SMS lama diri karo. Dhowr daqiiqo kadib isku day.",
-      "signin_unavailable": "Gelitaanku hadda ma shaqaynayo. Wax yar kadib isku day."
+      "signin_unavailable": "Gelitaanku hadda ma shaqaynayo. Wax yar kadib isku day.",
+      "correction_empty": "Beddel ugu yaraan hal goob.",
+      "correction_field": "Goobtaas sidan looma sixi karo.",
+      "capture_location": "Ma haysatid fasax aad goob ku dejiso ama ku beddesho.",
+      "pin_method": "Habka goobta lama yaqaan.",
+      "plot_size": "Hubi ballaca iyo dhererka.",
+      "ownership": "Dooro dowladda ama gaar.",
+      "developed": "Dooro haa ama maya."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -293,7 +300,11 @@
     "body": "Geli fariinta labada luqadoodba.",
     "body_long": "Fariintu ha ka badnaan 640 xaraf.",
     "year": "Geli sannad sida 2026.",
-    "staff_use_email": "Lambarkan wuxuu leeyahay akoon shaqaale. Ku gal iimaylkaaga."
+    "staff_use_email": "Lambarkan wuxuu leeyahay akoon shaqaale. Ku gal iimaylkaaga.",
+    "plot_size": "Geli cabbir u dhexeeya 0 iyo 5,000 m.",
+    "correction_empty": "Beddel ugu yaraan hal goob.",
+    "still_overlapping": "Xuduuddu waxay dul fuushay dhul deris ah.",
+    "outside_neighbourhood": "Xuduuddu way ka baxsan tahay xaafadda dhulka."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1291,7 +1302,18 @@
       "hint": "Guji khariidadda si aad calaamad ugu dhigto meesha hantida.",
       "useGps": "Isticmaal goobtayda",
       "gpsUnavailable": "Qalabkan GPS ma laha.",
-      "gpsDenied": "Ogolaanshaha goobta waa la diiday."
+      "gpsDenied": "Ogolaanshaha goobta waa la diiday.",
+      "gpsNeedsHttps": "Goobta waxay u baahan tahay xiriir ammaan ah (https).",
+      "gpsStop": "Jooji (±{m} m)",
+      "gpsAgain": "Mar kale qabo",
+      "methodGps": "GPS",
+      "methodManual": "Gacanta lagu dhaqaajiyay",
+      "lowAccuracy": "Saxnaanta GPS-ku waa ±{m} m (waa inay ahaataa {limit} m ama ka wanaagsan). Istaag meel bannaan oo riix Mar kale qabo, ama sug calaamad ka wanaagsan. Weli waad keydin kartaa; goobta waxaa lagu calaamadin doonaa saxnaan hoose.",
+      "noPermission": "Ma haysatid fasax aad goobta ku dejiso. Sahamiye ama sarkaal dhul ayaa ku dari kara.",
+      "capturedAt": "Goobta waxaa la qabtay {date}.",
+      "lowAccuracyFlag": "Saxnaan hoose",
+      "nearby": "Laga yaabo diiwaangelin labanlaab ah: {n, plural, one {# diiwaan} other {# diiwaan}} 10 m gudahood:",
+      "savedOffline": "Xiriir ma jiro. Diiwaankan wuxuu ku kaydsan yahay qalabkan, waxaana la diri doonaa marka xiriirku soo noqdo. Bogga ha xirin."
     },
     "types": {
       "new_registration": "Diiwaangelin cusub",
@@ -1334,7 +1356,10 @@
       "portal": "Online",
       "office": "Xafiis",
       "field": "Goob"
-    }
+    },
+    "plotWidth": "Ballac (m)",
+    "plotLength": "Dherer (m)",
+    "declaredArea": "Bedka (ballac × dherer)"
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -1625,7 +1650,9 @@
     "photoN": "Sawir {n}",
     "noGps": "GPS ma leh",
     "view": "Eeg",
-    "photoAdded": "Sawirka waa lagu daray."
+    "photoAdded": "Sawirka waa lagu daray.",
+    "declaredArea": "Cabbirka la sheegay: {area} m² (ballac × dherer).",
+    "areaGap": "Xuduudda la sawiray way ka duwan tahay {pct} %. Hubi cabbirrada."
   },
   "parcels": {
     "title": "Dhulal",
@@ -1698,7 +1725,8 @@
       "permit_approved": "Ruqsadda waa la ansixiyay",
       "permit_rejected": "Ruqsadda waa la diiday",
       "lease_created": "Kiro ayaa la sameeyay",
-      "lease_ended": "Kiradu way dhammaatay"
+      "lease_ended": "Kiradu way dhammaatay",
+      "corrected": "Diiwaanka waa la saxay"
     }
   },
   "notices": {
@@ -2501,7 +2529,8 @@
     "changeKinds": {
       "subdivide": "Kala qaybin",
       "merge": "Isku darid",
-      "change_of_use": "Beddelka isticmaalka"
+      "change_of_use": "Beddelka isticmaalka",
+      "correction": "Sixitaanka xogta"
     },
     "permitKinds": {
       "construction": "Dhisme cusub",
@@ -2671,7 +2700,34 @@
     "parentArea": "Bedka waalidka",
     "childrenArea": "Wadarta dhulalka cusub",
     "noChildren": "Weli dhul lama sawirin. Sawir ugu yaraan laba.",
-    "childN": "Dhul {n}"
+    "childN": "Dhul {n}",
+    "dataCorrection": "Sixitaanka xogta",
+    "dataCorrectionBody": "Sax khalad ku jira diiwaanka. Sarkaal kale ayaa ansixinaya ka hor intaan la beddelin.",
+    "plotNo": "Lambarka dhulka",
+    "deedNo": "Lambarka warqadda",
+    "fileNo": "Lambarka faylka dowladda",
+    "ownership": "Lahaanshaha",
+    "ownershipPrivate": "Gaar",
+    "ownershipPublic": "Dowladda",
+    "developed": "La dhisay",
+    "yes": "Haa",
+    "no": "Maya",
+    "boundaryCorrectionHint": "Xuduud ama goob khaldan?",
+    "correctBoundary": "Sax xuduudda",
+    "correctBoundaryHelp": "Sawir xuduudda saxda ah. Waa inay xaafadda ku jirtaa oo aysan dariska dul fuulin. Sarkaal labaad ayaa ansixinaya; kadibna shahaadada iyo kaararka waa la cusbooneysiinayaa.",
+    "drawBoundary": "Sawir xuduudda",
+    "blockedCorrectTitle": "Dhulkan hadda lama sixi karo",
+    "newArea": "Bedka cusub",
+    "noBoundary": "Weli waxba lama sawirin.",
+    "newBoundary": "Xuduudda la saxay",
+    "correctionBoundary": "Xuduud cusub",
+    "correctionField": {
+      "plot_no": "Lambarka dhulka",
+      "deed_no": "Lambarka warqadda",
+      "govt_file_no": "Lambarka faylka",
+      "ownership": "Lahaanshaha",
+      "developed": "La dhisay"
+    }
   },
   "reports": {
     "title": "Warbixinada",

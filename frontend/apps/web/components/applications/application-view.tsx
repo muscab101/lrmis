@@ -50,7 +50,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
     .filter(Boolean)
     .join(", ");
 
-  const pin = app.pin ? { lon: app.pin.coordinates[0], lat: app.pin.coordinates[1], accuracy: app.pin_accuracy_m } : null;
+  const pin = app.pin ? { lon: app.pin.coordinates[0], lat: app.pin.coordinates[1], accuracy: app.pin_accuracy_m, method: app.pin_method } : null;
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -128,6 +128,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
                 basePath={basePath}
                 districts={districts}
                 readOnly={!editable}
+                canCaptureLocation={mode === "citizen" || viewer.can("applications.capture_location")}
+                captured={{ at: app.pin_captured_at, lowAccuracy: app.pin_low_accuracy }}
                 initial={{
                   type: app.type,
                   channel: app.channel as "portal" | "office" | "field",
@@ -140,6 +142,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
                   plotNo: app.plot_no ?? "",
                   oldDeedNo: app.old_deed_no ?? "",
                   govtFileNo: app.govt_file_no ?? "",
+                  plotWidthM: app.plot_width_m != null ? String(app.plot_width_m) : "",
+                  plotLengthM: app.plot_length_m != null ? String(app.plot_length_m) : "",
                 }}
               />
             </CardContent>

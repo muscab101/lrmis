@@ -58,6 +58,8 @@ export interface SurveyDetail {
     status: string;
     address_note: string;
     pin: { type: "Point"; coordinates: [number, number] } | null;
+    plot_width_m: number | null;
+    plot_length_m: number | null;
     neighbourhood_id: string | null;
     neighbourhood: { code: string; name_so: string } | null;
     district: { code: string; name_so: string } | null;
@@ -73,7 +75,7 @@ export async function getSurvey(id: string) {
     .select(
       `id, application_id, status, surveyor_id, due_date, geom, area_m2, perimeter_m, accuracy_m, method, neighbours, building, notes, overlap_list,
        submitted_at, review_note, surveyor:profiles!surveys_surveyor_id_fkey(full_name),
-       application:applications!surveys_application_id_fkey(id, number, type, status, address_note, pin, neighbourhood_id, neighbourhood:neighbourhoods(code, name_so), district:districts(code, name_so)),
+       application:applications!surveys_application_id_fkey(id, number, type, status, address_note, pin, plot_width_m, plot_length_m, neighbourhood_id, neighbourhood:neighbourhoods(code, name_so), district:districts(code, name_so)),
        survey_photos(id, lon, lat, taken_at, caption, deleted_at)`,
     )
     .eq("id", id)

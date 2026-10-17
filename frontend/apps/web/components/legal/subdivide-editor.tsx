@@ -22,7 +22,19 @@ import { useValidationMessage } from "@/lib/client/errors";
 type Polygon = GeoJSON.Polygon;
 
 /** Draw two or more child polygons inside the parent; the server checks fit, overlap and area. */
-export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: string; parent: GeoJSON.Polygon | GeoJSON.MultiPolygon; blockers: string[] }) {
+export function SubdivideEditor({
+  parcelId,
+  parent,
+  blockers,
+  variant = "subdivide",
+}: {
+  parcelId: string;
+  parent: GeoJSON.Polygon | GeoJSON.MultiPolygon;
+  blockers: string[];
+  /** "correct": draw the one corrected boundary (Data Correction) instead of several new plots. */
+  variant?: "subdivide" | "correct";
+}) {
+  const correct = variant === "correct";
   const t = useTranslations("legal");
   const format = useFormatter();
   const vm = useValidationMessage();
@@ -96,6 +108,11 @@ export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: stri
           );
         });
         d.on("finish", () => {
+          // A correction has one boundary: a new drawing replaces the previous one.
+          if (correct) {
+            const feats = d.getSnapshot().filter((f) => f.geometry.type === "Polygon");
+            if (feats.length > 1) d.removeFeatures(feats.slice(0, -1).map((f) => f.id!));
+          }
           setMode("select");
           d.setMode("select");
         });
@@ -125,7 +142,9 @@ export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: stri
   async function submit() {
     setBusy(true);
     setError(null);
-    const r = await requestChangeAction({ kind: "subdivide", parcelIds: [parcelId], children: children.map((c) => c.geom as { type: "Polygon"; coordinates: [number, number][][] }), reason });
+    const r = correct
+      ? await requestChangeAction({ kind: "correction", parcelIds: [parcelId], correction: { geom: children[0]!.geom as { type: "Polygon"; coordinates: [number, number][][] } }, reason })
+      : await requestChangeAction({ kind: "subdivide", parcelIds: [parcelId], children: children.map((c) => c.geom as { type: "Polygon"; coordinates: [number, number][][] }), reason });
     setBusy(false);
     if (r.ok) {
       toast.success(t("requested"));
@@ -140,7 +159,7 @@ export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: stri
         <div className="absolute start-3 top-3 flex gap-1.5">
           <Button size="sm" variant={mode === "polygon" ? "default" : "outline"} className="bg-card" onClick={() => setDrawMode("polygon")}>
             <PenLine aria-hidden />
-            {t("drawChild")}
+            {correct ? t("drawBoundary") : t("drawChild")}
           </Button>
           <Button size="sm" variant={mode === "select" ? "default" : "outline"} className="bg-card" onClick={() => setDrawMode("select")}>
             <MousePointer2 aria-hidden />
@@ -150,28 +169,28 @@ export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: stri
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("subdivideTitle")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("subdivideHelp")}</p>
+          <CardTitle className="text-base">{correct ? t("correctBoundary") : t("subdivideTitle")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{correct ? t("correctBoundaryHelp") : t("subdivideHelp")}</p>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
-          {blockers.length > 0 && <Alert tone="danger" title={t("blockedTitle")}>{blockers.map((b) => t(`blockers.${b}`)).join(" · ")}</Alert>}
+          {blockers.length > 0 && <Alert tone="danger" title={correct ? t("blockedCorrectTitle") : t("blockedTitle")}>{blockers.map((b) => t(`blockers.${b}`)).join(" · ")}</Alert>}
           <dl className="grid grid-cols-[1fr_auto] gap-y-1">
             <dt className="text-muted-foreground">{t("parentArea")}</dt>
             <dd className="tabular-nums">{m2(parentArea)}</dd>
-            <dt className="text-muted-foreground">{t("childrenArea")}</dt>
-            <dd className={`tabular-nums ${children.length >= 2 && Math.abs(diffPct) > 1 ? "text-status-rejected" : ""}`}>
+            <dt className="text-muted-foreground">{correct ? t("newArea") : t("childrenArea")}</dt>
+            <dd className={`tabular-nums ${!correct && children.length >= 2 && Math.abs(diffPct) > 1 ? "text-status-rejected" : ""}`}>
               {m2(sum)} {children.length > 0 && <span className="text-xs">({diffPct >= 0 ? "+" : ""}{format.number(diffPct, { maximumFractionDigits: 1 })}%)</span>}
             </dd>
           </dl>
           {children.length === 0 ? (
-            <p className="text-muted-foreground">{t("noChildren")}</p>
+            <p className="text-muted-foreground">{correct ? t("noBoundary") : t("noChildren")}</p>
           ) : (
             <ol className="divide-y">
               {children.map((c, i) => (
                 <li key={String(c.id)} className="flex items-center justify-between py-1.5">
                   <span className="flex items-center gap-2">
                     <span className="size-3 rounded-sm border border-[#c2410c] bg-[#c2410c]/25" />
-                    {t("childN", { n: i + 1 })}
+                    {correct ? t("newBoundary") : t("childN", { n: i + 1 })}
                   </span>
                   <span className="flex items-center gap-2 tabular-nums">
                     {m2(turfArea({ type: "Feature", geometry: c.geom, properties: {} }))}
@@ -187,7 +206,7 @@ export function SubdivideEditor({ parcelId, parent, blockers }: { parcelId: stri
             <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>
           {error && <FormError error={error} />}
-          <Button className="w-full" disabled={busy || children.length < 2 || blockers.length > 0} onClick={submit}>
+          <Button className="w-full" disabled={busy || children.length < (correct ? 1 : 2) || blockers.length > 0} onClick={submit}>
             {busy && <Loader2 className="animate-spin" aria-hidden />}
             {t("submitRequest")}
           </Button>

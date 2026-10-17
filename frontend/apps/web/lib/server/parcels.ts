@@ -22,6 +22,7 @@ export async function searchParcels(q: string) {
 }
 
 export interface ParcelDetail {
+  developed: boolean;
   id: string;
   pun: string | null;
   account_no: string | null;
@@ -49,7 +50,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, registered_at, geom, application_id,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),

@@ -14,7 +14,7 @@ export async function generateMetadata() {
 export default async function NewApplicationPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "applications.create");
+  const viewer = await requirePermission(locale, "applications.create");
   const t = await getTranslations("applications");
   const supabase = await createClient();
   const [all, { data: mine }] = await Promise.all([listDistricts(), supabase.rpc("user_district_ids")]);
@@ -28,6 +28,7 @@ export default async function NewApplicationPage({ params }: { params: Promise<{
         <CardContent className="pt-5">
           <LocationForm
             mode="create"
+            canCaptureLocation={viewer.can("applications.capture_location")}
             isStaff
             basePath="/applications"
             districts={districts}
@@ -40,7 +41,7 @@ export default async function NewApplicationPage({ params }: { params: Promise<{
               addressNote: "",
               plotNo: "",
               oldDeedNo: "",
-              govtFileNo: "",
+              govtFileNo: "", plotWidthM: "", plotLengthM: "",
             }}
           />
         </CardContent>

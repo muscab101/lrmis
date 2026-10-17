@@ -37,8 +37,8 @@ beforeAll(async () => {
 });
 
 describe("catalog", () => {
-  it("seeds 25 modules × 8 actions + 8 special permissions", async () => {
-    expect(await scalar<number>(db, `select count(*)::int from public.permissions`)).toBe(208);
+  it("seeds 25 modules × 8 actions + 9 special permissions", async () => {
+    expect(await scalar<number>(db, `select count(*)::int from public.permissions`)).toBe(209);
   });
 
   it("seeds the 23 default roles with a protected Super Admin", async () => {

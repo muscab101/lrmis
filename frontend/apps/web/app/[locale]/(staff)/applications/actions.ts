@@ -34,6 +34,26 @@ function locationPayload(v: LocationOut) {
   };
 }
 
+/** How the pin was captured (GPS or moved by hand) and the declared plot size. */
+async function saveLocationMeta(ctx: { supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>> }, id: string, v: LocationOut) {
+  unwrap(
+    await ctx.supabase.rpc("application_location_meta", { p_id: id, p_method: v.pinLon == null ? null : v.pinMethod, p_width: v.plotWidthM, p_length: v.plotLengthM }),
+    "location meta",
+  );
+}
+
+/** Parcels or open applications within a few metres of a point (possible double registration). */
+export const nearbyPinsAction = defineAction(
+  "applications.nearby",
+  z.object({ lon: z.number().min(40).max(52), lat: z.number().min(-2).max(12.5), excludeId: z.uuid().nullable().default(null) }),
+  async (v, ctx) =>
+    unwrap(await ctx.supabase.rpc("pin_nearby", { p_lon: v.lon, p_lat: v.lat, p_exclude: v.excludeId }), "nearby") as {
+      count: number;
+      parcels?: { pun: string; metres: number }[];
+      applications?: { number: string; metres: number }[];
+    },
+);
+
 /** Map location RPC errors (e.g. "VALIDATION: pin_outside_neighbourhood") onto form fields. */
 function locationFieldError(err: unknown): never {
   if (err instanceof AppFailure && err.code === "VALIDATION") {
@@ -54,6 +74,7 @@ export const createApplicationAction = defineAction(
           id: string;
           number: string;
         };
+        await saveLocationMeta(ctx, out.id, input);
         return out;
       } catch (err) {
         locationFieldError(err);
@@ -67,6 +88,7 @@ export const updateApplicationAction = defineAction(
   async ({ applicationId, ...input }, ctx) => {
     try {
       unwrap(await ctx.supabase.rpc("application_update", { p_id: applicationId, p: locationPayload(input) }), "update application");
+      await saveLocationMeta(ctx, applicationId, input);
     } catch (err) {
       locationFieldError(err);
     }

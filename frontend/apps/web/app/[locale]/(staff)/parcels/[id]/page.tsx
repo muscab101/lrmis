@@ -131,7 +131,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
         {legal && (
           <div className="md:col-span-2">
             <ParcelLegalCard
-              parcel={{ id: p.id, pun: p.pun!, ownership: p.ownership, land_use: p.land_use, status: p.status }}
+              parcel={{ id: p.id, pun: p.pun!, ownership: p.ownership, land_use: p.land_use, status: p.status, plot_no: p.plot_no, deed_no: p.deed_no, govt_file_no: p.govt_file_no, developed: p.developed }}
               data={legal}
               me={viewer.user.id}
               can={{

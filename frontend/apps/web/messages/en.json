@@ -189,7 +189,14 @@
       "dashboard": "You don't have access to the dashboard.",
       "health": "You don't have access to system health.",
       "sms_unavailable": "We couldn't send the SMS right now. Try again in a few minutes.",
-      "signin_unavailable": "Sign-in isn't available right now. Try again shortly."
+      "signin_unavailable": "Sign-in isn't available right now. Try again shortly.",
+      "correction_empty": "Change at least one field.",
+      "correction_field": "That field can't be corrected this way.",
+      "capture_location": "You don't have permission to set or move a location.",
+      "pin_method": "Unknown location method.",
+      "plot_size": "Check the width and length.",
+      "ownership": "Pick public or private.",
+      "developed": "Pick yes or no."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -293,7 +300,11 @@
     "body": "Enter the message in both languages.",
     "body_long": "Keep the message to 640 characters.",
     "year": "Enter a year like 2026.",
-    "staff_use_email": "This number belongs to a staff account. Sign in with your email instead."
+    "staff_use_email": "This number belongs to a staff account. Sign in with your email instead.",
+    "plot_size": "Enter a size between 0 and 5,000 m.",
+    "correction_empty": "Change at least one field.",
+    "still_overlapping": "The boundary overlaps a neighbouring parcel.",
+    "outside_neighbourhood": "The boundary is outside the parcel's neighbourhood."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1291,7 +1302,18 @@
       "hint": "Click the map to drop a pin at the property.",
       "useGps": "Use my location",
       "gpsUnavailable": "This device has no GPS.",
-      "gpsDenied": "Location permission was denied."
+      "gpsDenied": "Location permission was denied.",
+      "gpsNeedsHttps": "Location needs a secure (https) connection.",
+      "gpsStop": "Stop (±{m} m)",
+      "gpsAgain": "Capture again",
+      "methodGps": "GPS",
+      "methodManual": "Moved by hand",
+      "lowAccuracy": "GPS accuracy is ±{m} m (should be {limit} m or better). Stand in the open and press Capture again, or wait for a better signal. You can still save; the location will be flagged as low accuracy.",
+      "noPermission": "You don't have permission to set the location. A surveyor or land officer can add it.",
+      "capturedAt": "Location captured {date}.",
+      "lowAccuracyFlag": "Low accuracy",
+      "nearby": "Possible double registration: {n, plural, one {# record} other {# records}} within 10 m:",
+      "savedOffline": "No connection. This entry is kept on this device and will be sent when the connection is back. Keep this page open."
     },
     "types": {
       "new_registration": "New registration",
@@ -1334,7 +1356,10 @@
       "portal": "Online",
       "office": "Office",
       "field": "Field"
-    }
+    },
+    "plotWidth": "Width (m)",
+    "plotLength": "Length (m)",
+    "declaredArea": "Area (width × length)"
   },
   "owners": {
     "title": "Owners",
@@ -1625,7 +1650,9 @@
     "photoN": "Photo {n}",
     "noGps": "no GPS",
     "view": "View",
-    "photoAdded": "Photo added."
+    "photoAdded": "Photo added.",
+    "declaredArea": "Declared size: {area} m² (width × length).",
+    "areaGap": "The drawn boundary differs by {pct} %. Check the measurements."
   },
   "parcels": {
     "title": "Parcels",
@@ -1698,7 +1725,8 @@
       "permit_approved": "Permit approved",
       "permit_rejected": "Permit rejected",
       "lease_created": "Lease created",
-      "lease_ended": "Lease ended"
+      "lease_ended": "Lease ended",
+      "corrected": "Record corrected"
     }
   },
   "notices": {
@@ -2501,7 +2529,8 @@
     "changeKinds": {
       "subdivide": "Subdivision",
       "merge": "Merge",
-      "change_of_use": "Change of use"
+      "change_of_use": "Change of use",
+      "correction": "Data correction"
     },
     "permitKinds": {
       "construction": "New construction",
@@ -2671,7 +2700,34 @@
     "parentArea": "Parent area",
     "childrenArea": "New parcels total",
     "noChildren": "No parcels drawn yet. Draw at least two.",
-    "childN": "Parcel {n}"
+    "childN": "Parcel {n}",
+    "dataCorrection": "Data correction",
+    "dataCorrectionBody": "Fix a mistake in the registered record. Another officer approves it before it changes.",
+    "plotNo": "Plot no.",
+    "deedNo": "Deed no.",
+    "fileNo": "Government file no.",
+    "ownership": "Ownership",
+    "ownershipPrivate": "Private",
+    "ownershipPublic": "Public",
+    "developed": "Developed",
+    "yes": "Yes",
+    "no": "No",
+    "boundaryCorrectionHint": "Wrong boundary or location?",
+    "correctBoundary": "Correct the boundary",
+    "correctBoundaryHelp": "Draw the correct boundary. It must stay in the neighbourhood and not overlap the neighbours. A second officer approves it; the certificate and ID cards are then reissued.",
+    "drawBoundary": "Draw boundary",
+    "blockedCorrectTitle": "This parcel can't be corrected right now",
+    "newArea": "New area",
+    "noBoundary": "Nothing drawn yet.",
+    "newBoundary": "Corrected boundary",
+    "correctionBoundary": "New boundary",
+    "correctionField": {
+      "plot_no": "Plot no.",
+      "deed_no": "Deed no.",
+      "govt_file_no": "File no.",
+      "ownership": "Ownership",
+      "developed": "Developed"
+    }
   },
   "reports": {
     "title": "Reports",

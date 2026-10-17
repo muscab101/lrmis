@@ -115,3 +115,10 @@
 - Dashboard charts for report roles: money in and out, revenue by type, unpaid bills by age, collected by district, applications by stage.
 - Tests: 137 database tests.
 
+## Location capture and data correction (2026-10-17)
+
+- Registration location (migrations 0031–0032): GPS keeps reading until ±15 m or better (`location.max_accuracy_m`), a clicked or dragged pin is saved as "moved by hand", low accuracy is warned and flagged, who and when are recorded, and staff need the new **Capture location** permission (front desk, data entry, surveyor, GIS, land officer, registrar). Width × length with the declared area, compared with the surveyed boundary (warns above 20 %). Parcels or open applications within 10 m are warned about while the pin is placed. With no connection the entry is kept on the device and sent when the connection returns.
+- **Data correction** after registration: plot, deed and file numbers, ownership, developed, and the boundary (`/parcels/[id]/correct`) change only through a request that a second officer approves. A new boundary must stay in the neighbourhood and not overlap neighbours, recomputes the area and cancels the documents for reissue. The old values are kept in the parcel history.
+- `docs/old-system-mapping.md`: how each step of the old system is done in the new one.
+- Tests: 142 database tests.
+

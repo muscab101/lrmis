@@ -11,7 +11,13 @@ export interface Pin {
   lon: number;
   lat: number;
   accuracy?: number | null;
+  /** "gps" from the device, "manual" when clicked or dragged on the map. */
+  method?: "gps" | "manual" | null;
 }
+
+/** GPS readings worse than this are flagged (matches the location.max_accuracy_m setting). */
+export const GOOD_ACCURACY_M = 15;
+const GPS_WAIT_MS = 25_000;
 
 interface Props {
   value: Pin | null;
@@ -45,7 +51,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
         .addTo(map);
       marker.current.on("dragend", () => {
         const p = marker.current!.getLngLat();
-        onChange({ lon: p.lng, lat: p.lat, accuracy: null });
+        onChange({ lon: p.lng, lat: p.lat, accuracy: null, method: "manual" });
       });
     } else {
       marker.current.setLngLat([value.lon, value.lat]);
@@ -63,23 +69,44 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, outlineBbox]);
 
+  // Keep reading the GPS until it is accurate enough (or the wait runs out), keeping the best fix.
+  const watch = useRef<number | null>(null);
+  const [live, setLive] = useState<number | null>(null);
+  const stopGps = () => {
+    if (watch.current !== null) navigator.geolocation.clearWatch(watch.current);
+    watch.current = null;
+    setLocating(false);
+  };
+  useEffect(() => () => stopGps(), []);
+
   function useGps() {
     if (!navigator.geolocation) return setGpsError(t("gpsUnavailable"));
+    if (!window.isSecureContext) return setGpsError(t("gpsNeedsHttps"));
     setLocating(true);
     setGpsError(null);
-    navigator.geolocation.getCurrentPosition(
+    let best: GeolocationPosition | null = null;
+    const started = Date.now();
+    const accept = (pos: GeolocationPosition) => {
+      const pin = { lon: pos.coords.longitude, lat: pos.coords.latitude, accuracy: Math.round(pos.coords.accuracy), method: "gps" as const };
+      onChange(pin);
+      mapRef.current?.flyTo([pin.lon, pin.lat], 18);
+    };
+    watch.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setLocating(false);
-        const pin = { lon: pos.coords.longitude, lat: pos.coords.latitude, accuracy: Math.round(pos.coords.accuracy) };
-        onChange(pin);
-        mapRef.current?.flyTo([pin.lon, pin.lat], 18);
+        setLive(Math.round(pos.coords.accuracy));
+        if (!best || pos.coords.accuracy < best.coords.accuracy) {
+          best = pos;
+          accept(pos);
+        }
+        if (pos.coords.accuracy <= GOOD_ACCURACY_M || Date.now() - started > GPS_WAIT_MS) stopGps();
       },
       () => {
-        setLocating(false);
-        setGpsError(t("gpsDenied"));
+        stopGps();
+        setGpsError(best ? null : t("gpsDenied"));
       },
-      { enableHighAccuracy: true, timeout: 15_000 },
+      { enableHighAccuracy: true, timeout: GPS_WAIT_MS, maximumAge: 0 },
     );
+    window.setTimeout(() => watch.current !== null && stopGps(), GPS_WAIT_MS + 1000);
   }
 
   return (
@@ -90,7 +117,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           className="absolute inset-0"
           initialView={value ? { center: [value.lon, value.lat], zoom: 17 } : undefined}
           visible={{ facilities: false, streets: false }}
-          onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null })}
+          onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
         />
         {!value && !disabled && (
           <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
@@ -98,9 +125,9 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         {!disabled && (
-          <Button type="button" variant="outline" size="sm" onClick={useGps} disabled={locating}>
+          <Button type="button" variant="outline" size="sm" onClick={locating ? stopGps : useGps}>
             {locating ? <Loader2 className="animate-spin" aria-hidden /> : <Crosshair aria-hidden />}
-            {t("useGps")}
+            {locating ? t("gpsStop", { m: live ?? "…" }) : value?.method === "gps" ? t("gpsAgain") : t("useGps")}
           </Button>
         )}
         {value && (
@@ -109,8 +136,14 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
             {value.accuracy ? ` · ±${value.accuracy} m` : ""}
           </span>
         )}
+        {value?.method && <span className="rounded-sm bg-muted px-1.5 py-0.5">{value.method === "gps" ? t("methodGps") : t("methodManual")}</span>}
         {gpsError && <span className="text-danger">{gpsError}</span>}
       </div>
+      {value?.method === "gps" && !locating && (value.accuracy ?? 0) > GOOD_ACCURACY_M && (
+        <p role="alert" className="rounded-md border border-status-pending/40 bg-status-pending/10 px-3 py-2 text-xs">
+          {t("lowAccuracy", { m: value.accuracy ?? 0, limit: GOOD_ACCURACY_M })}
+        </p>
+      )}
     </div>
   );
 }

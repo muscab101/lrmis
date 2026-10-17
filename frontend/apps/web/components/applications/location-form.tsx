@@ -10,7 +10,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { createApplicationAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
+import { createApplicationAction, nearbyPinsAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
 import { getGeometryAction, locatePointAction, searchNeighbourhoodsAction } from "@/app/[locale]/(staff)/locations/actions";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
@@ -27,6 +27,8 @@ export interface LocationValues {
   plotNo: string;
   oldDeedNo: string;
   govtFileNo: string;
+  plotWidthM: string;
+  plotLengthM: string;
 }
 
 interface Props {
@@ -38,10 +40,16 @@ interface Props {
   basePath: string;
   readOnly?: boolean;
   onSaved?: () => void;
+  /** Staff need the capture-location permission to set or move the pin. */
+  canCaptureLocation?: boolean;
+  /** Shown under the map for a saved pin: when and how it was captured. */
+  captured?: { at: string | null; lowAccuracy: boolean } | null;
 }
 
+const OFFLINE_KEY = "lrmis.offline-location";
+
 /** Step 1 — what and where: type, district, neighbourhood, map pin, plot / deed numbers. */
-export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved }: Props) {
+export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null }: Props) {
   const t = useTranslations("applications");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -52,6 +60,8 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
   const [saving, setSaving] = useState(false);
   const [outline, setOutline] = useState<{ geometry: GeoJSON.Geometry; bbox: [number, number, number, number] } | null>(null);
   const [pinPlace, setPinPlace] = useState<string | null>(null);
+  const [nearby, setNearby] = useState<{ count: number; parcels?: { pun: string; metres: number }[]; applications?: { number: string; metres: number }[] } | null>(null);
+  const [offline, setOffline] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const set = <K extends keyof LocationValues>(k: K, val: LocationValues[K]) => setV((prev) => ({ ...prev, [k]: val }));
 
@@ -74,6 +84,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
   const onPin = useCallback(
     async (pin: Pin) => {
       setV((prev) => ({ ...prev, pin }));
+      void nearbyPinsAction({ lon: pin.lon, lat: pin.lat, excludeId: applicationId ?? null }).then((r) => setNearby(r.ok && r.data.count > 0 ? r.data : null));
       const res = await locatePointAction({ lon: pin.lon, lat: pin.lat });
       if (!res.ok) return;
       if (!res.data) return setPinPlace(t("pinNoNeighbourhood"));
@@ -85,12 +96,15 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
         neighbourhood: { value: n.neighbourhood_id, label: locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en, hint: `${n.district_code}-${n.neighbourhood_code}` },
       }));
     },
-    [locale, t],
+    [locale, t, applicationId],
   );
 
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
 
-  async function save() {
+  const num = (x: string) => (x.trim() === "" ? null : Number(x));
+  const declaredArea = num(v.plotWidthM) && num(v.plotLengthM) ? Math.round(num(v.plotWidthM)! * num(v.plotLengthM)! * 100) / 100 : null;
+
+  async function save(fromQueue = false) {
     setSaving(true);
     setError(null);
     const payload = {
@@ -101,30 +115,83 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       pinLon: v.pin?.lon ?? null,
       pinLat: v.pin?.lat ?? null,
       pinAccuracyM: v.pin?.accuracy ?? null,
+      pinMethod: v.pin ? (v.pin.method ?? (v.pin.accuracy ? "gps" : "manual")) : null,
+      plotWidthM: num(v.plotWidthM),
+      plotLengthM: num(v.plotLengthM),
       addressNote: v.addressNote,
       plotNo: v.plotNo,
       oldDeedNo: v.oldDeedNo,
       govtFileNo: v.govtFileNo,
     };
-    if (mode === "create") {
-      const res = await createApplicationAction({ ...payload, idempotencyKey });
+    try {
+      if (mode === "create") {
+        const res = await createApplicationAction({ ...payload, idempotencyKey });
+        setSaving(false);
+        if (!res.ok) return setError(res.error);
+        clearQueued();
+        toast.success(t("draftCreated", { number: res.data!.number }));
+        router.push(`${basePath}/${res.data!.id}`);
+        return;
+      }
+      const res = await updateApplicationAction({ ...payload, applicationId: applicationId! });
       setSaving(false);
       if (!res.ok) return setError(res.error);
-      toast.success(t("draftCreated", { number: res.data!.number }));
-      router.push(`${basePath}/${res.data!.id}`);
-      return;
+      clearQueued();
+      toast.success(tc("saved"));
+      onSaved?.();
+      router.refresh();
+    } catch {
+      // No connection: keep the entry on this device and send it when the network is back.
+      setSaving(false);
+      if (!fromQueue) {
+        try {
+          localStorage.setItem(OFFLINE_KEY, JSON.stringify({ mode, applicationId: applicationId ?? null, v, at: Date.now() }));
+        } catch {
+          /* storage blocked */
+        }
+      }
+      setOffline(true);
     }
-    const res = await updateApplicationAction({ ...payload, applicationId: applicationId! });
-    setSaving(false);
-    if (!res.ok) return setError(res.error);
-    toast.success(tc("saved"));
-    onSaved?.();
-    router.refresh();
   }
+  function clearQueued() {
+    setOffline(false);
+    try {
+      localStorage.removeItem(OFFLINE_KEY);
+    } catch {
+      /* storage blocked */
+    }
+  }
+  // Restore an entry kept while offline (same form), and send it once the connection returns.
+  useEffect(() => {
+    if (readOnly) return;
+    try {
+      const raw = localStorage.getItem(OFFLINE_KEY);
+      const q = raw ? (JSON.parse(raw) as { mode: string; applicationId: string | null; v: LocationValues }) : null;
+      if (q && q.mode === mode && q.applicationId === (applicationId ?? null)) {
+        setV(q.v);
+        setOffline(true);
+      }
+    } catch {
+      /* storage blocked */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!offline) return;
+    const retry = () => void save(true);
+    window.addEventListener("online", retry);
+    return () => window.removeEventListener("online", retry);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offline, v]);
 
   return (
     <div className="space-y-5">
       <FormError error={error && error.code !== "VALIDATION" ? error : null} />
+      {offline && (
+        <p role="status" className="rounded-md border border-status-pending/40 bg-status-pending/10 px-3 py-2 text-sm">
+          {t("pin.savedOffline")}
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="type" label={t("type")} required>
           <NativeSelect value={v.type} disabled={readOnly || mode === "edit"} onChange={(e) => set("type", e.target.value as ApplicationType)}>
@@ -172,9 +239,34 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
 
       <Field id="pin" label={t("pinLabel")} hint={pinPlace ?? t("pinHint")} error={fe("pin")} required={v.type === "new_registration"}>
         <div>
-          <PinPicker value={v.pin} onChange={(p) => void onPin(p)} disabled={readOnly} outline={outline?.geometry ?? null} outlineBbox={outline?.bbox ?? null} />
+          <PinPicker value={v.pin} onChange={(p) => void onPin(p)} disabled={readOnly || !canCaptureLocation} outline={outline?.geometry ?? null} outlineBbox={outline?.bbox ?? null} />
+          {!readOnly && !canCaptureLocation && <p className="mt-1 text-xs text-muted-foreground">{t("pin.noPermission")}</p>}
+          {captured?.at && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("pin.capturedAt", { date: new Date(captured.at).toLocaleString(locale === "so" ? "so-SO" : "en-GB") })}
+              {captured.lowAccuracy && <span className="ms-2 rounded-sm bg-status-pending/15 px-1.5 py-0.5 text-foreground">{t("pin.lowAccuracyFlag")}</span>}
+            </p>
+          )}
+          {nearby && (
+            <p role="alert" className="mt-2 rounded-md border border-status-rejected/40 bg-status-rejected/10 px-3 py-2 text-xs">
+              {t("pin.nearby", { n: nearby.count })}{" "}
+              {[...(nearby.parcels ?? []).map((x) => `${x.pun} (${x.metres} m)`), ...(nearby.applications ?? []).map((x) => `${x.number} (${x.metres} m)`)].join(", ")}
+            </p>
+          )}
         </div>
       </Field>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field id="plotWidthM" label={t("plotWidth")} error={fe("plotWidthM")}>
+          <Input type="number" inputMode="decimal" min={0} step="0.1" value={v.plotWidthM} disabled={readOnly} onChange={(e) => set("plotWidthM", e.target.value)} />
+        </Field>
+        <Field id="plotLengthM" label={t("plotLength")} error={fe("plotLengthM")}>
+          <Input type="number" inputMode="decimal" min={0} step="0.1" value={v.plotLengthM} disabled={readOnly} onChange={(e) => set("plotLengthM", e.target.value)} />
+        </Field>
+        <Field id="declaredArea" label={t("declaredArea")}>
+          <p className="flex h-9 items-center text-sm tabular-nums">{declaredArea ? `${declaredArea} m²` : "—"}</p>
+        </Field>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field id="plotNo" label={t("plotNo")} error={fe("plotNo")}>
@@ -198,7 +290,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
               {tc("cancel")}
             </Button>
           )}
-          <Button type="button" loading={saving} disabled={!v.districtId} onClick={() => void save()}>
+          <Button type="button" loading={saving} disabled={!v.districtId} onClick={() => void save(false)}>
             {mode === "create" ? t("startApplication") : tc("saveChanges")}
           </Button>
         </div>

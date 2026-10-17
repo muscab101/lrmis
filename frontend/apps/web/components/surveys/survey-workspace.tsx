@@ -125,6 +125,9 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
   const [uploading, setUploading] = useState(false);
 
   const m = measure(polygon);
+  // Compare the drawn area with the declared width × length (warn above 20 %, location.area_tolerance_pct).
+  const declared = survey.application?.plot_width_m && survey.application?.plot_length_m ? Number(survey.application.plot_width_m) * Number(survey.application.plot_length_m) : null;
+  const areaGapPct = declared && m.area ? Math.round(((m.area - declared) / declared) * 100) : null;
 
   // ---- Terra Draw on the map ------------------------------------------------
   const putPolygon = useCallback((p: Polygon | null) => {
@@ -472,6 +475,12 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
                 <p className="label-caps text-muted-foreground">{t("perimeter")}</p>
                 <p className="text-xl font-semibold tabular-nums">{m.perimeter != null ? `${format.number(m.perimeter, { maximumFractionDigits: 1 })} m` : "—"}</p>
               </div>
+              {declared && (
+                <p className={`col-span-2 text-xs ${areaGapPct != null && Math.abs(areaGapPct) > 20 ? "rounded-md border border-status-pending/40 bg-status-pending/10 px-2 py-1.5" : "text-muted-foreground"}`}>
+                  {t("declaredArea", { area: format.number(declared, { maximumFractionDigits: 1 }) })}
+                  {areaGapPct != null && Math.abs(areaGapPct) > 20 && ` ${t("areaGap", { pct: areaGapPct > 0 ? `+${areaGapPct}` : areaGapPct })}`}
+                </p>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
               {t(`methods.${method}`)}

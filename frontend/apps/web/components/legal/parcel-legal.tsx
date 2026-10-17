@@ -30,13 +30,13 @@ import { NoteAction } from "./note-action";
 import { TransferWizard } from "./transfer-wizard";
 
 interface Props {
-  parcel: { id: string; pun: string; ownership: string; land_use: string; status: string };
+  parcel: { id: string; pun: string; ownership: string; land_use: string; status: string; plot_no: string | null; deed_no: string | null; govt_file_no: string | null; developed: boolean };
   data: Data;
   me: string;
   can: { transfer: boolean; legal: boolean; legalApprove: boolean; change: boolean; permit: boolean; lease: boolean };
 }
 
-type Dialog = null | "dispute" | "order" | "lien" | "use" | "merge" | "permit" | "lease";
+type Dialog = null | "dispute" | "order" | "lien" | "use" | "merge" | "permit" | "lease" | "correct";
 const USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
 export function ParcelLegalCard({ parcel, data, me, can }: Props) {
@@ -100,6 +100,16 @@ export function ParcelLegalCard({ parcel, data, me, can }: Props) {
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => open("use")}>
                   {t("changeUse")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setF({ plot: parcel.plot_no ?? "", deed: parcel.deed_no ?? "", file: parcel.govt_file_no ?? "", own: parcel.ownership, dev: parcel.developed ? "yes" : "no" });
+                    setDialog("correct");
+                  }}
+                >
+                  {t("dataCorrection")}
                 </Button>
               </>
             )}
@@ -474,6 +484,62 @@ export function ParcelLegalCard({ parcel, data, me, can }: Props) {
             <Field id="purpose" label={t("purpose")}>
               <Input value={f.purpose ?? ""} onChange={(e) => set("purpose", e.target.value)} />
             </Field>
+          </>
+        )}
+      </FormDialog>
+      <FormDialog
+        open={dialog === "correct"}
+        onOpenChange={(o) => !o && setDialog(null)}
+        title={t("dataCorrection")}
+        description={t("dataCorrectionBody")}
+        confirmLabel={t("submitRequest")}
+        successMessage={t("requested")}
+        submit={() => {
+          // Only what actually changed goes into the request.
+          const c: { plot_no?: string; deed_no?: string; govt_file_no?: string; ownership?: "public" | "private"; developed?: boolean } = {};
+          if ((f.plot ?? "") !== (parcel.plot_no ?? "")) c.plot_no = f.plot ?? "";
+          if ((f.deed ?? "") !== (parcel.deed_no ?? "")) c.deed_no = f.deed ?? "";
+          if ((f.file ?? "") !== (parcel.govt_file_no ?? "")) c.govt_file_no = f.file ?? "";
+          if (f.own && f.own !== parcel.ownership) c.ownership = f.own as "public" | "private";
+          if ((f.dev === "yes") !== parcel.developed) c.developed = f.dev === "yes";
+          return requestChangeAction({ kind: "correction", parcelIds: [parcel.id], correction: c, reason: f.reason ?? "" });
+        }}
+      >
+        {(fe) => (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <Field id="plot" label={t("plotNo")}>
+                <Input value={f.plot ?? ""} onChange={(e) => set("plot", e.target.value)} />
+              </Field>
+              <Field id="deed" label={t("deedNo")}>
+                <Input value={f.deed ?? ""} onChange={(e) => set("deed", e.target.value)} />
+              </Field>
+              <Field id="file" label={t("fileNo")}>
+                <Input value={f.file ?? ""} onChange={(e) => set("file", e.target.value)} />
+              </Field>
+              <Field id="own" label={t("ownership")}>
+                <NativeSelect value={f.own ?? "private"} onChange={(e) => set("own", e.target.value)}>
+                  <option value="private">{t("ownershipPrivate")}</option>
+                  <option value="public">{t("ownershipPublic")}</option>
+                </NativeSelect>
+              </Field>
+              <Field id="dev" label={t("developed")}>
+                <NativeSelect value={f.dev ?? "no"} onChange={(e) => set("dev", e.target.value)}>
+                  <option value="yes">{t("yes")}</option>
+                  <option value="no">{t("no")}</option>
+                </NativeSelect>
+              </Field>
+            </div>
+            {fe("correction") && <p className="text-sm text-status-rejected">{fe("correction")}</p>}
+            <Field id="reason" label={t("reason")} error={fe("reason")} required>
+              <Textarea rows={3} value={f.reason ?? ""} onChange={(e) => set("reason", e.target.value)} />
+            </Field>
+            <p className="text-xs text-muted-foreground">
+              {t("boundaryCorrectionHint")}{" "}
+              <Link href={`/parcels/${parcel.id}/correct`} className="text-primary hover:underline">
+                {t("correctBoundary")}
+              </Link>
+            </p>
           </>
         )}
       </FormDialog>

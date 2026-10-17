@@ -55,6 +55,7 @@ export const SPECIAL_PERMISSIONS = [
   "users.reset_password",
   "users.force_signout",
   "roles.manage",
+  "applications.capture_location",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

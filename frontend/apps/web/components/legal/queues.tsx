@@ -159,7 +159,7 @@ export function OrderTable({ rows, me, canDecide }: { rows: (ParcelLegal["orders
   );
 }
 
-type Change = { id: string; number: string; kind: string; status: string; reason: string; payload: { land_use?: string; children?: unknown[] }; requested_by: string | null; requested_at: string; puns: string[]; result_puns: string[] };
+type Change = { id: string; number: string; kind: string; status: string; reason: string; payload: { land_use?: string; children?: unknown[] } & Record<string, unknown>; requested_by: string | null; requested_at: string; puns: string[]; result_puns: string[] };
 
 export function ChangeTable({ rows, me, canDecide }: { rows: Change[]; me: string; canDecide: boolean }) {
   const t = useTranslations("legal");
@@ -190,6 +190,10 @@ export function ChangeTable({ rows, me, canDecide }: { rows: Change[]; me: strin
               <span className="block text-xs text-muted-foreground">
                 {c.kind === "change_of_use" && c.payload.land_use && `→ ${ts(`landUses.${c.payload.land_use}`)}`}
                 {c.kind === "subdivide" && t("childCount", { n: c.payload.children?.length ?? 0 })}
+                {c.kind === "correction" &&
+                  Object.entries(c.payload)
+                    .map(([k, val]) => (k === "geom" ? t("correctionBoundary") : `${t(`correctionField.${k}`)}: ${typeof val === "boolean" ? (val ? t("yes") : t("no")) : String(val)}`))
+                    .join(" · ")}
               </span>
             </TableCell>
             <TableCell className="font-mono text-xs">
