@@ -12,6 +12,7 @@ import {
   setupSchema,
   totpCodeSchema,
 } from "@dhulka/core/schemas";
+import { cookies } from "next/headers";
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { publicEnv, serverEnv } from "@/lib/env";
@@ -113,6 +114,8 @@ export const googleSignInAction = defineAction(
 export async function signOutAction(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // Clear the inactivity timer so the next sign-in starts fresh.
+  (await cookies()).delete("dhulka_last_seen");
 }
 
 export const forgotPasswordAction = defineAction(

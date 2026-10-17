@@ -105,8 +105,10 @@ export async function middleware(request: NextRequest) {
     if (state.kind !== "staff") return isStaff ? redirectTo("/portal") : response;
 
     // Idle timeout for staff sessions.
+    // Activity from before the current sign-in doesn't count (a stale cookie from an earlier session).
     const lastSeen = Number(request.cookies.get(IDLE_COOKIE)?.value ?? 0);
-    if (lastSeen && Date.now() - lastSeen > IDLE_MINUTES * 60_000) {
+    const signedInAt = Date.parse(user.last_sign_in_at ?? "") || 0;
+    if (lastSeen && lastSeen > signedInAt && Date.now() - lastSeen > IDLE_MINUTES * 60_000) {
       await supabase.auth.signOut();
       const res = redirectTo("/login", { error: "SESSION_EXPIRED", next: request.nextUrl.pathname });
       res.cookies.delete(IDLE_COOKIE);
