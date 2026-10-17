@@ -501,7 +501,7 @@
   "dashboard": {
     "title": "Dashboard",
     "greeting": "Welcome, {name}",
-    "subtitle": "Phase 1 foundation is live: accounts, roles, security and audit.",
+    "subtitle": "Today's figures and the work waiting for you.",
     "kpiActiveStaff": "Active staff",
     "kpiInvited": "Invited",
     "kpiRoles": "Roles",
@@ -2780,7 +2780,9 @@
       "certificate_ready": "Certificate ready",
       "overdue_reminder": "Overdue reminder",
       "tax_due": "Tax bill notice",
-      "general_notice": "General notice"
+      "general_notice": "General notice",
+      "pay_link": "Payment link",
+      "channel_reply": "WhatsApp reply"
     },
     "all": "All",
     "to": "To",

@@ -26,7 +26,8 @@ const csp = [
   // MapLibre renders in a web worker created from a blob.
   "worker-src 'self' blob:",
   "child-src 'self' blob:",
-  "frame-ancestors 'none'",
+  // Development allows same-site frames so pages can be checked at several widths at once.
+  isDev ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
@@ -51,7 +52,7 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: isDev ? "SAMEORIGIN" : "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), geolocation=(self), microphone=()" },
         ],

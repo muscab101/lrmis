@@ -501,7 +501,7 @@
   "dashboard": {
     "title": "Shaashadda guud",
     "greeting": "Ku soo dhowow, {name}",
-    "subtitle": "Aasaaska wajiga 1 waa shaqaynayaa: akoonnada, doorarka, amniga iyo hubinta.",
+    "subtitle": "Tirooyinka maanta iyo shaqada adiga ku sugaysa.",
     "kpiActiveStaff": "Shaqaale firfircoon",
     "kpiInvited": "La casuumay",
     "kpiRoles": "Doorar",
@@ -2780,7 +2780,9 @@
       "certificate_ready": "Shahaado diyaar ah",
       "overdue_reminder": "Xusuusin dib-u-dhac",
       "tax_due": "Ogeysiiska biilka canshuurta",
-      "general_notice": "Ogeysiis guud"
+      "general_notice": "Ogeysiis guud",
+      "pay_link": "Xiriirka lacag-bixinta",
+      "channel_reply": "Jawaabta WhatsApp"
     },
     "all": "Dhammaan",
     "to": "Loo diray",

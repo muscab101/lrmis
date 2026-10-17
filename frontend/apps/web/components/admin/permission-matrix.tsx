@@ -37,7 +37,7 @@ export function PermissionMatrix({ value, onChange, grantable, readOnly = false 
   const rowKeys = (m: Module) => [...ACTIONS.map((a) => `${m}.${a}`), ...specialPermissionsFor(m)];
 
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <div className="relative overflow-x-auto rounded-md border">
       <table className="w-full min-w-[860px] text-sm">
         <caption className="sr-only">{t("caption")}</caption>
         <thead className="bg-muted/50">

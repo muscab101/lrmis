@@ -69,7 +69,7 @@ export async function getDocument(id: string) {
   const supabase = await createClient();
   const res = await supabase
     .from("issued_documents")
-    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, issued_by, print_jobs(id, kind, printed_at, printed_by), reprint_requests(id, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
+    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, issued_by, print_jobs(id, kind, printed_at, printed_by), reprint_requests!reprint_requests_document_id_fkey(id, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
     .eq("id", id)
     .maybeSingle();
   return unwrap(res, "document") as unknown as DocumentDetail | null;

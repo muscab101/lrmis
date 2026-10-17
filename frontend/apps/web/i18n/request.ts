@@ -9,5 +9,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale,
     messages: (await import(`../messages/${locale}.json`)).default,
     timeZone: "Africa/Mogadishu",
+    // Fixed per request so "x minutes ago" renders the same on server and client.
+    now: new Date(),
   };
 });
