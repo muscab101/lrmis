@@ -38,14 +38,21 @@ export const stripe: PaymentProvider = {
     return { kind: "redirect", providerRef: json.id, url: json.url };
   },
 
-  /** Stripe-Signature: t=<ts>,v1=<hmac(secret, `${t}.${body}`)>, within 5 minutes. */
+  /**
+   * Stripe-Signature: t=<ts>,v1=<hmac(secret, `${t}.${body}`)>[,v1=…], within 5 minutes.
+   * Several v1 values appear while a webhook secret is being rolled; any one may match.
+   */
   verifyWebhook(headers, rawBody) {
     const secret = webhookSecret();
-    const header = headers.get("stripe-signature") ?? "";
-    const parts = Object.fromEntries(header.split(",").map((p) => p.split("=") as [string, string]));
-    const t = Number(parts.t);
-    if (!secret || !t || !parts.v1 || Math.abs(Date.now() / 1000 - t) > TOLERANCE_S) return false;
-    return safeEqualHex(hmacHex(secret, `${t}.${rawBody}`), parts.v1);
+    const pairs = (headers.get("stripe-signature") ?? "").split(",").map((p) => {
+      const i = p.indexOf("=");
+      return [p.slice(0, i).trim(), p.slice(i + 1).trim()] as const;
+    });
+    const t = Number(pairs.find(([k]) => k === "t")?.[1]);
+    const sigs = pairs.filter(([k]) => k === "v1").map(([, v]) => v);
+    if (!secret || !t || sigs.length === 0 || Math.abs(Date.now() / 1000 - t) > TOLERANCE_S) return false;
+    const expected = hmacHex(secret, `${t}.${rawBody}`);
+    return sigs.some((v) => /^[0-9a-f]{64}$/i.test(v) && safeEqualHex(expected, v));
   },
 
   parseWebhook(rawBody): ProviderEvent | null {
@@ -54,11 +61,14 @@ export const stripe: PaymentProvider = {
       type: string;
       data: { object: { id: string; amount_total?: number; currency?: string; payment_status?: string; metadata?: { intent_id?: string } } };
     };
-    if (ev.type !== "checkout.session.completed" && ev.type !== "checkout.session.async_payment_failed") return null;
+    const handled = ["checkout.session.completed", "checkout.session.async_payment_succeeded", "checkout.session.async_payment_failed", "checkout.session.expired"];
+    if (!handled.includes(ev.type)) return null;
     const s = ev.data.object;
+    // "completed" with payment_status "unpaid" means a delayed method; the async_* event settles it later.
+    if (ev.type === "checkout.session.completed" && s.payment_status !== "paid") return null;
     return {
       eventId: ev.id,
-      status: ev.type === "checkout.session.completed" && s.payment_status === "paid" ? "succeeded" : "failed",
+      status: (ev.type === "checkout.session.completed" || ev.type === "checkout.session.async_payment_succeeded") && s.payment_status === "paid" ? "succeeded" : "failed",
       providerRef: s.id,
       intentId: s.metadata?.intent_id,
       amount: (s.amount_total ?? 0) / 100,

@@ -2070,7 +2070,9 @@
     "tryAgain": "Isku day mar kale, ama isticmaal hab kale.",
     "tryAgainButton": "Isku day mar kale",
     "simulateSuccess": "Iska dhig guul (tijaabo)",
-    "simulateFailure": "Iska dhig guuldarro (tijaabo)"
+    "simulateFailure": "Iska dhig guuldarro (tijaabo)",
+    "walletDetected": "{wallet} ayaa telefoonkan ku heli doona codsiga lacag-bixinta.",
+    "walletList": "Waxay la shaqeysaa EVC Plus, Zaad, Sahal iyo eDahab."
   },
   "payments": {
     "title": "Lacag bixinno",

@@ -9,6 +9,7 @@ import { Alert, Mono } from "@dhulka/ui/misc";
 import { Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { detectWallet, WALLET_NAMES } from "@/lib/payments/wallets";
 import { intentStatusAction, simulateTestPaymentAction, startPaymentAction } from "@/app/[locale]/(public)/pay/actions";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
@@ -22,6 +23,7 @@ export function PayForm({ token, providers, initialIntent }: { token: string; pr
   const router = useRouter();
   const [provider, setProvider] = useState(providers[0]?.code ?? "");
   const [phone, setPhone] = useState("+252");
+  const wallet = detectWallet(phone);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
   const [intent, setIntent] = useState<string | null>(initialIntent);
@@ -109,6 +111,11 @@ export function PayForm({ token, providers, initialIntent }: { token: string; pr
         <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(error?.fieldErrors?.phone?.[0])} required>
           <Input inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </Field>
+      )}
+      {method === "mobile_money" && (
+        <p className="-mt-2 text-sm text-muted-foreground" aria-live="polite">
+          {wallet ? t("walletDetected", { wallet: WALLET_NAMES[wallet] }) : t("walletList")}
+        </p>
       )}
       <Button
         className="w-full"

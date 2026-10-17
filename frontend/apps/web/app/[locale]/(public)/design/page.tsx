@@ -6,6 +6,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert, EmptyState, Kbd, KpiChip, Mono, PageHeader, Skeleton } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Inbox, Plus } from "lucide-react";
+import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
@@ -26,6 +27,8 @@ const COLOURS = [
 
 /** Living style guide: every token and component in light and dark. */
 export default async function DesignPage({ params }: { params: Promise<{ locale: string }> }) {
+  // Component gallery for developers only.
+  if (process.env.NODE_ENV === "production" && process.env.DESIGN_GALLERY !== "1") notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("design");

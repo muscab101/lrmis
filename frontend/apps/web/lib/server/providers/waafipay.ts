@@ -58,8 +58,9 @@ export const waafipay: PaymentProvider = {
       responseMsg?: string;
       params?: { state?: string; transactionId?: string; txAmount?: string };
     };
-    const approved = json.responseCode === "2001" && (json.params?.state ?? "APPROVED") === "APPROVED";
-    const providerRef = json.params?.transactionId ?? `WAAFI-${input.intentId}`;
+    // Only an explicit approval counts; anything else (timeouts, missing state) is a failure the payer can retry.
+    const approved = json.responseCode === "2001" && String(json.params?.state ?? "").toUpperCase() === "APPROVED";
+    const providerRef = json.params?.transactionId ?? `WAAFI-${input.intentId}-${Date.now()}`;
     return {
       kind: "completed",
       providerRef,

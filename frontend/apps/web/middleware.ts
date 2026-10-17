@@ -11,6 +11,9 @@ const PUBLIC = [/^\/$/, /^\/login$/, /^\/citizen\/login$/, /^\/forgot-password$/
 const AUTH_FLOW = [/^\/mfa$/, /^\/change-password$/, /^\/reset-password$/];
 /** Citizen portal. Everything else is the staff area. */
 const CITIZEN = [/^\/portal(\/|$)/];
+/** Top-level staff sections. Anything else is unknown and gets the 404 page, not a sign-in prompt. */
+const STAFF =
+  /^\/(dashboard|map|applications|parcels|owners|surveys|valuation|billing|invoices|payments|cashier|accounting|transfers|disputes|permits|documents|reports|assistant|messages|locations|audit|admin)(\/|$)/;
 
 const IDLE_COOKIE = "dhulka_last_seen";
 const IDLE_MINUTES = Number(process.env.SESSION_IDLE_MINUTES ?? 30);
@@ -75,6 +78,7 @@ export async function middleware(request: NextRequest) {
   const isAuthFlow = AUTH_FLOW.some((r) => r.test(path));
   const isCitizen = CITIZEN.some((r) => r.test(path));
   const isStaff = !isPublic && !isAuthFlow && !isCitizen;
+  if (isStaff && !STAFF.test(path)) return response;
 
   if (!user) {
     if (isPublic) return response;

@@ -187,8 +187,11 @@ describe("payments and accounting (Phase 7)", () => {
       "permission denied",
     );
     const event = { status: "succeeded", intent_id: intent.intent_id, provider_ref: "TX-1", amount: 310, currency: "USD", phone: "+252615550101" };
-    const bad = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'e0', false, $1, $1)`, [JSON.stringify(event)]));
+    const bad = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'e1', false, $1, $1)`, [JSON.stringify(event)]));
     expect(bad.result).toBe("bad_signature");
+    // A forged event with the real event id must not block the genuine one.
+    const bad2 = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'e1', false, $1, $1)`, [JSON.stringify(event)]));
+    expect(bad2.result).toBe("bad_signature");
     const ok = await asService(db, (tx) => scalar<{ result: string; receipt_no: string }>(tx, `select public.webhook_ingest('test', 'e1', true, $1, $1)`, [JSON.stringify(event)]));
     expect(ok.result).toBe("recorded");
     expect(ok.receipt_no).toMatch(/^ONL-2026-/);

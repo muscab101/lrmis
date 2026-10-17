@@ -2070,7 +2070,9 @@
     "tryAgain": "Try again, or use another method.",
     "tryAgainButton": "Try again",
     "simulateSuccess": "Simulate success (test)",
-    "simulateFailure": "Simulate failure (test)"
+    "simulateFailure": "Simulate failure (test)",
+    "walletDetected": "{wallet} will get the payment prompt on this phone.",
+    "walletList": "Works with EVC Plus, Zaad, Sahal and eDahab."
   },
   "payments": {
     "title": "Payments",
