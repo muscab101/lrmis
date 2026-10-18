@@ -1,7 +1,9 @@
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Compass } from "lucide-react";
+import { Button } from "@dhulka/ui/button";
+import { Tooltip } from "@dhulka/ui/form-controls";
+import { ClipboardList, Compass, MapPinned } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -56,10 +58,12 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
             <TableHeader>
               <TableRow>
                 <TableHead>{t("application")}</TableHead>
-                <TableHead>{t("place")}</TableHead>
-                <TableHead>{t("surveyor")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("assigned")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("place")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("surveyor")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
-                <TableHead className="text-end">{t("due")}</TableHead>
+                <TableHead className="hidden text-end md:table-cell">{t("due")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -70,13 +74,34 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                       <Mono>{s.application?.number ?? "—"}</Mono>
                     </Link>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(s.assigned_at), { dateStyle: "medium" })}</TableCell>
+                  <TableCell className="hidden text-sm sm:table-cell">
                     {s.application?.district?.name_so}
                     {s.application?.neighbourhood && <span className="text-muted-foreground"> · {s.application.neighbourhood.name_so}</span>}
                   </TableCell>
-                  <TableCell className="text-sm">{s.surveyor?.full_name ?? "—"}</TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{s.surveyor?.full_name ?? "—"}</TableCell>
                   <TableCell className="text-sm">{t(`status.${s.status}`)}</TableCell>
-                  <TableCell className="text-end text-xs text-muted-foreground">{s.due_date ? format.dateTime(new Date(s.due_date), { dateStyle: "medium" }) : "—"}</TableCell>
+                  <TableCell className="hidden text-end text-xs text-muted-foreground md:table-cell">{s.due_date ? format.dateTime(new Date(s.due_date), { dateStyle: "medium" }) : "—"}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-0.5">
+                      <Tooltip content={t("actionOpen")}>
+                        <Button asChild variant="ghost" size="icon-sm" className="text-primary">
+                          <Link href={`/surveys/${s.id}`} aria-label={t("actionOpen")}>
+                            <MapPinned aria-hidden />
+                          </Link>
+                        </Button>
+                      </Tooltip>
+                      {s.application && (
+                        <Tooltip content={t("actionApplication")}>
+                          <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
+                            <Link href={`/applications/${s.application.id}`} aria-label={t("actionApplication")}>
+                              <ClipboardList aria-hidden />
+                            </Link>
+                          </Button>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

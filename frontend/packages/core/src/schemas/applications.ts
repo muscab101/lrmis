@@ -79,6 +79,8 @@ export const saveApplicationLocationSchema = z.object({
   plotNo: z.string().trim().max(40, "validation.too_long").default(""),
   oldDeedNo: z.string().trim().max(60, "validation.too_long").default(""),
   govtFileNo: z.string().trim().max(60, "validation.too_long").default(""),
+  houseNo: z.string().trim().max(40, "validation.too_long").default(""),
+  govtReceiptNo: z.string().trim().max(60, "validation.too_long").default(""),
 });
 export type ApplicationLocationInput = z.input<typeof saveApplicationLocationSchema>;
 

@@ -56,6 +56,7 @@ export const SPECIAL_PERMISSIONS = [
   "users.force_signout",
   "roles.manage",
   "applications.capture_location",
+  "parcels.lock",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

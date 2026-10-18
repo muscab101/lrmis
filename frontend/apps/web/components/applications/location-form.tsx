@@ -27,6 +27,8 @@ export interface LocationValues {
   plotNo: string;
   oldDeedNo: string;
   govtFileNo: string;
+  houseNo: string;
+  govtReceiptNo: string;
   plotWidthM: string;
   plotLengthM: string;
 }
@@ -124,6 +126,8 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       plotNo: v.plotNo,
       oldDeedNo: v.oldDeedNo,
       govtFileNo: v.govtFileNo,
+      houseNo: v.houseNo,
+      govtReceiptNo: v.govtReceiptNo,
     };
     try {
       if (mode === "create") {
@@ -285,6 +289,15 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
         <Field id="govtFileNo" label={t("govtFileNo")} error={fe("govtFileNo")}>
           <Input value={v.govtFileNo} disabled={readOnly} onChange={(e) => set("govtFileNo", e.target.value)} />
         </Field>
+        <Field id="houseNo" label={t("houseNo")} error={fe("houseNo")}>
+          <Input value={v.houseNo} maxLength={40} disabled={readOnly} onChange={(e) => set("houseNo", e.target.value)} />
+        </Field>
+        {/* A paper government receipt the office has seen; citizens don't enter it. */}
+        {isStaff && (
+          <Field id="govtReceiptNo" label={t("govtReceiptNo")} hint={t("govtReceiptHint")} error={fe("govtReceiptNo")} className="sm:col-span-2">
+            <Input value={v.govtReceiptNo} maxLength={60} disabled={readOnly} onChange={(e) => set("govtReceiptNo", e.target.value)} />
+          </Field>
+        )}
       </div>
       <Field id="addressNote" label={t("addressNote")} hint={t("addressNoteHint")} error={fe("addressNote")}>
         <Textarea rows={2} value={v.addressNote} disabled={readOnly} onChange={(e) => set("addressNote", e.target.value)} />

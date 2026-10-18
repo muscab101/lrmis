@@ -13,11 +13,20 @@ export interface ParcelListRow {
   district: string;
   neighbourhood: string | null;
   owners: string | null;
+  created_at: string;
+  house_no: string | null;
+  govt_receipt_no: string | null;
+  /** The latest open invoice (else the latest paid one) and what's still owed. */
+  invoice: string | null;
+  balance: number;
+  locked_at: string | null;
+  lock_reason: string | null;
+  application_number: string | null;
 }
 
 export async function searchParcels(q: string) {
   const supabase = await createClient();
-  const res = await supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 50 });
+  const res = await supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 100 });
   return unwrap(res, "parcels") as ParcelListRow[];
 }
 
@@ -34,6 +43,10 @@ export interface ParcelDetail {
   plot_no: string | null;
   deed_no: string | null;
   govt_file_no: string | null;
+  house_no: string | null;
+  govt_receipt_no: string | null;
+  locked_at: string | null;
+  lock_reason: string | null;
   registered_at: string | null;
   geom: GeoJSON.Polygon;
   application_id: string | null;
@@ -50,7 +63,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, govt_receipt_no, locked_at, lock_reason, registered_at, geom, application_id,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),

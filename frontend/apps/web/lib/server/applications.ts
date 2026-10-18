@@ -107,6 +107,8 @@ export interface ApplicationDetail {
   plot_no: string | null;
   old_deed_no: string | null;
   govt_file_no: string | null;
+  house_no: string | null;
+  govt_receipt_no: string | null;
   applicant_party_id: string | null;
   citizen_user_id: string | null;
   submitted_at: string | null;
@@ -146,7 +148,7 @@ export async function getApplication(id: string) {
   const res = await supabase
     .from("applications")
     .select(
-      `id, number, type, status, channel, district_id, neighbourhood_id, pin, pin_accuracy_m, pin_method, pin_captured_at, pin_low_accuracy, plot_width_m, plot_length_m, address_note, plot_no, old_deed_no, govt_file_no,
+      `id, number, type, status, channel, district_id, neighbourhood_id, pin, pin_accuracy_m, pin_method, pin_captured_at, pin_low_accuracy, plot_width_m, plot_length_m, address_note, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no,
        applicant_party_id, citizen_user_id, submitted_at, decided_at, decision_note, created_at, created_by,
        district:districts(id, code, name_so, name_en), neighbourhood:neighbourhoods(id, code, name_so, name_en),
        application_parties(party_id, role, share_pct, party:parties(${PARTY_COLUMNS})),

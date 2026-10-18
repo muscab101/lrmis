@@ -13,7 +13,7 @@ import { area as turfArea } from "@turf/area";
 import { polygon as turfPolygon } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
 import { length as turfLength } from "@turf/length";
-import { Camera, Check, Footprints, Layers, Loader2, MousePointer2, PenLine, Trash2, Undo2, Upload } from "lucide-react";
+import { ArrowRight, Camera, Check, Footprints, Layers, Loader2, MousePointer2, PenLine, Trash2, Undo2, Upload } from "lucide-react";
 import type { Map as MlMap } from "maplibre-gl";
 import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -398,10 +398,47 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const app = survey.application;
 
+  const steps: { key: "boundary" | "neighbours" | "building" | "photos" | "submit"; done: boolean }[] = [
+    { key: "boundary", done: !!polygon },
+    { key: "neighbours", done: (["north", "east", "south", "west"] as const).every((k) => (neighbours[k] ?? "").trim() !== "") },
+    { key: "building", done: !!survey.building?.type || building.type !== "none" },
+    { key: "photos", done: survey.survey_photos.some((p) => !p.deleted_at) },
+    { key: "submit", done: !canEdit },
+  ];
+  const nextStep = steps.find((s) => !s.done);
+  const go = (key: string) => document.getElementById(`survey-${key}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   return (
+    <>
+    {canEdit && (
+      <Card className="mb-5">
+        <CardContent className="flex flex-col gap-4 pt-5 md:flex-row md:items-center">
+          <ol className="flex flex-1 flex-wrap gap-x-5 gap-y-2 text-sm">
+            {steps.map((st, i) => (
+              <li key={st.key}>
+                <button type="button" onClick={() => go(st.key)} className={`flex items-center gap-2 ${st === nextStep ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+                  <span
+                    className={`grid size-6 shrink-0 place-items-center rounded-full border text-xs tabular-nums ${st.done ? "border-success bg-success text-white" : st === nextStep ? "border-primary text-primary" : ""}`}
+                  >
+                    {st.done ? <Check className="size-3.5" aria-label={t("flow.done")} /> : i + 1}
+                  </span>
+                  {t(`flow.${st.key}`)}
+                </button>
+              </li>
+            ))}
+          </ol>
+          {nextStep && (
+            <Button size="sm" className="self-start md:self-auto" onClick={() => go(nextStep.key)}>
+              {t(`flow.go_${nextStep.key}`)}
+              <ArrowRight aria-hidden />
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    )}
     <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
       <div className="space-y-3">
-        <div className="relative">
+        <div className="relative scroll-mt-20" id="survey-boundary">
           <DhulkaMap ref={mapRef} parcels base={base} visible={{ facilities: false, streets: true }} className="h-[60vh] min-h-[420px] overflow-hidden rounded-lg border lg:h-[calc(100vh-14rem)]" />
           <div className="absolute start-3 top-3 flex flex-wrap gap-1.5">
             {editable && (
@@ -464,7 +501,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
       </div>
 
       <div className="space-y-4">
-        <Card>
+        <Card id="survey-submit" className="scroll-mt-20">
           <CardContent className="space-y-3 pt-5">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -556,7 +593,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="survey-neighbours" className="scroll-mt-20">
           <CardHeader>
             <CardTitle className="text-base">{t("neighbours")}</CardTitle>
           </CardHeader>
@@ -577,7 +614,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="survey-building" className="scroll-mt-20">
           <CardHeader>
             <CardTitle className="text-base">{t("building")}</CardTitle>
           </CardHeader>
@@ -656,7 +693,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="survey-photos" className="scroll-mt-20">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-base">
               {t("photos")} ({survey.survey_photos.length})
@@ -734,5 +771,6 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
         </Field>
       </ConfirmDialog>
     </div>
+    </>
   );
 }

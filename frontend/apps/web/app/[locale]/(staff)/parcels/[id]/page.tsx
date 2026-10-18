@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
-import { Mono, PageHeader } from "@dhulka/ui/misc";
+import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
+import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { GeometryPreview } from "@/components/map/geometry-preview";
@@ -44,6 +45,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [ts("landUse"), ts(`landUses.${p.land_use}`)],
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],
+    [t("houseNo"), p.house_no ?? "—"],
+    [t("govtReceipt"), p.govt_receipt_no ? <Mono key="gr">{p.govt_receipt_no}</Mono> : "—"],
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],
     [
@@ -68,7 +71,13 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             <ParcelStatusBadge status={p.status} />
           </span>
         }
+        actions={<ParcelRowActions parcel={p} onDetail can={{ update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") }} />}
       />
+      {p.locked_at && (
+        <Alert tone="warning" className="mb-5" title={t("lockedTitle", { date: format.dateTime(new Date(p.locked_at), { dateStyle: "medium" }) })}>
+          {p.lock_reason}
+        </Alert>
+      )}
       <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <CardContent className="pt-5">

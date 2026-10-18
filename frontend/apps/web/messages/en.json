@@ -127,7 +127,8 @@
       "SETUP_ALREADY_DONE": "Setup is already complete. Sign in instead.",
       "GOOGLE_NO_STAFF_ACCOUNT": "There's no staff account for this Google email. Ask an administrator to create one.",
       "MAKER_CHECKER": "You created this record, so someone else must approve it.",
-      "SESSION_EXPIRED": "You were signed out after a period of inactivity. Please sign in again."
+      "SESSION_EXPIRED": "You were signed out after a period of inactivity. Please sign in again.",
+      "PARCEL_LOCKED": "This parcel is locked, so it can't be changed. Ask someone who can unlock parcels."
     },
     "details": {
       "notice_running": "The public notice period is still running. Register after it closes.",
@@ -1022,7 +1023,8 @@
       "users_reset_2fa": "Reset 2FA",
       "users_reset_password": "Reset password",
       "users_force_signout": "Force sign-out",
-      "roles_manage": "Manage"
+      "roles_manage": "Manage",
+      "parcels_lock": "Lock / unlock"
     }
   },
   "design": {
@@ -1380,7 +1382,10 @@
     "payOnline": "Pay online (EVC Plus, Zaad, card)",
     "payAtCashier": "Take payment at the cashier",
     "openInvoice": "Open invoice",
-    "waiveNote": "A fee waiver (mosque, school, hardship) is decided by Finance. Someone other than the person who entered the application must approve it."
+    "waiveNote": "A fee waiver (mosque, school, hardship) is decided by Finance. Someone other than the person who entered the application must approve it.",
+    "houseNo": "House No",
+    "govtReceiptNo": "Govt. receipt number",
+    "govtReceiptHint": "The number on the paper government receipt, if the owner has one."
   },
   "owners": {
     "title": "Owners",
@@ -1702,7 +1707,24 @@
     "view": "View",
     "photoAdded": "Photo added.",
     "declaredArea": "Declared size: {area} m² (width × length).",
-    "areaGap": "The drawn boundary differs by {pct} %. Check the measurements."
+    "areaGap": "The drawn boundary differs by {pct} %. Check the measurements.",
+    "flow": {
+      "done": "Done",
+      "boundary": "Boundary",
+      "neighbours": "Neighbours",
+      "building": "Building",
+      "photos": "Photos",
+      "submit": "Save & submit",
+      "go_boundary": "Next: draw the boundary",
+      "go_neighbours": "Next: neighbours",
+      "go_building": "Next: building",
+      "go_photos": "Next: photos",
+      "go_submit": "Next: save & submit"
+    },
+    "actions": "Actions",
+    "actionOpen": "Open survey",
+    "actionApplication": "Open application",
+    "assigned": "Assigned"
   },
   "parcels": {
     "title": "Parcels",
@@ -1777,7 +1799,35 @@
       "lease_created": "Lease created",
       "lease_ended": "Lease ended",
       "corrected": "Record corrected"
-    }
+    },
+    "actions": "Actions",
+    "actionView": "View details",
+    "actionLock": "Lock",
+    "actionUnlock": "Unlock",
+    "dateCreated": "Date created",
+    "invoice": "Invoice",
+    "govtReceipt": "Govt. receipt",
+    "houseNo": "House No",
+    "houseNoShort": "House",
+    "neighbourhood": "Neighbourhood",
+    "ownerName": "Owner (Masuulka Dhulka)",
+    "owing": "{amount} owing",
+    "paidUp": "Paid",
+    "lockedLabel": "Locked",
+    "count": "{count, plural, one {# parcel} other {# parcels}}",
+    "searchPlaceholderMore": "PUN, owner, house no, receipt, invoice or application",
+    "editTitle": "Edit {pun}",
+    "editBody": "Office details. Boundary and owners change through a data correction or a transfer.",
+    "plotNo": "Plot number",
+    "lockTitle": "Lock {pun}?",
+    "lockBody": "Nobody can change this parcel's details, boundary or owners, or start a transfer or correction, until it's unlocked. Bills and payments still work.",
+    "unlockTitle": "Unlock {pun}?",
+    "unlockBody": "The parcel can be edited, transferred and corrected again.",
+    "lockReason": "Reason",
+    "lockReasonHint": "For example the court order or case number. It's recorded in the parcel's history.",
+    "locked": "Parcel locked",
+    "unlocked": "Parcel unlocked",
+    "lockedTitle": "Locked since {date}"
   },
   "notices": {
     "eyebrow": "Public notice",

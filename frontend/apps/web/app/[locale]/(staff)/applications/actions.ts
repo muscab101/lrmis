@@ -40,6 +40,7 @@ async function saveLocationMeta(ctx: { supabase: Awaited<ReturnType<typeof impor
     await ctx.supabase.rpc("application_location_meta", { p_id: id, p_method: v.pinLon == null ? null : v.pinMethod, p_width: v.plotWidthM, p_length: v.plotLengthM }),
     "location meta",
   );
+  unwrap(await ctx.supabase.rpc("application_set_details", { p_id: id, p_house_no: v.houseNo, p_govt_receipt_no: v.govtReceiptNo }), "details");
 }
 
 /** Parcels or open applications within a few metres of a point (possible double registration). */

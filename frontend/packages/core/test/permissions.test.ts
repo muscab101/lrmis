@@ -11,7 +11,7 @@ describe("effective permissions", () => {
   });
 
   it("gives everything to a grants-all role", () => {
-    expect(effectivePermissions([{ grantsAll: true, permissions: [], dataScope: "all" }]).size).toBe(209);
+    expect(effectivePermissions([{ grantsAll: true, permissions: [], dataScope: "all" }]).size).toBe(210);
   });
 
   it("uses the widest data scope", () => {

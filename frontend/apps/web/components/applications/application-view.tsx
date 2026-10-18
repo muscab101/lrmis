@@ -182,6 +182,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
                   plotNo: app.plot_no ?? "",
                   oldDeedNo: app.old_deed_no ?? "",
                   govtFileNo: app.govt_file_no ?? "",
+                  houseNo: app.house_no ?? "",
+                  govtReceiptNo: app.govt_receipt_no ?? "",
                   plotWidthM: app.plot_width_m != null ? String(app.plot_width_m) : "",
                   plotLengthM: app.plot_length_m != null ? String(app.plot_length_m) : "",
                 }}

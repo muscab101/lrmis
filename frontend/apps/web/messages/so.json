@@ -127,7 +127,8 @@
       "SETUP_ALREADY_DONE": "Dejinta hore ayaa loo dhammaystiray. Gal halkii.",
       "GOOGLE_NO_STAFF_ACCOUNT": "Ma jiro akoon shaqaale oo leh iimaylkan Google. Weydii maamule inuu mid kuu sameeyo.",
       "MAKER_CHECKER": "Adiga ayaa sameeyay diiwaankan, sidaa darteed qof kale ayaa ansixin doona.",
-      "SESSION_EXPIRED": "Waa lagaa saaray kadib muddo aadan waxba qaban. Fadlan mar kale gal."
+      "SESSION_EXPIRED": "Waa lagaa saaray kadib muddo aadan waxba qaban. Fadlan mar kale gal.",
+      "PARCEL_LOCKED": "Dhulkan waa la xiray, lama beddeli karo. Weydii qof furi kara dhulka."
     },
     "details": {
       "notice_running": "Muddada ogeysiiska dadweynaha weli way socotaa. Diiwaangeli marka ay xirmato.",
@@ -1022,7 +1023,8 @@
       "users_reset_2fa": "Dib u deji 2FA",
       "users_reset_password": "Dib u deji furaha",
       "users_force_signout": "Ka saar meel kasta",
-      "roles_manage": "Maamul"
+      "roles_manage": "Maamul",
+      "parcels_lock": "Xir / fur"
     }
   },
   "design": {
@@ -1380,7 +1382,10 @@
     "payOnline": "Ku bixi online (EVC Plus, Zaad, kaar)",
     "payAtCashier": "Lacagta ka qaado khasnajiga",
     "openInvoice": "Fur biilka",
-    "waiveNote": "Cafinta khidmadda (masaajid, dugsi, dhibaato) waxaa go'aamisa Maaliyadda. Qof aan ahayn kii geliyey codsiga ayaa ansixin kara."
+    "waiveNote": "Cafinta khidmadda (masaajid, dugsi, dhibaato) waxaa go'aamisa Maaliyadda. Qof aan ahayn kii geliyey codsiga ayaa ansixin kara.",
+    "houseNo": "Lambarka guriga",
+    "govtReceiptNo": "Lambarka rasiidhka dowladda",
+    "govtReceiptHint": "Lambarka ku qoran rasiidhka warqadda ah ee dowladda, haddii masuulku haysto."
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -1702,7 +1707,24 @@
     "view": "Eeg",
     "photoAdded": "Sawirka waa lagu daray.",
     "declaredArea": "Cabbirka la sheegay: {area} m² (ballac × dherer).",
-    "areaGap": "Xuduudda la sawiray way ka duwan tahay {pct} %. Hubi cabbirrada."
+    "areaGap": "Xuduudda la sawiray way ka duwan tahay {pct} %. Hubi cabbirrada.",
+    "flow": {
+      "done": "Dhammaaday",
+      "boundary": "Xuduud",
+      "neighbours": "Deriska",
+      "building": "Dhismaha",
+      "photos": "Sawirro",
+      "submit": "Keydi & gudbi",
+      "go_boundary": "Xiga: sawir xuduudda",
+      "go_neighbours": "Xiga: deriska",
+      "go_building": "Xiga: dhismaha",
+      "go_photos": "Xiga: sawirro",
+      "go_submit": "Xiga: keydi & gudbi"
+    },
+    "actions": "Ficillo",
+    "actionOpen": "Fur sahanka",
+    "actionApplication": "Fur codsiga",
+    "assigned": "La xilsaaray"
   },
   "parcels": {
     "title": "Dhulal",
@@ -1777,7 +1799,35 @@
       "lease_created": "Kiro ayaa la sameeyay",
       "lease_ended": "Kiradu way dhammaatay",
       "corrected": "Diiwaanka waa la saxay"
-    }
+    },
+    "actions": "Ficillo",
+    "actionView": "Eeg faahfaahinta",
+    "actionLock": "Xir",
+    "actionUnlock": "Fur",
+    "dateCreated": "Taariikhda la sameeyey",
+    "invoice": "Biil",
+    "govtReceipt": "Rasiidhka dowladda",
+    "houseNo": "Lambarka guriga",
+    "houseNoShort": "Guri",
+    "neighbourhood": "Xaafad",
+    "ownerName": "Masuulka Dhulka",
+    "owing": "{amount} lagu leeyahay",
+    "paidUp": "La bixiyey",
+    "lockedLabel": "Xiran",
+    "count": "{count, plural, one {# dhul} other {# dhul}}",
+    "searchPlaceholderMore": "PUN, masuul, lambarka guriga, rasiidh, biil ama codsi",
+    "editTitle": "Wax ka beddel {pun}",
+    "editBody": "Faahfaahinta xafiiska. Xuduudaha iyo masuuliyiinta waxaa lagu beddelaa sixitaan xog ama wareejin.",
+    "plotNo": "Lambarka dhulka",
+    "lockTitle": "Ma xiraysaa {pun}?",
+    "lockBody": "Qofna ma beddeli karo faahfaahinta, xuduudaha ama masuuliyiinta dhulkan, mana bilaabi karo wareejin ama sixitaan, ilaa la furo. Biilasha iyo lacag-bixinta way shaqeynayaan.",
+    "unlockTitle": "Ma furaysaa {pun}?",
+    "unlockBody": "Dhulka mar kale waa la beddeli karaa, la wareejin karaa, lana sixi karaa.",
+    "lockReason": "Sababta",
+    "lockReasonHint": "Tusaale lambarka amarka maxkamadda ama kiiska. Waxaa lagu qorayaa taariikhda dhulka.",
+    "locked": "Dhulka waa la xiray",
+    "unlocked": "Dhulka waa la furay",
+    "lockedTitle": "Xiran tan iyo {date}"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
