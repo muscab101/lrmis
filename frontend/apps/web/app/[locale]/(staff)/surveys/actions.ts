@@ -236,3 +236,36 @@ export const registerParcelAction = defineAction(
     return out;
   },
 );
+
+/** Correct the land details found on site while the survey is open (assigned surveyor or supervisor). */
+export const updateSurveyDetailsAction = defineAction(
+  "surveys.details",
+  z.object({
+    surveyId: z.uuid(),
+    plotNo: z.string().trim().max(40, "validation.too_long").default(""),
+    houseNo: z.string().trim().max(40, "validation.too_long").default(""),
+    govtReceiptNo: z.string().trim().max(60, "validation.too_long").default(""),
+    plotWidthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
+    plotLengthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
+    addressNote: z.string().trim().max(500, "validation.too_long").default(""),
+  }),
+  async (v, ctx) => {
+    unwrap(
+      await ctx.supabase.rpc("survey_update_details", {
+        p_survey: v.surveyId,
+        p: {
+          plot_no: v.plotNo,
+          house_no: v.houseNo,
+          govt_receipt_no: v.govtReceiptNo,
+          plot_width_m: v.plotWidthM,
+          plot_length_m: v.plotLengthM,
+          address_note: v.addressNote,
+        },
+      }),
+      "survey details",
+    );
+    revalidatePath("/[locale]/surveys/[id]", "page");
+    revalidatePath("/[locale]/applications/[id]", "page");
+    return null;
+  },
+);

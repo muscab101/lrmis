@@ -1732,7 +1732,13 @@
     "caseNoOwners": "Weli masuul kuma jiro codsiga.",
     "caseNoDocuments": "Dukumenti lama soo gelin.",
     "caseOpenDocuments": "Ka fur dukumentiyada codsiga",
-    "declaredSize": "Cabbirka la sheegay"
+    "declaredSize": "Cabbirka la sheegay",
+    "editDetailsTitle": "Sax faahfaahinta dhulka",
+    "editDetailsBody": "Wixii aad goobta ka heshay. Waxaa lagu keydinayaa codsiga waxaana lagu qorayaa taariikhdiisa.",
+    "widthM": "Ballac (m)",
+    "lengthM": "Dherer (m)",
+    "newOwner": "Masuul cusub",
+    "newLandParcel": "Dhul cusub"
   },
   "parcels": {
     "title": "Dhulal",

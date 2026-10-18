@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
+import { PARTY_COLUMNS, type PartyRow } from "./applications";
 
 export type SurveyStatus = "assigned" | "in_progress" | "submitted" | "overlap_review" | "returned" | "cancelled";
 
@@ -111,7 +112,7 @@ export interface SurveyFile {
   application_parties: {
     role: string;
     share_pct: number | null;
-    party: { id: string; full_name: string; mother_name: string | null; phone: string | null; id_type: string | null; id_number: string | null; registered_at: string | null } | null;
+    party: PartyRow | null;
   }[];
   application_documents: { id: string; doc_type: string; file_name: string }[];
   docTypes: { code: string; name_so: string; name_en: string }[];
@@ -125,7 +126,7 @@ async function surveyFile(applicationId: string): Promise<SurveyFile | null> {
       .select(
         `id, number, type, channel, status, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no, plot_width_m, plot_length_m, address_note,
          district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en),
-         application_parties(role, share_pct, party:parties(id, full_name, mother_name, phone, id_type, id_number, registered_at)),
+         application_parties(role, share_pct, party:parties(${PARTY_COLUMNS})),
          application_documents(id, doc_type, file_name)`,
       )
       .eq("id", applicationId)

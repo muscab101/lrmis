@@ -4,16 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Mono } from "@dhulka/ui/misc";
 import { ClipboardList, FileText, Users } from "lucide-react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { EditOwner } from "@/app/[locale]/(staff)/owners/[id]/edit-owner";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
+import { SurveyDetailsEdit } from "./survey-details-edit";
 import { Link } from "@/i18n/navigation";
 import type { SurveyFile } from "@/lib/server/surveys";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 
 /**
  * The surveyor's case file: what the registration staff entered (the application and its
- * owners) and the documents, next to the map. Changes still go through the application.
+ * owners) and the documents, next to the map. While the survey is open the surveyor can
+ * correct the land details, and staff with owners.update can fix an owner's record.
  */
-export async function SurveyFileCards({ file, canOpenOwners }: { file: SurveyFile; canOpenOwners: boolean }) {
+export async function SurveyFileCards({
+  file,
+  surveyId,
+  can,
+  districts,
+}: {
+  file: SurveyFile;
+  surveyId: string;
+  can: { openOwners: boolean; editOwners: boolean; editLand: boolean };
+  districts: { id: string; name_so: string; name_en: string }[];
+}) {
   const t = await getTranslations("surveys");
   const ta = await getTranslations("applications");
   const to = await getTranslations("owners");
@@ -55,9 +68,12 @@ export async function SurveyFileCards({ file, canOpenOwners }: { file: SurveyFil
               <ApplicationStatusBadge status={file.status as ApplicationStatus} />
             </p>
           </div>
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/applications/${file.id}`}>{t("actionApplication")}</Link>
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            {can.editLand && <SurveyDetailsEdit surveyId={surveyId} details={file} />}
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/applications/${file.id}`}>{t("actionApplication")}</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
@@ -88,16 +104,19 @@ export async function SurveyFileCards({ file, canOpenOwners }: { file: SurveyFil
               {owners.map(({ party, role, share_pct }) => (
                 <li key={party!.id} className="space-y-0.5 py-2 first:pt-0 last:pb-0">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    {canOpenOwners ? (
+                    {can.openOwners ? (
                       <Link href={`/owners/${party!.id}`} className="hover:text-primary font-medium">
                         {party!.full_name}
                       </Link>
                     ) : (
                       <span className="font-medium">{party!.full_name}</span>
                     )}
-                    <StatusBadge tone={party!.registered_at ? "approved" : "draft"}>
-                      {party!.registered_at ? to("stateRegistered") : to("stateDraft")}
-                    </StatusBadge>
+                    <span className="flex items-center gap-1">
+                      <StatusBadge tone={party!.registered_at ? "approved" : "draft"}>
+                        {party!.registered_at ? to("stateRegistered") : to("stateDraft")}
+                      </StatusBadge>
+                      {can.editOwners && <EditOwner party={party!} districts={districts} iconOnly />}
+                    </span>
                   </div>
                   <div className="text-muted-foreground text-xs">
                     {[

@@ -1732,7 +1732,13 @@
     "caseNoOwners": "No owners on the application yet.",
     "caseNoDocuments": "No documents uploaded.",
     "caseOpenDocuments": "Open the documents on the application",
-    "declaredSize": "Declared size"
+    "declaredSize": "Declared size",
+    "editDetailsTitle": "Correct the land details",
+    "editDetailsBody": "What you found on site. It's saved on the application and recorded in its history.",
+    "widthM": "Width (m)",
+    "lengthM": "Length (m)",
+    "newOwner": "New owner",
+    "newLandParcel": "New land parcel"
   },
   "parcels": {
     "title": "Parcels",

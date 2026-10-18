@@ -3,7 +3,7 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Button } from "@dhulka/ui/button";
 import { Tooltip } from "@dhulka/ui/form-controls";
-import { ClipboardList, Compass, MapPinned } from "lucide-react";
+import { ClipboardList, Compass, MapPinned, Plus, UserPlus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -38,7 +38,32 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")}>
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={
+          (viewer.can("owners.create") || viewer.can("applications.create")) && (
+            <div className="flex flex-wrap gap-2">
+              {viewer.can("owners.create") && (
+                <Button asChild variant="outline">
+                  <Link href="/owners/new">
+                    <UserPlus aria-hidden />
+                    {t("newOwner")}
+                  </Link>
+                </Button>
+              )}
+              {viewer.can("applications.create") && (
+                <Button asChild>
+                  <Link href="/applications/new">
+                    <Plus aria-hidden />
+                    {t("newLandParcel")}
+                  </Link>
+                </Button>
+              )}
+            </div>
+          )
+        }
+      >
         <nav className="flex gap-5 overflow-x-auto text-sm">
           {TABS.map((tab) => (
             <Link
