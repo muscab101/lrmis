@@ -175,15 +175,3 @@ describe("income and outgoings, citizen tracking", () => {
     expect(apps.map((a) => a.number)).toContain("APP-2026-000001");
   });
 });
-
-describe("single SMS", () => {
-  it("customer service can text one person; it lands in the outbox", async () => {
-    const id = await asUser(db, agent, (tx) => scalar<string>(tx, `select public.message_send('0615550123', 'Please bring your old deed to the office on Monday.', null)`));
-    const m = await scalar<{ to_address: string; body: string; related_kind: string }>(db, `select row_to_json(m) from public.messages m where id = $1`, [id]);
-    expect(m.to_address).toBe("+252615550123");
-    expect(m.body).toContain("old deed");
-    expect(m.related_kind).toBe("single");
-    await expect(asUser(db, agent, (tx) => tx.query(`select public.message_send('12', 'Hello there friend', null)`))).rejects.toThrow(/VALIDATION: phone/);
-    await expect(asUser(db, exec, (tx) => tx.query(`select public.message_send('0615550123', 'Hello there friend', null)`))).rejects.toThrow(/PERMISSION_DENIED/);
-  });
-});

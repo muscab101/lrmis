@@ -47,19 +47,20 @@ export function CommandMenu({ groups }: { groups: NavGroup[] }) {
             <CommandList>
               <CommandEmpty>{tc("noResults")}</CommandEmpty>
               {groups.map((g) => (
-                <CommandGroup key={g.key} heading={t(`sections.${g.key}`)}>
-                  {(g.href ? [{ key: g.key, href: g.href, icon: g.icon, label: t(`sections.${g.key}`) }] : g.items.map((i) => ({ ...i, label: t(`items.${i.key}`) })))
+                <CommandGroup key={g.key} heading={t(`groups.${g.key}`)}>
+                  {g.items
+                    .filter((i) => i.phase === undefined)
                     .map((i) => (
                       <CommandItem
                         key={i.key}
-                        value={`${i.label} ${i.href}`}
+                        value={`${t(`items.${i.key}`)} ${i.href}`}
                         onSelect={() => {
                           setOpen(false);
                           router.push(i.href);
                         }}
                       >
                         <i.icon />
-                        {i.label}
+                        {t(`items.${i.key}`)}
                       </CommandItem>
                     ))}
                 </CommandGroup>
