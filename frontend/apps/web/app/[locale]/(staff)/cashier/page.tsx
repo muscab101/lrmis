@@ -12,7 +12,7 @@ export async function generateMetadata() {
   return { title: t("cashierTitle") };
 }
 
-export default async function CashierPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function CashierPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ find?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requirePermission(locale, "cashier.view");
@@ -29,7 +29,7 @@ export default async function CashierPage({ params }: { params: Promise<{ locale
         <OpenShift points={points} />
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-          <TakePayment shift={shift} />
+          <TakePayment shift={shift} initialFind={((await searchParams).find ?? "").slice(0, 40)} />
           <Card className="h-fit overflow-hidden">
             <div className="flex items-center justify-between border-b p-4 text-sm">
               <span className="font-medium">{t("thisShift")}</span>

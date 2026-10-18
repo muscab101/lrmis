@@ -269,7 +269,7 @@
     "due_date": "The due date can't be in the past.",
     "fee_type": "Choose a fee that can be used here.",
     "pun": "Enter a PUN like BN-HDN-012-000001.",
-    "pun_not_found": "No parcel with that PUN.",
+    "pun_not_found": "Nothing found with that PUN, invoice or application number.",
     "phone_so": "Enter a Somali mobile number like +252 61 234 5678.",
     "provider": "Choose a payment method that's available.",
     "csv": "Paste at least one line: reference, amount.",
@@ -1239,7 +1239,7 @@
     "returnedTitle": "Returned for correction",
     "rejectedTitle": "Rejected",
     "awaitingPaymentTitle": "Next step: application fee",
-    "awaitingPaymentBody": "The application is complete. The fee invoice and mobile-money payment arrive with the payments module (phase 7); after payment it moves to survey.",
+    "awaitingPaymentBody": "The application is complete. Its fee invoice is being prepared; refresh in a moment.",
     "tabDetails": "Details",
     "tabOwners": "Owners",
     "tabDocuments": "Documents",
@@ -1375,7 +1375,12 @@
       "go_owners": "Next: add the owners",
       "go_documents": "Next: upload documents",
       "go_review": "Next: review & submit"
-    }
+    },
+    "feeInvoiceBody": "The application is complete. Pay the application fee invoice {number} ({amount} to pay) and it moves to survey by itself.",
+    "payOnline": "Pay online (EVC Plus, Zaad, card)",
+    "payAtCashier": "Take payment at the cashier",
+    "openInvoice": "Open invoice",
+    "waiveNote": "A fee waiver (mosque, school, hardship) is decided by Finance. Someone other than the person who entered the application must approve it."
   },
   "owners": {
     "title": "Owners",
@@ -2277,7 +2282,7 @@
     "totalPaid": "Total paid",
     "receiptThanks": "Thank you. Keep this receipt. Check it at the land office with the receipt number.",
     "cashierTitle": "Cashier",
-    "cashierSubtitle": "Open your shift, take payments by PUN and close with a cash count.",
+    "cashierSubtitle": "Open your shift, take payments by PUN, invoice or application number, and close with a cash count.",
     "noPointsOfSale": "No point of sale for your district",
     "noPointsOfSaleBody": "An administrator must set up a cashier desk (point of sale) before shifts can open.",
     "openShift": "Open shift",
@@ -2291,7 +2296,7 @@
     "closeNote": "Note",
     "closeNoteHint": "Required if the count differs by more than a few dollars.",
     "shiftClosed": "Shift closed. Expected {expected}, difference {difference}.",
-    "findByPun": "Parcel (PUN)",
+    "findByPun": "PUN, invoice or application number",
     "find": "Find",
     "owedNow": "Owed now: {amount}",
     "discountUntil": "{pct}% off if paid in full now",
@@ -2304,7 +2309,8 @@
     "receiptReady": "Receipt {receipt}",
     "discountApplied": "Early-payment discount applied: {amount}.",
     "thisShift": "This shift",
-    "cashInDrawer": "Cash in drawer: {amount}"
+    "cashInDrawer": "Cash in drawer: {amount}",
+    "notYetRegistered": "not registered yet"
   },
   "accounting": {
     "title": "Accounting",

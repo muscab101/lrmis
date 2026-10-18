@@ -269,7 +269,7 @@
     "due_date": "Waqtiga bixintu ma noqon karo wakhti tagay.",
     "fee_type": "Dooro khidmad halkan lagu isticmaali karo.",
     "pun": "Geli PUN sida BN-HDN-012-000001.",
-    "pun_not_found": "Dhul PUN-kaas leh ma jiro.",
+    "pun_not_found": "Waxba lagama helin PUN-kaas, lambarka biilka ama codsiga.",
     "phone_so": "Geli lambar mobile Soomaali ah sida +252 61 234 5678.",
     "provider": "Dooro hab bixin oo diyaar ah.",
     "csv": "Ku dheji ugu yaraan hal sadar: tixraac, lacag.",
@@ -1239,7 +1239,7 @@
     "returnedTitle": "Dib loogu celiyay sixid",
     "rejectedTitle": "La diiday",
     "awaitingPaymentTitle": "Tallaabada xigta: khidmadda codsiga",
-    "awaitingPaymentBody": "Codsigu waa dhammaystiran yahay. Biilka khidmadda iyo lacag-bixinta mobilka waxay la imanayaan qaybta lacag-bixinta (wajiga 7); kadib lacag-bixinta wuxuu u gudbaa sahanka.",
+    "awaitingPaymentBody": "Codsigu waa dhammaystiran yahay. Biilka khidmadda ayaa la diyaarinayaa; dib u cusbooneysii.",
     "tabDetails": "Faahfaahin",
     "tabOwners": "Milkiilayaal",
     "tabDocuments": "Dukumentiyo",
@@ -1375,7 +1375,12 @@
       "go_owners": "Xiga: ku dar masuuliyiinta",
       "go_documents": "Xiga: soo geli dukumentiyada",
       "go_review": "Xiga: hubi & gudbi"
-    }
+    },
+    "feeInvoiceBody": "Codsigu waa dhammaystiran yahay. Bixi biilka khidmadda codsiga {number} ({amount} la bixinayo) wuxuuna si toos ah ugu gudbi doonaa sahanka.",
+    "payOnline": "Ku bixi online (EVC Plus, Zaad, kaar)",
+    "payAtCashier": "Lacagta ka qaado khasnajiga",
+    "openInvoice": "Fur biilka",
+    "waiveNote": "Cafinta khidmadda (masaajid, dugsi, dhibaato) waxaa go'aamisa Maaliyadda. Qof aan ahayn kii geliyey codsiga ayaa ansixin kara."
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -2277,7 +2282,7 @@
     "totalPaid": "Wadarta la bixiyay",
     "receiptThanks": "Mahadsanid. Hay rasiidkan. Ka hubi xafiiska dhulka adoo isticmaalaya lambarka rasiidka.",
     "cashierTitle": "Khasnaji",
-    "cashierSubtitle": "Fur wareeggaaga, qaado lacagta adoo isticmaalaya PUN, kuna xir tirinta lacagta caddaanka.",
+    "cashierSubtitle": "Fur wareegaaga, lacag ku qaado PUN, lambarka biilka ama codsiga, kuna xir tirinta lacagta caddaanka ah.",
     "noPointsOfSale": "Goob lacag qaadasho degmadaada uma jirto",
     "noPointsOfSaleBody": "Maamule ayaa waa inuu dejiyaa miis khasnaji (goob lacag qaadasho) ka hor inta aan wareegyo la furin.",
     "openShift": "Fur wareeg",
@@ -2291,7 +2296,7 @@
     "closeNote": "Qoraal",
     "closeNoteHint": "Waa loo baahan yahay haddii tirintu ku kala duwan tahay dhowr doolar wax ka badan.",
     "shiftClosed": "Wareegga waa la xiray. La filayay {expected}, farqi {difference}.",
-    "findByPun": "Dhul (PUN)",
+    "findByPun": "PUN, lambarka biilka ama codsiga",
     "find": "Raadi",
     "owedNow": "Hadda lagu leeyahay: {amount}",
     "discountUntil": "{pct}% dhimis haddii hadda la bixiyo oo dhan",
@@ -2304,7 +2309,8 @@
     "receiptReady": "Rasiid {receipt}",
     "discountApplied": "Dhimista bixinta hore waa la dabaqay: {amount}.",
     "thisShift": "Wareeggan",
-    "cashInDrawer": "Lacagta khaanadda: {amount}"
+    "cashInDrawer": "Lacagta khaanadda: {amount}",
+    "notYetRegistered": "weli lama diiwaangelin"
   },
   "accounting": {
     "title": "Xisaabaadka",

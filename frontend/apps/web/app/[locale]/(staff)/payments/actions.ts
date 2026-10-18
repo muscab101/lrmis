@@ -26,6 +26,7 @@ export const openShiftAction = defineAction("cashier.open", z.object({ posId: z.
 );
 
 export const findParcelAction = defineAction("cashier.find", z.object({ pun: z.string().trim().min(5, "validation.pun").max(40) }), async ({ pun }) => {
+  // PUN, invoice number or application number.
   const out = await parcelForCashier(pun);
   if (!out) throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
   return out;

@@ -161,7 +161,7 @@ export async function getApplication(id: string) {
   if (!app) return null;
   app.application_events.sort((a, b) => a.id - b.id);
 
-  const [checklist, nearby, docTypes, surveys, parcel, notices, cert] = await Promise.all([
+  const [checklist, nearby, docTypes, surveys, parcel, notices, cert, fee] = await Promise.all([
     supabase.rpc("application_checklist", { p_id: id }),
     supabase.rpc("application_nearby", { p_id: id, p_meters: 10 }),
     supabase.from("document_types").select("code, name_so, name_en, required_for, sort").order("sort"),
@@ -182,6 +182,7 @@ export async function getApplication(id: string) {
     app.parcel_id
       ? supabase.from("issued_documents").select("id, serial").eq("parcel_id", app.parcel_id).eq("type", "certificate").eq("status", "valid").limit(1).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.rpc("application_fee", { p_app: id }),
   ]);
   const stage: ApplicationStage = {
     surveys: (surveys.data ?? []) as unknown as ApplicationStage["surveys"],
@@ -192,6 +193,8 @@ export async function getApplication(id: string) {
   return {
     app,
     stage,
+    /** The application fee invoice (raised on submit), with its pay link. */
+    fee: (fee.data ?? null) as { id: string; number: string; total: number; balance: number; status: string; pay_link: string | null } | null,
     checklist: (checklist.data ?? []) as { code: string; value?: string | number }[],
     nearby: (nearby.data ?? []) as { id: string; number: string; status: ApplicationStatus; distance_m: number }[],
     docTypes: (docTypes.data ?? []) as { code: string; name_so: string; name_en: string; required_for: ApplicationType[] }[],

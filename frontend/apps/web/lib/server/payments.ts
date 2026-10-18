@@ -211,11 +211,28 @@ export async function listPeriods() {
 }
 
 /** Open invoices of a parcel found by PUN (for the cashier). */
-export async function parcelForCashier(pun: string) {
+/**
+ * The parcel the cashier takes money for, found by PUN, invoice number (INV-…) or application
+ * number (APP-…). Before registration a parcel has no PUN, so the application fee is found by
+ * its invoice or application number.
+ */
+export async function parcelForCashier(term: string) {
   const supabase = await createClient();
-  const { data: p } = await supabase.from("parcels").select("id, pun, account_no, district_id").eq("pun", pun.trim().toUpperCase()).maybeSingle();
+  const key = term.trim().toUpperCase();
+  const cols = "id, pun, account_no, district_id, application:applications!parcels_application_id_fkey(number)";
+  let parcelId: string | null = null;
+  if (key.startsWith("INV-")) {
+    const { data } = await supabase.from("invoices").select("parcel_id").eq("number", key).maybeSingle();
+    parcelId = (data as { parcel_id: string } | null)?.parcel_id ?? null;
+  } else if (key.startsWith("APP-")) {
+    const { data } = await supabase.from("applications").select("parcel_id").eq("number", key).maybeSingle();
+    parcelId = (data as { parcel_id: string | null } | null)?.parcel_id ?? null;
+  }
+  const { data: p } = parcelId
+    ? await supabase.from("parcels").select(cols).eq("id", parcelId).maybeSingle()
+    : await supabase.from("parcels").select(cols).eq("pun", key).maybeSingle();
   if (!p) return null;
-  const parcel = p as { id: string; pun: string; account_no: string | null; district_id: string };
+  const parcel = p as unknown as { id: string; pun: string | null; account_no: string | null; district_id: string; application: { number: string } | null };
   const [{ data: inv }, { data: owners }] = await Promise.all([
     supabase.from("invoices").select("id, number, period, due_date, balance, discount_until, early_discount_pct, paid").eq("parcel_id", parcel.id).in("status", ["issued", "partially_paid"]).order("due_date"),
     supabase.from("parcel_owners").select("party:parties(full_name)").eq("parcel_id", parcel.id).is("valid_to", null),

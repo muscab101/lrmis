@@ -8,7 +8,7 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert } from "@dhulka/ui/misc";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
@@ -53,6 +53,7 @@ interface Props {
 
 /** Owner (person/organisation) form with a live duplicate check (§4.1). */
 export function PartyForm({ party, mode = "staff", districtId, districts, onSaved, onCancel, submitLabel }: Props) {
+  const locale = useLocale();
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const vm = useValidationMessage();
@@ -186,7 +187,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
               <option value="">—</option>
               {districts.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.name_so}
+                  {locale === "so" ? d.name_so : d.name_en}
                 </option>
               ))}
             </NativeSelect>

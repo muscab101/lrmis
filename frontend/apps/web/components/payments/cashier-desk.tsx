@@ -10,7 +10,7 @@ import { Alert, Mono } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
 import { Printer, Search } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { closeShiftAction, findParcelAction, openShiftAction, takePaymentAction } from "@/app/[locale]/(staff)/payments/actions";
 import { FormError } from "@/components/forms/form-error";
 import { FormDialog } from "@/components/forms/form-dialog";
@@ -67,13 +67,14 @@ export function OpenShift({ points }: { points: { id: string; code: string; name
   );
 }
 
-export function TakePayment({ shift }: { shift: ShiftRow }) {
+/** `initialFind`: a PUN, invoice or application number to look up straight away (?find=). */
+export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; initialFind?: string }) {
   const t = useTranslations("payments");
   const format = useFormatter();
   const vm = useValidationMessage();
   const router = useRouter();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
-  const [pun, setPun] = useState("");
+  const [pun, setPun] = useState(initialFind);
   const [found, setFound] = useState<Found | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const [busy, setBusy] = useState(false);
@@ -96,8 +97,19 @@ export function TakePayment({ shift }: { shift: ShiftRow }) {
       return setError(res.error);
     }
     setFound(res.data);
-    setV((s) => ({ ...s, invoiceId: "", amount: String(res.data.invoices.reduce((a, i) => a + Number(i.balance), 0) || "") }));
+    // Searched by invoice number: that invoice is the one being paid.
+    const chosen = res.data.invoices.find((i) => i.number === pun.trim().toUpperCase());
+    setV((s) => ({
+      ...s,
+      invoiceId: chosen?.id ?? "",
+      amount: String(chosen ? Number(chosen.balance) : res.data.invoices.reduce((a, i) => a + Number(i.balance), 0) || ""),
+    }));
   }
+
+  useEffect(() => {
+    if (initialFind) void find();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function pay() {
     if (!found) return;
@@ -150,7 +162,7 @@ export function TakePayment({ shift }: { shift: ShiftRow }) {
             }}
           >
             <Field id="pun" label={t("findByPun")} error={fe("pun")} className="flex-1">
-              <Input value={pun} onChange={(e) => setPun(e.target.value)} placeholder="BN-HDN-012-000001" className="font-mono" autoComplete="off" />
+              <Input value={pun} onChange={(e) => setPun(e.target.value)} placeholder="BN-HDN-012-000001 · INV-2026-000001 · APP-2026-000001" className="font-mono" autoComplete="off" />
             </Field>
             <Button type="submit" variant="outline" className="mt-6" loading={busy && !found}>
               <Search aria-hidden />
@@ -162,7 +174,7 @@ export function TakePayment({ shift }: { shift: ShiftRow }) {
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">
-                  <Mono>{found.parcel.pun}</Mono> · {found.owners.join(", ") || "—"}
+                  <Mono>{found.parcel.pun ?? found.parcel.application?.number ?? "—"}</Mono> · {found.owners.join(", ") || (found.parcel.pun ? "—" : t("notYetRegistered"))}
                 </p>
                 <p className="text-sm text-muted-foreground">{t("owedNow", { amount: usd(owed) })}</p>
               </div>

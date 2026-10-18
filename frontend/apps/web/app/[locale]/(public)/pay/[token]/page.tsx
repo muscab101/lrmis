@@ -62,9 +62,11 @@ export default async function PayPage({ params, searchParams }: { params: Promis
                 <div>
                   <p className="text-sm text-muted-foreground">{lang === "so" ? inv.fee_so : inv.fee} {inv.period}</p>
                   <p className="font-mono">{inv.number}</p>
-                  <p className="text-sm">
-                    PUN <Mono>{inv.pun}</Mono>
-                  </p>
+                  {inv.pun && (
+                    <p className="text-sm">
+                      PUN <Mono>{inv.pun}</Mono>
+                    </p>
+                  )}
                 </div>
                 <div className="text-end">
                   <p className="text-sm text-muted-foreground">{t("amountDue")}</p>
@@ -78,7 +80,7 @@ export default async function PayPage({ params, searchParams }: { params: Promis
                 <>
                   <PayForm token={token} providers={providers} initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null} />
                   <Alert tone="info" title={t("howToPay")}>
-                    {t("howToPayBody", { pun: inv.pun ?? "" })}
+                    {t("howToPayBody", { pun: inv.pun ?? inv.number })}
                   </Alert>
                 </>
               )}

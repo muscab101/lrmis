@@ -1,7 +1,9 @@
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { TabsContent, TabsList, TabsTrigger } from "@dhulka/ui/form-controls";
+import { Button } from "@dhulka/ui/button";
 import { Alert, PageHeader } from "@dhulka/ui/misc";
+import { Link } from "@/i18n/navigation";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import type { getApplication } from "@/lib/server/applications";
 import type { Viewer } from "@/lib/server/auth";
@@ -34,7 +36,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
   const t = await getTranslations("applications");
   const format = await getFormatter();
   const locale = await getLocale();
-  const { app, checklist, nearby, docTypes, stage } = data;
+  const { app, checklist, nearby, docTypes, stage, fee } = data;
   const me = viewer.user.id;
   const isApplicant = app.citizen_user_id === me || app.created_by === me;
   const editableStatus = app.status === "draft" || app.status === "returned";
@@ -90,7 +92,36 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
       )}
       {app.status === "awaiting_payment" && (
         <Alert tone="info" title={t("awaitingPaymentTitle")} className="mb-5">
-          {t("awaitingPaymentBody")}
+          {fee ? (
+            <>
+              <p>
+                {t("feeInvoiceBody", {
+                  number: fee.number,
+                  amount: format.number(Number(fee.balance), { style: "currency", currency: "USD" }),
+                })}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {fee.pay_link && (
+                  <Button size="sm" asChild>
+                    <Link href={fee.pay_link}>{t("payOnline")}</Link>
+                  </Button>
+                )}
+                {mode === "staff" && viewer.can("payments.create") && (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/cashier?find=${fee.number}`}>{t("payAtCashier")}</Link>
+                  </Button>
+                )}
+                {mode === "staff" && viewer.can("invoices.view") && (
+                  <Button size="sm" variant="ghost" asChild>
+                    <Link href={`/invoices/${fee.id}`}>{t("openInvoice")}</Link>
+                  </Button>
+                )}
+              </div>
+              {mode === "staff" && <p className="text-muted-foreground mt-2 text-xs">{t("waiveNote")}</p>}
+            </>
+          ) : (
+            t("awaitingPaymentBody")
+          )}
         </Alert>
       )}
 
