@@ -14,16 +14,18 @@ import { useRouter } from "@/i18n/navigation";
 interface Props {
   districts: { id: string; code: string; name_so: string; name_en: string }[];
   feeTypes: { id: string; code: string; name_so: string; name_en: string; interval: string }[];
+  /** Open straight away (menu: Billing → Create batches). */
+  defaultOpen?: boolean;
 }
 
 /** Step 1 of the billing-run wizard: period, fee and districts. The preview follows on the run page. */
-export function NewRunButton({ districts, feeTypes }: Props) {
+export function NewRunButton({ districts, feeTypes, defaultOpen = false }: Props) {
   const t = useTranslations("billing");
   const locale = useLocale();
   const router = useRouter();
   const recurring = feeTypes.filter((f) => f.interval !== "one_off");
   const year = new Date().getFullYear();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [v, setV] = useState({ year: String(year), feeTypeId: recurring[0]?.id ?? "", districtIds: [] as string[], dueDate: `${year}-12-31`, note: "" });
   const toggle = (id: string, on: boolean) => setV((s) => ({ ...s, districtIds: on ? [...s.districtIds, id] : s.districtIds.filter((d) => d !== id) }));
 

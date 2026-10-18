@@ -199,7 +199,9 @@ export async function queryParties(q: PartiesQuery) {
     const rows = (unwrap(res, "search parties") as PartyRow[]).filter((r) => !q.kind || r.kind === q.kind);
     return { rows, total: rows.length };
   }
-  let req = supabase.from("parties").select(PARTY_COLUMNS, { count: "exact" }).is("deleted_at", null);
+  let req = q.registered
+    ? supabase.from("parties").select(`${PARTY_COLUMNS}, parcel_owners!inner(valid_to)`, { count: "exact" }).is("deleted_at", null).is("parcel_owners.valid_to", null)
+    : supabase.from("parties").select(PARTY_COLUMNS, { count: "exact" }).is("deleted_at", null);
   if (q.kind) req = req.eq("kind", q.kind);
   const from = (q.page - 1) * APP_PAGE_SIZE;
   const res = await req.order("created_at", { ascending: false }).range(from, from + APP_PAGE_SIZE - 1);

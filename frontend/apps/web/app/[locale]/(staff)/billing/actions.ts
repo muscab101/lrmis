@@ -148,3 +148,18 @@ export const decidePlanAction = defineAction("billing.decide_plan", z.object({ i
 export const applyPenaltiesAction = defineAction("billing.penalties", z.object({}), async (_v, ctx) =>
   done(unwrap(await ctx.supabase.rpc("apply_late_penalties", {}), "penalties") as number),
 );
+
+/** Single invoice: find the parcel by PUN or account number first. */
+export const findParcelAction = defineAction("invoices.find_parcel", z.object({ q: z.string().trim().min(3).max(40) }), async (v, ctx) => {
+  const term = v.q.toUpperCase();
+  const { data } = await ctx.supabase
+    .from("parcels")
+    .select("id, pun, account_no, status, district:districts(name_so, name_en), parcel_owners(valid_to, party:parties(full_name))")
+    .or(`pun.eq.${term},account_no.eq.${term}`)
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  const p = data as unknown as { id: string; pun: string | null; account_no: string | null; status: string; district: { name_so: string; name_en: string } | null; parcel_owners: { valid_to: string | null; party: { full_name: string } | null }[] };
+  return { id: p.id, pun: p.pun, accountNo: p.account_no, status: p.status, district: p.district, owners: p.parcel_owners.filter((o) => !o.valid_to).map((o) => o.party?.full_name ?? "") };
+});
