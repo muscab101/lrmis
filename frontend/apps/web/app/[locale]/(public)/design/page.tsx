@@ -10,7 +10,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
-import { DesignFolders } from "./folders";
 import { DesignInteractive } from "./interactive";
 
 const COLOURS = [
@@ -164,11 +163,6 @@ export default async function DesignPage({ params }: { params: Promise<{ locale:
             </TableBody>
           </Table>
         </Card>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">{t("folders")}</h2>
-        <DesignFolders />
       </section>
     </main>
   );

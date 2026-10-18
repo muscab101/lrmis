@@ -4,7 +4,6 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { ClipboardList, Home, Plus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
-import { ParcelFolders } from "@/components/portal/parcel-folders";
 import { Link } from "@/i18n/navigation";
 import { citizenApplications } from "@/lib/server/portal-track";
 import { citizenOverview } from "@/lib/server/portal";
@@ -83,14 +82,6 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
           </ul>
         )}
       </section>
-
-      {me.parcels.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-lg font-semibold">{t("myFiles")}</h2>
-          <p className="mb-2 text-sm text-muted-foreground">{t("myFilesBody")}</p>
-          <ParcelFolders overview={me} />
-        </section>
-      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <section>

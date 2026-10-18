@@ -575,24 +575,7 @@
       "id_card": "Property ID card"
     },
     "issuedOn": "issued {date}",
-    "verifyLink": "Verify",
-    "myFiles": "My files",
-    "myFilesBody": "Each folder holds a property's documents, unpaid bills and receipts. Click a folder to open it.",
-    "bill": "Bill",
-    "receipt": "Receipt",
-    "folder": {
-      "open": "Open",
-      "close": "Close",
-      "openFolder": "Open folder",
-      "closeFolder": "Close folder",
-      "items": "{count, plural, one {# item} other {# items}}",
-      "contents": "contents",
-      "options": "options",
-      "addTo": "Add a file to",
-      "moreFor": "More options for",
-      "untitled": "Untitled",
-      "justNow": "Just now"
-    }
+    "verifyLink": "Verify"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1154,8 +1137,7 @@
     "status": "Status",
     "tone_approved": "Paid",
     "tone_partial": "Partial",
-    "tone_rejected": "Overdue",
-    "folders": "Glass folders"
+    "tone_rejected": "Overdue"
   },
   "map": {
     "title": "Map",
