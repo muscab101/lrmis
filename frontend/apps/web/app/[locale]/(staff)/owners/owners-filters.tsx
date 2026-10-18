@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 
-export function OwnersFilters({ q, kind, total }: { q: string; kind: string; total: number }) {
+export function OwnersFilters({ q, kind, stage, total }: { q: string; kind: string; stage: string; total: number }) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -15,7 +15,7 @@ export function OwnersFilters({ q, kind, total }: { q: string; kind: string; tot
   const [term, setTerm] = useState(q);
 
   const go = (next: { q?: string; kind?: string }) => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams({ stage });
     const nq = next.q ?? term;
     const nk = next.kind ?? kind;
     if (nq) p.set("q", nq);

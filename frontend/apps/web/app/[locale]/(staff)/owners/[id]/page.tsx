@@ -11,7 +11,8 @@ import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
-import { EditOwner } from "./edit-owner";
+import { StatusBadge } from "@dhulka/ui/badge";
+import { OwnerRowActions } from "@/components/owners/owner-row-actions";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -70,7 +71,26 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
       <PageHeader
         eyebrow={t(`kind_${party.kind}`)}
         title={party.full_name}
-        actions={viewer.can("owners.update") && <EditOwner party={party} districts={districts} />}
+        description={
+          <StatusBadge tone={party.registered_at ? "approved" : "draft"}>
+            {party.registered_at
+              ? `${t("stateRegistered")} · ${format.dateTime(new Date(party.registered_at), { dateStyle: "medium" })}`
+              : t("stateDraft")}
+          </StatusBadge>
+        }
+        actions={
+          <OwnerRowActions
+            party={party}
+            districts={districts}
+            onDetail
+            can={{
+              apply: viewer.can("applications.create"),
+              update: viewer.can("owners.update"),
+              remove: viewer.can("owners.delete"),
+              register: viewer.can("owners.approve"),
+            }}
+          />
+        }
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <Card>

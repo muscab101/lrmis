@@ -10,7 +10,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { createApplicationAction, nearbyPinsAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
+import { createApplicationAction, nearbyPinsAction, setApplicationPartiesAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
 import { getGeometryAction, locatePointAction, searchNeighbourhoodsAction } from "@/app/[locale]/(staff)/locations/actions";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
@@ -44,12 +44,14 @@ interface Props {
   canCaptureLocation?: boolean;
   /** Shown under the map for a saved pin: when and how it was captured. */
   captured?: { at: string | null; lowAccuracy: boolean } | null;
+  /** Staff only: put this owner on the new application (the + key on the owners list). */
+  ownerId?: string;
 }
 
 const OFFLINE_KEY = "lrmis.offline-location";
 
 /** Step 1 — what and where: type, district, neighbourhood, map pin, plot / deed numbers. */
-export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null }: Props) {
+export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null, ownerId }: Props) {
   const t = useTranslations("applications");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -129,6 +131,11 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
         setSaving(false);
         if (!res.ok) return setError(res.error);
         clearQueued();
+        if (ownerId) {
+          // The application exists either way; a failure here only means adding the owner by hand.
+          const added = await setApplicationPartiesAction({ applicationId: res.data!.id, parties: [{ partyId: ownerId, role: "owner", sharePct: 100 }] });
+          if (!added.ok) toast.error(t("ownerNotAdded"));
+        }
         toast.success(t("draftCreated", { number: res.data!.number }));
         router.push(`${basePath}/${res.data!.id}`);
         return;

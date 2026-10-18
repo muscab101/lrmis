@@ -81,10 +81,12 @@ export interface PartyRow {
   district_id: string | null;
   citizen_user_id: string | null;
   created_at: string;
+  /** null while the owner is a draft (partial registration). */
+  registered_at: string | null;
 }
 
 export const PARTY_COLUMNS =
-  "id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, phone_verified_at, email, address, next_of_kin, org_registration_no, district_id, citizen_user_id, created_at";
+  "id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, phone_verified_at, email, address, next_of_kin, org_registration_no, district_id, citizen_user_id, created_at, registered_at";
 
 export interface ApplicationDetail {
   id: string;
@@ -193,14 +195,23 @@ export async function getApplication(id: string) {
 export async function queryParties(q: PartiesQuery) {
   const supabase = await createClient();
   const term = cleanTerm(q.q);
+  const staged = <T extends { is: (c: string, v: null) => T; not: (c: string, op: string, v: null) => T }>(req: T) =>
+    q.stage === "draft" ? req.is("registered_at", null) : q.stage === "registered" ? req.not("registered_at", "is", null) : req;
   if (term) {
-    // Typo-tolerant search via the RPC (RLS still applies: it runs as the caller).
+    // Typo-tolerant search via the RPC (RLS still applies: it runs as the caller), then the
+    // full rows for the matches, kept in the RPC's order.
     const res = await supabase.rpc("search_parties", { p_q: term, p_limit: 50 });
-    const rows = (unwrap(res, "search parties") as PartyRow[]).filter((r) => !q.kind || r.kind === q.kind);
+    const ids = (unwrap(res, "search parties") as { id: string }[]).map((r) => r.id);
+    if (!ids.length) return { rows: [] as PartyRow[], total: 0 };
+    let req = supabase.from("parties").select(PARTY_COLUMNS).in("id", ids).is("deleted_at", null);
+    if (q.kind) req = req.eq("kind", q.kind);
+    const found = unwrap(await staged(req), "parties") as unknown as PartyRow[];
+    const rows = ids.map((id) => found.find((r) => r.id === id)).filter((r): r is PartyRow => !!r);
     return { rows, total: rows.length };
   }
   let req = supabase.from("parties").select(PARTY_COLUMNS, { count: "exact" }).is("deleted_at", null);
   if (q.kind) req = req.eq("kind", q.kind);
+  req = staged(req);
   const from = (q.page - 1) * APP_PAGE_SIZE;
   const res = await req.order("created_at", { ascending: false }).range(from, from + APP_PAGE_SIZE - 1);
   return { rows: unwrap(res, "parties") as unknown as PartyRow[], total: res.count ?? 0 };

@@ -222,6 +222,39 @@ export const savePartyAction = defineAction("owners.save", z.object({ id: z.uuid
   }
 });
 
+/** Owner errors shown under the confirm dialog. */
+function ownerErrors(err: unknown): never {
+  if (err instanceof AppFailure) {
+    const detail = err.values?.detail;
+    if (err.code === "VALIDATION" && detail === "identity_required") throw new AppFailure("VALIDATION", undefined, { owner: ["validation.owner_identity_required"] });
+    if (err.code === "CONFLICT" && detail === "registered") throw new AppFailure("CONFLICT", undefined, { owner: ["validation.owner_registered"] });
+    if (err.code === "HAS_RECORDS") throw new AppFailure("HAS_RECORDS", undefined, { owner: ["validation.owner_in_use"] });
+  }
+  throw err;
+}
+
+/** Move a draft owner (partial registration) to the register. */
+export const registerOwnerAction = defineAction("owners.register", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  try {
+    unwrap(await ctx.supabase.rpc("party_register", { p_id: id }), "register owner");
+  } catch (err) {
+    ownerErrors(err);
+  }
+  revalidatePath("/[locale]/owners", "layout");
+  return null;
+});
+
+/** Delete a draft owner. */
+export const deleteOwnerAction = defineAction("owners.delete", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  try {
+    unwrap(await ctx.supabase.rpc("party_delete", { p_id: id }), "delete owner");
+  } catch (err) {
+    ownerErrors(err);
+  }
+  revalidatePath("/[locale]/owners", "layout");
+  return null;
+});
+
 export const updateMyPartyAction = defineAction("owners.save_mine", partySchema, async (input, ctx) => {
   try {
     unwrap(await ctx.supabase.rpc("update_my_party", { p: partyPayload(input) }), "update my party");

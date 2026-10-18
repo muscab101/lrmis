@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@dhulka/ui/button";
+import { Tooltip } from "@dhulka/ui/form-controls";
 import { Dialog, DialogTitle, SheetContent } from "@dhulka/ui/dialog";
 import { toast } from "@dhulka/ui/toaster";
 import { Pencil } from "lucide-react";
@@ -10,17 +11,26 @@ import { PartyForm } from "@/components/owners/party-form";
 import { useRouter } from "@/i18n/navigation";
 import type { PartyRow } from "@/lib/server/applications";
 
-export function EditOwner({ party, districts }: { party: PartyRow; districts: { id: string; name_so: string; name_en: string }[] }) {
+/** Edit sheet; `iconOnly` gives the small pencil used in table rows. */
+export function EditOwner({ party, districts, iconOnly = false }: { party: PartyRow; districts: { id: string; name_so: string; name_en: string }[]; iconOnly?: boolean }) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Pencil aria-hidden />
-        {tc("edit")}
-      </Button>
+      {iconOnly ? (
+        <Tooltip content={tc("edit")}>
+          <Button variant="ghost" size="icon-sm" className="text-success" aria-label={tc("edit")} onClick={() => setOpen(true)}>
+            <Pencil aria-hidden />
+          </Button>
+        </Tooltip>
+      ) : (
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          <Pencil aria-hidden />
+          {tc("edit")}
+        </Button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <SheetContent className="max-w-2xl" closeLabel={tc("close")}>
           <div className="border-b px-6 py-5">

@@ -304,7 +304,10 @@
     "plot_size": "Geli cabbir u dhexeeya 0 iyo 5,000 m.",
     "correction_empty": "Beddel ugu yaraan hal goob.",
     "still_overlapping": "Xuduuddu waxay dul fuushay dhul deris ah.",
-    "outside_neighbourhood": "Xuduuddu way ka baxsan tahay xaafadda dhulka."
+    "outside_neighbourhood": "Xuduuddu way ka baxsan tahay xaafadda dhulka.",
+    "owner_identity_required": "Ku dar dukumenti aqoonsi ama lambar telefoon ka hor intaadan diiwaangelin masuulkan.",
+    "owner_registered": "Masuuliyiinta la diiwaangeliyey lama tirtiri karo.",
+    "owner_in_use": "Masuulkan wuxuu ku qoran yahay codsi, sidaa darteed lama tirtiri karo."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1359,7 +1362,9 @@
     },
     "plotWidth": "Ballac (m)",
     "plotLength": "Dherer (m)",
-    "declaredArea": "Bedka (ballac × dherer)"
+    "declaredArea": "Bedka (ballac × dherer)",
+    "forOwner": "Dhul cusub oo loogu talagalay {name}. Waxaa lagu dari doonaa masuul ahaan.",
+    "ownerNotAdded": "Codsiga waa la sameeyey, laakiin masuulka lama dari karin. Ku dar tallaabada 2aad."
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -1413,7 +1418,32 @@
     "id_driving_licence": "Liisanka darawalnimada",
     "id_birth_certificate": "Shahaadada dhalashada",
     "id_company_registration": "Diiwaanka shirkadda",
-    "id_other": "Kale"
+    "id_other": "Kale",
+    "stages": "Diiwaanka masuuliyiinta",
+    "stage_draft": "Diiwaangelin qayb ah",
+    "stage_registered": "La diiwaangeliyey",
+    "stage_all": "Dhammaan",
+    "stageBody_draft": "Masuuliyiin la geliyey oo aan weli la xaqiijin. Hubi mid kasta, kadibna u gudbi diiwaanka.",
+    "stageBody_registered": "Masuuliyiinta diiwaanka ku jira: la xaqiijiyey, ama ku qoran dhul la diiwaangeliyey.",
+    "stageBody_all": "Dhammaan diiwaanka masuuliyiinta, qabyo iyo kuwa la diiwaangeliyey.",
+    "emptyDraftTitle": "Ma jiraan masuuliyiin sugaya",
+    "emptyDraftBody": "Masuuliyiinta cusub ee aad geliso halkan ayay ku jiraan ilaa loo gudbiyo diiwaanka.",
+    "dateCreated": "Taariikhda la sameeyey",
+    "status": "Xaalad",
+    "actions": "Ficillo",
+    "stateDraft": "Diiwaangelin qayb ah",
+    "stateRegistered": "La diiwaangeliyey",
+    "actionAddParcel": "Ku dar dhul masuulkan",
+    "actionView": "Eeg faahfaahinta",
+    "actionDelete": "Tirtir",
+    "actionRegister": "U gudbi diiwaanka",
+    "deleteTitle": "Ma tirtirtaa {name}?",
+    "deleteBody": "Tani waxay tirtiraysaa masuulka qabyada ah. Waxay ku jiri doontaa diiwaanka hubinta. Masuuliyiinta la diiwaangeliyey ama codsi ku jira lama tirtiri karo.",
+    "deleted": "Masuulka waa la tirtiray",
+    "registerTitle": "Ma u gudbisaa {name} diiwaanka?",
+    "registerBody": "Marka hore hubi magaca, aqoonsiga iyo telefoonka. Marka la diiwaangeliyo, masuulku wuxuu noqonayaa diiwaan rasmi ah lamana tirtiri karo.",
+    "registeredDone": "Masuulka waxaa loo gudbiyey diiwaanka",
+    "districtColumn": "Degmo"
   },
   "track": {
     "title": "Raadraac codsi",

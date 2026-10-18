@@ -113,6 +113,8 @@ export type ApplicationsQuery = z.infer<typeof applicationsQuerySchema>;
 export const partiesQuerySchema = z.object({
   q: z.string().trim().max(80).default(""),
   kind: z.enum([...PARTY_KINDS, ""]).default(""),
+  /** draft = partial registration, registered = on the register ("real data"), all = both. */
+  stage: z.enum(["draft", "registered", "all"]).catch("draft").default("draft"),
   page: z.coerce.number().int().min(1).default(1),
 });
 export type PartiesQuery = z.infer<typeof partiesQuerySchema>;

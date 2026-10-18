@@ -13,9 +13,10 @@ export function NewOwnerForm({ districts }: { districts: { id: string; name_so: 
       party={null}
       districts={districts}
       onCancel={() => router.back()}
-      onSaved={(id) => {
+      onSaved={() => {
         toast.success(t("created"));
-        router.push(`/owners/${id}`);
+        // Back to Partial registration, where the new draft can be checked and moved to the register.
+        router.push("/owners?stage=draft");
       }}
     />
   );
