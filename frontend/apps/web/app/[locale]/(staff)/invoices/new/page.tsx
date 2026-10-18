@@ -16,11 +16,15 @@ export default async function SingleInvoicePage({ params }: { params: Promise<{ 
   const t = await getTranslations("billing");
   const supabase = await createClient();
   // Yearly property tax comes from billing runs; everything else can be billed one at a time.
-  const { data } = await supabase.from("fee_types").select("id, code, name_so, name_en, amount").eq("active", true).neq("code", "property_tax").order("sort");
+  const { data } = await supabase.from("fee_types").select("id, code, name_so, name_en, amount, interval").eq("active", true).neq("code", "property_tax").order("sort");
+  // One-off fees (certificate, survey, permit…) first; yearly ones after.
+  const fees = ((data ?? []) as { id: string; code: string; name_so: string; name_en: string; amount: number; interval: string }[]).sort(
+    (a, b) => Number(a.interval !== "one_off") - Number(b.interval !== "one_off"),
+  );
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title={t("singleInvoiceTitle")} description={t("singleInvoiceSubtitle")} />
-      <SingleInvoiceForm fees={(data ?? []) as { id: string; code: string; name_so: string; name_en: string; amount: number }[]} />
+      <SingleInvoiceForm fees={fees} />
     </div>
   );
 }

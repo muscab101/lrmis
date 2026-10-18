@@ -75,7 +75,7 @@ export function ExcelImport() {
               {t("template")}
             </a>
           </div>
-          <p className="text-xs text-muted-foreground">{t("columns", { list: LEGACY_COLUMNS.join(", ") })}</p>
+          <p className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("columns", { list: LEGACY_COLUMNS.join(", ") })}</p>
           {rows.length > 0 && (
             <div className="space-y-3 border-t pt-4">
               <p>{t("rowsRead", { n: rows.length })}</p>

@@ -64,7 +64,7 @@ export function NewRunButton({ districts, feeTypes, defaultOpen = false }: Props
               </NativeSelect>
             </Field>
             <Field id="districts" label={t("districts")} error={fe("districtIds")} required>
-              <div className="grid max-h-44 grid-cols-2 gap-2 overflow-y-auto rounded-md border p-3">
+              <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
                 {districts.map((d) => (
                   <label key={d.id} className="flex items-center gap-2 text-sm">
                     <Checkbox checked={v.districtIds.includes(d.id)} onCheckedChange={(c) => toggle(d.id, c === true)} />

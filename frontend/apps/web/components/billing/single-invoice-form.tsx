@@ -60,19 +60,20 @@ export function SingleInvoiceForm({ fees }: { fees: Fee[] }) {
     <Card>
       <CardContent className="space-y-5 pt-5">
         <form
-          className="flex items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             void find();
           }}
         >
-          <Field id="q" label={t("findParcel")} hint={t("findParcelHint")} className="flex-1">
-            <Input className="font-mono uppercase" value={q} onChange={(e) => setQ(e.target.value)} placeholder="BN-HDN-T01-000001" />
-          </Field>
-          <Button type="submit" variant="outline" disabled={q.trim().length < 3}>
-            <Search aria-hidden />
-            {t("find")}
-          </Button>
+          <div className="flex items-start gap-2">
+            <Field id="q" label={t("findParcel")} hint={t("findParcelHint")} className="min-w-0 flex-1">
+              <Input className="font-mono uppercase" value={q} onChange={(e) => setQ(e.target.value)} placeholder="BN-HDN-T01-000001" />
+            </Field>
+            <Button type="submit" variant="outline" className="mt-[20px] h-10" disabled={q.trim().length < 3}>
+              <Search aria-hidden />
+              {t("find")}
+            </Button>
+          </div>
         </form>
         {notFound && <p className="text-sm text-status-rejected">{t("parcelNotFound")}</p>}
         {parcel && (
