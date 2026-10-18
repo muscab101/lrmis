@@ -72,3 +72,19 @@ export const updateTemplateAction = defineAction(
     }
   },
 );
+
+/** SMS Management → Single SMS. */
+export const sendSmsAction = defineAction(
+  "messages.send",
+  z.object({ phone: z.string().trim().min(6, "validation.phone").max(20), text: z.string().trim().min(5, "validation.text").max(600, "validation.too_long"), partyId: z.uuid().nullable().default(null) }),
+  async (v, ctx) => {
+    try {
+      return done(unwrap(await ctx.supabase.rpc("message_send", { p_phone: v.phone, p_text: v.text, p_party: v.partyId }), "send") as string);
+    } catch (err) {
+      const detail = err instanceof AppFailure ? String(err.values?.detail ?? "") : "";
+      if (detail === "phone") throw new AppFailure("VALIDATION", undefined, { phone: ["validation.phone"] });
+      if (detail === "text") throw new AppFailure("VALIDATION", undefined, { text: ["validation.text"] });
+      throw err;
+    }
+  },
+);

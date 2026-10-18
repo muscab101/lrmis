@@ -5,7 +5,7 @@ import { Dialog, DialogTitle, SheetContent } from "@dhulka/ui/dialog";
 import { cn } from "@dhulka/ui/lib/cn";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { CommandMenu } from "./command-menu";
 import { EnvBadge } from "./env-badge";
 import { LocaleSwitch } from "./locale-switch";
@@ -63,16 +63,20 @@ export function AppShell({ permissions, user, env, children }: AppShellProps) {
       <aside
         className={cn(
           "sticky top-0 hidden h-dvh shrink-0 border-e border-sidebar-border transition-[width] duration-200 lg:block",
-          collapsed ? "w-16" : "w-[248px]",
+          collapsed ? "w-16" : "w-[272px]",
         )}
       >
-        <Sidebar groups={groups} collapsed={collapsed} onToggle={toggle} />
+        <Suspense>
+          <Sidebar groups={groups} collapsed={collapsed} onToggle={toggle} />
+        </Suspense>
       </aside>
 
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent className="start-0 end-auto max-w-72 border-0 bg-sidebar p-0 [&>button]:text-sidebar-foreground" closeLabel={tc("close")}>
           <DialogTitle className="sr-only">{t("label")}</DialogTitle>
-          <Sidebar groups={groups} collapsed={false} onToggle={() => setMobileOpen(false)} onNavigate={() => setMobileOpen(false)} />
+          <Suspense>
+            <Sidebar groups={groups} collapsed={false} onToggle={() => setMobileOpen(false)} onNavigate={() => setMobileOpen(false)} />
+          </Suspense>
         </SheetContent>
       </Dialog>
 

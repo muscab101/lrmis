@@ -28,8 +28,8 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
   return (
     <>
       <PageHeader
-        title={t("title")}
-        description={t("subtitle")}
+        title={q.registered ? t("registeredTitle") : t("title")}
+        description={q.registered ? t("registeredSubtitle") : t("subtitle")}
         actions={
           viewer.can("owners.create") && (
             <Button asChild>
@@ -81,7 +81,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
             </TableBody>
           </Table>
         )}
-        {!q.q && <Pager page={q.page} pages={pages} href={(p) => `/owners?${new URLSearchParams({ kind: q.kind, page: String(p) })}`} />}
+        {!q.q && <Pager page={q.page} pages={pages} href={(p) => `/owners?${new URLSearchParams({ kind: q.kind, page: String(p), ...(q.registered ? { registered: "1" } : {}) })}`} />}
       </Card>
     </>
   );
