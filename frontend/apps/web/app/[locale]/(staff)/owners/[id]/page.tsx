@@ -84,7 +84,6 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
             districts={districts}
             onDetail
             can={{
-              apply: viewer.can("applications.create"),
               update: viewer.can("owners.update"),
               remove: viewer.can("owners.delete"),
               register: viewer.can("owners.approve"),

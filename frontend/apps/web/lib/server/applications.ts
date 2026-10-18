@@ -20,6 +20,7 @@ export interface ApplicationListRow {
   /** Site check: pending ("!"), confirmed (✓), not_found, or null (never asked). */
   site_check_status: SiteCheckStatus | null;
   site_check_surveyor: string | null;
+  created_by: string | null;
 }
 
 export type SiteCheckStatus = "pending" | "confirmed" | "not_found";
@@ -33,7 +34,7 @@ export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnl
   let req = supabase
     .from("applications")
     .select(
-      "id, number, type, status, channel, submitted_at, created_at, site_check_status, site_check_surveyor, district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en), applicant:parties!applications_applicant_party_id_fkey(full_name, phone)",
+      "id, number, type, status, channel, submitted_at, created_at, created_by, site_check_status, site_check_surveyor, district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en), applicant:parties!applications_applicant_party_id_fkey(full_name, phone)",
       { count: "exact" },
     );
   if (q.status === "open") req = req.not("status", "in", `(${CLOSED.join(",")})`);

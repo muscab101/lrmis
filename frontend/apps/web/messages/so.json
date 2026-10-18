@@ -1413,7 +1413,11 @@
       "bannerPending": "Hubinta goobta: sahamiye ayaa hubinaya in dhulkan jiro.",
       "bannerConfirmed": "Dhulka goobta waa laga xaqiijiyey {date}.",
       "bannerNotFound": "Dhulka goobta lagama helin {date}."
-    }
+    },
+    "rowView": "Eeg faahfaahinta",
+    "rowDelete": "Tirtir",
+    "rowDeleteTitle": "Ma tirtirtaa {number}?",
+    "rowDeleteBody": "Codsiga waa la joojinayaa oo la xirayaa. Wuxuu ku jiri doonaa diiwaanka iyo taariikhdiisa."
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -1476,7 +1480,7 @@
     "stageBody_registered": "Masuuliyiinta diiwaanka ku jira: la xaqiijiyey, ama ku qoran dhul la diiwaangeliyey.",
     "stageBody_all": "Dhammaan diiwaanka masuuliyiinta, qabyo iyo kuwa la diiwaangeliyey.",
     "emptyDraftTitle": "Ma jiraan masuuliyiin sugaya",
-    "emptyDraftBody": "Masuuliyiinta cusub ee aad geliso halkan ayay ku jiraan ilaa loo gudbiyo diiwaanka.",
+    "emptyDraftBody": "Masuuliyiinta cusub ee sahamiyayaashu ku daraan halkan ayay ku jiraan ilaa loo gudbiyo diiwaanka.",
     "dateCreated": "Taariikhda la sameeyey",
     "status": "Xaalad",
     "actions": "Ficillo",

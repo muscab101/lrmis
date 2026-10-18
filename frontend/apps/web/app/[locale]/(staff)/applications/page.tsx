@@ -1,12 +1,12 @@
 import { applicationsQuerySchema } from "@dhulka/core/schemas";
-import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ClipboardList, Plus } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
-import { SiteCheckActions, SiteCheckMark } from "@/components/applications/site-check";
+import { ApplicationRowActions } from "@/components/applications/application-row-actions";
+import { SiteCheckMark } from "@/components/applications/site-check";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { Link } from "@/i18n/navigation";
 import { APP_PAGE_SIZE, applicationStatusCounts, queryApplications } from "@/lib/server/applications";
@@ -35,7 +35,7 @@ export default async function ApplicationsPage({ params, searchParams }: { param
     .reduce((sum, [, n]) => sum + (n ?? 0), 0);
   const all = Object.values(counts).reduce((s, n) => s + (n ?? 0), 0);
   const tabCount = (tab: (typeof TABS)[number]) => (tab === "open" ? open : tab === "any" ? all : (counts[tab] ?? 0));
-  const siteCan = { request: viewer.can("applications.update"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
+  const rowCan = { update: viewer.can("applications.update"), cancel: viewer.can("applications.cancel"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
   const nbhdName = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en || n.name_so) : "");
   const href = (patch: Record<string, string | number>) => `/applications?${new URLSearchParams({ ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])), page: "1", ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, String(v)])) })}`;
 
@@ -44,16 +44,6 @@ export default async function ApplicationsPage({ params, searchParams }: { param
       <PageHeader
         title={t("title")}
         description={t("subtitle")}
-        actions={
-          viewer.can("applications.create") && (
-            <Button asChild>
-              <Link href="/applications/new">
-                <Plus aria-hidden />
-                {t("new")}
-              </Link>
-            </Button>
-          )
-        }
       >
         <nav className="flex gap-5 overflow-x-auto text-sm" aria-label={t("statusLabel")}>
           {TABS.map((tab) => (
@@ -77,13 +67,6 @@ export default async function ApplicationsPage({ params, searchParams }: { param
             icon={<ClipboardList />}
             title={t("emptyTitle")}
             description={t("emptyBody")}
-            action={
-              viewer.can("applications.create") ? (
-                <Button size="sm" asChild>
-                  <Link href="/applications/new">{t("new")}</Link>
-                </Button>
-              ) : undefined
-            }
           />
         ) : (
           <>
@@ -124,9 +107,7 @@ export default async function ApplicationsPage({ params, searchParams }: { param
                         {format.relativeTime(new Date(a.submitted_at ?? a.created_at))}
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end gap-0.5">
-                          <SiteCheckActions application={a} me={viewer.user.id} can={siteCan} />
-                        </div>
+                        <ApplicationRowActions application={a} me={viewer.user.id} can={rowCan} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -149,8 +130,8 @@ export default async function ApplicationsPage({ params, searchParams }: { param
                       {t(`types.${a.type}`)} · {a.district ? (lang === "so" ? a.district.name_so : a.district.name_en) : ""}
                     </div>
                   </Link>
-                  <div className="flex justify-end gap-2 px-4 pb-3 empty:hidden">
-                    <SiteCheckActions application={a} me={viewer.user.id} can={siteCan} full />
+                  <div className="px-3 pb-2">
+                    <ApplicationRowActions application={a} me={viewer.user.id} can={rowCan} />
                   </div>
                 </li>
               ))}

@@ -1,10 +1,9 @@
 import { partiesQuerySchema } from "@dhulka/core/schemas";
-import { Button } from "@dhulka/ui/button";
 import { StatusBadge } from "@dhulka/ui/badge";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { BadgeCheck, Plus, Users } from "lucide-react";
+import { BadgeCheck, Users } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { OwnerRowActions } from "@/components/owners/owner-row-actions";
@@ -43,7 +42,6 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
     return d ? (lang === "so" ? d.name_so : d.name_en) : "—";
   };
   const can = {
-    apply: viewer.can("applications.create"),
     update: viewer.can("owners.update"),
     remove: viewer.can("owners.delete"),
     register: viewer.can("owners.approve"),
@@ -56,16 +54,6 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
       <PageHeader
         title={t("title")}
         description={t(`stageBody_${q.stage}`)}
-        actions={
-          viewer.can("owners.create") && (
-            <Button asChild>
-              <Link href="/owners/new">
-                <Plus aria-hidden />
-                {t("new")}
-              </Link>
-            </Button>
-          )
-        }
       >
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {STAGES.map((k) => (

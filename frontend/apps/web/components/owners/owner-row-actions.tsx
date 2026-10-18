@@ -3,7 +3,7 @@
 import { Button } from "@dhulka/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
 import { Tooltip } from "@dhulka/ui/form-controls";
-import { Ellipsis, Info, Pencil, Plus, SquareCheckBig, Trash2 } from "lucide-react";
+import { Ellipsis, Info, Pencil, SquareCheckBig, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { deleteOwnerAction, registerOwnerAction } from "@/app/[locale]/(staff)/applications/actions";
@@ -13,7 +13,6 @@ import { Link, useRouter } from "@/i18n/navigation";
 import type { PartyRow } from "@/lib/server/applications";
 
 export interface OwnerAbilities {
-  apply: boolean;
   update: boolean;
   remove: boolean;
   register: boolean;
@@ -21,7 +20,7 @@ export interface OwnerAbilities {
 
 type Districts = { id: string; name_so: string; name_en: string }[];
 
-/** The old system's row keys: add a parcel, view, edit, delete, move to the register. */
+/** Row keys: view, edit, delete (drafts) and move to the register. New owners and land are added from Surveys. */
 export function OwnerRowActions({ party, districts, can, onDetail = false }: { party: PartyRow; districts: Districts; can: OwnerAbilities; onDetail?: boolean }) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
@@ -44,12 +43,6 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {can.apply && (
-              <DropdownMenuItem onSelect={() => router.push(`/applications/new?owner=${party.id}`)}>
-                <Plus aria-hidden />
-                {t("actionAddParcel")}
-              </DropdownMenuItem>
-            )}
             <DropdownMenuItem onSelect={() => router.push(`/owners/${party.id}`)}>
               <Info aria-hidden />
               {t("actionView")}
@@ -78,15 +71,6 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
       {can.update && !onDetail && (
         <EditOwner party={party} districts={districts} hideTrigger open={dialog === "edit"} onOpenChange={(o) => setDialog(o ? "edit" : null)} />
       )}
-      {can.apply &&
-        icon(
-          t("actionAddParcel"),
-          <Button asChild variant="ghost" size="icon-sm" className={`text-primary ${keys}`}>
-            <Link href={`/applications/new?owner=${party.id}`} aria-label={t("actionAddParcel")}>
-              <Plus aria-hidden />
-            </Link>
-          </Button>,
-        )}
       {!onDetail &&
         icon(
           t("actionView"),

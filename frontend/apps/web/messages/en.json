@@ -1413,7 +1413,11 @@
       "bannerPending": "Site check: a surveyor is checking that this land exists.",
       "bannerConfirmed": "Land confirmed on site on {date}.",
       "bannerNotFound": "Land not found on site on {date}."
-    }
+    },
+    "rowView": "View details",
+    "rowDelete": "Delete",
+    "rowDeleteTitle": "Delete {number}?",
+    "rowDeleteBody": "The application is cancelled and closed. It stays in the records with its history."
   },
   "owners": {
     "title": "Owners",
@@ -1476,7 +1480,7 @@
     "stageBody_registered": "Owners on the register: confirmed, or named on a registered parcel.",
     "stageBody_all": "Every owner record, drafts and registered.",
     "emptyDraftTitle": "No owners waiting",
-    "emptyDraftBody": "New owners you add appear here until they're moved to the register.",
+    "emptyDraftBody": "New owners added by surveyors appear here until they're moved to the register.",
     "dateCreated": "Date created",
     "status": "Status",
     "actions": "Actions",
