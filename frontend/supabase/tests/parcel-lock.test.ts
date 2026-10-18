@@ -79,3 +79,18 @@ describe("parcel details and lock", () => {
     expect(actions).toEqual(expect.arrayContaining(["locked", "unlocked", "details_updated"]));
   });
 });
+
+describe("parcels table search", () => {
+  it("returns English place names too", async () => {
+    const r = await asUser(db, admin, (tx) => tx.query<{ district_en: string; neighbourhood_en: string }>(`select district_en, neighbourhood_en from public.search_parcels('BN-HDN-012-000009', 5)`));
+    expect(r.rows[0]).toEqual({ district_en: "Hodan", neighbourhood_en: "Taleh" });
+  });
+});
+
+describe("editing from the table keeps the plot number", () => {
+  it("search_parcels returns plot_no", async () => {
+    await asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"house_no":"H-14","plot_no":"P9"}')`, [parcel]));
+    const r = await asUser(db, admin, (tx) => tx.query<{ plot_no: string }>(`select plot_no from public.search_parcels('BN-HDN-012-000009', 5)`));
+    expect(r.rows[0]!.plot_no).toBe("P9");
+  });
+});

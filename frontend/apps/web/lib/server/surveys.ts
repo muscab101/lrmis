@@ -13,7 +13,7 @@ export interface SurveyRow {
   area_m2: number | null;
   surveyor_id: string;
   surveyor: { full_name: string } | null;
-  application: { id: string; number: string; type: string; neighbourhood: { code: string; name_so: string } | null; district: { code: string; name_so: string } | null } | null;
+  application: { id: string; number: string; type: string; neighbourhood: { code: string; name_so: string; name_en: string } | null; district: { code: string; name_so: string; name_en: string } | null } | null;
 }
 
 export async function querySurveys(opts: { status: SurveyStatus | "open" | "any"; mine: boolean }) {
@@ -24,7 +24,7 @@ export async function querySurveys(opts: { status: SurveyStatus | "open" | "any"
   let req = supabase
     .from("surveys")
     .select(
-      "id, status, due_date, assigned_at, submitted_at, area_m2, surveyor_id, surveyor:profiles!surveys_surveyor_id_fkey(full_name), application:applications!surveys_application_id_fkey(id, number, type, neighbourhood:neighbourhoods(code, name_so), district:districts(code, name_so))",
+      "id, status, due_date, assigned_at, submitted_at, area_m2, surveyor_id, surveyor:profiles!surveys_surveyor_id_fkey(full_name), application:applications!surveys_application_id_fkey(id, number, type, neighbourhood:neighbourhoods(code, name_so, name_en), district:districts(code, name_so, name_en))",
     );
   if (opts.status === "open") req = req.in("status", ["assigned", "in_progress", "returned", "overlap_review"]);
   else if (opts.status !== "any") req = req.eq("status", opts.status);
@@ -61,8 +61,8 @@ export interface SurveyDetail {
     plot_width_m: number | null;
     plot_length_m: number | null;
     neighbourhood_id: string | null;
-    neighbourhood: { code: string; name_so: string } | null;
-    district: { code: string; name_so: string } | null;
+    neighbourhood: { code: string; name_so: string; name_en: string } | null;
+    district: { code: string; name_so: string; name_en: string } | null;
   } | null;
   survey_photos: { id: string; lon: number | null; lat: number | null; taken_at: string | null; caption: string | null; deleted_at: string | null }[];
 }
@@ -75,7 +75,7 @@ export async function getSurvey(id: string) {
     .select(
       `id, application_id, status, surveyor_id, due_date, geom, area_m2, perimeter_m, accuracy_m, method, neighbours, building, notes, overlap_list,
        submitted_at, review_note, surveyor:profiles!surveys_surveyor_id_fkey(full_name),
-       application:applications!surveys_application_id_fkey(id, number, type, status, address_note, pin, plot_width_m, plot_length_m, neighbourhood_id, neighbourhood:neighbourhoods(code, name_so), district:districts(code, name_so)),
+       application:applications!surveys_application_id_fkey(id, number, type, status, address_note, pin, plot_width_m, plot_length_m, neighbourhood_id, neighbourhood:neighbourhoods(code, name_so, name_en), district:districts(code, name_so, name_en)),
        survey_photos(id, lon, lat, taken_at, caption, deleted_at)`,
     )
     .eq("id", id)

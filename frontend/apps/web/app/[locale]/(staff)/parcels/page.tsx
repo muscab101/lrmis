@@ -3,7 +3,7 @@ import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Lock, MapPinned } from "lucide-react";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
@@ -21,6 +21,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const viewer = await requirePermission(locale, "parcels.view");
   const t = await getTranslations("parcels");
   const format = await getFormatter();
+  const lang = await getLocale();
   const q = ((await searchParams).q ?? "").slice(0, 80);
   const rows = await searchParcels(q);
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
@@ -53,10 +54,14 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((p) => (
+              {rows.map((p) => {
+                const nbhd = lang === "so" ? p.neighbourhood : (p.neighbourhood_en ?? p.neighbourhood);
+                const district = lang === "so" ? p.district : p.district_en;
+                return (
                 <TableRow key={p.id}>
                   <TableCell className="hidden text-sm whitespace-nowrap tabular-nums xl:table-cell">
-                    {format.dateTime(new Date(p.created_at), { dateStyle: "medium", timeStyle: "short" })}
+                    {format.dateTime(new Date(p.created_at), { dateStyle: "medium" })}
+                    <div className="text-muted-foreground text-xs">{format.dateTime(new Date(p.created_at), { timeStyle: "short" })}</div>
                   </TableCell>
                   <TableCell>
                     <Link href={`/parcels/${p.id}`} className="hover:text-primary inline-flex items-center gap-1.5">
@@ -65,7 +70,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     </Link>
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
-                      {[p.neighbourhood, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
+                      {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
                     </div>
                   </TableCell>
                   {showInvoices && (
@@ -85,8 +90,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell className="hidden text-sm xl:table-cell">{p.govt_receipt_no ? <Mono className="text-xs">{p.govt_receipt_no}</Mono> : "—"}</TableCell>
                   <TableCell className="hidden text-sm lg:table-cell">{p.house_no ?? "—"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">
-                    {p.neighbourhood ?? "—"}
-                    <div className="text-muted-foreground text-xs">{p.district}</div>
+                    {nbhd ?? "—"}
+                    <div className="text-muted-foreground text-xs">{district}</div>
                   </TableCell>
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
@@ -96,7 +101,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     <ParcelRowActions parcel={p} can={can} />
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}

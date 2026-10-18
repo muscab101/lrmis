@@ -22,6 +22,9 @@ export interface ParcelListRow {
   locked_at: string | null;
   lock_reason: string | null;
   application_number: string | null;
+  district_en: string;
+  neighbourhood_en: string | null;
+  plot_no: string | null;
 }
 
 export async function searchParcels(q: string) {

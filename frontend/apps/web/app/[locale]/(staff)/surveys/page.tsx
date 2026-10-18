@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@dhulka/ui/button";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { ClipboardList, Compass, MapPinned } from "lucide-react";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
@@ -22,6 +22,8 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
   const viewer = await requirePermission(locale, "surveys.view");
   const t = await getTranslations("surveys");
   const format = await getFormatter();
+  const lang = await getLocale();
+  const nm = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en || o.name_so) : "");
   const sp = await searchParams;
   const status = (TABS as readonly string[]).includes(sp.status ?? "") ? (sp.status as (typeof TABS)[number]) : "open";
   const mine = sp.mine === "1" || !viewer.can("surveys.approve");
@@ -76,8 +78,8 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                   </TableCell>
                   <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(s.assigned_at), { dateStyle: "medium" })}</TableCell>
                   <TableCell className="hidden text-sm sm:table-cell">
-                    {s.application?.district?.name_so}
-                    {s.application?.neighbourhood && <span className="text-muted-foreground"> · {s.application.neighbourhood.name_so}</span>}
+                    {nm(s.application?.district)}
+                    {s.application?.neighbourhood && <span className="text-muted-foreground"> · {nm(s.application.neighbourhood)}</span>}
                   </TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{s.surveyor?.full_name ?? "—"}</TableCell>
                   <TableCell className="text-sm">{t(`status.${s.status}`)}</TableCell>
