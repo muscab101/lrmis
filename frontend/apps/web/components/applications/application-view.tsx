@@ -6,6 +6,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import type { getApplication } from "@/lib/server/applications";
 import type { Viewer } from "@/lib/server/auth";
 import { DecisionPanel } from "./decision-panel";
+import { APPLICATION_TABS, DraftSteps, type ApplicationTab } from "./draft-steps";
 import { DocumentsEditor } from "./documents-editor";
 import { LocationForm } from "./location-form";
 import { OwnersEditor } from "./owners-editor";
@@ -23,10 +24,12 @@ interface Props {
   mode: "staff" | "citizen";
   districts: { id: string; code: string; name_so: string; name_en: string }[];
   basePath: string;
+  /** Open tab, from ?tab= (the step guide links to each tab). */
+  tab?: string;
 }
 
 /** One application: details, owners, documents, review/submit, history and decisions. */
-export async function ApplicationView({ data, viewer, mode, districts, basePath }: Props) {
+export async function ApplicationView({ data, viewer, mode, districts, basePath, tab: tabParam }: Props) {
   const t = await getTranslations("applications");
   const format = await getFormatter();
   const locale = await getLocale();
@@ -35,6 +38,9 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
   const isApplicant = app.citizen_user_id === me || app.created_by === me;
   const editableStatus = app.status === "draft" || app.status === "returned";
   const editable = editableStatus && (isApplicant || (mode === "staff" && viewer.can("applications.update")));
+  const requested = (APPLICATION_TABS as readonly string[]).includes(tabParam ?? "") ? (tabParam as ApplicationTab) : "details";
+  const tab: ApplicationTab = requested === "review" && !editable ? "details" : requested;
+  const tabHref = (k: ApplicationTab) => `${basePath}/${app.id}?tab=${k}`;
 
   const allowed: ("return" | "reject" | "cancel")[] = [];
   if (mode === "staff" && viewer.can("applications.update") && OPEN_FOR_RETURN.includes(app.status)) allowed.push("return");
@@ -87,6 +93,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
         </Alert>
       )}
 
+      {editable && <DraftSteps href={tabHref} checklist={checklist} current={tab} />}
+
       <StagePanel
         applicationId={app.id}
         status={app.status}
@@ -105,7 +113,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath 
         }}
       />
 
-      <Tabs defaultValue="details">
+      {/* Keyed on the tab so a step link (?tab=) opens it even when the page is already showing. */}
+      <Tabs key={tab} defaultValue={tab}>
         <TabsList>
           <TabsTrigger value="details">{t("tabDetails")}</TabsTrigger>
           <TabsTrigger value="owners">

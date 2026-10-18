@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { PartyForm } from "@/components/owners/party-form";
 import { useRouter } from "@/i18n/navigation";
 
-export function NewOwnerForm({ districts }: { districts: { id: string; name_so: string; name_en: string }[] }) {
+export function NewOwnerForm({ districts, canApply }: { districts: { id: string; name_so: string; name_en: string }[]; canApply: boolean }) {
   const t = useTranslations("owners");
   const router = useRouter();
   return (
@@ -13,10 +13,14 @@ export function NewOwnerForm({ districts }: { districts: { id: string; name_so: 
       party={null}
       districts={districts}
       onCancel={() => router.back()}
-      onSaved={() => {
-        toast.success(t("created"));
-        // Back to Partial registration, where the new draft can be checked and moved to the register.
-        router.push("/owners?stage=draft");
+      onSaved={(id) => {
+        if (!canApply) {
+          toast.success(t("created"));
+          return router.push("/owners?stage=draft");
+        }
+        toast.success(t("createdNext"));
+        // Straight on to the owner's land parcel (step 1 of the application).
+        router.push(`/applications/new?owner=${id}`);
       }}
     />
   );

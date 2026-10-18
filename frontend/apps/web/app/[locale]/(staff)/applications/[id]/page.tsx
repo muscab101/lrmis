@@ -11,11 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: data?.app.number ?? "404" };
 }
 
-export default async function ApplicationPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function ApplicationPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { locale, id } = await params;
+  const { tab } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "applications.view");
   const [data, districts] = await Promise.all([getApplication(id), listDistricts()]);
   if (!data) notFound();
-  return <ApplicationView data={data} viewer={viewer} mode="staff" districts={districts} basePath="/applications" />;
+  return <ApplicationView data={data} viewer={viewer} mode="staff" districts={districts} tab={tab} basePath="/applications" />;
 }

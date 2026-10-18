@@ -11,12 +11,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: data?.app.number ?? "404" };
 }
 
-export default async function PortalApplicationPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function PortalApplicationPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { locale, id } = await params;
+  const { tab } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requireCitizen(locale);
   const [data, districts] = await Promise.all([getApplication(id), listDistricts()]);
   // RLS already hides other people's applications; this keeps the portal to one's own.
   if (!data || data.app.citizen_user_id !== viewer.user.id) notFound();
-  return <ApplicationView data={data} viewer={viewer} mode="citizen" districts={districts} basePath="/portal/applications" />;
+  return <ApplicationView data={data} viewer={viewer} mode="citizen" districts={districts} tab={tab} basePath="/portal/applications" />;
 }

@@ -137,7 +137,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
           if (!added.ok) toast.error(t("ownerNotAdded"));
         }
         toast.success(t("draftCreated", { number: res.data!.number }));
-        router.push(`${basePath}/${res.data!.id}`);
+        router.push(`${basePath}/${res.data!.id}?tab=${ownerId ? "documents" : "owners"}`);
         return;
       }
       const res = await updateApplicationAction({ ...payload, applicationId: applicationId! });

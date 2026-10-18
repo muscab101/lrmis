@@ -1364,7 +1364,18 @@
     "plotLength": "Length (m)",
     "declaredArea": "Area (width × length)",
     "forOwner": "New land parcel for {name}. They'll be added as the owner.",
-    "ownerNotAdded": "The application was created, but the owner couldn't be added. Add them in step 2."
+    "ownerNotAdded": "The application was created, but the owner couldn't be added. Add them in step 2.",
+    "flow": {
+      "done": "Done",
+      "step_details": "Details & location",
+      "step_owners": "Owners",
+      "step_documents": "Documents",
+      "step_review": "Review & submit",
+      "go_details": "Next: details & location",
+      "go_owners": "Next: add the owners",
+      "go_documents": "Next: upload documents",
+      "go_review": "Next: review & submit"
+    }
   },
   "owners": {
     "title": "Owners",
@@ -1443,7 +1454,8 @@
     "registerTitle": "Move {name} to registered?",
     "registerBody": "Check the name, ID and phone first. Once registered, the owner is part of the official record and can't be deleted.",
     "registeredDone": "Owner moved to registered",
-    "districtColumn": "District"
+    "districtColumn": "District",
+    "createdNext": "Owner saved. Now add their land parcel."
   },
   "track": {
     "title": "Track an application",
@@ -1564,7 +1576,8 @@
       "approved": "The parcel is registered.",
       "rejected": "The application was rejected.",
       "returned": "Returned to the applicant for corrections."
-    }
+    },
+    "nextCertificate": "Next: issue the certificate"
   },
   "surveys": {
     "title": "Surveys",

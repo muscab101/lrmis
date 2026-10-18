@@ -218,6 +218,15 @@ export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, c
                   {t("register")}
                 </Button>
               )}
+              {staff && stage.parcel?.pun && status === "approved" && (
+                // Last step: the title certificate is issued from the parcel's page.
+                <Button size="sm" asChild>
+                  <Link href={`/parcels/${stage.parcel.id}#certificate`}>
+                    <BadgeCheck aria-hidden />
+                    {t("nextCertificate")}
+                  </Link>
+                </Button>
+              )}
               {staff && stage.parcel?.pun && (
                 <Button size="sm" variant="outline" asChild>
                   <Link href={`/parcels/${stage.parcel.id}`}>{t("openParcel")}</Link>

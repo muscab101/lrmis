@@ -12,7 +12,7 @@ export async function ParcelCertificate({ parcelId, pun, canIssue }: { parcelId:
   const valid = documents.filter((d) => d.status === "valid");
   const hasCert = valid.some((d) => d.type === "certificate");
   return (
-    <Card>
+    <Card id="certificate" className="scroll-mt-20">
       <CardHeader className="flex-row items-start justify-between gap-3">
         <div>
           <CardTitle className="text-base">{t("parcelTitle")}</CardTitle>
