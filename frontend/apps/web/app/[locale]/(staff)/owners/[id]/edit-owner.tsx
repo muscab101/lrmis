@@ -11,17 +11,38 @@ import { PartyForm } from "@/components/owners/party-form";
 import { useRouter } from "@/i18n/navigation";
 import type { PartyRow } from "@/lib/server/applications";
 
-/** Edit sheet; `iconOnly` gives the small pencil used in table rows. */
-export function EditOwner({ party, districts, iconOnly = false }: { party: PartyRow; districts: { id: string; name_so: string; name_en: string }[]; iconOnly?: boolean }) {
+/**
+ * Edit sheet. `iconOnly` gives the small pencil used in table rows; pass `open`/`onOpenChange`
+ * to open it from elsewhere (the phone "⋯" menu), with `hideTrigger` to drop the button.
+ */
+export function EditOwner({
+  party,
+  districts,
+  iconOnly = false,
+  hideTrigger = false,
+  className,
+  open: openProp,
+  onOpenChange,
+}: {
+  party: PartyRow;
+  districts: { id: string; name_so: string; name_en: string }[];
+  iconOnly?: boolean;
+  hideTrigger?: boolean;
+  className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (o: boolean) => (onOpenChange ? onOpenChange(o) : setOpenState(o));
   return (
     <>
-      {iconOnly ? (
+      {hideTrigger ? null : iconOnly ? (
         <Tooltip content={tc("edit")}>
-          <Button variant="ghost" size="icon-sm" className="text-success" aria-label={tc("edit")} onClick={() => setOpen(true)}>
+          <Button variant="ghost" size="icon-sm" className={`text-success ${className ?? ""}`} aria-label={tc("edit")} onClick={() => setOpen(true)}>
             <Pencil aria-hidden />
           </Button>
         </Tooltip>

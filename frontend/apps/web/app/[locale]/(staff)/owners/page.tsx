@@ -67,7 +67,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
           )
         }
       >
-        <nav className="flex gap-5 overflow-x-auto text-sm" aria-label={t("stages")}>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {STAGES.map((k) => (
             <Link
               key={k}
