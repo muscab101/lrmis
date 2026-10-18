@@ -15,9 +15,14 @@ export interface ApplicationListRow {
   submitted_at: string | null;
   created_at: string;
   district: { code: string; name_so: string; name_en: string } | null;
-  neighbourhood: { code: string; name_so: string } | null;
+  neighbourhood: { code: string; name_so: string; name_en: string } | null;
   applicant: { full_name: string; phone: string | null } | null;
+  /** Site check: pending ("!"), confirmed (✓), not_found, or null (never asked). */
+  site_check_status: SiteCheckStatus | null;
+  site_check_surveyor: string | null;
 }
+
+export type SiteCheckStatus = "pending" | "confirmed" | "not_found";
 
 function cleanTerm(q: string) {
   return q.replace(/[,()*%\\]/g, " ").trim();
@@ -28,7 +33,7 @@ export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnl
   let req = supabase
     .from("applications")
     .select(
-      "id, number, type, status, channel, submitted_at, created_at, district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so), applicant:parties!applications_applicant_party_id_fkey(full_name, phone)",
+      "id, number, type, status, channel, submitted_at, created_at, site_check_status, site_check_surveyor, district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en), applicant:parties!applications_applicant_party_id_fkey(full_name, phone)",
       { count: "exact" },
     );
   if (q.status === "open") req = req.not("status", "in", `(${CLOSED.join(",")})`);
@@ -101,6 +106,10 @@ export interface ApplicationDetail {
   pin_method: "gps" | "manual" | null;
   pin_captured_at: string | null;
   pin_low_accuracy: boolean;
+  site_check_status: SiteCheckStatus | null;
+  site_check_surveyor: string | null;
+  site_check_note: string | null;
+  site_check_done_at: string | null;
   plot_width_m: number | null;
   plot_length_m: number | null;
   address_note: string;
@@ -148,7 +157,7 @@ export async function getApplication(id: string) {
   const res = await supabase
     .from("applications")
     .select(
-      `id, number, type, status, channel, district_id, neighbourhood_id, pin, pin_accuracy_m, pin_method, pin_captured_at, pin_low_accuracy, plot_width_m, plot_length_m, address_note, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no,
+      `id, number, type, status, channel, district_id, neighbourhood_id, pin, pin_accuracy_m, pin_method, pin_captured_at, pin_low_accuracy, plot_width_m, plot_length_m, address_note, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no, site_check_status, site_check_surveyor, site_check_note, site_check_done_at,
        applicant_party_id, citizen_user_id, submitted_at, decided_at, decision_note, created_at, created_by,
        district:districts(id, code, name_so, name_en), neighbourhood:neighbourhoods(id, code, name_so, name_en),
        application_parties(party_id, role, share_pct, party:parties(${PARTY_COLUMNS})),

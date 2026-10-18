@@ -308,7 +308,9 @@
     "outside_neighbourhood": "Xuduuddu way ka baxsan tahay xaafadda dhulka.",
     "owner_identity_required": "Ku dar dukumenti aqoonsi ama lambar telefoon ka hor intaadan diiwaangelin masuulkan.",
     "owner_registered": "Masuuliyiinta la diiwaangeliyey lama tirtiri karo.",
-    "owner_in_use": "Masuulkan wuxuu ku qoran yahay codsi, sidaa darteed lama tirtiri karo."
+    "owner_in_use": "Masuulkan wuxuu ku qoran yahay codsi, sidaa darteed lama tirtiri karo.",
+    "no_surveyor_in_district": "Weli sahamiye kama shaqeeyo degmadan. Sahamiye sii degmadan Maamulka → Isticmaalayaasha.",
+    "site_note_required": "Sheeg sababta dhulka aan loo helin (ugu yaraan 5 xaraf)."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1385,7 +1387,33 @@
     "waiveNote": "Cafinta khidmadda (masaajid, dugsi, dhibaato) waxaa go'aamisa Maaliyadda. Qof aan ahayn kii geliyey codsiga ayaa ansixin kara.",
     "houseNo": "Lambarka guriga",
     "govtReceiptNo": "Lambarka rasiidhka dowladda",
-    "govtReceiptHint": "Lambarka ku qoran rasiidhka warqadda ah ee dowladda, haddii masuulku haysto."
+    "govtReceiptHint": "Lambarka ku qoran rasiidhka warqadda ah ee dowladda, haddii masuulku haysto.",
+    "actionsColumn": "Ficillo",
+    "siteCheck": {
+      "mark_pending": "! Hubinta goobta: sahamiyaha ayaa la sugayaa",
+      "mark_confirmed": "✓ Dhulka goobta waa laga xaqiijiyey",
+      "mark_not_found": "✗ Dhulka goobta lagama helin",
+      "request": "Hubi in dhulku jiro",
+      "confirm": "Qor hubinta goobta",
+      "requestTitle": "Ma u dirtaa {number} hubinta goobta?",
+      "requestBody": "Sahamiye degmada ka shaqeeya ayaa loo sheegayaa inuu booqdo oo xaqiijiyo in dhulku run ahaan jiro. Codsiga waxaa lagu calaamadeynayaa ! ilaa uu qoro.",
+      "noteForSurveyor": "Qoraal sahamiyaha (ikhtiyaari)",
+      "requested": "Waxaa loo diray hubinta goobta",
+      "confirmTitle": "Hubinta goobta ee {number}",
+      "confirmBody": "Ma ka heshay dhulka goobta?",
+      "result": "Natiijada",
+      "exists": "Dhulku waa jiraa",
+      "notFound": "Lama helin",
+      "confirmExists": "Xaqiiji ✓",
+      "confirmNotFound": "Sheeg in aan la helin",
+      "whatYouSaw": "Wixii aad aragtay (ikhtiyaari)",
+      "whyNotFound": "Sababta aan loo helin",
+      "confirmed": "Dhulka waa la xaqiijiyey",
+      "reportedNotFound": "Waxaa la sheegay in aan la helin",
+      "bannerPending": "Hubinta goobta: sahamiye ayaa hubinaya in dhulkan jiro.",
+      "bannerConfirmed": "Dhulka goobta waa laga xaqiijiyey {date}.",
+      "bannerNotFound": "Dhulka goobta lagama helin {date}."
+    }
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -1608,7 +1636,8 @@
       "overlap_review": "Isdul-fuul",
       "returned": "La celiyay",
       "submitted": "La gudbiyay",
-      "any": "Dhammaan"
+      "any": "Dhammaan",
+      "site_checks": "Hubinta goobta"
     },
     "status": {
       "assigned": "La xilsaaray",
@@ -1738,7 +1767,12 @@
     "widthM": "Ballac (m)",
     "lengthM": "Dherer (m)",
     "newOwner": "Masuul cusub",
-    "newLandParcel": "Dhul cusub"
+    "newLandParcel": "Dhul cusub",
+    "noSiteChecks": "Ma jiraan hubin goob oo sugaysa",
+    "noSiteChecksBody": "Codsiyada lagu calaamadeeyey ! halkan ayay ku jiraan ilaa sahamiyuhu qoro booqashada.",
+    "requested": "La codsaday",
+    "applicant": "Codsade",
+    "note": "Qoraal"
   },
   "parcels": {
     "title": "Dhulal",

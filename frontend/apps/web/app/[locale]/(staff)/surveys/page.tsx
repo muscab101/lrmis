@@ -7,14 +7,15 @@ import { ClipboardList, Compass, MapPinned, Plus, UserPlus } from "lucide-react"
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
+import { querySiteChecks, querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
+import { SiteCheckActions } from "@/components/applications/site-check";
 
 export async function generateMetadata() {
   const t = await getTranslations("surveys");
   return { title: t("title") };
 }
 
-const TABS = ["open", "assigned", "in_progress", "overlap_review", "returned", "submitted", "any"] as const;
+const TABS = ["open", "site_checks", "assigned", "in_progress", "overlap_review", "returned", "submitted", "any"] as const;
 
 export default async function SurveysPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
@@ -27,9 +28,16 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const status = (TABS as readonly string[]).includes(sp.status ?? "") ? (sp.status as (typeof TABS)[number]) : "open";
   const mine = sp.mine === "1" || !viewer.can("surveys.approve");
-  const [rows, counts] = await Promise.all([querySurveys({ status: status as SurveyStatus | "open" | "any", mine }), surveyStatusCounts()]);
+  const [rows, counts, checks] = await Promise.all([
+    status === "site_checks" ? Promise.resolve([]) : querySurveys({ status: status as SurveyStatus | "open" | "any", mine }),
+    surveyStatusCounts(),
+    querySiteChecks(mine),
+  ]);
+  const siteCan = { request: false, checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
   const count = (tab: (typeof TABS)[number]) =>
-    tab === "open"
+    tab === "site_checks"
+      ? checks.length
+      : tab === "open"
       ? (["assigned", "in_progress", "returned", "overlap_review"] as const).reduce((s, k) => s + (counts[k] ?? 0), 0)
       : tab === "any"
         ? Object.values(counts).reduce((s, n) => s + (n ?? 0), 0)
@@ -77,6 +85,60 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
           ))}
         </nav>
       </PageHeader>
+      {status === "site_checks" ? (
+        <Card className="overflow-hidden">
+          {checks.length === 0 ? (
+            <EmptyState icon={<Compass />} title={t("noSiteChecks")} description={t("noSiteChecksBody")} />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("application")}</TableHead>
+                  <TableHead className="hidden lg:table-cell">{t("requested")}</TableHead>
+                  <TableHead className="hidden sm:table-cell">{t("place")}</TableHead>
+                  <TableHead className="hidden md:table-cell">{t("applicant")}</TableHead>
+                  <TableHead className="hidden xl:table-cell">{t("note")}</TableHead>
+                  <TableHead className="text-end">{t("actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {checks.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>
+                      <Link href={`/applications/${c.id}`} className="hover:text-primary inline-flex items-center gap-1.5">
+                        <span className="text-status-pending font-bold" aria-hidden>
+                          !
+                        </span>
+                        <Mono>{c.number}</Mono>
+                      </Link>
+                      {c.plot_no && <div className="text-muted-foreground text-xs">{c.plot_no}</div>}
+                    </TableCell>
+                    <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(c.site_check_requested_at), { dateStyle: "medium" })}</TableCell>
+                    <TableCell className="hidden text-sm sm:table-cell">
+                      {nm(c.district)}
+                      {c.neighbourhood && <span className="text-muted-foreground"> · {nm(c.neighbourhood)}</span>}
+                    </TableCell>
+                    <TableCell className="hidden text-sm md:table-cell">{c.applicant?.full_name ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground hidden max-w-60 truncate text-sm xl:table-cell">{c.site_check_note ?? "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-0.5">
+                        <SiteCheckActions application={{ ...c, site_check_status: "pending" }} me={viewer.user.id} can={siteCan} />
+                        <Tooltip content={t("actionApplication")}>
+                          <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
+                            <Link href={`/applications/${c.id}`} aria-label={t("actionApplication")}>
+                              <ClipboardList aria-hidden />
+                            </Link>
+                          </Button>
+                        </Tooltip>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Card>
+      ) : (
       <Card className="overflow-hidden">
         {rows.length === 0 ? (
           <EmptyState icon={<Compass />} title={t("emptyTitle")} description={t("emptyBody")} />
@@ -135,6 +197,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
           </Table>
         )}
       </Card>
+      )}
     </>
   );
 }

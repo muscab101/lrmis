@@ -13,6 +13,7 @@ import { DocumentsEditor } from "./documents-editor";
 import { LocationForm } from "./location-form";
 import { OwnersEditor } from "./owners-editor";
 import { ReviewPanel } from "./review-panel";
+import { SiteCheckActions } from "./site-check";
 import { StagePanel } from "./stage-panel";
 import { ApplicationStatusBadge } from "./status-badge";
 import { Timeline } from "./timeline";
@@ -77,9 +78,42 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
             {app.submitted_at && ` · ${t("submittedOn", { date: format.dateTime(new Date(app.submitted_at), { dateStyle: "medium" }) })}`}
           </>
         }
-        actions={<DecisionPanel applicationId={app.id} allowed={allowed} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {mode === "staff" && !app.site_check_status && (
+              <SiteCheckActions
+                application={app}
+                me={me}
+                can={{ request: viewer.can("applications.update"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") }}
+                full
+              />
+            )}
+            <DecisionPanel applicationId={app.id} allowed={allowed} />
+          </div>
+        }
       />
 
+      {mode === "staff" && app.site_check_status && (() => {
+        const siteCan = { request: viewer.can("applications.update"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
+        const actions = <SiteCheckActions application={app} me={me} can={siteCan} full />;
+        const done = app.site_check_done_at ? format.dateTime(new Date(app.site_check_done_at), { dateStyle: "medium" }) : "";
+        return (
+          <Alert
+            tone={app.site_check_status === "pending" ? "warning" : app.site_check_status === "confirmed" ? "success" : "danger"}
+            title={
+              app.site_check_status === "pending"
+                ? t("siteCheck.bannerPending")
+                : app.site_check_status === "confirmed"
+                  ? t("siteCheck.bannerConfirmed", { date: done })
+                  : t("siteCheck.bannerNotFound", { date: done })
+            }
+            className="mb-5"
+          >
+            {app.site_check_note && <p>{app.site_check_note}</p>}
+            <div className="mt-2 flex flex-wrap gap-2 empty:hidden">{actions}</div>
+          </Alert>
+        );
+      })()}
       {app.status === "returned" && app.decision_note && (
         <Alert tone="warning" title={t("returnedTitle")} className="mb-5">
           {app.decision_note}

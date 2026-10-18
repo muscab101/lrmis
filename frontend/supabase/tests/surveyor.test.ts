@@ -86,3 +86,34 @@ describe("correcting land details during the survey", () => {
     await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.survey_update_details($1, '{"plot_width_m":0,"plot_length_m":5}')`, [survey])), "VALIDATION");
   });
 });
+
+describe("site check (! → ✓)", () => {
+  let draft: string;
+  beforeAll(async () => {
+    draft = await asUser(db, clerk, async (tx) => {
+      const a = await scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd, pin_lon: 45.301, pin_lat: 2.04 })]);
+      return a.id;
+    });
+  });
+
+  it("the front desk marks ! and the least busy surveyor gets it", async () => {
+    const who = await asUser(db, clerk, (tx) => scalar<string>(tx, `select public.application_request_site_check($1, null, 'Check the plot exists')`, [draft]));
+    expect([surveyor, otherSurveyor]).toContain(who);
+    expect(await scalar<string>(db, `select site_check_status from public.applications where id = $1`, [draft])).toBe("pending");
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and kind = 'application.site_check'`, [who])).toBe(1);
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_request_site_check($1)`, [draft])), "CONFLICT");
+  });
+
+  it("only the assigned surveyor (or a supervisor) ticks it; not found needs a note", async () => {
+    const assigned = await scalar<string>(db, `select site_check_surveyor from public.applications where id = $1`, [draft]);
+    const other = assigned === surveyor ? otherSurveyor : surveyor;
+    await expectError(asUser(db, other, (tx) => tx.query(`select public.application_confirm_site($1, true)`, [draft])), "PERMISSION_DENIED");
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_confirm_site($1, true)`, [draft])), "PERMISSION_DENIED");
+    await expectError(asUser(db, assigned, (tx) => tx.query(`select public.application_confirm_site($1, false, '')`, [draft])), "VALIDATION");
+    await asUser(db, assigned, (tx) => tx.query(`select public.application_confirm_site($1, true, 'Walls and gate seen')`, [draft]));
+    const r = await scalar<{ site_check_status: string; site_check_done_by: string }>(db, `select to_jsonb(a) from public.applications a where id = $1`, [draft]);
+    expect(r.site_check_status).toBe("confirmed");
+    expect(r.site_check_done_by).toBe(assigned);
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_request_site_check($1)`, [draft])), "CONFLICT");
+  });
+});

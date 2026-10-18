@@ -34,6 +34,37 @@ export async function querySurveys(opts: { status: SurveyStatus | "open" | "any"
   return unwrap(res, "surveys") as unknown as SurveyRow[];
 }
 
+/** Land existence checks ("!") waiting on a surveyor: mine, or all in my districts for supervisors. */
+export interface SiteCheckRow {
+  id: string;
+  number: string;
+  status: string;
+  site_check_status: "pending";
+  site_check_surveyor: string | null;
+  site_check_requested_at: string;
+  site_check_note: string | null;
+  plot_no: string | null;
+  district: { name_so: string; name_en: string } | null;
+  neighbourhood: { name_so: string; name_en: string } | null;
+  applicant: { full_name: string } | null;
+}
+
+export async function querySiteChecks(mine: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let req = supabase
+    .from("applications")
+    .select(
+      "id, number, status, site_check_status, site_check_surveyor, site_check_requested_at, site_check_note, plot_no, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), applicant:parties!applications_applicant_party_id_fkey(full_name)",
+    )
+    .eq("site_check_status", "pending");
+  if (mine) req = req.eq("site_check_surveyor", user?.id ?? "");
+  const res = await req.order("site_check_requested_at", { ascending: true }).limit(100);
+  return unwrap(res, "site checks") as unknown as SiteCheckRow[];
+}
+
 export interface SurveyDetail {
   id: string;
   application_id: string;

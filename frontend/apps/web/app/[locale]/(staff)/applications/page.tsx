@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ClipboardList, Plus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
+import { SiteCheckActions, SiteCheckMark } from "@/components/applications/site-check";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { Link } from "@/i18n/navigation";
 import { APP_PAGE_SIZE, applicationStatusCounts, queryApplications } from "@/lib/server/applications";
@@ -34,6 +35,8 @@ export default async function ApplicationsPage({ params, searchParams }: { param
     .reduce((sum, [, n]) => sum + (n ?? 0), 0);
   const all = Object.values(counts).reduce((s, n) => s + (n ?? 0), 0);
   const tabCount = (tab: (typeof TABS)[number]) => (tab === "open" ? open : tab === "any" ? all : (counts[tab] ?? 0));
+  const siteCan = { request: viewer.can("applications.update"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
+  const nbhdName = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en || n.name_so) : "");
   const href = (patch: Record<string, string | number>) => `/applications?${new URLSearchParams({ ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])), page: "1", ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, String(v)])) })}`;
 
   return (
@@ -90,10 +93,11 @@ export default async function ApplicationsPage({ params, searchParams }: { param
                   <TableRow>
                     <TableHead>{t("number")}</TableHead>
                     <TableHead>{t("applicant")}</TableHead>
-                    <TableHead>{t("type")}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t("type")}</TableHead>
                     <TableHead>{t("place")}</TableHead>
                     <TableHead>{t("statusLabel")}</TableHead>
-                    <TableHead className="text-end">{t("updated")}</TableHead>
+                    <TableHead className="hidden text-end lg:table-cell">{t("updated")}</TableHead>
+                    <TableHead className="text-end">{t("actionsColumn")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -105,16 +109,24 @@ export default async function ApplicationsPage({ params, searchParams }: { param
                         </Link>
                       </TableCell>
                       <TableCell className="text-sm">{a.applicant?.full_name ?? <span className="text-muted-foreground">—</span>}</TableCell>
-                      <TableCell className="text-sm">{t(`types.${a.type}`)}</TableCell>
+                      <TableCell className="hidden text-sm lg:table-cell">{t(`types.${a.type}`)}</TableCell>
                       <TableCell className="text-sm">
                         {a.district ? (lang === "so" ? a.district.name_so : a.district.name_en) : ""}
-                        {a.neighbourhood && <span className="text-muted-foreground"> · {a.neighbourhood.name_so}</span>}
+                        {a.neighbourhood && <span className="text-muted-foreground"> · {nbhdName(a.neighbourhood)}</span>}
                       </TableCell>
                       <TableCell>
-                        <ApplicationStatusBadge status={a.status} />
+                        <span className="flex items-center gap-1.5">
+                          <ApplicationStatusBadge status={a.status} />
+                          <SiteCheckMark status={a.site_check_status} />
+                        </span>
                       </TableCell>
-                      <TableCell className="text-end text-xs whitespace-nowrap text-muted-foreground">
+                      <TableCell className="hidden text-end text-xs whitespace-nowrap text-muted-foreground lg:table-cell">
                         {format.relativeTime(new Date(a.submitted_at ?? a.created_at))}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-0.5">
+                          <SiteCheckActions application={a} me={viewer.user.id} can={siteCan} />
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -127,13 +139,19 @@ export default async function ApplicationsPage({ params, searchParams }: { param
                   <Link href={`/applications/${a.id}`} className="block space-y-1 p-4">
                     <div className="flex items-center justify-between gap-2">
                       <Mono>{a.number}</Mono>
-                      <ApplicationStatusBadge status={a.status} />
+                      <span className="flex items-center gap-1.5">
+                        <ApplicationStatusBadge status={a.status} />
+                        <SiteCheckMark status={a.site_check_status} />
+                      </span>
                     </div>
                     <div className="text-sm">{a.applicant?.full_name ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {t(`types.${a.type}`)} · {a.district?.name_so}
+                      {t(`types.${a.type}`)} · {a.district ? (lang === "so" ? a.district.name_so : a.district.name_en) : ""}
                     </div>
                   </Link>
+                  <div className="flex justify-end gap-2 px-4 pb-3 empty:hidden">
+                    <SiteCheckActions application={a} me={viewer.user.id} can={siteCan} full />
+                  </div>
                 </li>
               ))}
             </ul>

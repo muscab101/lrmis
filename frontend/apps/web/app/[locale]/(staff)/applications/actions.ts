@@ -301,3 +301,39 @@ export const duplicatePartiesAction = defineAction(
       "duplicates",
     ) as { count: number; matches?: { id: string; full_name: string; mother_name: string | null; phone: string | null; reasons: string[] }[]; reasons?: string[] },
 );
+
+/** "!" — send a surveyor to check the land exists. */
+export const requestSiteCheckAction = defineAction(
+  "applications.site_check",
+  z.object({ applicationId: z.uuid(), note: z.string().trim().max(500, "validation.too_long").default("") }),
+  async ({ applicationId, note }, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("application_request_site_check", { p_id: applicationId, p_note: note || null }), "site check");
+    } catch (err) {
+      if (err instanceof AppFailure && err.code === "NOT_FOUND" && err.values?.detail === "surveyor") {
+        throw new AppFailure("NOT_FOUND", undefined, { siteCheck: ["validation.no_surveyor_in_district"] });
+      }
+      throw err;
+    }
+    revalidatePath("/[locale]/applications", "layout");
+    revalidatePath("/[locale]/surveys", "layout");
+    return null;
+  },
+);
+
+/** ✓ the land exists, or it wasn't found (note required). */
+export const confirmSiteAction = defineAction(
+  "applications.site_confirm",
+  z.object({ applicationId: z.uuid(), exists: z.boolean(), note: z.string().trim().max(500, "validation.too_long").default("") }),
+  async ({ applicationId, exists, note }, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("application_confirm_site", { p_id: applicationId, p_exists: exists, p_note: note || null }), "confirm site");
+    } catch (err) {
+      if (err instanceof AppFailure && err.code === "VALIDATION") throw new AppFailure("VALIDATION", undefined, { note: ["validation.site_note_required"] });
+      throw err;
+    }
+    revalidatePath("/[locale]/applications", "layout");
+    revalidatePath("/[locale]/surveys", "layout");
+    return null;
+  },
+);
