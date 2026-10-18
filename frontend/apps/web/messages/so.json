@@ -575,7 +575,24 @@
       "id_card": "Kaarka aqoonsiga hantida"
     },
     "issuedOn": "la bixiyay {date}",
-    "verifyLink": "Hubi"
+    "verifyLink": "Hubi",
+    "myFiles": "Faylashayda",
+    "myFilesBody": "Gal kastaa wuxuu hayaa dukumentiyada hantida, biilasha aan la bixin iyo rasiidhada. Riix gal si aad u furto.",
+    "bill": "Biil",
+    "receipt": "Rasiidh",
+    "folder": {
+      "open": "Fur",
+      "close": "Xir",
+      "openFolder": "Fur galka",
+      "closeFolder": "Xir galka",
+      "items": "{count, plural, one {# shay} other {# shay}}",
+      "contents": "waxa ku jira",
+      "options": "doorashooyin",
+      "addTo": "Fayl ku dar",
+      "moreFor": "Doorashooyin kale oo",
+      "untitled": "Magac la'aan",
+      "justNow": "Hadda"
+    }
   },
   "dashboard": {
     "title": "Shaashadda guud",
@@ -1137,7 +1154,8 @@
     "status": "Xaalad",
     "tone_approved": "La bixiyay",
     "tone_partial": "Qayb",
-    "tone_rejected": "Dib u dhacay"
+    "tone_rejected": "Dib u dhacay",
+    "folders": "Galal muraayad ah"
   },
   "map": {
     "title": "Khariidad",
