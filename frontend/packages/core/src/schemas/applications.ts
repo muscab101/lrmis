@@ -113,8 +113,6 @@ export type ApplicationsQuery = z.infer<typeof applicationsQuerySchema>;
 export const partiesQuerySchema = z.object({
   q: z.string().trim().max(80).default(""),
   kind: z.enum([...PARTY_KINDS, ""]).default(""),
-  /** "1": only people who currently own a registered parcel (old menu: Registered → Masuulka Dhulka). */
-  registered: z.enum(["1", ""]).default(""),
   page: z.coerce.number().int().min(1).default(1),
 });
 export type PartiesQuery = z.infer<typeof partiesQuerySchema>;

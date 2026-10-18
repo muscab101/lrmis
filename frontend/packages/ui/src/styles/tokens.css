@@ -51,14 +51,12 @@
   --status-rejected: #c62828;
   --status-partial: #1d5fc2;
 
-  /* Sidebar: light grey menu like the original LRMIS (open section and current page in blue) */
-  --sidebar: #e4e4e4;
-  --sidebar-foreground: #3b3f45;
-  --sidebar-active: #f3f4f6;
-  --sidebar-active-foreground: #2b5ea7;
-  --sidebar-border: #d2d4d8;
-  --sidebar-sub: #ffffff;
-  --sidebar-head: #f7f8fa;
+  /* Sidebar (ink) */
+  --sidebar: #0d1b2e;
+  --sidebar-foreground: #b9c2d0;
+  --sidebar-active: #18304f;
+  --sidebar-active-foreground: #ffffff;
+  --sidebar-border: #1c2c44;
 
   /* Charts */
   --chart-1: #1e4fa3;
@@ -105,13 +103,11 @@
   --status-rejected: #f2615a;
   --status-partial: #6aa6ec;
 
-  --sidebar: #111a27;
-  --sidebar-foreground: #b4bccb;
-  --sidebar-active: #18243a;
-  --sidebar-active-foreground: #7fb0f5;
-  --sidebar-border: #223049;
-  --sidebar-sub: #0b1320;
-  --sidebar-head: #0b1320;
+  --sidebar: #060e1a;
+  --sidebar-foreground: #95a0b2;
+  --sidebar-active: #13233a;
+  --sidebar-active-foreground: #ffffff;
+  --sidebar-border: #13233a;
 
   --chart-1: #5b8fe0;
   --chart-2: #3cc4bf;
@@ -171,8 +167,6 @@
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-active-foreground: var(--sidebar-active-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-sub: var(--sidebar-sub);
-  --color-sidebar-head: var(--sidebar-head);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

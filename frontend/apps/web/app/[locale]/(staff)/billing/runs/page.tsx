@@ -15,28 +15,20 @@ export async function generateMetadata() {
   return { title: t("runsTitle") };
 }
 
-export default async function BillingRunsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
+export default async function BillingRunsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "billing.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
-  const sp = await searchParams;
-  const [allRuns, counts, districts, fees] = await Promise.all([listRuns(), billingCounts(), listDistricts(), recurringFeeTypes()]);
-  // Menu: Billing → Approve batches shows the ones waiting for a decision.
-  const waitingOnly = sp.status === "submitted";
-  const runs = waitingOnly ? allRuns.filter((r) => r.status === "submitted") : allRuns;
+  const [runs, counts, districts, fees] = await Promise.all([listRuns(), billingCounts(), listDistricts(), recurringFeeTypes()]);
   const dname = new Map(districts.map((d) => [d.id, lang === "so" ? d.name_so : d.name_en]));
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader
-        title={waitingOnly ? t("batchesToApprove") : t("runsTitle")}
-        description={waitingOnly ? t("batchesToApproveBody") : t("runsSubtitle")}
-        actions={viewer.can("billing.create") && <NewRunButton districts={districts} feeTypes={fees} defaultOpen={sp.new === "1"} />}
-      />
+      <PageHeader title={t("runsTitle")} description={t("runsSubtitle")} actions={viewer.can("billing.create") && <NewRunButton districts={districts} feeTypes={fees} />} />
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         <KpiChip label={t("kpiWaiting")} value={format.number(counts.runs_waiting)} />
         <KpiChip label={t("kpiOpenInvoices")} value={format.number(counts.invoices_open)} />

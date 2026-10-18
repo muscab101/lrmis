@@ -122,9 +122,3 @@
 - `docs/old-system-mapping.md`: how each step of the old system is done in the new one.
 - Tests: 142 database tests.
 
-## Staff menu rebuilt on the old LRMIS layout (2026-10-18)
-
-- Sidebar now follows the original system: light grey sections with icon and chevron (Dashboard, Land Transfer, Billing Section, Accounts Receivable, Collections, Partial Registration, Registered, Accounts Settings, Location Settings, User Settings, System Settings, Reports, SMS Management, Certificates), each opening to its pages on a tree line, the current section and page in blue. After a divider: GIS Map, Valuation, Disputes & Permits, System Health. Every entry still follows the user's permissions.
-- New pages behind the old menu items: Billing → Single Invoice (`/invoices/new`), Approve Batches (`/billing/runs?status=submitted`) and Create Batches (opens the wizard); Accounts Receivable → Duplicate Invoices (`/invoices/duplicates`); Partial Registration → Excel Import (`/applications/import`, CSV from Excel, check then import, same rules as `pnpm import-legacy`); Registered → Masuulka Dhulka (owners of registered parcels); Accounts Settings (`/settings/accounts`: points of sale, cashiers, GL account groups, bank accounts, currencies); SMS Management → Single SMS (`/messages/send`, migration 0033); Certificates → Printing Report (print log with who and when).
-- Finance and accounting roles can see staff names for cashier and print lists (migration 0034; staff only, never citizens).
-
