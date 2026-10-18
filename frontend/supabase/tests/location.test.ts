@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, letClerksCreate, scalar, square } from "./harness";
 
 let db: PGlite;
 let entry: string;
@@ -30,6 +30,7 @@ beforeAll(async () => {
   const admin = await bootstrapSuperAdmin(db);
   entry = await createStaff(db, admin, "entry@gmail.com", ["data_entry_clerk"], [hodan]);
   desk = await createStaff(db, admin, "desk@gmail.com", ["front_desk_clerk"], [hodan]);
+  await letClerksCreate(db);
   registrar = await createStaff(db, admin, "reg@gmail.com", ["registrar"], [hodan]);
   registrar2 = await createStaff(db, admin, "reg2@gmail.com", ["registrar"], [hodan]);
   // A desk role without the capture permission, to prove the check.

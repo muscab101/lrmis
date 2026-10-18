@@ -166,3 +166,17 @@ export function square(lon: number, lat: number, d = 0.002) {
     coordinates: [[[lon - d, lat - d], [lon + d, lat - d], [lon + d, lat + d], [lon - d, lat + d], [lon - d, lat - d]]],
   };
 }
+
+/**
+ * Since migration 0042 only surveyors (and admins) create owners and land. Tests about other
+ * steps (fees, surveys, valuation, …) still set up their data through a clerk; this gives the
+ * clerk roles back the two create rights inside that test database only.
+ */
+export async function letClerksCreate(db: PGlite): Promise<void> {
+  await db.query(
+    `insert into public.role_permissions (role_id, permission_key)
+     select r.id, k from public.roles r, unnest(array['owners.create', 'applications.create']) k
+      where r.key in ('front_desk_clerk', 'data_entry_clerk')
+     on conflict do nothing`,
+  );
+}

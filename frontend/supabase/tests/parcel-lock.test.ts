@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, letClerksCreate, scalar, square } from "./harness";
 
 let db: PGlite;
 let registrar: string;
@@ -28,6 +28,7 @@ beforeAll(async () => {
   admin = await bootstrapSuperAdmin(db);
   registrar = await createStaff(db, admin, "registrar@gmail.com", ["registrar"], [hodan]);
   clerk = await createStaff(db, admin, "entry@gmail.com", ["data_entry_clerk"], [hodan]);
+  await letClerksCreate(db);
   parcel = await scalar<string>(
     db,
     `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, geom, status, registered_at)
