@@ -33,7 +33,7 @@ const EDITABLE = ["draft", "returned"];
 const DELETABLE = ["draft", "awaiting_payment", "returned"];
 
 /**
- * The application staff's keys: view, edit (while it can still change), site check (! / ✓) and
+ * The application staff's keys: view, edit (while it can still change), site check (? / ✓) and
  * delete. Delete cancels the application; it stays in the records. New land is added from Surveys.
  */
 export function ApplicationRowActions({ application: a, me, can }: { application: Row; me: string; can: Can }) {

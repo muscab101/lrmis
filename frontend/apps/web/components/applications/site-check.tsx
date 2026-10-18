@@ -5,7 +5,7 @@ import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
 import { cn } from "@dhulka/ui/lib/cn";
-import { Check, CircleAlert, CircleCheck, CircleX } from "lucide-react";
+import { Check, CircleCheck, CircleHelp, CircleX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { confirmSiteAction, requestSiteCheckAction } from "@/app/[locale]/(staff)/applications/actions";
@@ -22,11 +22,11 @@ interface Props {
 
 const CLOSED = ["approved", "rejected", "cancelled"];
 
-/** The site-check mark (! pending, ✓ confirmed, ✗ not found) and its two actions. */
+/** The site-check mark (? pending, ✓ confirmed, ✗ not found) and its two actions. */
 export function SiteCheckMark({ status }: { status: SiteCheckStatus | null }) {
   const t = useTranslations("applications.siteCheck");
   if (!status) return null;
-  const Icon = status === "pending" ? CircleAlert : status === "confirmed" ? CircleCheck : CircleX;
+  const Icon = status === "pending" ? CircleHelp : status === "confirmed" ? CircleCheck : CircleX;
   return (
     <Tooltip content={t(`mark_${status}`)}>
       <span
@@ -64,13 +64,13 @@ export function SiteCheckActions({ application: a, me, can, full = false }: Prop
       {canRequest &&
         (full ? (
           <Button size="sm" variant="outline" onClick={() => setDialog("request")}>
-            <CircleAlert className="text-status-pending" aria-hidden />
+            <CircleHelp className="text-status-pending" aria-hidden />
             {t("request")}
           </Button>
         ) : (
           <Tooltip content={t("request")}>
             <Button variant="ghost" size="icon-sm" className="text-status-pending" aria-label={t("request")} onClick={() => setDialog("request")}>
-              <CircleAlert aria-hidden />
+              <CircleHelp aria-hidden />
             </Button>
           </Tooltip>
         ))}

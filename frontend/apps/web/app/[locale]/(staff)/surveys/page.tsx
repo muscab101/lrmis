@@ -107,7 +107,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                     <TableCell>
                       <Link href={`/applications/${c.id}`} className="hover:text-primary inline-flex items-center gap-1.5">
                         <span className="text-status-pending font-bold" aria-hidden>
-                          !
+                          ?
                         </span>
                         <Mono>{c.number}</Mono>
                       </Link>
