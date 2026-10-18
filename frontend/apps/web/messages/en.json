@@ -310,7 +310,13 @@
     "owner_registered": "Registered owners can't be deleted.",
     "owner_in_use": "This owner is named on an application, so it can't be deleted.",
     "no_surveyor_in_district": "No surveyor works in this district yet. Give a surveyor this district in Admin → Users.",
-    "site_note_required": "Say why the land couldn't be found (at least 5 characters)."
+    "site_note_required": "Say why the land couldn't be found (at least 5 characters).",
+    "register_site_not_confirmed": "The land hasn't been confirmed on site (✓) yet.",
+    "register_not_submitted": "Submit the application first.",
+    "register_fee_due": "The application fee must be paid or waived first.",
+    "register_open_objection": "Someone has objected. Resolve the objection first.",
+    "register_no_location": "The application has no location pin.",
+    "register_own": "You created this application, so another registrar must move it."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1417,7 +1423,11 @@
     "rowView": "View details",
     "rowDelete": "Delete",
     "rowDeleteTitle": "Delete {number}?",
-    "rowDeleteBody": "The application is cancelled and closed. It stays in the records with its history."
+    "rowDeleteBody": "The application is cancelled and closed. It stays in the records with its history.",
+    "rowRegister": "Move to Parcels",
+    "rowRegisterTitle": "Move {number} to Parcels?",
+    "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
+    "rowRegistered": "Registered as {pun}"
   },
   "owners": {
     "title": "Owners",

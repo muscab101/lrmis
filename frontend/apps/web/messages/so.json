@@ -310,7 +310,13 @@
     "owner_registered": "Masuuliyiinta la diiwaangeliyey lama tirtiri karo.",
     "owner_in_use": "Masuulkan wuxuu ku qoran yahay codsi, sidaa darteed lama tirtiri karo.",
     "no_surveyor_in_district": "Weli sahamiye kama shaqeeyo degmadan. Sahamiye sii degmadan Maamulka → Isticmaalayaasha.",
-    "site_note_required": "Sheeg sababta dhulka aan loo helin (ugu yaraan 5 xaraf)."
+    "site_note_required": "Sheeg sababta dhulka aan loo helin (ugu yaraan 5 xaraf).",
+    "register_site_not_confirmed": "Dhulka weli goobta lagama xaqiijin (✓).",
+    "register_not_submitted": "Marka hore gudbi codsiga.",
+    "register_fee_due": "Khidmadda codsiga marka hore waa in la bixiyaa ama la cafiyaa.",
+    "register_open_objection": "Qof ayaa diiday. Marka hore xalli diidmada.",
+    "register_no_location": "Codsigu ma laha calaamad goob.",
+    "register_own": "Adiga ayaa sameeyey codsigan, sidaa darteed diiwaangeliye kale ayaa gudbin kara."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1417,7 +1423,11 @@
     "rowView": "Eeg faahfaahinta",
     "rowDelete": "Tirtir",
     "rowDeleteTitle": "Ma tirtirtaa {number}?",
-    "rowDeleteBody": "Codsiga waa la joojinayaa oo la xirayaa. Wuxuu ku jiri doonaa diiwaanka iyo taariikhdiisa."
+    "rowDeleteBody": "Codsiga waa la joojinayaa oo la xirayaa. Wuxuu ku jiri doonaa diiwaanka iyo taariikhdiisa.",
+    "rowRegister": "U gudbi Dhulka",
+    "rowRegisterTitle": "Ma u gudbisaa {number} Dhulka?",
+    "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
+    "rowRegistered": "Waxaa loo diiwaangeliyey {pun}"
   },
   "owners": {
     "title": "Milkiilayaasha",

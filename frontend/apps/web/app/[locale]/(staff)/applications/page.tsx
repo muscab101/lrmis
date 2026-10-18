@@ -35,7 +35,7 @@ export default async function ApplicationsPage({ params, searchParams }: { param
     .reduce((sum, [, n]) => sum + (n ?? 0), 0);
   const all = Object.values(counts).reduce((s, n) => s + (n ?? 0), 0);
   const tabCount = (tab: (typeof TABS)[number]) => (tab === "open" ? open : tab === "any" ? all : (counts[tab] ?? 0));
-  const rowCan = { update: viewer.can("applications.update"), cancel: viewer.can("applications.cancel"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
+  const rowCan = { update: viewer.can("applications.update"), cancel: viewer.can("applications.cancel"), checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update"), register: viewer.can("parcels.approve") };
   const nbhdName = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en || n.name_so) : "");
   const href = (patch: Record<string, string | number>) => `/applications?${new URLSearchParams({ ...Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])), page: "1", ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, String(v)])) })}`;
 

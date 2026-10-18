@@ -118,3 +118,35 @@ describe("site check (! → ✓)", () => {
     await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_request_site_check($1)`, [draft])), "CONFLICT");
   });
 });
+
+describe("move to Parcels right after the ✓ site check", () => {
+  let registrar: string;
+  beforeAll(async () => {
+    const boss = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    registrar = await createStaff(db, boss, "registrar@gmail.com", ["registrar"], [hodan]);
+  });
+
+  it("needs the ✓ first, and the register right", async () => {
+    // `app` is in survey (fee waived) from the tests above, with no site check yet.
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "CONFLICT: site_not_confirmed");
+    await asUser(db, clerk, (tx) => tx.query(`select public.application_request_site_check($1, $2)`, [app, surveyor]));
+    await asUser(db, surveyor, (tx) => tx.query(`select public.application_confirm_site($1, true, 'Plot and walls seen')`, [app]));
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "PERMISSION_DENIED");
+  });
+
+  it("registers: PUN, account number, owners, application approved, open survey cancelled", async () => {
+    const r = await asUser(db, registrar, (tx) =>
+      scalar<{ pun: string; account_no: string; parcel_id: string; provisional_boundary: boolean }>(tx, `select public.application_register_confirmed($1, 'residential', 'Confirmed on site')`, [app]),
+    );
+    expect(r.pun).toMatch(/^BN-HDN-012-\d{6}$/);
+    expect(r.account_no).toMatch(/^HDN\d+/);
+    expect(r.provisional_boundary).toBe(true);
+    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("approved");
+    expect(await scalar<string>(db, `select status::text from public.parcels where id = $1`, [r.parcel_id])).toBe("registered");
+    expect(await scalar<number>(db, `select count(*)::int from public.parcel_owners where parcel_id = $1`, [r.parcel_id])).toBe(1);
+    expect(await scalar<string>(db, `select status::text from public.surveys where id = $1`, [survey])).toBe("cancelled");
+    // The owner is now on the register too.
+    expect(await scalar<string | null>(db, `select pa.registered_at from public.parcel_owners po join public.parties pa on pa.id = po.party_id where po.parcel_id = $1`, [r.parcel_id])).not.toBeNull();
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "CONFLICT: status");
+  });
+});

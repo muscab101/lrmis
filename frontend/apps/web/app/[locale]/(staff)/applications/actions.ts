@@ -337,3 +337,33 @@ export const confirmSiteAction = defineAction(
     return null;
   },
 );
+
+const REGISTER_BLOCKERS = ["site_not_confirmed", "not_submitted", "fee_due", "open_objection", "no_location"];
+
+/** Move to Parcels right after the ✓ site check (Registrar): PUN, account number and owners. */
+export const registerConfirmedAction = defineAction(
+  "applications.register_confirmed",
+  z.object({
+    applicationId: z.uuid(),
+    landUse: z.enum(["residential", "commercial", "mixed", "state", "agricultural", "other"]),
+    note: z.string().trim().max(1000, "validation.too_long").default(""),
+  }),
+  async ({ applicationId, landUse, note }, ctx) => {
+    let out: { pun: string; parcel_id: string };
+    try {
+      out = unwrap(
+        await ctx.supabase.rpc("application_register_confirmed", { p_id: applicationId, p_land_use: landUse, p_note: note || null }),
+        "register",
+      ) as { pun: string; parcel_id: string };
+    } catch (err) {
+      const detail = err instanceof AppFailure ? String(err.values?.detail ?? "") : "";
+      if (err instanceof AppFailure && err.code === "CONFLICT" && REGISTER_BLOCKERS.includes(detail)) {
+        throw new AppFailure("CONFLICT", undefined, { register: [`validation.register_${detail}`] });
+      }
+      throw err;
+    }
+    revalidatePath("/[locale]/applications", "layout");
+    revalidatePath("/[locale]/parcels", "layout");
+    return out;
+  },
+);
