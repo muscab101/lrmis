@@ -1724,7 +1724,15 @@
     "actions": "Ficillo",
     "actionOpen": "Fur sahanka",
     "actionApplication": "Fur codsiga",
-    "assigned": "La xilsaaray"
+    "assigned": "La xilsaaray",
+    "caseTitle": "Codsiga iyo masuuliyiinta",
+    "caseApplication": "Codsiga",
+    "caseOwners": "Masuuliyiinta",
+    "caseDocuments": "Dukumentiyada",
+    "caseNoOwners": "Weli masuul kuma jiro codsiga.",
+    "caseNoDocuments": "Dukumenti lama soo gelin.",
+    "caseOpenDocuments": "Ka fur dukumentiyada codsiga",
+    "declaredSize": "Cabbirka la sheegay"
   },
   "parcels": {
     "title": "Dhulal",

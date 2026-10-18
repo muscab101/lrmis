@@ -1724,7 +1724,15 @@
     "actions": "Actions",
     "actionOpen": "Open survey",
     "actionApplication": "Open application",
-    "assigned": "Assigned"
+    "assigned": "Assigned",
+    "caseTitle": "Application and owners",
+    "caseApplication": "Application",
+    "caseOwners": "Owners",
+    "caseDocuments": "Documents",
+    "caseNoOwners": "No owners on the application yet.",
+    "caseNoDocuments": "No documents uploaded.",
+    "caseOpenDocuments": "Open the documents on the application",
+    "declaredSize": "Declared size"
   },
   "parcels": {
     "title": "Parcels",

@@ -88,7 +88,52 @@ export async function getSurvey(id: string) {
     const g = await supabase.rpc("location_geojson", { p_level: "neighbourhoods", p_id: survey.application.neighbourhood_id });
     outline = (g.data as typeof outline) ?? null;
   }
-  return { survey, outline };
+  return { survey, outline, file: await surveyFile(survey.application_id) };
+}
+
+/** The application behind a survey, with its owners and documents (the surveyor's case file). */
+export interface SurveyFile {
+  id: string;
+  number: string;
+  type: string;
+  channel: string;
+  status: string;
+  plot_no: string | null;
+  old_deed_no: string | null;
+  govt_file_no: string | null;
+  house_no: string | null;
+  govt_receipt_no: string | null;
+  plot_width_m: number | null;
+  plot_length_m: number | null;
+  address_note: string;
+  district: { name_so: string; name_en: string } | null;
+  neighbourhood: { name_so: string; name_en: string } | null;
+  application_parties: {
+    role: string;
+    share_pct: number | null;
+    party: { id: string; full_name: string; mother_name: string | null; phone: string | null; id_type: string | null; id_number: string | null; registered_at: string | null } | null;
+  }[];
+  application_documents: { id: string; doc_type: string; file_name: string }[];
+  docTypes: { code: string; name_so: string; name_en: string }[];
+}
+
+async function surveyFile(applicationId: string): Promise<SurveyFile | null> {
+  const supabase = await createClient();
+  const [{ data }, { data: types }] = await Promise.all([
+    supabase
+      .from("applications")
+      .select(
+        `id, number, type, channel, status, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no, plot_width_m, plot_length_m, address_note,
+         district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en),
+         application_parties(role, share_pct, party:parties(id, full_name, mother_name, phone, id_type, id_number, registered_at)),
+         application_documents(id, doc_type, file_name)`,
+      )
+      .eq("id", applicationId)
+      .maybeSingle(),
+    supabase.from("document_types").select("code, name_so, name_en"),
+  ]);
+  if (!data) return null;
+  return { ...(data as unknown as Omit<SurveyFile, "docTypes">), docTypes: (types ?? []) as SurveyFile["docTypes"] };
 }
 
 export async function surveyStatusCounts(): Promise<Partial<Record<SurveyStatus, number>>> {
