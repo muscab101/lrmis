@@ -219,11 +219,11 @@ export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, c
                 </Button>
               )}
               {staff && stage.parcel?.pun && status === "approved" && (
-                // Last step: the title certificate is issued from the parcel's page.
-                <Button size="sm" asChild>
-                  <Link href={`/parcels/${stage.parcel.id}#certificate`}>
+                // Last step: the title certificate, issued from the parcel's page.
+                <Button size="sm" variant={stage.certificate ? "outline" : "default"} asChild>
+                  <Link href={stage.certificate ? `/documents/${stage.certificate.id}` : `/parcels/${stage.parcel.id}#certificate`}>
                     <BadgeCheck aria-hidden />
-                    {t("nextCertificate")}
+                    {stage.certificate ? t("viewCertificate", { serial: stage.certificate.serial }) : t("nextCertificate")}
                   </Link>
                 </Button>
               )}

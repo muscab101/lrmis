@@ -13,6 +13,7 @@ export function NewOwnerForm({ districts, canApply }: { districts: { id: string;
       party={null}
       districts={districts}
       onCancel={() => router.back()}
+      submitLabel={canApply ? t("saveAndAddParcel") : undefined}
       onSaved={(id) => {
         if (!canApply) {
           toast.success(t("created"));

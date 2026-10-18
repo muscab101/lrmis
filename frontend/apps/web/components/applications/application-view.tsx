@@ -1,6 +1,6 @@
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@dhulka/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@dhulka/ui/form-controls";
+import { TabsContent, TabsList, TabsTrigger } from "@dhulka/ui/form-controls";
 import { Alert, PageHeader } from "@dhulka/ui/misc";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import type { getApplication } from "@/lib/server/applications";
@@ -14,6 +14,7 @@ import { ReviewPanel } from "./review-panel";
 import { StagePanel } from "./stage-panel";
 import { ApplicationStatusBadge } from "./status-badge";
 import { Timeline } from "./timeline";
+import { UrlTabs } from "./url-tabs";
 
 const OPEN_FOR_RETURN: ApplicationStatus[] = ["awaiting_payment", "in_survey", "surveyed", "in_verification"];
 const CANCELLABLE: ApplicationStatus[] = ["draft", "awaiting_payment", "returned"];
@@ -113,8 +114,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
         }}
       />
 
-      {/* Keyed on the tab so a step link (?tab=) opens it even when the page is already showing. */}
-      <Tabs key={tab} defaultValue={tab}>
+      <UrlTabs value={tab}>
         <TabsList>
           <TabsTrigger value="details">{t("tabDetails")}</TabsTrigger>
           <TabsTrigger value="owners">
@@ -204,7 +204,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+      </UrlTabs>
     </div>
   );
 }

@@ -1455,7 +1455,8 @@
     "registerBody": "Check the name, ID and phone first. Once registered, the owner is part of the official record and can't be deleted.",
     "registeredDone": "Owner moved to registered",
     "districtColumn": "District",
-    "createdNext": "Owner saved. Now add their land parcel."
+    "createdNext": "Owner saved. Now add their land parcel.",
+    "saveAndAddParcel": "Save and add land parcel"
   },
   "track": {
     "title": "Track an application",
@@ -1577,7 +1578,8 @@
       "rejected": "The application was rejected.",
       "returned": "Returned to the applicant for corrections."
     },
-    "nextCertificate": "Next: issue the certificate"
+    "nextCertificate": "Next: issue the certificate",
+    "viewCertificate": "Certificate {serial}"
   },
   "surveys": {
     "title": "Surveys",

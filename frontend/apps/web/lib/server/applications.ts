@@ -129,6 +129,8 @@ export interface ApplicationDetail {
 export interface ApplicationStage {
   surveys: { id: string; status: string; surveyor_id: string; due_date: string | null; area_m2: number | null; submitted_at: string | null; surveyor: { full_name: string } | null }[];
   parcel: { id: string; pun: string | null; account_no: string | null; status: string; area_m2: number | null; land_use: string; geom: GeoJSON.Polygon } | null;
+  /** The parcel's valid title certificate, once issued (the last step). */
+  certificate: { id: string; serial: string } | null;
   notice: {
     id: string;
     status: string;
@@ -159,7 +161,7 @@ export async function getApplication(id: string) {
   if (!app) return null;
   app.application_events.sort((a, b) => a.id - b.id);
 
-  const [checklist, nearby, docTypes, surveys, parcel, notices] = await Promise.all([
+  const [checklist, nearby, docTypes, surveys, parcel, notices, cert] = await Promise.all([
     supabase.rpc("application_checklist", { p_id: id }),
     supabase.rpc("application_nearby", { p_id: id, p_meters: 10 }),
     supabase.from("document_types").select("code, name_so, name_en, required_for, sort").order("sort"),
@@ -177,11 +179,15 @@ export async function getApplication(id: string) {
       .eq("application_id", id)
       .order("starts_at", { ascending: false })
       .limit(1),
+    app.parcel_id
+      ? supabase.from("issued_documents").select("id, serial").eq("parcel_id", app.parcel_id).eq("type", "certificate").eq("status", "valid").limit(1).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
   const stage: ApplicationStage = {
     surveys: (surveys.data ?? []) as unknown as ApplicationStage["surveys"],
     parcel: (parcel.data ?? null) as ApplicationStage["parcel"],
     notice: ((notices.data ?? [])[0] ?? null) as ApplicationStage["notice"],
+    certificate: (cert.data ?? null) as ApplicationStage["certificate"],
   };
   return {
     app,

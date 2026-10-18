@@ -1455,7 +1455,8 @@
     "registerBody": "Marka hore hubi magaca, aqoonsiga iyo telefoonka. Marka la diiwaangeliyo, masuulku wuxuu noqonayaa diiwaan rasmi ah lamana tirtiri karo.",
     "registeredDone": "Masuulka waxaa loo gudbiyey diiwaanka",
     "districtColumn": "Degmo",
-    "createdNext": "Masuulka waa la keydiyey. Hadda ku dar dhulkiisa."
+    "createdNext": "Masuulka waa la keydiyey. Hadda ku dar dhulkiisa.",
+    "saveAndAddParcel": "Keydi oo ku dar dhul"
   },
   "track": {
     "title": "Raadraac codsi",
@@ -1577,7 +1578,8 @@
       "rejected": "Codsiga waa la diiday.",
       "returned": "Waxaa loo celiyay codsadaha si uu u saxo."
     },
-    "nextCertificate": "Xiga: soo saar shahaadada"
+    "nextCertificate": "Xiga: soo saar shahaadada",
+    "viewCertificate": "Shahaadada {serial}"
   },
   "surveys": {
     "title": "Sahanno",
