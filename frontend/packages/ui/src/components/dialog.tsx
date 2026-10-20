@@ -109,7 +109,7 @@ export function ConfirmDialog({
     <AlertPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertPrimitive.Portal>
         <AlertPrimitive.Overlay className={overlay} />
-        <AlertPrimitive.Content className="fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border-t-4 border-t-flag bg-card p-6 shadow-2xl">
+        <AlertPrimitive.Content className="fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-card p-6 shadow-2xl">
           <AlertPrimitive.Title className="text-lg font-semibold">{title}</AlertPrimitive.Title>
           {description && (
             <AlertPrimitive.Description className="text-sm text-muted-foreground">{description}</AlertPrimitive.Description>

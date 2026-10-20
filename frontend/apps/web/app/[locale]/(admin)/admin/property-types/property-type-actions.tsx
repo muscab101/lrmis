@@ -61,11 +61,11 @@ export function PropertyTypeActions({ type }: { type?: PropertyTypeRow }) {
       >
         {(fe) => (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field id={`pt-so-${type?.id ?? "new"}`} label={t("nameSo")} error={fe("nameSo")} required>
-              <Input value={v.nameSo} maxLength={80} onChange={(e) => setV({ ...v, nameSo: e.target.value })} placeholder="Guri dhagax" />
-            </Field>
             <Field id={`pt-en-${type?.id ?? "new"}`} label={t("nameEn")} error={fe("nameEn")} required>
               <Input value={v.nameEn} maxLength={80} onChange={(e) => setV({ ...v, nameEn: e.target.value })} placeholder="Stone house" />
+            </Field>
+            <Field id={`pt-so-${type?.id ?? "new"}`} label={t("nameSo")} error={fe("nameSo")} required>
+              <Input value={v.nameSo} maxLength={80} onChange={(e) => setV({ ...v, nameSo: e.target.value })} placeholder="Guri dhagax" />
             </Field>
             <Field id={`pt-price-${type?.id ?? "new"}`} label={t("price")} hint={t("priceHint")} error={fe("price")}>
               <Input type="number" inputMode="decimal" min={0} step="0.01" value={v.price} onChange={(e) => setV({ ...v, price: e.target.value })} />
