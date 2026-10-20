@@ -33,6 +33,7 @@ export const savePropertyTypeAction = defineAction("property_types.save", typeSc
   } catch (err) {
     if (err instanceof AppFailure && err.code === "VALIDATION") {
       const detail = String(err.values?.detail ?? "");
+      if (detail === "fx_rate_missing") throw new AppFailure("VALIDATION", undefined, { price: ["validation.fx_rate_missing"] });
       const field = detail === "name_so" ? "nameSo" : detail === "name_en" ? "nameEn" : detail === "price" ? "price" : null;
       if (field) throw new AppFailure("VALIDATION", undefined, { [field]: ["validation.required"] });
     }

@@ -318,7 +318,8 @@
     "register_open_objection": "Qof ayaa diiday. Marka hore xalli diidmada.",
     "register_no_location": "Codsigu ma laha calaamad goob.",
     "property_type": "Ka dooro nooc liiska.",
-    "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale."
+    "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale.",
+    "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -972,7 +973,7 @@
       "nameSo": "Magaca (Soomaali)",
       "nameEn": "Magaca (Ingiriis)",
       "price": "Qiimaha",
-      "priceHint": "Waxaa lagu muujinayaa nooca agtiisa marka shaqaaluhu doortaan.",
+      "priceHint": "Waxaa masuulka lagu dalacayaa iyadoo lala socodsiinayo khidmadda codsiga marka dhul noocan ah la gudbiyo.",
       "currency": "Lacagta",
       "activeLabel": "Shaqaaluhu way dooran karaan noocan",
       "status": "Xaalad",
@@ -1413,7 +1414,7 @@
       "go_documents": "Xiga: soo geli dukumentiyada",
       "go_review": "Xiga: hubi & gudbi"
     },
-    "feeInvoiceBody": "Codsigu waa dhammaystiran yahay. Bixi biilka khidmadda codsiga {number} ({amount} la bixinayo) wuxuuna si toos ah ugu gudbi doonaa sahanka.",
+    "feeInvoiceBody": "Codsigu waa dhammaystiran yahay. Bixi biilka khidmadda {number} ({amount} la bixinayo: khidmadda codsiga iyo qiimaha nooca hantida, haddii uu jiro) wuxuuna si toos ah ugu gudbi doonaa sahanka.",
     "payOnline": "Ku bixi online (EVC Plus, Zaad, kaar)",
     "payAtCashier": "Lacagta ka qaado khasnajiga",
     "openInvoice": "Fur biilka",
@@ -1456,7 +1457,7 @@
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
     "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
     "propertyType": "Nooca hantida",
-    "propertyTypeHint": "Waxa hadda dhulka saaran."
+    "propertyTypeHint": "Waxa hadda dhulka saaran. Qiimihiisa waxaa lagu darayaa biilka khidmadda marka dhulka la gudbiyo."
   },
   "owners": {
     "title": "Milkiilayaasha",

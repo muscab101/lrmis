@@ -318,7 +318,8 @@
     "register_open_objection": "Someone has objected. Resolve the objection first.",
     "register_no_location": "The application has no location pin.",
     "property_type": "Choose a type from the list.",
-    "property_type_inactive": "That type has been hidden by an admin. Choose another."
+    "property_type_inactive": "That type has been hidden by an admin. Choose another.",
+    "fx_rate_missing": "There's no SOS exchange rate yet. Add one in Accounting → Rates, or set the price in USD."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -972,7 +973,7 @@
       "nameSo": "Name (Somali)",
       "nameEn": "Name (English)",
       "price": "Price",
-      "priceHint": "Shown next to the type when staff choose it.",
+      "priceHint": "Billed to the owner with the application fee when land of this type is submitted.",
       "currency": "Currency",
       "activeLabel": "Staff can choose this type",
       "status": "Status",
@@ -1413,7 +1414,7 @@
       "go_documents": "Next: upload documents",
       "go_review": "Next: review & submit"
     },
-    "feeInvoiceBody": "The application is complete. Pay the application fee invoice {number} ({amount} to pay) and it moves to survey by itself.",
+    "feeInvoiceBody": "The application is complete. Pay the fee invoice {number} ({amount} to pay: application fee plus the property type's price, if any) and it moves to survey by itself.",
     "payOnline": "Pay online (EVC Plus, Zaad, card)",
     "payAtCashier": "Take payment at the cashier",
     "openInvoice": "Open invoice",
@@ -1456,7 +1457,7 @@
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
     "rowRegistered": "Registered as {pun}",
     "propertyType": "Property type",
-    "propertyTypeHint": "What's on the land now."
+    "propertyTypeHint": "What's on the land now. Its price is added to the fee invoice when the land is submitted."
   },
   "owners": {
     "title": "Owners",
