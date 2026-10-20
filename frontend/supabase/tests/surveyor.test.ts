@@ -150,3 +150,23 @@ describe("move to Parcels right after the ✓ site check", () => {
     await expectError(asUser(db, registrar, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "CONFLICT: status");
   });
 });
+
+describe("Move to Parcels by the person who created the application (0044)", () => {
+  it("is allowed", async () => {
+    const boss = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    const own = await asUser(db, boss, async (tx) => {
+      const owner = await scalar<string>(tx, `select public.save_party(null, $1)`, [JSON.stringify({ full_name: "Own Case", phone: "+252612229999", district_id: hodan })]);
+      const a = await scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd, pin_lon: 45.302, pin_lat: 2.04 })]);
+      await tx.query(`select public.application_set_parties($1, $2)`, [a.id, JSON.stringify([{ party_id: owner, role: "owner", share_pct: 100 }])]);
+      await tx.query(`select public.application_add_document($1, 'identity', $2, 'id.pdf', 'application/pdf', 10)`, [a.id, `${a.id}/id.pdf`]);
+      await tx.query(`select public.application_add_document($1, 'old_deed', $2, 'd.pdf', 'application/pdf', 10)`, [a.id, `${a.id}/d.pdf`]);
+      await tx.query(`select public.application_submit($1)`, [a.id]);
+      return a.id;
+    });
+    await asUser(db, finance, (tx) => tx.query(`select public.application_waive_fee($1, 'Test')`, [own]));
+    await asUser(db, boss, (tx) => tx.query(`select public.application_request_site_check($1, $2)`, [own, surveyor]));
+    await asUser(db, boss, (tx) => tx.query(`select public.application_confirm_site($1, true)`, [own]));
+    const r = await asUser(db, boss, (tx) => scalar<{ pun: string }>(tx, `select public.application_register_confirmed($1, 'residential')`, [own]));
+    expect(r.pun).toMatch(/^BN-HDN-012-/);
+  });
+});

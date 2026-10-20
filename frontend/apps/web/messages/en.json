@@ -315,8 +315,7 @@
     "register_not_submitted": "Submit the application first.",
     "register_fee_due": "The application fee must be paid or waived first.",
     "register_open_objection": "Someone has objected. Resolve the objection first.",
-    "register_no_location": "The application has no location pin.",
-    "register_own": "You created this application, so another registrar must move it."
+    "register_no_location": "The application has no location pin."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",

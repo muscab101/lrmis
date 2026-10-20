@@ -60,9 +60,7 @@ export function ApplicationRowActions({ application: a, me, can }: { application
       ? "register_not_submitted"
       : a.status === "awaiting_payment"
         ? "register_fee_due"
-        : a.created_by && a.created_by === me
-          ? "register_own"
-          : null;
+        : null;
   const tv = useTranslations("validation");
   const canEdit = can.update && EDITABLE.includes(a.status);
   const canDelete = DELETABLE.includes(a.status) && (can.cancel || a.created_by === me);

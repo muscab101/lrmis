@@ -315,8 +315,7 @@
     "register_not_submitted": "Marka hore gudbi codsiga.",
     "register_fee_due": "Khidmadda codsiga marka hore waa in la bixiyaa ama la cafiyaa.",
     "register_open_objection": "Qof ayaa diiday. Marka hore xalli diidmada.",
-    "register_no_location": "Codsigu ma laha calaamad goob.",
-    "register_own": "Adiga ayaa sameeyey codsigan, sidaa darteed diiwaangeliye kale ayaa gudbin kara."
+    "register_no_location": "Codsigu ma laha calaamad goob."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
