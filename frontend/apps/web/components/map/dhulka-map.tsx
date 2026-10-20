@@ -14,7 +14,8 @@ export interface MapView {
 export interface DhulkaMapHandle {
   fitBounds: (bbox: [number, number, number, number], maxZoom?: number) => void;
   flyTo: (center: [number, number], zoom?: number) => void;
-  setHighlight: (geometry: GeoJSON.Geometry | null) => void;
+  /** Draw one shape on top; `colour` defaults to the brand blue (e.g. a level colour from LEVEL_COLOURS). */
+  setHighlight: (geometry: GeoJSON.Geometry | null, colour?: string) => void;
   getMap: () => MlMap | null;
 }
 
@@ -57,8 +58,13 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
         { padding: 48, maxZoom, duration: 600 },
       ),
     flyTo: (center, zoom = 16) => map.current?.flyTo({ center, zoom }),
-    setHighlight: (geometry) => {
-      const src = map.current?.getSource("highlight") as maplibregl.GeoJSONSource | undefined;
+    setHighlight: (geometry, colour) => {
+      const m = map.current;
+      if (m?.getLayer("highlight-fill")) {
+        m.setPaintProperty("highlight-fill", "fill-color", colour ?? "#4189dd");
+        m.setPaintProperty("highlight-line", "line-color", colour ?? "#4189dd");
+      }
+      const src = m?.getSource("highlight") as maplibregl.GeoJSONSource | undefined;
       src?.setData(geometry ? { type: "Feature", properties: {}, geometry } : { type: "FeatureCollection", features: [] });
     },
     getMap: () => map.current,

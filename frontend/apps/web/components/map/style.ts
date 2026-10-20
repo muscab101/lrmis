@@ -17,6 +17,22 @@ export const LAYER_MINZOOM: Record<BoundaryLayer, number> = {
 const INK = "#0d1b2e";
 const FLAG = "#4189dd";
 const TEAL = "#0e8f8e";
+
+/**
+ * Each level of the location hierarchy has its own colour, used for its outline and a soft fill
+ * on every map and in the legend: district red, section yellow, sector green, neighbourhood
+ * blue, street purple. Nested levels draw on top, so a section shows yellow inside its red district.
+ */
+export const LEVEL_COLOURS: Record<BoundaryLayer, string> = {
+  districts: "#dc2626",
+  sections: "#eab308",
+  sectors: "#16a34a",
+  neighbourhoods: "#2563eb",
+  streets: "#9333ea",
+  facilities: TEAL,
+};
+const C = LEVEL_COLOURS;
+const softFill = (hoverOpacity: number, opacity: number) => ["case", ["boolean", ["feature-state", "hover"], false], hoverOpacity, opacity];
 const FONT = ["Open Sans Semibold"];
 
 /** Mogadishu (Banadir) — used when nothing is mapped yet. */
@@ -87,47 +103,70 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
     layers: [
       { id: "base-streets", type: "raster", source: "base-streets", layout: { visibility: "visible" } },
       { id: "base-satellite", type: "raster", source: "base-satellite", layout: { visibility: "none" } },
+      // Fills, widest level first so the smaller ones sit on top.
+      {
+        id: "districts-fill",
+        type: "fill",
+        source: "districts",
+        "source-layer": "districts",
+        paint: { "fill-color": C.districts, "fill-opacity": softFill(0.16, 0.06) as never },
+      },
+      {
+        id: "sections-fill",
+        type: "fill",
+        source: "sections",
+        "source-layer": "sections",
+        paint: { "fill-color": C.sections, "fill-opacity": softFill(0.2, 0.08) as never },
+      },
+      {
+        id: "sectors-fill",
+        type: "fill",
+        source: "sectors",
+        "source-layer": "sectors",
+        paint: { "fill-color": C.sectors, "fill-opacity": softFill(0.2, 0.08) as never },
+      },
       {
         id: "neighbourhoods-fill",
         type: "fill",
         source: "neighbourhoods",
         "source-layer": "neighbourhoods",
-        paint: { "fill-color": FLAG, "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.28, 0.12] },
+        paint: { "fill-color": C.neighbourhoods, "fill-opacity": softFill(0.28, 0.12) as never },
       },
+      // Outlines, smallest level first so district borders stay on top.
       {
         id: "neighbourhoods-line",
         type: "line",
         source: "neighbourhoods",
         "source-layer": "neighbourhoods",
-        paint: { "line-color": FLAG, "line-width": 1.2 },
+        paint: { "line-color": C.neighbourhoods, "line-width": 1.4 },
       },
       {
         id: "sectors-line",
         type: "line",
         source: "sectors",
         "source-layer": "sectors",
-        paint: { "line-color": INK, "line-width": 1, "line-dasharray": [2, 2], "line-opacity": 0.6 },
+        paint: { "line-color": C.sectors, "line-width": 1.6, "line-dasharray": [2, 1.5] },
       },
       {
         id: "sections-line",
         type: "line",
         source: "sections",
         "source-layer": "sections",
-        paint: { "line-color": INK, "line-width": 1.6, "line-opacity": 0.7 },
+        paint: { "line-color": C.sections, "line-width": 2 },
       },
       {
         id: "districts-line",
         type: "line",
         source: "districts",
         "source-layer": "districts",
-        paint: { "line-color": INK, "line-width": ["interpolate", ["linear"], ["zoom"], 9, 1.5, 14, 3], "line-opacity": 0.85 },
+        paint: { "line-color": C.districts, "line-width": ["interpolate", ["linear"], ["zoom"], 9, 2, 14, 3.5] },
       },
       {
         id: "streets-line",
         type: "line",
         source: "streets",
         "source-layer": "streets",
-        paint: { "line-color": "#b45309", "line-width": 2 },
+        paint: { "line-color": C.streets, "line-width": 2.5 },
       },
       {
         id: "facilities-circle",
@@ -203,19 +242,19 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
 
 /** Map layer ids that belong to each toggle in the layers panel. */
 export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
-  districts: ["districts-line", "districts-label"],
-  sections: ["sections-line"],
-  sectors: ["sectors-line"],
+  districts: ["districts-fill", "districts-line", "districts-label"],
+  sections: ["sections-fill", "sections-line"],
+  sectors: ["sectors-fill", "sectors-line"],
   neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-line", "neighbourhoods-label"],
   streets: ["streets-line"],
   facilities: ["facilities-circle"],
 };
 
 export const LEGEND: { layer: BoundaryLayer; swatch: string; kind: "line" | "fill" | "dashed" | "dot" }[] = [
-  { layer: "districts", swatch: INK, kind: "line" },
-  { layer: "sections", swatch: INK, kind: "line" },
-  { layer: "sectors", swatch: INK, kind: "dashed" },
-  { layer: "neighbourhoods", swatch: FLAG, kind: "fill" },
-  { layer: "streets", swatch: "#b45309", kind: "line" },
+  { layer: "districts", swatch: C.districts, kind: "fill" },
+  { layer: "sections", swatch: C.sections, kind: "fill" },
+  { layer: "sectors", swatch: C.sectors, kind: "fill" },
+  { layer: "neighbourhoods", swatch: C.neighbourhoods, kind: "fill" },
+  { layer: "streets", swatch: C.streets, kind: "line" },
   { layer: "facilities", swatch: TEAL, kind: "dot" },
 ];

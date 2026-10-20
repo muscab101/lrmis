@@ -12,6 +12,7 @@ import { Upload } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
+import { LEVEL_COLOURS } from "@/components/map/style";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
@@ -34,7 +35,7 @@ export function BoundarySheet({ level, row, canEdit, onClose }: { level: Locatio
   async function loadPreview() {
     const res = await getGeometryAction({ level, id: row.id });
     if (res.ok && res.data) {
-      mapRef.current?.setHighlight(res.data.geometry);
+      mapRef.current?.setHighlight(res.data.geometry, LEVEL_COLOURS[level]);
       mapRef.current?.fitBounds(res.data.bbox, 16);
     }
   }

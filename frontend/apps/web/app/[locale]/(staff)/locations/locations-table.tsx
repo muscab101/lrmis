@@ -19,6 +19,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
 import type { DistrictCount, LocationRow } from "@/lib/server/locations";
 import { archiveLocationAction, deleteLocationAction } from "./actions";
+import { LEVEL_COLOURS } from "@/components/map/style";
 import { BoundarySheet } from "./boundary-sheet";
 import { LocationSheet } from "./location-sheet";
 
@@ -86,9 +87,11 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
           <Link
             key={l}
             href={`/locations?level=${l}${query.district ? `&district=${query.district}` : ""}`}
-            className={`-mb-px border-b-2 pb-2.5 whitespace-nowrap ${l === level ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-2.5 whitespace-nowrap ${l === level ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             aria-current={l === level ? "page" : undefined}
           >
+            {/* The level's map colour. */}
+            <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: LEVEL_COLOURS[l] }} aria-hidden />
             {t(`level_${l}`)}
           </Link>
         ))}
