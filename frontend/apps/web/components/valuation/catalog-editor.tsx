@@ -94,14 +94,16 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
               <Field id="code" label={t("code")} hint={t("codeHint")} error={fe("code")} required>
                 <Input value={form.code} disabled={!!form.id} onChange={(e) => set("code", e.target.value)} />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="nameSo" label={t("nameSo")} error={fe("nameSo")} required>
-                  <Input value={form.nameSo} onChange={(e) => set("nameSo", e.target.value)} />
-                </Field>
-                <Field id="nameEn" label={t("nameEn")} error={fe("nameEn")} required>
-                  <Input value={form.nameEn} onChange={(e) => set("nameEn", e.target.value)} />
-                </Field>
-              </div>
+              {/* One name, saved for both languages. */}
+              <Field id="name" label={t("name")} error={fe("nameEn") ?? fe("nameSo")} required>
+                <Input
+                  value={form.nameEn}
+                  onChange={(e) => {
+                    set("nameEn", e.target.value);
+                    set("nameSo", e.target.value);
+                  }}
+                />
+              </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field id="amount" label={t(kind === "grades" ? "amountPerUnit" : "defaultAmount")} error={fe("amount")} required>
                   <Input type="number" min={0} step="0.01" value={form.amount} onChange={(e) => set("amount", e.target.value)} />

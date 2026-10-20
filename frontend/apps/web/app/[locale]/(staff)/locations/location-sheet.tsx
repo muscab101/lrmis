@@ -165,11 +165,15 @@ export function LocationSheet({ level, row, districts, defaultDistrictId, onClos
                 <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={level === "districts" ? 6 : 8} className="font-mono uppercase" />
               </Field>
             )}
-            <Field id="nameSo" label={t("nameSo")} error={fieldError("nameSo")} required>
-              <Input value={nameSo} onChange={(e) => setNameSo(e.target.value)} />
-            </Field>
-            <Field id="nameEn" label={t("nameEn")} error={fieldError("nameEn")} required={hasCode}>
-              <Input value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
+            {/* One name, saved for both languages. */}
+            <Field id="name" label={t("name")} error={fieldError("nameSo") ?? fieldError("nameEn")} required>
+              <Input
+                value={locale === "so" ? nameSo : nameEn || nameSo}
+                onChange={(e) => {
+                  setNameSo(e.target.value);
+                  setNameEn(e.target.value);
+                }}
+              />
             </Field>
             {level === "neighbourhoods" && (
               <Field id="capacity" label={t("capacity")} hint={t("capacityHint")} error={fieldError("capacity")}>

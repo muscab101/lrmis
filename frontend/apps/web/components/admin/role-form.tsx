@@ -82,11 +82,9 @@ export function RoleForm({ mode, roleId, initial, isSystem = false, isProtected 
           <CardTitle>{t("sectionDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field id="nameSo" label={t("nameSo")} error={vm(errors.nameSo?.message)} required>
-            <Input disabled={readOnly} {...form.register("nameSo")} />
-          </Field>
-          <Field id="nameEn" label={t("nameEn")} error={vm(errors.nameEn?.message)} required>
-            <Input disabled={readOnly} {...form.register("nameEn")} />
+          {/* One name, saved for both languages. */}
+          <Field id="nameEn" label={t("name")} error={vm(errors.nameEn?.message ?? errors.nameSo?.message)} required className="sm:col-span-2">
+            <Input disabled={readOnly} {...form.register("nameEn", { onChange: (e) => form.setValue("nameSo", e.target.value) })} />
           </Field>
           <Field id="description" label={t("description")} error={vm(errors.description?.message)} className="sm:col-span-2">
             <Textarea rows={2} disabled={readOnly} {...form.register("description")} />

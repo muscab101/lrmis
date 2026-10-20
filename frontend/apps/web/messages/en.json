@@ -835,7 +835,8 @@
       "create": "Create role",
       "resetDefault": "Reset to default",
       "resetBody": "Restore the permissions this system role shipped with. Users with this role are notified.",
-      "resetDone": "Role reset to default"
+      "resetDone": "Role reset to default",
+      "name": "Name"
     },
     "permissionsPage": {
       "title": "Permission catalog",
@@ -987,7 +988,8 @@
       "deleted": "Type deleted",
       "hidden": "Type is in use, so it was hidden",
       "emptyTitle": "No property types yet",
-      "emptyBody": "Add the types of house and land staff can choose from."
+      "emptyBody": "Add the types of house and land staff can choose from.",
+      "name": "Name"
     }
   },
   "audit": {

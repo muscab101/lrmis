@@ -835,7 +835,8 @@
       "create": "Samee doorka",
       "resetDefault": "Ku celi asalka",
       "resetBody": "Soo celi ogolaanshihii asalka ahaa ee doorkan nidaamka. Kuwa haysta doorkan waa la ogeysiinayaa.",
-      "resetDone": "Doorka waxaa lagu celiyay asalkii"
+      "resetDone": "Doorka waxaa lagu celiyay asalkii",
+      "name": "Magaca"
     },
     "permissionsPage": {
       "title": "Liiska ogolaanshaha",
@@ -987,7 +988,8 @@
       "deleted": "Nooca waa la tirtiray",
       "hidden": "Nooca waa la isticmaalayaa, sidaa darteed waa la qariyey",
       "emptyTitle": "Weli nooc hanti ma jiro",
-      "emptyBody": "Ku dar noocyada guryaha iyo dhulka ee shaqaaluhu ka dooran karaan."
+      "emptyBody": "Ku dar noocyada guryaha iyo dhulka ee shaqaaluhu ka dooran karaan.",
+      "name": "Magaca"
     }
   },
   "audit": {
@@ -1168,7 +1170,7 @@
     "emptyBody": "Ku dar kan ugu horreeya, ama beddel shaandhaynta.",
     "emptyArchived": "Ma jiraan diiwaanno la kaydiyay",
     "code": "Koodh",
-    "name": "Magac",
+    "name": "Magaca",
     "section": "Qayb",
     "sector": "Kaab",
     "capacity": "Awoodda",
@@ -1992,7 +1994,7 @@
     "editItem": "Wax ka beddel",
     "code": "Koodh",
     "codeHint": "Xarfo yaryar, tirooyin iyo _ ; dib looma beddeli karo.",
-    "name": "Magac",
+    "name": "Magaca",
     "nameSo": "Magaca",
     "nameEn": "Magaca Ingiriisiga",
     "amountPerUnit": "Lacagta unug / sannad",

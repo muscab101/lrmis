@@ -33,8 +33,7 @@ export default async function PropertyTypesPage({ params }: { params: Promise<{ 
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("nameEn")}</TableHead>
-                <TableHead className="hidden sm:table-cell">{t("nameSo")}</TableHead>
+                <TableHead>{t("name")}</TableHead>
                 <TableHead className="text-end">{t("price")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("status")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("code")}</TableHead>
@@ -44,11 +43,7 @@ export default async function PropertyTypesPage({ params }: { params: Promise<{ 
             <TableBody>
               {types.map((p) => (
                 <TableRow key={p.id} className={p.active ? undefined : "text-muted-foreground"}>
-                  <TableCell className="font-medium">
-                    {p.name_en}
-                    <div className="text-muted-foreground text-xs sm:hidden">{p.name_so}</div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">{p.name_so}</TableCell>
+                  <TableCell className="font-medium">{locale === "so" ? p.name_so : p.name_en}</TableCell>
                   <TableCell className="text-end tabular-nums">{format.number(Number(p.price), { style: "currency", currency: p.currency })}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     <StatusBadge tone={p.active ? "approved" : "draft"}>{p.active ? t("active") : t("hiddenLabel")}</StatusBadge>
