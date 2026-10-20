@@ -146,3 +146,19 @@ export const locatePointAction = defineAction(
     return rows[0] ?? null;
   },
 );
+
+/** Delete a location nothing uses (locations.delete); in use → the caller is told to archive it. */
+export const deleteLocationAction = defineAction(
+  "locations.delete",
+  z.object({ level: z.enum(LOCATION_LEVELS), id: z.uuid() }),
+  async ({ level, id }, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("location_delete", { p_level: level, p_id: id }), "delete location");
+    } catch (err) {
+      if (err instanceof AppFailure && err.code === "HAS_RECORDS") throw new AppFailure("HAS_RECORDS", undefined, { location: ["validation.location_in_use"] });
+      throw err;
+    }
+    revalidatePath("/[locale]/locations", "page");
+    return null;
+  },
+);

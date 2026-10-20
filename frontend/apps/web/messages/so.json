@@ -319,7 +319,8 @@
     "register_no_location": "Codsigu ma laha calaamad goob.",
     "property_type": "Ka dooro nooc liiska.",
     "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale.",
-    "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD."
+    "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD.",
+    "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1234,7 +1235,12 @@
     "help_sectors": "Kaab wuxuu ka tirsan yahay hal qayb.",
     "help_neighbourhoods": "Xaafad waxay ka tirsan tahay hal kaab. Koodhkeedu waa qayb ka mid ah PUN-ka.",
     "help_streets": "Waddooyin magac leh oo xariiq ahaan loo sawiray.",
-    "help_facilities": "Dugsiyo, masaajido, isbitaallo iyo goobo kale oo guud."
+    "help_facilities": "Dugsiyo, masaajido, isbitaallo iyo goobo kale oo guud.",
+    "delete": "Tirtir",
+    "deleteTitle": "Ma tirtirtaa {name}?",
+    "deleteBody": "Si buuxda ayaa looga saarayaa. Kaliya goob aan waxba isticmaalin ayaa la tirtiri karaa; mid leh goobo hoose, dhul, codsiyo ama diiwaanno kale way haraysaa, waadna kaydin kartaa.",
+    "deleteInUse": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda.",
+    "deleted": "Goobta waa la tirtiray"
   },
   "applications": {
     "title": "Codsiyada",

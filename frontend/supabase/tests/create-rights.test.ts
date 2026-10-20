@@ -58,3 +58,17 @@ describe("who creates owners and land (0042)", () => {
     }
   });
 });
+
+describe("deleting locations (0049)", () => {
+  it("deletes an unused one; refuses one that's in use; needs locations.delete", async () => {
+    const section = await scalar<string>(db, `select id from public.sections limit 1`);
+    const spare = await scalar<string>(db, `insert into public.sectors (section_id, code, name_so, name_en) values ($1,'K9','Spare','Spare') returning id`, [section]);
+    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.location_delete('sectors', $1)`, [spare])), "PERMISSION_DENIED");
+    await asUser(db, admin, (tx) => tx.query(`select public.location_delete('sectors', $1)`, [spare]));
+    expect(await scalar<number>(db, `select count(*)::int from public.sectors where id = $1`, [spare])).toBe(0);
+    // The neighbourhood has applications (from the tests above) and the district has sections.
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.location_delete('neighbourhoods', $1)`, [nbhd])), "HAS_RECORDS: location_in_use");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.location_delete('districts', $1)`, [hodan])), "HAS_RECORDS: location_in_use");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.location_delete('parcels', $1)`, [hodan])), "VALIDATION");
+  });
+});

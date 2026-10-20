@@ -11,14 +11,14 @@ import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { toast } from "@dhulka/ui/toaster";
-import { Archive, ChevronLeft, ChevronRight, MapPinned, MoreHorizontal, Pencil, Plus, RotateCcw, Shapes } from "lucide-react";
+import { Archive, ChevronLeft, ChevronRight, MapPinned, MoreHorizontal, Pencil, Plus, RotateCcw, Shapes, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
 import type { DistrictCount, LocationRow } from "@/lib/server/locations";
-import { archiveLocationAction } from "./actions";
+import { archiveLocationAction, deleteLocationAction } from "./actions";
 import { BoundarySheet } from "./boundary-sheet";
 import { LocationSheet } from "./location-sheet";
 
@@ -46,6 +46,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
   const [editing, setEditing] = useState<LocationRow | "new" | null>(null);
   const [boundary, setBoundary] = useState<LocationRow | null>(null);
   const [archiving, setArchiving] = useState<LocationRow | null>(null);
+  const [deleting, setDeleting] = useState<LocationRow | null>(null);
   const [busy, setBusy] = useState(false);
   const countMap = useMemo(() => new Map(counts.map((c) => [c.district_id, c])), [counts]);
   const name = (r: { name_so: string; name_en: string }) => (locale === "so" ? r.name_so : r.name_en || r.name_so);
@@ -211,6 +212,12 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                               {archivedView ? t("restore") : t("archive")}
                             </DropdownMenuItem>
                           )}
+                          {can.archive && (
+                            <DropdownMenuItem destructive onSelect={() => setDeleting(r)}>
+                              <Trash2 />
+                              {t("delete")}
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -247,6 +254,29 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
       )}
       {boundary && <BoundarySheet level={level} row={boundary} canEdit={can.update && !archivedView} onClose={() => setBoundary(null)} />}
 
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title={deleting ? t("deleteTitle", { name: name(deleting) }) : ""}
+        description={t("deleteBody")}
+        confirmLabel={t("delete")}
+        cancelLabel={tc("cancel")}
+        destructive
+        loading={busy}
+        onConfirm={async () => {
+          if (!deleting) return;
+          setBusy(true);
+          const res = await deleteLocationAction({ level, id: deleting.id });
+          setBusy(false);
+          setDeleting(null);
+          if (!res.ok) {
+            // In use: say so and point to Archive.
+            return toast.error(res.error.fieldErrors?.location ? t("deleteInUse") : errorText(res.error));
+          }
+          toast.success(t("deleted"));
+          router.refresh();
+        }}
+      />
       <ConfirmDialog
         open={archiving !== null}
         onOpenChange={(o) => !o && setArchiving(null)}
