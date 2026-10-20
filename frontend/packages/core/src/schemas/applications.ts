@@ -11,9 +11,8 @@ export const APPLICATION_STATUSES = [
 export const APPLICATION_CHANNELS = ["portal", "office", "field"] as const;
 export const PARTY_ROLES = ["owner", "co_owner", "agent", "heir"] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
-/** What is on the land (mirrors the DB check). */
-export const PROPERTY_TYPES = ["empty_land", "stone_house", "tin_house", "hut", "villa", "apartment", "shop", "warehouse", "farm", "other"] as const;
-export type PropertyType = (typeof PROPERTY_TYPES)[number];
+/** What is on the land: a code from the admin's property-type list (Admin → Property types). */
+export const propertyTypeCode = z.string().trim().regex(/^([a-z0-9_]{2,40})?$/, "validation.property_type").default("");
 export const LAND_USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 export type LandUse = (typeof LAND_USES)[number];
 export type ApplicationType = (typeof APPLICATION_TYPES)[number];
@@ -86,7 +85,7 @@ export const saveApplicationLocationSchema = z.object({
   govtFileNo: z.string().trim().max(60, "validation.too_long").default(""),
   houseNo: z.string().trim().max(40, "validation.too_long").default(""),
   govtReceiptNo: z.string().trim().max(60, "validation.too_long").default(""),
-  propertyType: z.enum([...PROPERTY_TYPES, ""]).default(""),
+  propertyType: propertyTypeCode,
   landUse: z.enum([...LAND_USES, ""]).default(""),
 });
 export type ApplicationLocationInput = z.input<typeof saveApplicationLocationSchema>;

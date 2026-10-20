@@ -8,6 +8,7 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getParcel } from "@/lib/server/parcels";
+import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
@@ -30,7 +31,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const ta = await getTranslations("applications");
   const format = await getFormatter();
   const lang = await getLocale();
-  const p = await getParcel(id);
+  const [p, propertyTypes] = await Promise.all([getParcel(id), listPropertyTypes()]);
   if (!p) notFound();
   const showValuation = viewer.can("valuation.view");
   const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
@@ -42,7 +43,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [t("account"), <Mono key="a">{p.account_no ?? "—"}</Mono>],
     [t("area"), num(p.area_m2, "m²")],
     [t("perimeter"), num(p.perimeter_m, "m")],
-    [ta("propertyType"), p.property_type ? ta(`propertyTypes.${p.property_type}`) : "—"],
+    [ta("propertyType"), propertyTypeName(propertyTypes, p.property_type, lang) ?? "—"],
     [ts("landUse"), ts(`landUses.${p.land_use}`)],
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],

@@ -78,7 +78,8 @@
       "audit": "Diiwaanka hubinta",
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
-      "assistant": "Kaaliyaha AI"
+      "assistant": "Kaaliyaha AI",
+      "propertyTypes": "Noocyada hantida"
     }
   },
   "status": {
@@ -315,7 +316,9 @@
     "register_not_submitted": "Marka hore gudbi codsiga.",
     "register_fee_due": "Khidmadda codsiga marka hore waa in la bixiyaa ama la cafiyaa.",
     "register_open_objection": "Qof ayaa diiday. Marka hore xalli diidmada.",
-    "register_no_location": "Codsigu ma laha calaamad goob."
+    "register_no_location": "Codsigu ma laha calaamad goob.",
+    "property_type": "Ka dooro nooc liiska.",
+    "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -959,6 +962,31 @@
         "audit_rows": "Diiwaanka hubinta",
         "active_staff": "Shaqaale firfircoon"
       }
+    },
+    "propertyTypes": {
+      "title": "Noocyada hantida",
+      "subtitle": "Noocyada guryaha iyo dhulka ee shaqaaluhu ka doortaan marka ay dhul ku darayaan, iyo qiimahooda.",
+      "add": "Ku dar nooc",
+      "editTitle": "Wax ka beddel {name}",
+      "formBody": "Shaqaaluhu waxay ku arkaan noocyada firfircoon foomka dhulka, luqaddooda, iyo qiimaha.",
+      "nameSo": "Magaca (Soomaali)",
+      "nameEn": "Magaca (Ingiriis)",
+      "price": "Qiimaha",
+      "priceHint": "Waxaa lagu muujinayaa nooca agtiisa marka shaqaaluhu doortaan.",
+      "currency": "Lacagta",
+      "activeLabel": "Shaqaaluhu way dooran karaan noocan",
+      "status": "Xaalad",
+      "active": "Firfircoon",
+      "hiddenLabel": "Qarsoon",
+      "code": "Koodh",
+      "actions": "Ficillo",
+      "delete": "Tirtir",
+      "deleteTitle": "Ma tirtirtaa {name}?",
+      "deleteBody": "Haddii dhul hore u isticmaalo noocan waa la qarinayaa, si diiwaankaasi u haystaan. Haddii kale waa la tirtirayaa.",
+      "deleted": "Nooca waa la tirtiray",
+      "hidden": "Nooca waa la isticmaalayaa, sidaa darteed waa la qariyey",
+      "emptyTitle": "Weli nooc hanti ma jiro",
+      "emptyBody": "Ku dar noocyada guryaha iyo dhulka ee shaqaaluhu ka dooran karaan."
     }
   },
   "audit": {
@@ -1428,19 +1456,7 @@
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
     "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
     "propertyType": "Nooca hantida",
-    "propertyTypeHint": "Waxa hadda dhulka saaran.",
-    "propertyTypes": {
-      "empty_land": "Dhul bannaan",
-      "stone_house": "Guri dhagax / bloog",
-      "tin_house": "Guri jiingad",
-      "hut": "Aqal / cariish",
-      "villa": "Fiilo",
-      "apartment": "Dabaq guryo",
-      "shop": "Dukaan",
-      "warehouse": "Bakhaar",
-      "farm": "Beer",
-      "other": "Kale"
-    }
+    "propertyTypeHint": "Waxa hadda dhulka saaran."
   },
   "owners": {
     "title": "Milkiilayaasha",

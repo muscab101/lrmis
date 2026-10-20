@@ -1,5 +1,5 @@
 import "server-only";
-import type { ApplicationsQuery, ApplicationStatus, ApplicationType, LandUse, PartiesQuery, PropertyType } from "@dhulka/core/schemas";
+import type { ApplicationsQuery, ApplicationStatus, ApplicationType, LandUse, PartiesQuery } from "@dhulka/core/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 
@@ -120,7 +120,7 @@ export interface ApplicationDetail {
   govt_file_no: string | null;
   house_no: string | null;
   govt_receipt_no: string | null;
-  property_type: PropertyType | null;
+  property_type: string | null;
   land_use: LandUse | null;
   applicant_party_id: string | null;
   citizen_user_id: string | null;

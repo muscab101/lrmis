@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LocationForm } from "@/components/applications/location-form";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
+import { listPropertyTypes } from "@/lib/server/property-types";
 import { listDistricts } from "@/lib/server/users";
 
 export async function generateMetadata() {
@@ -22,6 +23,7 @@ export default async function NewApplicationPage({ params, searchParams }: { par
   // Staff can only open applications in their own districts.
   const allowed = new Set((mine as string[] | null) ?? []);
   const districts = all.filter((d) => allowed.has(d.id));
+  const propertyTypes = await listPropertyTypes();
   // From the owners list (+): start the application with that owner on it.
   const owner = ownerParam && /^[0-9a-f-]{36}$/i.test(ownerParam)
     ? ((await supabase.from("parties").select("id, full_name, district_id").eq("id", ownerParam).is("deleted_at", null).maybeSingle()).data as { id: string; full_name: string; district_id: string | null } | null)
@@ -35,6 +37,7 @@ export default async function NewApplicationPage({ params, searchParams }: { par
         <CardContent className="pt-5">
           <LocationForm
             ownerId={owner?.id}
+            propertyTypes={propertyTypes}
             mode="create"
             canCaptureLocation={viewer.can("applications.capture_location")}
             isStaff

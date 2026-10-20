@@ -8,6 +8,7 @@ import { EditOwner } from "@/app/[locale]/(staff)/owners/[id]/edit-owner";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { SurveyDetailsEdit } from "./survey-details-edit";
 import { Link } from "@/i18n/navigation";
+import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import type { SurveyFile } from "@/lib/server/surveys";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 
@@ -31,6 +32,7 @@ export async function SurveyFileCards({
   const ta = await getTranslations("applications");
   const to = await getTranslations("owners");
   const ts = await getTranslations("stage");
+  const propertyTypes = await listPropertyTypes();
   const format = await getFormatter();
   const lang = await getLocale();
   const nm = (o: { name_so: string; name_en: string } | null) => (o ? (lang === "so" ? o.name_so : o.name_en || o.name_so) : null);
@@ -42,7 +44,7 @@ export async function SurveyFileCards({
   const facts: [string, React.ReactNode][] = [
     [ta("type"), ta(`types.${file.type}`)],
     [t("place"), [nm(file.neighbourhood), nm(file.district)].filter(Boolean).join(", ")],
-    [ta("propertyType"), file.property_type && ta(`propertyTypes.${file.property_type}`)],
+    [ta("propertyType"), propertyTypeName(propertyTypes, file.property_type, lang)],
     [ts("landUse"), file.land_use && ts(`landUses.${file.land_use}`)],
     [t("declaredSize"), declared],
     [ta("plotNo"), file.plot_no],
@@ -72,7 +74,7 @@ export async function SurveyFileCards({
             </p>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            {can.editLand && <SurveyDetailsEdit surveyId={surveyId} details={file} />}
+            {can.editLand && <SurveyDetailsEdit surveyId={surveyId} details={file} propertyTypes={propertyTypes} />}
             <Button asChild size="sm" variant="outline">
               <Link href={`/applications/${file.id}`}>{t("actionApplication")}</Link>
             </Button>

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { PROPERTY_TYPES } from "@dhulka/core/schemas";
+import { propertyTypeCode } from "@dhulka/core/schemas";
 import { z } from "zod";
 import { AppFailure, defineAction, fail, unwrap } from "@/lib/server/action";
 import { log } from "@/lib/server/log";
@@ -249,7 +249,7 @@ export const updateSurveyDetailsAction = defineAction(
     plotWidthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
     plotLengthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
     addressNote: z.string().trim().max(500, "validation.too_long").default(""),
-    propertyType: z.enum([...PROPERTY_TYPES, ""]).default(""),
+    propertyType: propertyTypeCode,
   }),
   async (v, ctx) => {
     unwrap(

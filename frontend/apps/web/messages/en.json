@@ -78,7 +78,8 @@
       "audit": "Audit log",
       "settings": "Settings",
       "health": "System health",
-      "assistant": "AI assistant"
+      "assistant": "AI assistant",
+      "propertyTypes": "Property types"
     }
   },
   "status": {
@@ -315,7 +316,9 @@
     "register_not_submitted": "Submit the application first.",
     "register_fee_due": "The application fee must be paid or waived first.",
     "register_open_objection": "Someone has objected. Resolve the objection first.",
-    "register_no_location": "The application has no location pin."
+    "register_no_location": "The application has no location pin.",
+    "property_type": "Choose a type from the list.",
+    "property_type_inactive": "That type has been hidden by an admin. Choose another."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -959,6 +962,31 @@
         "audit_rows": "Audit log entries",
         "active_staff": "Active staff"
       }
+    },
+    "propertyTypes": {
+      "title": "Property types",
+      "subtitle": "The types of house and land staff choose from when they add land, with their prices.",
+      "add": "Add type",
+      "editTitle": "Edit {name}",
+      "formBody": "Staff see the active types in the land form, in their language, with the price.",
+      "nameSo": "Name (Somali)",
+      "nameEn": "Name (English)",
+      "price": "Price",
+      "priceHint": "Shown next to the type when staff choose it.",
+      "currency": "Currency",
+      "activeLabel": "Staff can choose this type",
+      "status": "Status",
+      "active": "Active",
+      "hiddenLabel": "Hidden",
+      "code": "Code",
+      "actions": "Actions",
+      "delete": "Delete",
+      "deleteTitle": "Delete {name}?",
+      "deleteBody": "If any land already uses this type it's hidden instead, so those records keep it. Otherwise it's removed.",
+      "deleted": "Type deleted",
+      "hidden": "Type is in use, so it was hidden",
+      "emptyTitle": "No property types yet",
+      "emptyBody": "Add the types of house and land staff can choose from."
     }
   },
   "audit": {
@@ -1428,19 +1456,7 @@
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
     "rowRegistered": "Registered as {pun}",
     "propertyType": "Property type",
-    "propertyTypeHint": "What's on the land now.",
-    "propertyTypes": {
-      "empty_land": "Empty land",
-      "stone_house": "Stone / block house",
-      "tin_house": "Tin house (jiingad)",
-      "hut": "Traditional hut (aqal / cariish)",
-      "villa": "Villa",
-      "apartment": "Apartment block",
-      "shop": "Shop",
-      "warehouse": "Warehouse",
-      "farm": "Farm",
-      "other": "Other"
-    }
+    "propertyTypeHint": "What's on the land now."
   },
   "owners": {
     "title": "Owners",

@@ -5,6 +5,7 @@ import { Button } from "@dhulka/ui/button";
 import { Alert, PageHeader } from "@dhulka/ui/misc";
 import { Link } from "@/i18n/navigation";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { listPropertyTypes } from "@/lib/server/property-types";
 import type { getApplication } from "@/lib/server/applications";
 import type { Viewer } from "@/lib/server/auth";
 import { DecisionPanel } from "./decision-panel";
@@ -38,6 +39,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
   const format = await getFormatter();
   const locale = await getLocale();
   const { app, checklist, nearby, docTypes, stage, fee } = data;
+  const propertyTypes = await listPropertyTypes();
   const me = viewer.user.id;
   const isApplicant = app.citizen_user_id === me || app.created_by === me;
   const editableStatus = app.status === "draft" || app.status === "returned";
@@ -202,6 +204,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
                 isStaff={mode === "staff"}
                 basePath={basePath}
                 districts={districts}
+                propertyTypes={propertyTypes}
                 readOnly={!editable}
                 canCaptureLocation={mode === "citizen" || viewer.can("applications.capture_location")}
                 captured={{ at: app.pin_captured_at, lowAccuracy: app.pin_low_accuracy }}

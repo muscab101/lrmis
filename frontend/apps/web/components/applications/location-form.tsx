@@ -1,14 +1,14 @@
 "use client";
 
 import type { AppError } from "@dhulka/core/errors";
-import { APPLICATION_TYPES, LAND_USES, PROPERTY_TYPES, type ApplicationType, type LandUse, type PropertyType } from "@dhulka/core/schemas";
+import { APPLICATION_TYPES, LAND_USES, type ApplicationType, type LandUse } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { createApplicationAction, nearbyPinsAction, setApplicationPartiesAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
 import { getGeometryAction, locatePointAction, searchNeighbourhoodsAction } from "@/app/[locale]/(staff)/locations/actions";
@@ -29,7 +29,8 @@ export interface LocationValues {
   govtFileNo: string;
   houseNo: string;
   govtReceiptNo: string;
-  propertyType: PropertyType | "";
+  /** A code from the admin's property-type list. */
+  propertyType: string;
   landUse: LandUse | "";
   plotWidthM: string;
   plotLengthM: string;
@@ -50,16 +51,19 @@ interface Props {
   captured?: { at: string | null; lowAccuracy: boolean } | null;
   /** Staff only: put this owner on the new application (the + key on the owners list). */
   ownerId?: string;
+  /** The admin's types of house / land (Admin → Property types). */
+  propertyTypes?: { code: string; name_so: string; name_en: string; price: number; currency: string; active: boolean }[];
 }
 
 const OFFLINE_KEY = "lrmis.offline-location";
 
 /** Step 1 — what and where: type, district, neighbourhood, map pin, plot / deed numbers. */
-export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null, ownerId }: Props) {
+export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null, ownerId, propertyTypes = [] }: Props) {
   const t = useTranslations("applications");
   const tc = useTranslations("common");
   const ts = useTranslations("stage");
   const locale = useLocale();
+  const format = useFormatter();
   const vm = useValidationMessage();
   const router = useRouter();
   const [v, setV] = useState<LocationValues>(initial);
@@ -275,13 +279,17 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       {/* What is on the land, and what it's used for (the default land use when it's registered). */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="propertyType" label={t("propertyType")} hint={t("propertyTypeHint")} error={fe("propertyType")}>
-          <NativeSelect value={v.propertyType ?? ""} disabled={readOnly} onChange={(e) => set("propertyType", e.target.value as PropertyType | "")}>
+          <NativeSelect value={v.propertyType ?? ""} disabled={readOnly} onChange={(e) => set("propertyType", e.target.value)}>
             <option value="">{t("choose")}</option>
-            {PROPERTY_TYPES.map((p) => (
-              <option key={p} value={p}>
-                {t(`propertyTypes.${p}`)}
-              </option>
-            ))}
+            {/* Active types, plus the saved one if an admin has since hidden it. */}
+            {propertyTypes
+              .filter((p) => p.active || p.code === v.propertyType)
+              .map((p) => (
+                <option key={p.code} value={p.code}>
+                  {locale === "so" ? p.name_so : p.name_en}
+                  {Number(p.price) > 0 ? ` — ${format.number(Number(p.price), { style: "currency", currency: p.currency })}` : ""}
+                </option>
+              ))}
           </NativeSelect>
         </Field>
         <Field id="landUse" label={ts("landUse")} error={fe("landUse")}>
