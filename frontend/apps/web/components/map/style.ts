@@ -32,6 +32,47 @@ export const LEVEL_COLOURS: Record<BoundaryLayer, string> = {
   facilities: TEAL,
 };
 const C = LEVEL_COLOURS;
+
+/**
+ * Every Banadir district has its own colour (outline and soft fill), matched on its name in
+ * either language and the common spellings. A district not on the list keeps the district red.
+ */
+export const DISTRICT_COLOURS: { colour: string; names: string[] }[] = [
+  { colour: "#dc2626", names: ["kaaraan", "karaan", "kaaran", "karan"] },
+  { colour: "#ea580c", names: ["cabdicasiis", "cabdi casiis", "abdiaziz", "abdi aziz"] },
+  { colour: "#d97706", names: ["shibis", "shibbis"] },
+  { colour: "#65a30d", names: ["yaaqshiid", "yaqshiid", "yaqshid"] },
+  { colour: "#16a34a", names: ["huriwaa", "huriwa", "heliwaa", "heliwa", "heliwaa (huriwaa)"] },
+  { colour: "#059669", names: ["dayniile", "deyniile", "daynile"] },
+  { colour: "#0d9488", names: ["warta nabadda", "warta-nabadda", "wartanabadda", "wardhiigley", "wardhigley"] },
+  { colour: "#0891b2", names: ["hodan"] },
+  { colour: "#0284c7", names: ["hawlwadaag", "hawl wadaag", "hawl-wadaag", "howlwadaag", "howl wadaag"] },
+  { colour: "#2563eb", names: ["waaberi", "waberi"] },
+  { colour: "#4f46e5", names: ["boondheere", "bondhere", "boondhere"] },
+  { colour: "#7c3aed", names: ["xamar weyne", "xamar-weyne", "xamarweyne", "hamar weyne", "hamarweyne"] },
+  { colour: "#9333ea", names: ["xamar jajab", "xamar-jajab", "xamarjajab", "hamar jajab", "hamarjajab"] },
+  { colour: "#c026d3", names: ["shangaani", "shangani", "shingaani"] },
+  { colour: "#db2777", names: ["wadajir", "wadajiir", "medina"] },
+  { colour: "#e11d48", names: ["dharkenley", "dharkeenley", "darkenley"] },
+  { colour: "#92400e", names: ["kaxda", "kahda"] },
+  { colour: "#4d7c0f", names: ["daarusalaam", "darusalaam", "darusalam", "daaru salaam"] },
+  { colour: "#1e3a8a", names: ["garasbaaley", "garasbaley", "garibaale", "garasbaaleey"] },
+  { colour: "#475569", names: ["gubadley", "gubadle"] },
+  { colour: "#9f1239", names: ["tarabuunka", "tarabunka"] },
+];
+const districtPairs = DISTRICT_COLOURS.flatMap((d) => d.names.flatMap((n) => [n, d.colour]));
+/** The map colour of one district (same rule as the map: Somali name, then English, else district red). */
+export function districtColourFor(nameSo: string, nameEn?: string | null): string {
+  const find = (n?: string | null) => (n ? DISTRICT_COLOURS.find((d) => d.names.includes(n.trim().toLowerCase()))?.colour : undefined);
+  return find(nameSo) ?? find(nameEn) ?? C.districts;
+}
+/** MapLibre colour expression: the Somali name first, then the English one, else district red. */
+const districtColour = [
+  "match",
+  ["downcase", ["get", "name_so"]],
+  ...districtPairs,
+  ["match", ["downcase", ["get", "name_en"]], ...districtPairs, C.districts],
+];
 const softFill = (hoverOpacity: number, opacity: number) => ["case", ["boolean", ["feature-state", "hover"], false], hoverOpacity, opacity];
 const FONT = ["Open Sans Semibold"];
 
@@ -109,7 +150,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         type: "fill",
         source: "districts",
         "source-layer": "districts",
-        paint: { "fill-color": C.districts, "fill-opacity": softFill(0.16, 0.06) as never },
+        paint: { "fill-color": districtColour as never, "fill-opacity": softFill(0.4, 0.22) as never },
       },
       {
         id: "sections-fill",
@@ -159,7 +200,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         type: "line",
         source: "districts",
         "source-layer": "districts",
-        paint: { "line-color": C.districts, "line-width": ["interpolate", ["linear"], ["zoom"], 9, 2, 14, 3.5] },
+        paint: { "line-color": districtColour as never, "line-width": ["interpolate", ["linear"], ["zoom"], 9, 2, 14, 3.5] },
       },
       {
         id: "streets-line",

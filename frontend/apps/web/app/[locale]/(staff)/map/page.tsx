@@ -25,7 +25,10 @@ export default async function MapPage({
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "map.view");
   const supabase = await createClient();
-  const { data: extent } = await supabase.rpc("locations_extent");
+  const [{ data: extent }, { data: districts }] = await Promise.all([
+    supabase.rpc("locations_extent"),
+    supabase.from("districts").select("id, code, name_so, name_en, has_geom").is("deleted_at", null).order("code"),
+  ]);
   const { c } = await searchParams;
   return (
     <MapWorkspace
@@ -33,6 +36,7 @@ export default async function MapPage({
       extent={(extent as [number, number, number, number] | null) ?? null}
       canEditLocations={viewer.can("locations.update")}
       canViewParcels={viewer.can("parcels.view")}
+      districts={districts ?? []}
     />
   );
 }

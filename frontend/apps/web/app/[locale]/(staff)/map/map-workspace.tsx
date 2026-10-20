@@ -10,7 +10,7 @@ import { Layers, MapPinned, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/dhulka-map";
-import { LAYER_MINZOOM, LEGEND, type BaseMap, type BoundaryLayer } from "@/components/map/style";
+import { districtColourFor, LAYER_MINZOOM, LEGEND, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
 
@@ -31,11 +31,13 @@ export function MapWorkspace({
   extent,
   canEditLocations,
   canViewParcels,
+  districts,
 }: {
   initialView: MapView | undefined;
   extent: [number, number, number, number] | null;
   canEditLocations: boolean;
   canViewParcels: boolean;
+  districts: { id: string; code: string; name_so: string; name_en: string; has_geom: boolean | null }[];
 }) {
   const t = useTranslations("map");
   const tc = useTranslations("common");
@@ -103,10 +105,10 @@ export function MapWorkspace({
     [locale, t],
   );
 
-  async function zoomTo(level: "neighbourhoods", id: string) {
+  async function zoomTo(level: "neighbourhoods" | "districts", id: string, colour?: string) {
     const res = await getGeometryAction({ level, id });
     if (res.ok && res.data) {
-      mapRef.current?.setHighlight(res.data.geometry);
+      mapRef.current?.setHighlight(res.data.geometry, colour);
       mapRef.current?.fitBounds(res.data.bbox);
     }
   }
@@ -189,6 +191,32 @@ export function MapWorkspace({
                 </li>
               )}
             </ul>
+            {districts.length > 0 && (
+              <>
+                <div className="label-caps mt-4 mb-2 text-muted-foreground">
+                  {t("layer_districts")} ({districts.length})
+                </div>
+                <ul className="-mx-1 max-h-64 space-y-0.5 overflow-y-auto">
+                  {districts.map((d) => {
+                    const colour = districtColourFor(d.name_so, d.name_en);
+                    return (
+                      <li key={d.id}>
+                        <button
+                          type="button"
+                          disabled={!d.has_geom}
+                          onClick={() => void zoomTo("districts", d.id, colour)}
+                          className="flex w-full items-center gap-2.5 rounded-sm px-1 py-1 text-start text-sm hover:bg-muted disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent"
+                        >
+                          <span className="size-3 shrink-0 rounded-sm border" style={{ background: colour, borderColor: colour }} aria-hidden />
+                          <span className="min-w-0 flex-1 truncate">{name(d)}</span>
+                          {d.has_geom ? <Mono className="text-[10px] text-muted-foreground">{d.code}</Mono> : <span className="text-[10px] text-muted-foreground">{t("noBoundary")}</span>}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -243,6 +271,18 @@ export function MapWorkspace({
               </p>
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/parcels/${String(selected.props.id)}`}>{t("openParcel")}</Link>
+              </Button>
+            </div>
+          )}
+          {selected.layer === "districts" && (
+            <div className="mt-4">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void zoomTo("districts", String(selected.props.id), districtColourFor(String(selected.props.name_so ?? ""), String(selected.props.name_en ?? "")))}
+              >
+                <MapPinned aria-hidden />
+                {t("zoomTo")}
               </Button>
             </div>
           )}
