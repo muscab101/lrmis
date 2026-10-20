@@ -135,6 +135,8 @@ export interface SurveyFile {
   govt_file_no: string | null;
   house_no: string | null;
   govt_receipt_no: string | null;
+  property_type: string | null;
+  land_use: string | null;
   plot_width_m: number | null;
   plot_length_m: number | null;
   address_note: string;
@@ -155,7 +157,7 @@ async function surveyFile(applicationId: string): Promise<SurveyFile | null> {
     supabase
       .from("applications")
       .select(
-        `id, number, type, channel, status, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no, plot_width_m, plot_length_m, address_note,
+        `id, number, type, channel, status, plot_no, old_deed_no, govt_file_no, house_no, govt_receipt_no, property_type, land_use, plot_width_m, plot_length_m, address_note,
          district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en),
          application_parties(role, share_pct, party:parties(${PARTY_COLUMNS})),
          application_documents(id, doc_type, file_name)`,

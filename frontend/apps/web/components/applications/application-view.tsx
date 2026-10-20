@@ -167,6 +167,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
         feeStatus={app.fee_status}
         feeNote={app.fee_note}
         stage={stage}
+        defaultLandUse={app.land_use ?? undefined}
         me={me}
         staff={mode === "staff"}
         can={{
@@ -218,6 +219,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
                   govtFileNo: app.govt_file_no ?? "",
                   houseNo: app.house_no ?? "",
                   govtReceiptNo: app.govt_receipt_no ?? "",
+                  propertyType: app.property_type ?? "",
+                  landUse: app.land_use ?? "",
                   plotWidthM: app.plot_width_m != null ? String(app.plot_width_m) : "",
                   plotLengthM: app.plot_length_m != null ? String(app.plot_length_m) : "",
                 }}

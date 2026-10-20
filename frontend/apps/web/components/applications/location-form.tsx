@@ -1,7 +1,7 @@
 "use client";
 
 import type { AppError } from "@dhulka/core/errors";
-import { APPLICATION_TYPES, type ApplicationType } from "@dhulka/core/schemas";
+import { APPLICATION_TYPES, LAND_USES, PROPERTY_TYPES, type ApplicationType, type LandUse, type PropertyType } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
@@ -29,6 +29,8 @@ export interface LocationValues {
   govtFileNo: string;
   houseNo: string;
   govtReceiptNo: string;
+  propertyType: PropertyType | "";
+  landUse: LandUse | "";
   plotWidthM: string;
   plotLengthM: string;
 }
@@ -56,6 +58,7 @@ const OFFLINE_KEY = "lrmis.offline-location";
 export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null, ownerId }: Props) {
   const t = useTranslations("applications");
   const tc = useTranslations("common");
+  const ts = useTranslations("stage");
   const locale = useLocale();
   const vm = useValidationMessage();
   const router = useRouter();
@@ -128,6 +131,8 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       govtFileNo: v.govtFileNo,
       houseNo: v.houseNo,
       govtReceiptNo: v.govtReceiptNo,
+      propertyType: v.propertyType ?? "",
+      landUse: v.landUse ?? "",
     };
     try {
       if (mode === "create") {
@@ -266,6 +271,30 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
           )}
         </div>
       </Field>
+
+      {/* What is on the land, and what it's used for (the default land use when it's registered). */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field id="propertyType" label={t("propertyType")} hint={t("propertyTypeHint")} error={fe("propertyType")}>
+          <NativeSelect value={v.propertyType ?? ""} disabled={readOnly} onChange={(e) => set("propertyType", e.target.value as PropertyType | "")}>
+            <option value="">{t("choose")}</option>
+            {PROPERTY_TYPES.map((p) => (
+              <option key={p} value={p}>
+                {t(`propertyTypes.${p}`)}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+        <Field id="landUse" label={ts("landUse")} error={fe("landUse")}>
+          <NativeSelect value={v.landUse ?? ""} disabled={readOnly} onChange={(e) => set("landUse", e.target.value as LandUse | "")}>
+            <option value="">{t("choose")}</option>
+            {LAND_USES.map((u) => (
+              <option key={u} value={u}>
+                {ts(`landUses.${u}`)}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field id="plotWidthM" label={t("plotWidth")} error={fe("plotWidthM")}>

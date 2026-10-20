@@ -2,6 +2,8 @@
 
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
+import { PROPERTY_TYPES, type PropertyType } from "@dhulka/core/schemas";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -16,6 +18,7 @@ interface Details {
   plot_width_m: number | null;
   plot_length_m: number | null;
   address_note: string;
+  property_type: string | null;
 }
 
 /** The land details the surveyor can correct on site. */
@@ -31,6 +34,7 @@ export function SurveyDetailsEdit({ surveyId, details }: { surveyId: string; det
     plotWidthM: details.plot_width_m != null ? String(details.plot_width_m) : "",
     plotLengthM: details.plot_length_m != null ? String(details.plot_length_m) : "",
     addressNote: details.address_note ?? "",
+    propertyType: (details.property_type ?? "") as PropertyType | "",
   });
   const [v, setV] = useState(initial);
   const num = (s: string) => (s.trim() === "" ? null : Number(s));
@@ -67,6 +71,16 @@ export function SurveyDetailsEdit({ surveyId, details }: { surveyId: string; det
             </Field>
             <Field id="sd-receipt" label={ta("govtReceiptNo")} error={fe("govtReceiptNo")} className="sm:col-span-2">
               <Input value={v.govtReceiptNo} maxLength={60} onChange={(e) => setV({ ...v, govtReceiptNo: e.target.value })} />
+            </Field>
+            <Field id="sd-type" label={ta("propertyType")} className="sm:col-span-2">
+              <NativeSelect value={v.propertyType} onChange={(e) => setV({ ...v, propertyType: e.target.value as PropertyType | "" })}>
+                <option value="">{ta("choose")}</option>
+                {PROPERTY_TYPES.map((p) => (
+                  <option key={p} value={p}>
+                    {ta(`propertyTypes.${p}`)}
+                  </option>
+                ))}
+              </NativeSelect>
             </Field>
             <Field id="sd-width" label={t("widthM")} error={fe("plotWidthM")}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={v.plotWidthM} onChange={(e) => setV({ ...v, plotWidthM: e.target.value })} />

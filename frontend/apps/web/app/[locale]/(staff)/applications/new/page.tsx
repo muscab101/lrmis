@@ -49,7 +49,7 @@ export default async function NewApplicationPage({ params, searchParams }: { par
               addressNote: "",
               plotNo: "",
               oldDeedNo: "",
-              govtFileNo: "", houseNo: "", govtReceiptNo: "", plotWidthM: "", plotLengthM: "",
+              govtFileNo: "", houseNo: "", govtReceiptNo: "", propertyType: "", landUse: "", plotWidthM: "", plotLengthM: "",
             }}
           />
         </CardContent>

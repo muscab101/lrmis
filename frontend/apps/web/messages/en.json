@@ -1426,7 +1426,21 @@
     "rowRegister": "Move to Parcels",
     "rowRegisterTitle": "Move {number} to Parcels?",
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
-    "rowRegistered": "Registered as {pun}"
+    "rowRegistered": "Registered as {pun}",
+    "propertyType": "Property type",
+    "propertyTypeHint": "What's on the land now.",
+    "propertyTypes": {
+      "empty_land": "Empty land",
+      "stone_house": "Stone / block house",
+      "tin_house": "Tin house (jiingad)",
+      "hut": "Traditional hut (aqal / cariish)",
+      "villa": "Villa",
+      "apartment": "Apartment block",
+      "shop": "Shop",
+      "warehouse": "Warehouse",
+      "farm": "Farm",
+      "other": "Other"
+    }
   },
   "owners": {
     "title": "Owners",

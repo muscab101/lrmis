@@ -42,6 +42,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [t("account"), <Mono key="a">{p.account_no ?? "—"}</Mono>],
     [t("area"), num(p.area_m2, "m²")],
     [t("perimeter"), num(p.perimeter_m, "m")],
+    [ta("propertyType"), p.property_type ? ta(`propertyTypes.${p.property_type}`) : "—"],
     [ts("landUse"), ts(`landUses.${p.land_use}`)],
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],

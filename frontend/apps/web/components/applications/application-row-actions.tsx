@@ -22,6 +22,7 @@ interface Row {
   created_by?: string | null;
   site_check_status: SiteCheckStatus | null;
   site_check_surveyor: string | null;
+  land_use?: string | null;
 }
 
 interface Can {
@@ -50,7 +51,9 @@ export function ApplicationRowActions({ application: a, me, can }: { application
   const ts = useTranslations("stage");
   const router = useRouter();
   const [registering, setRegistering] = useState(false);
-  const [landUse, setLandUse] = useState<(typeof LAND_USES)[number]>("residential");
+  const [landUse, setLandUse] = useState<(typeof LAND_USES)[number]>(
+    (LAND_USES as readonly string[]).includes(a.land_use ?? "") ? (a.land_use as (typeof LAND_USES)[number]) : "residential",
+  );
   const [regNote, setRegNote] = useState("");
   const showRegister = can.register && a.site_check_status === "confirmed" && !CLOSED.includes(a.status);
   // Why it can't be moved yet (the database checks the same; this just says so up front).

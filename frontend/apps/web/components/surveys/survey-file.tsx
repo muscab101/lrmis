@@ -30,6 +30,7 @@ export async function SurveyFileCards({
   const t = await getTranslations("surveys");
   const ta = await getTranslations("applications");
   const to = await getTranslations("owners");
+  const ts = await getTranslations("stage");
   const format = await getFormatter();
   const lang = await getLocale();
   const nm = (o: { name_so: string; name_en: string } | null) => (o ? (lang === "so" ? o.name_so : o.name_en || o.name_so) : null);
@@ -41,6 +42,8 @@ export async function SurveyFileCards({
   const facts: [string, React.ReactNode][] = [
     [ta("type"), ta(`types.${file.type}`)],
     [t("place"), [nm(file.neighbourhood), nm(file.district)].filter(Boolean).join(", ")],
+    [ta("propertyType"), file.property_type && ta(`propertyTypes.${file.property_type}`)],
+    [ts("landUse"), file.land_use && ts(`landUses.${file.land_use}`)],
     [t("declaredSize"), declared],
     [ta("plotNo"), file.plot_no],
     [ta("houseNo"), file.house_no],

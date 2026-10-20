@@ -46,6 +46,8 @@ interface Props {
   can: StagePermissions;
   me: string;
   staff: boolean;
+  /** The land use entered with the application: the default when registering. */
+  defaultLandUse?: (typeof LAND_USES)[number];
 }
 
 type DialogKind = "waive" | "assign" | "verify" | "register" | "object" | { resolve: string; status: "dismissed" | "upheld" } | null;
@@ -53,7 +55,7 @@ type DialogKind = "waive" | "assign" | "verify" | "register" | "object" | { reso
 const LAND_USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
 /** Where the application is in the survey → verification → notice → registration flow, and the next step for this user. */
-export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, can, me, staff }: Props) {
+export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, can, me, staff, defaultLandUse }: Props) {
   const t = useTranslations("stage");
   const tc = useTranslations("common");
   const format = useFormatter();
@@ -64,7 +66,7 @@ export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, c
   const [error, setError] = useState<AppError | null>(null);
   const [note, setNote] = useState("");
   const [checks, setChecks] = useState({ documentsOk: false, surveyOk: false, identityOk: false });
-  const [landUse, setLandUse] = useState<(typeof LAND_USES)[number]>("residential");
+  const [landUse, setLandUse] = useState<(typeof LAND_USES)[number]>(defaultLandUse ?? "residential");
   const [candidates, setCandidates] = useState<{ user_id: string; full_name: string; open_tasks: number }[] | null>(null);
   const [surveyor, setSurveyor] = useState("");
   const [due, setDue] = useState("");

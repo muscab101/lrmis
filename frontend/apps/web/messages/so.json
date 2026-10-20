@@ -1426,7 +1426,21 @@
     "rowRegister": "U gudbi Dhulka",
     "rowRegisterTitle": "Ma u gudbisaa {number} Dhulka?",
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
-    "rowRegistered": "Waxaa loo diiwaangeliyey {pun}"
+    "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
+    "propertyType": "Nooca hantida",
+    "propertyTypeHint": "Waxa hadda dhulka saaran.",
+    "propertyTypes": {
+      "empty_land": "Dhul bannaan",
+      "stone_house": "Guri dhagax / bloog",
+      "tin_house": "Guri jiingad",
+      "hut": "Aqal / cariish",
+      "villa": "Fiilo",
+      "apartment": "Dabaq guryo",
+      "shop": "Dukaan",
+      "warehouse": "Bakhaar",
+      "farm": "Beer",
+      "other": "Kale"
+    }
   },
   "owners": {
     "title": "Milkiilayaasha",

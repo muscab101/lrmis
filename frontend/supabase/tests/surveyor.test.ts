@@ -170,3 +170,26 @@ describe("Move to Parcels by the person who created the application (0044)", () 
     expect(r.pun).toMatch(/^BN-HDN-012-/);
   });
 });
+
+describe("property type and land use (0045)", () => {
+  it("are set on the application, carried to its parcel, and correctable on site", async () => {
+    const boss = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    const a = await asUser(db, surveyor, async (tx) => {
+      const owner = await scalar<string>(tx, `select public.save_party(null, $1)`, [JSON.stringify({ full_name: "Type Case", phone: "+252612228888", district_id: hodan })]);
+      const app = await scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd, pin_lon: 45.2985, pin_lat: 2.04 })]);
+      await tx.query(`select public.application_set_details($1, 'H-9', '', 'tin_house', 'commercial')`, [app.id]);
+      await tx.query(`select public.application_set_parties($1, $2)`, [app.id, JSON.stringify([{ party_id: owner, role: "owner", share_pct: 100 }])]);
+      await tx.query(`select public.application_add_document($1, 'identity', $2, 'id.pdf', 'application/pdf', 10)`, [app.id, `${app.id}/id.pdf`]);
+      await tx.query(`select public.application_add_document($1, 'old_deed', $2, 'd.pdf', 'application/pdf', 10)`, [app.id, `${app.id}/d.pdf`]);
+      await tx.query(`select public.application_submit($1)`, [app.id]);
+      return app.id;
+    });
+    const p = await scalar<{ property_type: string; land_use: string; house_no: string }>(db, `select to_jsonb(p) from public.parcels p where application_id = $1`, [a]);
+    expect(p).toMatchObject({ property_type: "tin_house", land_use: "commercial", house_no: "H-9" });
+    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'castle', null)`, [a])), "");
+    await asUser(db, finance, (tx) => tx.query(`select public.application_waive_fee($1, 'Test')`, [a]));
+    const s = await asUser(db, boss, (tx) => scalar<string>(tx, `select public.survey_assign($1, $2)`, [a, surveyor]));
+    await asUser(db, surveyor, (tx) => tx.query(`select public.survey_update_details($1, '{"plot_no":"P1","property_type":"stone_house"}')`, [s]));
+    expect(await scalar<string>(db, `select property_type from public.parcels where application_id = $1`, [a])).toBe("stone_house");
+  });
+});
