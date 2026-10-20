@@ -44,6 +44,7 @@ async function saveLocationMeta(ctx: { supabase: Awaited<ReturnType<typeof impor
     await ctx.supabase.rpc("application_set_details", {
       p_id: id,
       p_house_no: v.houseNo,
+      p_flat_no: v.flatNo || null,
       p_govt_receipt_no: v.govtReceiptNo,
       p_property_type: v.propertyType || null,
       p_land_use: v.landUse || null,

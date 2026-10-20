@@ -84,6 +84,8 @@ export const saveApplicationLocationSchema = z.object({
   oldDeedNo: z.string().trim().max(60, "validation.too_long").default(""),
   govtFileNo: z.string().trim().max(60, "validation.too_long").default(""),
   houseNo: z.string().trim().max(40, "validation.too_long").default(""),
+  /** Only for an apartment: which flat in the building. */
+  flatNo: z.string().trim().max(20, "validation.too_long").default(""),
   govtReceiptNo: z.string().trim().max(60, "validation.too_long").default(""),
   propertyType: propertyTypeCode,
   landUse: z.enum([...LAND_USES, ""]).default(""),

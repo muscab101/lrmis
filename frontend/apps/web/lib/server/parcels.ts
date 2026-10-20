@@ -46,6 +46,7 @@ export interface ParcelDetail {
   plot_no: string | null;
   deed_no: string | null;
   govt_file_no: string | null;
+  flat_no: string | null;
   house_no: string | null;
   govt_receipt_no: string | null;
   property_type: string | null;
@@ -67,7 +68,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),

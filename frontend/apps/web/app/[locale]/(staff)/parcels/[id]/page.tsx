@@ -48,6 +48,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],
     [t("houseNo"), p.house_no ?? "—"],
+    ...(p.flat_no ? [[t("flatNo"), p.flat_no] as [string, string]] : []),
     [t("govtReceipt"), p.govt_receipt_no ? <Mono key="gr">{p.govt_receipt_no}</Mono> : "—"],
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],

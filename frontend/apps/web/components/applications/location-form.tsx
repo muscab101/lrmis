@@ -16,6 +16,7 @@ import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import { PinPicker, type Pin } from "./pin-picker";
+import { isApartmentType } from "@/lib/apartment";
 
 export interface LocationValues {
   type: ApplicationType;
@@ -28,6 +29,8 @@ export interface LocationValues {
   oldDeedNo: string;
   govtFileNo: string;
   houseNo: string;
+  /** Only asked for an apartment. */
+  flatNo: string;
   govtReceiptNo: string;
   /** A code from the admin's property-type list. */
   propertyType: string;
@@ -114,6 +117,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
 
   const num = (x: string) => (x.trim() === "" ? null : Number(x));
   const declaredArea = num(v.plotWidthM) && num(v.plotLengthM) ? Math.round(num(v.plotWidthM)! * num(v.plotLengthM)! * 100) / 100 : null;
+  const apartment = isApartmentType(v.propertyType, propertyTypes);
 
   async function save(fromQueue = false) {
     setSaving(true);
@@ -134,6 +138,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       oldDeedNo: v.oldDeedNo,
       govtFileNo: v.govtFileNo,
       houseNo: v.houseNo,
+      flatNo: apartment ? v.flatNo : "",
       govtReceiptNo: v.govtReceiptNo,
       propertyType: v.propertyType ?? "",
       landUse: v.landUse ?? "",
@@ -326,9 +331,29 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
         <Field id="govtFileNo" label={t("govtFileNo")} error={fe("govtFileNo")}>
           <Input value={v.govtFileNo} disabled={readOnly} onChange={(e) => set("govtFileNo", e.target.value)} />
         </Field>
-        <Field id="houseNo" label={t("houseNo")} error={fe("houseNo")}>
-          <Input value={v.houseNo} maxLength={40} disabled={readOnly} onChange={(e) => set("houseNo", e.target.value)} />
+        {/* The house is read as "<neighbourhood> · <House No>", so the chosen neighbourhood sits in front of the number. */}
+        <Field id="houseNo" label={t("houseNo")} hint={v.neighbourhood ? undefined : t("houseNoHint")} error={fe("houseNo")}>
+          <div className="flex min-w-0">
+            {v.neighbourhood && (
+              <span className="bg-muted text-muted-foreground flex max-w-[55%] shrink-0 items-center truncate rounded-s-md border border-e-0 px-2.5 text-sm" title={v.neighbourhood.label}>
+                {v.neighbourhood.label}
+              </span>
+            )}
+            <Input
+              id="houseNo"
+              value={v.houseNo}
+              maxLength={40}
+              disabled={readOnly}
+              className={v.neighbourhood ? "min-w-0 rounded-s-none" : undefined}
+              onChange={(e) => set("houseNo", e.target.value)}
+            />
+          </div>
         </Field>
+        {apartment && (
+          <Field id="flatNo" label={t("flatNo")} hint={t("flatNoHint")} error={fe("flatNo")}>
+            <Input value={v.flatNo} maxLength={20} disabled={readOnly} onChange={(e) => set("flatNo", e.target.value)} />
+          </Field>
+        )}
         {/* A paper government receipt the office has seen; citizens don't enter it. */}
         {isStaff && (
           <Field id="govtReceiptNo" label={t("govtReceiptNo")} hint={t("govtReceiptHint")} error={fe("govtReceiptNo")} className="sm:col-span-2">

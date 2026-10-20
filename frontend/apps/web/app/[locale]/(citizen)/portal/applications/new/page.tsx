@@ -21,7 +21,7 @@ export default async function PortalNewApplication({ params }: { params: Promise
             basePath="/portal/applications"
             districts={districts}
             propertyTypes={propertyTypes}
-            initial={{ type: "new_registration", channel: "portal", districtId: "", neighbourhood: null, pin: null, addressNote: "", plotNo: "", oldDeedNo: "", govtFileNo: "", houseNo: "", govtReceiptNo: "", propertyType: "", landUse: "", plotWidthM: "", plotLengthM: "", }}
+            initial={{ type: "new_registration", channel: "portal", districtId: "", neighbourhood: null, pin: null, addressNote: "", plotNo: "", oldDeedNo: "", govtFileNo: "", houseNo: "", flatNo: "", govtReceiptNo: "", propertyType: "", landUse: "", plotWidthM: "", plotLengthM: "", }}
           />
         </CardContent>
       </Card>

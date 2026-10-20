@@ -95,3 +95,33 @@ describe("editing from the table keeps the plot number", () => {
     expect(r.rows[0]!.plot_no).toBe("P9");
   });
 });
+
+describe("flat number", () => {
+  it("is saved with the parcel details and kept when an edit doesn't send it", async () => {
+    await asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"house_no":"H-14","flat_no":"3B","plot_no":"P9"}')`, [parcel]));
+    expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
+    await asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"house_no":"H-15","plot_no":"P9"}')`, [parcel]));
+    expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
+  });
+
+  it("goes from the application to its parcel", async () => {
+    const district = await scalar<string>(db, `select district_id from public.parcels where id = $1`, [parcel]);
+    const nbhd = await scalar<string>(db, `select neighbourhood_id from public.parcels where id = $1`, [parcel]);
+    const app = await scalar<string>(
+      db,
+      `insert into public.applications (number, type, channel, district_id, neighbourhood_id, flat_no, house_no)
+       values ('APP-2026-000901', 'new_registration', 'office', $1, $2, '12', 'H-20') returning id`,
+      [district, nbhd],
+    );
+    const p2 = await scalar<string>(
+      db,
+      `insert into public.parcels (district_id, neighbourhood_id, land_use, application_id, geom)
+       values ($1, $2, 'residential', $3, extensions.st_setsrid(extensions.st_geomfromgeojson($4), 4326)) returning id`,
+      [district, nbhd, app, JSON.stringify(square(45.301, 2.041, 0.0001))],
+    );
+    expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [p2])).toBe("12");
+    await db.query(`update public.applications set parcel_id = $1 where id = $2`, [p2, app]);
+    await db.query(`update public.applications set flat_no = '14' where id = $1`, [app]);
+    expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [p2])).toBe("14");
+  });
+});

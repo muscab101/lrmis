@@ -9,10 +9,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { updateSurveyDetailsAction } from "@/app/[locale]/(staff)/surveys/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { isApartmentType } from "@/lib/apartment";
 
 interface Details {
   plot_no: string | null;
   house_no: string | null;
+  flat_no: string | null;
   govt_receipt_no: string | null;
   plot_width_m: number | null;
   plot_length_m: number | null;
@@ -38,6 +40,7 @@ export function SurveyDetailsEdit({
   const initial = () => ({
     plotNo: details.plot_no ?? "",
     houseNo: details.house_no ?? "",
+    flatNo: details.flat_no ?? "",
     govtReceiptNo: details.govt_receipt_no ?? "",
     plotWidthM: details.plot_width_m != null ? String(details.plot_width_m) : "",
     plotLengthM: details.plot_length_m != null ? String(details.plot_length_m) : "",
@@ -67,7 +70,7 @@ export function SurveyDetailsEdit({
         description={t("editDetailsBody")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
-        submit={() => updateSurveyDetailsAction({ surveyId, ...v, plotWidthM: num(v.plotWidthM), plotLengthM: num(v.plotLengthM) })}
+        submit={() => updateSurveyDetailsAction({ surveyId, ...v, flatNo: isApartmentType(v.propertyType, propertyTypes) ? v.flatNo : "", plotWidthM: num(v.plotWidthM), plotLengthM: num(v.plotLengthM) })}
       >
         {(fe) => (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -77,6 +80,11 @@ export function SurveyDetailsEdit({
             <Field id="sd-house" label={ta("houseNo")} error={fe("houseNo")}>
               <Input value={v.houseNo} maxLength={40} onChange={(e) => setV({ ...v, houseNo: e.target.value })} />
             </Field>
+            {isApartmentType(v.propertyType, propertyTypes) && (
+              <Field id="sd-flat" label={ta("flatNo")} error={fe("flatNo")}>
+                <Input value={v.flatNo} maxLength={20} onChange={(e) => setV({ ...v, flatNo: e.target.value })} />
+              </Field>
+            )}
             <Field id="sd-receipt" label={ta("govtReceiptNo")} error={fe("govtReceiptNo")} className="sm:col-span-2">
               <Input value={v.govtReceiptNo} maxLength={60} onChange={(e) => setV({ ...v, govtReceiptNo: e.target.value })} />
             </Field>

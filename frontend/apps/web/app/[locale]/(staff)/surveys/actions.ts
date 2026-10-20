@@ -245,6 +245,7 @@ export const updateSurveyDetailsAction = defineAction(
     surveyId: z.uuid(),
     plotNo: z.string().trim().max(40, "validation.too_long").default(""),
     houseNo: z.string().trim().max(40, "validation.too_long").default(""),
+    flatNo: z.string().trim().max(20, "validation.too_long").default(""),
     govtReceiptNo: z.string().trim().max(60, "validation.too_long").default(""),
     plotWidthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
     plotLengthM: z.coerce.number().positive("validation.plot_size").max(10000).nullable(),
@@ -258,6 +259,7 @@ export const updateSurveyDetailsAction = defineAction(
         p: {
           plot_no: v.plotNo,
           house_no: v.houseNo,
+          flat_no: v.flatNo,
           govt_receipt_no: v.govtReceiptNo,
           plot_width_m: v.plotWidthM,
           plot_length_m: v.plotLengthM,
