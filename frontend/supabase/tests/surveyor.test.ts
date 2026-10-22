@@ -51,7 +51,7 @@ describe("surveyors create owners and land", () => {
       await tx.query(`select public.application_submit($1)`, [a.id]);
       return a.id;
     });
-    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("awaiting_payment");
+    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("in_survey");
   });
 });
 

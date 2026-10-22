@@ -207,7 +207,8 @@
       "assessment_appealed": "Qiimayntani racfaan ayay leedahay, lama tirtiri karo.",
       "decided": "Tan horay ayaa go'aan loo gaaray, lama beddeli karo.",
       "application_paid": "Lacag ayaa horay loogu bixiyay biilasha codsigan, lama tirtiri karo.",
-      "application_land_registered": "Dhulka codsigan horay ayaa loo sahamiyay ama loo diiwaangeliyay, lama tirtiri karo."
+      "application_land_registered": "Dhulka codsigan horay ayaa loo sahamiyay ama loo diiwaangeliyay, lama tirtiri karo.",
+      "rebill_below_paid": "Lacag ka badan qadarka cusub ayaa horay loo bixiyay, sidaas darteed hoos looma dhigi karo."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -1465,9 +1466,23 @@
     "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
     "propertyType": "Nooca hantida",
     "propertyTypeHint": "Heerka hantida (Qiimaynta → Heerarka hantida). Biilka hantida waa ballac × dherer × qiimihiisa m² kiiba.",
-    "feeInvoicesBody": "Bixi biilashan si dhulka loogu diro sahanka. Waxaa harsan: {amount}.",
+    "feeInvoicesBody": "Waxaa harsan: {amount}. Qasnajigu wuxuu qaadaa marka dhulka la diiwaangeliyo.",
     "invoicePaid": "La bixiyay",
-    "rowDeleted": "Codsiga waa la tirtiray"
+    "rowDeleted": "Codsiga waa la tirtiray",
+    "invoicesTitle": "Biilasha",
+    "rebillNeeded": "Cabbirka ama nooca waa la saxay: biilku hadda waa {amount} (biilashu waxay sheegayaan {current}).",
+    "rebill": "Dib u biil",
+    "rebillDone": "Biilasha waa la cusboonaysiiyay",
+    "rebillFailed": "Dib looma biilin karo. Hubi cabbirka iyo nooca.",
+    "invoicesPaidBody": "Dhammaan waa la bixiyay.",
+    "invoiceLeft": "{amount} ayaa harsan",
+    "payAfterRegistration": "Lacagta waxaa laga bixiyaa qasnajiga marka dhulka la diiwaangeliyo; shahaadada waxaa la sameeyaa marka wax walba la bixiyo.",
+    "noInvoicesYet": "Weli biil ma jiro: geli cabbirka dhulka iyo nooca guriga.",
+    "correctLand": "Sax cabbirka & nooca",
+    "correctLandTitle": "Sax cabbirka iyo nooca guriga",
+    "correctLandBody": "Isticmaal waxa aad heshay markii aad hubinaysay. Haddii biilku isbeddelo, riix Dib u biil si biilasha loo cusboonaysiiyo.",
+    "correctLandSave": "Kaydi saxitaanka",
+    "correctLandDone": "Waa la saxay"
   },
   "owners": {
     "title": "Milkiilayaasha",

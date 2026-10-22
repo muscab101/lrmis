@@ -25,6 +25,8 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
   admin = await bootstrapSuperAdmin(db);
+  // As set live on Valuation → Fee types: a USD 12 service charge for a new house.
+  await db.query(`update public.fee_types set amount = 12 where code = 'service_charge'`);
   surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [hodan]);
 });
 
@@ -73,25 +75,25 @@ describe("two invoices on submit: property bill and registration fee (0052, 0054
       )
       .then((r) => r.rows);
 
-  it("bills width × length × the type's price per m², plus the $12 registration fee", async () => {
+  it("bills width × length × the type's price per m², plus the service charge", async () => {
     await db.query(`update public.property_grades set amount = 0.3 where code = 'villa'`);
     const inv = await invoicesOf(await submitWithType("villa", 45.2981));
     expect(inv.map((i) => [i.fee, Number(i.total)])).toEqual([
       ["property_bill", 43.2],
-      ["registration_fee", 12],
+      ["service_charge", 12],
     ]);
     expect(inv[0]!.line).toBe("Villa: 12 m × 12 m = 144 m² × 0.30 USD per m²");
   });
 
-  it("no grade or a zero amount: only the registration fee", async () => {
+  it("no grade or a zero amount: only the service charge", async () => {
     await db.query(`update public.property_grades set amount = 0 where code = 'baraako'`);
-    expect((await invoicesOf(await submitWithType("baraako", 45.2983))).map((i) => i.fee)).toEqual(["registration_fee"]);
-    expect((await invoicesOf(await submitWithType(null, 45.2984))).map((i) => i.fee)).toEqual(["registration_fee"]);
+    expect((await invoicesOf(await submitWithType("baraako", 45.2983))).map((i) => i.fee)).toEqual(["service_charge"]);
+    expect((await invoicesOf(await submitWithType(null, 45.2984))).map((i) => i.fee)).toEqual(["service_charge"]);
   });
 
-  it("a switched-off property bill isn't charged (0057)", async () => {
+  it("the property bill is charged even if its fee type was switched off (0060)", async () => {
     await db.query(`update public.fee_types set active = false where code = 'property_bill'`);
-    expect((await invoicesOf(await submitWithType("villa", 45.2987))).map((i) => i.fee)).toEqual(["registration_fee"]);
+    expect((await invoicesOf(await submitWithType("villa", 45.2987))).map((i) => i.fee)).toEqual(["property_bill", "service_charge"]);
     await db.query(`update public.fee_types set active = true where code = 'property_bill'`);
   });
 
@@ -99,16 +101,16 @@ describe("two invoices on submit: property bill and registration fee (0052, 0054
     await expectError(submitWithType("villa", 45.2985, null), "VALIDATION: plot_size_required");
   });
 
-  it("admins change the registration fee; paying both invoices moves the application to survey", async () => {
-    await db.query(`update public.fee_types set amount = 15 where code = 'registration_fee'`);
+  it("admins change the service charge; paying both invoices settles the fee", async () => {
+    await db.query(`update public.fee_types set amount = 15 where code = 'service_charge'`);
     const app = await submitWithType("villa", 45.2986);
     const inv = await invoicesOf(app);
     expect(inv.map((i) => Number(i.total))).toEqual([43.2, 15]);
     const ids = (await db.query<{ id: string }>(`select i.id from public.invoices i join public.parcels p on p.id = i.parcel_id where p.application_id = $1 order by i.total`, [app])).rows;
     await db.query(`update public.invoices set status = 'paid' where id = $1`, [ids[0]!.id]);
-    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("awaiting_payment");
+    expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("due");
     await db.query(`update public.invoices set status = 'paid' where id = $1`, [ids[1]!.id]);
-    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("in_survey");
-    await db.query(`update public.fee_types set amount = 12 where code = 'registration_fee'`);
+    expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("paid");
+    await db.query(`update public.fee_types set amount = 12 where code = 'service_charge'`);
   });
 });

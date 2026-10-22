@@ -219,8 +219,11 @@ export async function getApplication(id: string) {
       pay_link: string | null;
       total_all?: number;
       balance_all?: number;
-      /** Each fee invoice: the property bill and the new registration fee. */
+      /** Each fee invoice: the tax bill and the service charge. */
       invoices?: { id: string; number: string; fee_code: string; name_so: string; name_en: string; total: number; balance: number; status: string; pay_link: string | null }[];
+      /** What the size and type cost now, and whether the invoices differ (Re-bill). */
+      expected?: { tax: number; service: number; tax_line: string | null; needs_size: boolean };
+      needs_rebill?: boolean;
     } | null,
     checklist: (checklist.data ?? []) as { code: string; value?: string | number }[],
     nearby: (nearby.data ?? []) as { id: string; number: string; status: ApplicationStatus; distance_m: number }[],

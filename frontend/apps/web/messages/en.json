@@ -207,7 +207,8 @@
       "assessment_appealed": "This assessment has an appeal, so it can't be deleted.",
       "decided": "This has already been decided, so it can't be changed.",
       "application_paid": "Money has already been paid on this application's invoices, so it can't be deleted.",
-      "application_land_registered": "This application's land is already surveyed or registered, so it can't be deleted."
+      "application_land_registered": "This application's land is already surveyed or registered, so it can't be deleted.",
+      "rebill_below_paid": "More has already been paid than the new amount, so it can't be re-billed lower."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -1465,9 +1466,23 @@
     "rowRegistered": "Registered as {pun}",
     "propertyType": "Property type",
     "propertyTypeHint": "The property grade (Valuation → Property grades). The property bill is width × length × its price per m².",
-    "feeInvoicesBody": "Pay these invoices to send the land to survey. Still to pay: {amount}.",
+    "feeInvoicesBody": "Still to pay: {amount}. The cashier takes it once the land is registered.",
     "invoicePaid": "Paid",
-    "rowDeleted": "Application deleted"
+    "rowDeleted": "Application deleted",
+    "invoicesTitle": "Invoices",
+    "rebillNeeded": "The size or type was corrected: the bill is now {amount} (invoices say {current}).",
+    "rebill": "Re-bill",
+    "rebillDone": "Invoices updated",
+    "rebillFailed": "Couldn't re-bill. Check the plot size and type.",
+    "invoicesPaidBody": "All paid.",
+    "invoiceLeft": "{amount} left",
+    "payAfterRegistration": "Paid at the cashier after the land is registered; the certificate is created when everything is paid.",
+    "noInvoicesYet": "No invoices yet: set the plot size and the type of house.",
+    "correctLand": "Correct size & type",
+    "correctLandTitle": "Correct the size and type of house",
+    "correctLandBody": "Use what you found when checking. If the bill changes, press Re-bill to update the invoices.",
+    "correctLandSave": "Save correction",
+    "correctLandDone": "Corrected"
   },
   "owners": {
     "title": "Owners",

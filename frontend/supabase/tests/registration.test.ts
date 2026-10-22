@@ -67,10 +67,10 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
   let survey: string;
   const plot = square(45.3, 2.04, 0.0002); // ~44 m × 44 m inside the neighbourhood
 
-  it("surveys can't start before the fee is settled; finance can waive it (not the creator)", async () => {
+  it("goes straight to review with the fee still due; finance can waive it (not the creator)", async () => {
     app = await submittedApplication(45.3, 2.04);
-    expect(await status(app)).toBe("awaiting_payment");
-    await expectError(asUser(db, landOfficer, (tx) => tx.query(`select public.survey_assign($1)`, [app])), "CONFLICT: status");
+    expect(await status(app)).toBe("in_survey");
+    expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("due");
     await expectError(asUser(db, finance, (tx) => tx.query(`select public.application_waive_fee($1, '')`, [app])), "VALIDATION: note_required");
     await asUser(db, finance, (tx) => tx.query(`select public.application_waive_fee($1, 'Hardship case')`, [app]));
     expect(await status(app)).toBe("in_survey");

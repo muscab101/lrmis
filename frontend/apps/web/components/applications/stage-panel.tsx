@@ -117,7 +117,7 @@ export function StagePanel({ applicationId, status, feeStatus, feeNote, stage, c
         <ol className="space-y-4">
           <Step icon={<Coins aria-hidden />} title={t("fee")} done={feeStatus !== "due"}>
             {feeStatus === "due" ? t("feeDue") : feeStatus === "waived" ? t("feeWaived", { note: feeNote ?? "" }) : t("feePaid")}
-            {status === "awaiting_payment" && feeStatus === "due" && can.waiveFee && (
+            {!["approved", "rejected", "cancelled"].includes(status) && feeStatus === "due" && can.waiveFee && (
               <Button size="sm" variant="outline" className="mt-2" onClick={() => setDialog("waive")}>
                 {t("waive")}
               </Button>

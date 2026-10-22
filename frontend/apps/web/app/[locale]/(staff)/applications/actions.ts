@@ -419,3 +419,37 @@ export const registerConfirmedAction = defineAction(
     return out;
   },
 );
+
+/** Staff correct the plot size and the type of house after checking it (then Re-bill). */
+export const correctLandAction = defineAction(
+  "applications.correct_land",
+  z.object({
+    applicationId: z.uuid(),
+    widthM: z.number().gt(0, "validation.plot_size").max(5000, "validation.plot_size"),
+    lengthM: z.number().gt(0, "validation.plot_size").max(5000, "validation.plot_size"),
+    propertyType: z.string().trim().max(60).default(""),
+    note: z.string().trim().max(500).default(""),
+  }),
+  async (v, ctx) => {
+    unwrap(
+      await ctx.supabase.rpc("application_correct_land", {
+        p_id: v.applicationId,
+        p_width: v.widthM,
+        p_length: v.lengthM,
+        p_property_type: v.propertyType,
+        p_note: v.note,
+      }),
+      "correct land",
+    );
+    revalidatePath("/[locale]/applications/[id]", "page");
+    return null;
+  },
+);
+
+/** Re-bill: update the application's invoices to its size and type now (the same invoices). */
+export const rebillAction = defineAction("applications.rebill", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
+  const out = unwrap(await ctx.supabase.rpc("application_rebill", { p_id: applicationId }), "rebill") as { tax: number; service: number; changed: number };
+  revalidatePath("/[locale]/applications/[id]", "page");
+  revalidatePath("/[locale]/invoices", "layout");
+  return out;
+});

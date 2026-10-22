@@ -36,7 +36,7 @@ interface Can {
 
 const EDITABLE = ["draft", "returned"];
 /** Delete removes it from the database; land under survey or registered can't be deleted. */
-const DELETABLE = ["draft", "awaiting_payment", "returned", "cancelled", "rejected"];
+const DELETABLE = ["draft", "awaiting_payment", "returned", "in_survey", "surveyed", "cancelled", "rejected"];
 const CLOSED = ["approved", "rejected", "cancelled"];
 const LAND_USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
@@ -61,9 +61,7 @@ export function ApplicationRowActions({ application: a, me, can }: { application
     ? null
     : ["draft", "returned"].includes(a.status)
       ? "register_not_submitted"
-      : a.status === "awaiting_payment"
-        ? "register_fee_due"
-        : null;
+      : null; // payment comes after registration
   const tv = useTranslations("validation");
   const canEdit = can.update && EDITABLE.includes(a.status);
   const canDelete = DELETABLE.includes(a.status) && (can.cancel || a.created_by === me);

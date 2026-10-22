@@ -17,11 +17,12 @@ import { ReviewPanel } from "./review-panel";
 import { SiteCheckActions } from "./site-check";
 import { StagePanel } from "./stage-panel";
 import { ApplicationStatusBadge } from "./status-badge";
+import { CorrectLandButton, RebillButton } from "./billing-actions";
 import { Timeline } from "./timeline";
 import { UrlTabs } from "./url-tabs";
 
 const OPEN_FOR_RETURN: ApplicationStatus[] = ["awaiting_payment", "in_survey", "surveyed", "in_verification"];
-const CANCELLABLE: ApplicationStatus[] = ["draft", "awaiting_payment", "returned"];
+const CANCELLABLE: ApplicationStatus[] = ["draft", "awaiting_payment", "returned", "in_survey"];
 
 interface Props {
   data: NonNullable<Awaited<ReturnType<typeof getApplication>>>;
@@ -45,6 +46,8 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
   const isApplicant = app.citizen_user_id === me || app.created_by === me;
   const editableStatus = app.status === "draft" || app.status === "returned";
   const editable = editableStatus && (isApplicant || (mode === "staff" && viewer.can("applications.update")));
+  // Correct size and type (and re-bill) while staff review it, before the land is registered.
+  const canCorrectLand = mode === "staff" && viewer.can("applications.update") && ["awaiting_payment", "in_survey", "surveyed", "in_verification", "public_notice"].includes(app.status);
   const requested = (APPLICATION_TABS as readonly string[]).includes(tabParam ?? "") ? (tabParam as ApplicationTab) : "details";
   const tab: ApplicationTab = requested === "review" && !editable ? "details" : requested;
   const tabHref = (k: ApplicationTab) => `${basePath}/${app.id}?tab=${k}`;
@@ -127,24 +130,37 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
           {app.decision_note}
         </Alert>
       )}
-      {app.status === "awaiting_payment" && (
-        <Alert tone="info" title={t("awaitingPaymentTitle")} className="mb-5">
-          {fee ? (
+      {/* Invoices raised on submit (tax bill + service charge). They're paid after registration; staff can correct and re-bill first. */}
+      {(fee || canCorrectLand) && !["draft", "returned"].includes(app.status) && (
+        <Alert tone={fee?.needs_rebill ? "warning" : "info"} title={t("invoicesTitle")} className="mb-5">
+          {fee?.needs_rebill && fee.expected && (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm">
+                {t("rebillNeeded", { amount: usdFmt(Number(fee.expected.tax) + Number(fee.expected.service)), current: usdFmt(fee.total_all ?? 0) })}
+              </p>
+              {canCorrectLand && <RebillButton applicationId={app.id} label={t("rebill")} />}
+            </div>
+          )}
+          {fee && (fee.invoices?.length ?? 0) > 0 ? (
             <>
-              <p>{t("feeInvoicesBody", { amount: usdFmt(fee.balance_all ?? fee.balance) })}</p>
-              {/* One row per invoice: the property bill and the new registration fee. */}
+              <p>{Number(fee.balance_all ?? fee.balance) > 0 ? t("feeInvoicesBody", { amount: usdFmt(fee.balance_all ?? fee.balance) }) : t("invoicesPaidBody")}</p>
               <ul className="mt-3 divide-y rounded-md border bg-card">
-                {(fee.invoices ?? [{ ...fee, fee_code: "", name_so: "", name_en: "" }]).map((inv) => (
+                {(fee.invoices ?? []).map((inv) => (
                   <li key={inv.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-sm">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-32 flex-1">
                       <div className="font-medium">{(locale === "so" ? inv.name_so : inv.name_en) || t("openInvoice")}</div>
                       <div className="text-muted-foreground font-mono text-xs">{inv.number}</div>
                     </div>
                     <div className="text-end tabular-nums">
-                      <div className="font-semibold">{usdFmt(inv.balance)}</div>
-                      {Number(inv.balance) <= 0 && <div className="text-success text-xs">{t("invoicePaid")}</div>}
+                      <div className="font-semibold">{usdFmt(inv.total)}</div>
+                      {Number(inv.balance) <= 0 ? (
+                        <div className="text-success text-xs">{t("invoicePaid")}</div>
+                      ) : (
+                        Number(inv.balance) < Number(inv.total) && <div className="text-muted-foreground text-xs">{t("invoiceLeft", { amount: usdFmt(inv.balance) })}</div>
+                      )}
                     </div>
-                    <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+                    {/* Long labels wrap on a phone instead of running out of the box. */}
+                    <div className="flex w-full min-w-0 flex-wrap gap-2 xl:w-auto [&_a]:h-auto [&_a]:min-h-8 [&_a]:max-w-full [&_a]:whitespace-normal [&_a]:text-start">
                       {inv.pay_link && Number(inv.balance) > 0 && (
                         <Button size="sm" asChild>
                           <Link href={inv.pay_link}>{t("payOnline")}</Link>
@@ -164,10 +180,21 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
                   </li>
                 ))}
               </ul>
-              {mode === "staff" && <p className="text-muted-foreground mt-2 text-xs">{t("waiveNote")}</p>}
+              {mode === "staff" && <p className="text-muted-foreground mt-2 text-xs">{t("payAfterRegistration")}</p>}
             </>
           ) : (
-            t("awaitingPaymentBody")
+            <p className="text-sm">{t("noInvoicesYet")}</p>
+          )}
+          {canCorrectLand && (
+            <div className="mt-3">
+              <CorrectLandButton
+                applicationId={app.id}
+                widthM={app.plot_width_m != null ? Number(app.plot_width_m) : null}
+                lengthM={app.plot_length_m != null ? Number(app.plot_length_m) : null}
+                propertyType={app.property_type}
+                propertyTypes={propertyTypes}
+              />
+            </div>
           )}
         </Alert>
       )}

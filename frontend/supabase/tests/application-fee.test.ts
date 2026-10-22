@@ -32,7 +32,7 @@ const feeInvoice = (app: string) =>
   db
     .query<{ id: string; number: string; total: string; status: string; parcel_id: string; provisional: boolean; parcel_status: string }>(
       `select i.id, i.number, i.total::text, i.status::text, i.parcel_id, p.geom_provisional as provisional, p.status::text as parcel_status
-         from public.invoices i join public.fee_types f on f.id = i.fee_type_id and f.code = 'registration_fee'
+         from public.invoices i join public.fee_types f on f.id = i.fee_type_id and f.code = 'service_charge'
          join public.parcels p on p.id = i.parcel_id
         where p.application_id = $1`,
       [app],
@@ -53,6 +53,8 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
   const admin = await bootstrapSuperAdmin(db);
+  // As set live on Valuation → Fee types: a USD 12 service charge for a new house.
+  await db.query(`update public.fee_types set amount = 12 where code = 'service_charge'`);
   clerk = await createStaff(db, admin, "desk@gmail.com", ["front_desk_clerk"], [hodan]);
   await letClerksCreate(db);
   cashier = await createStaff(db, admin, "cashier@gmail.com", ["cashier"], [hodan]);
@@ -64,7 +66,7 @@ beforeAll(async () => {
 describe("application fee invoice", () => {
   it("submitting raises the $12 registration fee invoice on a provisional draft parcel around the pin", async () => {
     const app = await submitted(45.3);
-    expect(await status(app)).toBe("awaiting_payment");
+    expect(await status(app)).toBe("in_survey"); // straight to review; paid later
     const [inv] = await feeInvoice(app);
     expect(inv).toBeDefined();
     expect(Number(inv!.total)).toBe(12);
@@ -78,13 +80,13 @@ describe("application fee invoice", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.invoice_tokens where invoice_id = $1`, [inv!.id])).toBe(1);
   });
 
-  it("the cashier takes the fee and the application moves to survey", async () => {
+  it("the cashier takes the fee: part-paid stays due, paid in full settles it", async () => {
     const app = await submitted(45.301);
     const [inv] = await feeInvoice(app);
     await asUser(db, cashier, (tx) =>
       tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
     );
-    expect(await status(app)).toBe("awaiting_payment"); // part-paid
+    expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("due"); // part-paid
     await asUser(db, cashier, (tx) =>
       tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 7, method: "cash" })]),
     );

@@ -161,9 +161,9 @@ describe("application lifecycle", () => {
     );
   });
 
-  it("submits → awaiting payment; the application is then locked for edits", async () => {
+  it("submits → straight to review (payment comes last); the application is then locked for edits", async () => {
     const r = await asUser(db, clerkHodan, (tx) => scalar<{ status: string }>(tx, `select public.application_submit($1)`, [appId]));
-    expect(r.status).toBe("awaiting_payment");
+    expect(r.status).toBe("in_survey");
     await expectError(asUser(db, clerkHodan, (tx) => tx.query(`select public.application_update($1, '{}')`, [appId])), "CONFLICT: not editable");
   });
 
@@ -234,7 +234,7 @@ describe("public tracking", () => {
     const ok = await as(db, "anon", {}, (tx) =>
       scalar<{ status: string; events: unknown[] } | null>(tx, `select public.application_track($1, '2222')`, [appNumber.toLowerCase()]),
     );
-    expect(ok?.status).toBe("awaiting_payment");
+    expect(ok?.status).toBe("in_survey");
     expect(JSON.stringify(ok)).not.toContain("Cabdi");
     const wrong = await as(db, "anon", {}, (tx) => scalar(tx, `select public.application_track($1, '0000')`, [appNumber]));
     expect(wrong).toBeNull();

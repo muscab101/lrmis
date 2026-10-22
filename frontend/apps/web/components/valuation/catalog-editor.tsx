@@ -73,9 +73,12 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                   >
                     <Pencil aria-hidden />
                   </Button>
-                  <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("delete")} title={t("delete")} onClick={() => setDeleting(i)}>
-                    <Trash2 aria-hidden />
-                  </Button>
+                  {/* The property bill is priced by the grades, so there is nothing to delete or switch off. */}
+                  {!(kind === "fees" && i.code === "property_bill") && (
+                    <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("delete")} title={t("delete")} onClick={() => setDeleting(i)}>
+                      <Trash2 aria-hidden />
+                    </Button>
+                  )}
                 </TableCell>
               )}
             </TableRow>
