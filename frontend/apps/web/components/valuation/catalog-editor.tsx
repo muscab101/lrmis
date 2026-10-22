@@ -15,7 +15,7 @@ import { FormDialog } from "@/components/forms/form-dialog";
 import type { FeeType, Grade } from "@/lib/server/valuation";
 
 const INTERVALS = ["annual", "biannual", "quarterly", "monthly", "one_off"] as const;
-/** Fee types the system uses by code: they can be switched off but not deleted. */
+/** Fee types the system uses by code: Delete switches them off instead of removing them. */
 const BUILT_IN_FEES = new Set(["property_tax", "service_charge", "application_fee", "certificate_fee", "transfer_stamp_duty", "building_permit", "registration_fee", "property_bill"]);
 type Item = Grade & { interval?: FeeType["interval"] };
 
@@ -73,11 +73,9 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                   >
                     <Pencil aria-hidden />
                   </Button>
-                  {!(kind === "fees" && BUILT_IN_FEES.has(i.code)) && (
-                    <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("delete")} title={t("delete")} onClick={() => setDeleting(i)}>
-                      <Trash2 aria-hidden />
-                    </Button>
-                  )}
+                  <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("delete")} title={t("delete")} onClick={() => setDeleting(i)}>
+                    <Trash2 aria-hidden />
+                  </Button>
                 </TableCell>
               )}
             </TableRow>
@@ -147,7 +145,7 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
           open
           onOpenChange={(o) => !o && setDeleting(null)}
           title={t("deleteFeeTitle", { name: locale === "so" ? deleting.name_so : deleting.name_en })}
-          description={t(kind === "grades" ? "deleteGradeBody" : "deleteFeeBody")}
+          description={t(kind === "grades" ? "deleteGradeBody" : BUILT_IN_FEES.has(deleting.code) ? "deleteFeeBuiltInBody" : "deleteFeeBody")}
           confirmLabel={t("deleteFee")}
           destructive
           submit={() => (kind === "grades" ? deleteGradeAction({ id: deleting.id }) : deleteFeeTypeAction({ id: deleting.id }))}

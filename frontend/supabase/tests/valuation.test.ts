@@ -151,10 +151,13 @@ describe("valuation (Phase 5)", () => {
 });
 
 describe("deleting a fee type (0055)", () => {
-  it("built-in fees can't be deleted; a used one is switched off; an unused one is removed", async () => {
+  it("built-in fees are switched off; a used one is switched off; an unused one is removed", async () => {
     const admin = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
     const reg = await scalar<string>(db, `select id from public.fee_types where code = 'registration_fee'`);
-    await expect(asUser(db, admin, (tx) => tx.query(`select public.valuation_delete_fee_type($1)`, [reg]))).rejects.toThrow(/^CONFLICT: fee_built_in/);
+    // A built-in fee is switched off, not deleted (0057).
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.valuation_delete_fee_type($1)`, [reg]))).toBe("hidden");
+    expect(await scalar<boolean>(db, `select active from public.fee_types where id = $1`, [reg])).toBe(false);
+    await db.query(`update public.fee_types set active = true where id = $1`, [reg]);
     const mk = (code: string) =>
       asUser(db, admin, (tx) => scalar<string>(tx, `select public.valuation_save_fee_type(null, $1)`, [JSON.stringify({ code, name_so: code, name_en: code, interval: "one_off", amount: 5 })]));
     const unused = await mk("trial_fee");

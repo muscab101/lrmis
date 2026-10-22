@@ -89,6 +89,12 @@ describe("two invoices on submit: property bill and registration fee (0052, 0054
     expect((await invoicesOf(await submitWithType(null, 45.2984))).map((i) => i.fee)).toEqual(["registration_fee"]);
   });
 
+  it("a switched-off property bill isn't charged (0057)", async () => {
+    await db.query(`update public.fee_types set active = false where code = 'property_bill'`);
+    expect((await invoicesOf(await submitWithType("villa", 45.2987))).map((i) => i.fee)).toEqual(["registration_fee"]);
+    await db.query(`update public.fee_types set active = true where code = 'property_bill'`);
+  });
+
   it("a priced type needs the plot size before submitting", async () => {
     await expectError(submitWithType("villa", 45.2985, null), "VALIDATION: plot_size_required");
   });

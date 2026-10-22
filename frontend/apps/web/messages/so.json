@@ -2119,7 +2119,8 @@
     "deleteRateBody": "Qiime aan qiimayn lagu samayn oo keliya ayaa la tirtiri karaa. Qiime horay loo isticmaalay, ku dar qiime cusub oo taariikh dambe ka bilaabma.",
     "deleteGradeBody": "Haddii dhul ama dhismayaal horay u isticmaalayaan heerkan waa la damiyaa, si ay u haystaan. Haddii kale waa la tirtirayaa.",
     "gradeDeleted": "Heerka waa la tirtiray",
-    "gradeHidden": "Heerka waa la isticmaalayaa, sidaas darteed waa la damiyay"
+    "gradeHidden": "Heerka waa la isticmaalayaa, sidaas darteed waa la damiyay",
+    "deleteFeeBuiltInBody": "Khidmaddan waa mid nidaamka ku dhex jirta: magaceeda ayaa la isticmaalaa, sidaas darteed waa la damiyaa halkii la tirtiri lahaa. Lama sii qaadayo, waxaadna dib u shidi kartaa Wax ka beddel."
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

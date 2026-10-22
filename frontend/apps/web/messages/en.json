@@ -2099,7 +2099,7 @@
     "deleteFeeTitle": "Delete {name}?",
     "deleteFeeBody": "If this fee is already on an invoice or a billing run it's switched off instead, so those keep it. Otherwise it's removed.",
     "feeDeleted": "Fee type deleted",
-    "feeHidden": "Fee type is in use, so it was switched off",
+    "feeHidden": "Fee switched off",
     "delete": "Delete",
     "deleted": "Deleted",
     "reassess": "Re-assess",
@@ -2119,7 +2119,8 @@
     "deleteRateBody": "Only a rate no assessment was made with can be deleted. For a rate already used, add a new rate from a later date instead.",
     "deleteGradeBody": "If land or buildings already use this grade it's switched off instead, so they keep it. Otherwise it's removed.",
     "gradeDeleted": "Grade deleted",
-    "gradeHidden": "Grade is in use, so it was switched off"
+    "gradeHidden": "Grade is in use, so it was switched off",
+    "deleteFeeBuiltInBody": "This fee is built in: the system uses it by name, so it's switched off instead of removed. It's no longer charged, and you can switch it on again with Edit."
   },
   "billing": {
     "runsTitle": "Billing runs",
