@@ -214,7 +214,8 @@
       "not_registered": "The parcel isn't registered.",
       "super_admin": "Only a super admin can do this.",
       "selection": "Select between 1 and 100 items.",
-      "document": "That document wasn't found."
+      "document": "That document wasn't found.",
+      "already_started": "Registration has already been started for this land."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -339,7 +340,10 @@
     "fx_rate_missing": "There's no SOS exchange rate yet. Add one in Accounting → Rates, or set the price in USD.",
     "location_in_use": "This location is still used by other records, so it can't be deleted. Archive it instead.",
     "plot_size_required": "Enter the plot width and length: this property type is billed per m².",
-    "email_taken": "Another account already uses this email."
+    "email_taken": "Another account already uses this email.",
+    "pin_required": "Put a pin on the map at the house.",
+    "owner_name": "Enter the owner's full name.",
+    "neighbourhood": "Choose a neighbourhood, or drop the pin inside one."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1959,7 +1963,29 @@
     "stageBody_draft": "Land not registered yet (draft, surveyed or verified). Open the application to survey, check the site, bill or register it.",
     "stageBody_registered": "Registered parcels with a PUN in your districts.",
     "stageBody_all": "Registered and in-progress parcels in your districts.",
-    "openApplication": "Open application {number}"
+    "openApplication": "Open application {number}",
+    "fieldLand": {
+      "add": "Add land",
+      "title": "Add land from the field",
+      "subtitle": "A house found on site. It is saved under Parcels → Partial registration; start its registration later to bill, survey and register it.",
+      "pinHint": "Stand at the house and use GPS, or click the map at the house.",
+      "nearby": "Land already recorded close by:",
+      "area": "Area",
+      "grade": "Property grade",
+      "ownerName": "Owner's full name",
+      "ownerPhone": "Owner's phone",
+      "ownerPhoneHint": "Optional. International format, e.g. +252 61 123 4567.",
+      "note": "Note",
+      "save": "Save land",
+      "saved": "Land saved under Partial registration.",
+      "badge": "Added in the field · no application yet",
+      "start": "Start registration",
+      "startTitle": "Start registration?",
+      "startBody": "This creates an application for {land} with its owner, so you can bill, survey, verify and register it.",
+      "started": "Application created."
+    },
+    "emptyDraftTitle": "No land waiting for registration",
+    "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered."
   },
   "notices": {
     "eyebrow": "Public notice",

@@ -1,11 +1,13 @@
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Lock, MapPinned } from "lucide-react";
+import { Lock, MapPinned, MapPinPlus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
+import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_STAGES, type ParcelStage, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
@@ -27,12 +29,28 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const stage: ParcelStage = (PARCEL_STAGES as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as ParcelStage) : "all";
   const [rows, counts] = await Promise.all([searchParcels(q, stage), parcelStageCounts()]);
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
+  // Surveyors (and admins) add land found in the field, and start its registration.
+  const canAddLand = viewer.can("surveys.create") || viewer.can("applications.create");
+  const canStart = viewer.can("applications.create");
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
+      <PageHeader
+        title={t("title")}
+        description={t(`stageBody_${stage}`)}
+        actions={
+          canAddLand && (
+            <Button asChild>
+              <Link href="/parcels/new">
+                <MapPinPlus aria-hidden />
+                {t("fieldLand.add")}
+              </Link>
+            </Button>
+          )
+        }
+      >
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {PARCEL_STAGES.map((k) => (
             <Link
@@ -53,7 +71,11 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
           <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
         </form>
         {rows.length === 0 ? (
-          <EmptyState icon={<MapPinned />} title={q ? t("noMatches") : t("emptyTitle")} description={t("emptyBody")} />
+          <EmptyState
+            icon={<MapPinned />}
+            title={q ? t("noMatches") : stage === "draft" ? t("emptyDraftTitle") : t("emptyTitle")}
+            description={stage === "draft" ? t("emptyDraftBody") : t("emptyBody")}
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -84,6 +106,12 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
                       <Mono>{p.pun ?? p.application_number ?? t("noPun")}</Mono>
                     </Link>
+                    {!p.application_number && p.status === "draft" && (
+                      <>
+                        <span className="text-muted-foreground block text-xs">{t("fieldLand.badge")}</span>
+                        {canStart && <StartRegistrationButton parcelId={p.id} label={[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />}
+                      </>
+                    )}
                     {p.application_number && ["draft", "surveyed", "verified"].includes(p.status) && (
                       <Link href={`/applications?${new URLSearchParams({ q: p.application_number, status: "any" })}`} className="text-primary block text-xs underline">
                         {t("openApplication", { number: p.application_number })}

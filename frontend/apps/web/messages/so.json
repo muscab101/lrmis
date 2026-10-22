@@ -214,7 +214,8 @@
       "not_registered": "Dhulka lama diiwaangelin.",
       "super_admin": "Maamulaha sare oo keliya ayaa samayn kara tan.",
       "selection": "Dooro inta u dhaxaysa 1 ilaa 100.",
-      "document": "Dukumentigaas lama helin."
+      "document": "Dukumentigaas lama helin.",
+      "already_started": "Dhulkan diiwaangelintiisa horay ayaa loo bilaabay."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -339,7 +340,10 @@
     "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD.",
     "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda.",
     "plot_size_required": "Geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa.",
-    "email_taken": "Akoon kale ayaa horay u isticmaalaya iimaylkan."
+    "email_taken": "Akoon kale ayaa horay u isticmaalaya iimaylkan.",
+    "pin_required": "Khariidadda ku dhig biin meesha guriga.",
+    "owner_name": "Geli magaca buuxa ee milkiilaha.",
+    "neighbourhood": "Dooro xaafad, ama biinka ku dhig mid gudaheed."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1959,7 +1963,29 @@
     "stageBody_draft": "Dhul aan weli la diiwaangelin (qabyo, la sahamiyay ama la hubiyay). Fur codsiga si aad u sahamiso, u hubiso goobta, u biileyso ama u diiwaangeliso.",
     "stageBody_registered": "Dhulalka diiwaangashan ee PUN leh ee degmooyinkaaga.",
     "stageBody_all": "Dhulalka diiwaangashan iyo kuwa socda ee degmooyinkaaga.",
-    "openApplication": "Fur codsiga {number}"
+    "openApplication": "Fur codsiga {number}",
+    "fieldLand": {
+      "add": "Ku dar dhul",
+      "title": "Ku dar dhul goobta laga helay",
+      "subtitle": "Guri goobta laga helay. Wuxuu ku kaydsamayaa Dhulalka → Diiwaangelin qayb ah; kadib bilow diiwaangelintiisa si loo biileeyo, loo sahamiyo oo loo diiwaangeliyo.",
+      "pinHint": "Ag joog guriga oo isticmaal GPS, ama khariidadda ku riix meesha guriga.",
+      "nearby": "Dhul horay loo diiwaangeliyay oo u dhow:",
+      "area": "Baaxadda",
+      "grade": "Heerka hantida",
+      "ownerName": "Magaca buuxa ee milkiilaha",
+      "ownerPhone": "Taleefanka milkiilaha",
+      "ownerPhoneHint": "Ikhtiyaari. Qaab caalami ah, tusaale +252 61 123 4567.",
+      "note": "Qoraal",
+      "save": "Kaydi dhulka",
+      "saved": "Dhulka waxaa lagu kaydiyay Diiwaangelin qayb ah.",
+      "badge": "Goobta lagu daray · weli codsi ma laha",
+      "start": "Bilow diiwaangelinta",
+      "startTitle": "Ma bilaabaysaa diiwaangelinta?",
+      "startBody": "Tani waxay abuuraysaa codsi {land} iyo milkiilihiisa, si aad u biileyso, u sahamiso, u hubiso oo u diiwaangeliso.",
+      "started": "Codsiga waa la abuuray."
+    },
+    "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
+    "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo."
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
