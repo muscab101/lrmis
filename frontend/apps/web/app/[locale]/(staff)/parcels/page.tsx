@@ -46,8 +46,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                 <TableHead>{t("pun")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
                 <TableHead className="hidden xl:table-cell">{t("govtReceipt")}</TableHead>
-                <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("neighbourhood")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
                 <TableHead>{t("ownerName")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("statusLabel")}</TableHead>
                 <TableHead className="text-end">{t("actions")}</TableHead>
@@ -88,11 +88,11 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     </TableCell>
                   )}
                   <TableCell className="hidden text-sm xl:table-cell">{p.govt_receipt_no ? <Mono className="text-xs">{p.govt_receipt_no}</Mono> : "—"}</TableCell>
-                  <TableCell className="hidden text-sm lg:table-cell">{p.house_no ?? "—"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">
                     {nbhd ?? "—"}
                     <div className="text-muted-foreground text-xs">{district}</div>
                   </TableCell>
+                  <TableCell className="hidden text-sm lg:table-cell">{p.house_no ?? "—"}</TableCell>
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />

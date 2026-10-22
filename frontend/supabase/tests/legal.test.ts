@@ -178,7 +178,7 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
     children = out.new_parcels;
     expect(children).toHaveLength(2);
     const rows = await db.query<{ pun: string; status: string }>(`select pun, status::text from public.parcels where id = any ($1) order by pun`, [children]);
-    expect(rows.rows.map((r) => r.pun)).toEqual(["BN-HDN-012-000003", "BN-HDN-012-000004"]);
+    expect(rows.rows.map((r) => r.pun)).toEqual(["BN-HDN-012-03", "BN-HDN-012-04"]);
     expect(rows.rows.every((r) => r.status === "registered")).toBe(true);
     expect(await scalar<string>(db, `select status::text from public.parcels where id = $1`, [parcel])).toBe("archived");
     expect(await owners(children[0]!)).toHaveLength(2);

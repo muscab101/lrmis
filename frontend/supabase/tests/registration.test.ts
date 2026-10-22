@@ -150,7 +150,7 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
 
   it("the registrar registers: PUN + account number generated, owners recorded", async () => {
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string; account_no: string }>(tx, `select public.application_register($1, 'residential')`, [app]));
-    expect(r).toMatchObject({ pun: "BN-HDN-012-000001", account_no: "HDN0000001" });
+    expect(r).toMatchObject({ pun: "BN-HDN-012-01", account_no: "HDN0000001" });
     expect(await status(app)).toBe("approved");
     const parcel = await db.query<{ status: string; owners: number }>(
       `select p.status::text, (select count(*)::int from public.parcel_owners po where po.parcel_id = p.id and po.valid_to is null) as owners
@@ -173,7 +173,12 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
     );
     await db.query(`update public.public_notices set ends_at = now() - interval '1 minute' where application_id = $1`, [second]);
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.application_register($1)`, [second]));
-    expect(r.pun).toBe("BN-HDN-012-000002");
+    expect(r.pun).toBe("BN-HDN-012-02");
+  });
+
+  it("PUN numbers keep one leading zero at most and never cut longer numbers", async () => {
+    const fmt = (n: number) => scalar<string>(db, `select private.format_serial('BN-{district}-{neighbourhood}-{serial:2}', 'HDN', '012', $1)`, [n]);
+    expect([await fmt(3), await fmt(10), await fmt(100), await fmt(12345)]).toEqual(["BN-HDN-012-03", "BN-HDN-012-10", "BN-HDN-012-100", "BN-HDN-012-12345"]);
   });
 });
 
@@ -194,7 +199,7 @@ describe("GIS validation", () => {
     await asUser(db, surveyor, (tx) => tx.query(`select public.survey_save($1, $2)`, [s, JSON.stringify({ geojson: square(45.3002, 2.0402, 0.0002) })]));
     const out = await asUser(db, surveyor, (tx) => scalar<{ status: string; overlaps: { pun: string }[] }>(tx, `select public.survey_submit($1)`, [s]));
     expect(out.status).toBe("overlap_review");
-    expect(out.overlaps[0]?.pun).toBe("BN-HDN-012-000001");
+    expect(out.overlaps[0]?.pun).toBe("BN-HDN-012-01");
     expect(await status(app)).toBe("in_survey");
 
     await expectError(asUser(db, gis, (tx) => tx.query(`select public.survey_gis_review($1, 'accept')`, [s])), "VALIDATION: still_overlapping");

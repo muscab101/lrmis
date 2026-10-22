@@ -138,7 +138,7 @@ describe("move to Parcels right after the ✓ site check", () => {
     const r = await asUser(db, registrar, (tx) =>
       scalar<{ pun: string; account_no: string; parcel_id: string; provisional_boundary: boolean }>(tx, `select public.application_register_confirmed($1, 'residential', 'Confirmed on site')`, [app]),
     );
-    expect(r.pun).toMatch(/^BN-HDN-012-\d{6}$/);
+    expect(r.pun).toMatch(/^BN-HDN-012-\d{2,}$/);
     expect(r.account_no).toMatch(/^HDN\d+/);
     expect(r.provisional_boundary).toBe(true);
     expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("approved");
