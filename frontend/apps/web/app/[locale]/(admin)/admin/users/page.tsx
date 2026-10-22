@@ -61,7 +61,15 @@ export default async function UsersPage({
           <KpiChip label={t("kpiSuspended")} value={counts.suspended} tone={counts.suspended ? "danger" : "default"} />
         </div>
       </PageHeader>
-      <UsersTable rows={rows} total={total} query={query} roles={roles} districts={districts} />
+      <UsersTable
+        rows={rows}
+        total={total}
+        query={query}
+        roles={roles}
+        districts={districts}
+        me={viewer.user.id}
+        perms={{ changeEmail: viewer.can("users.update"), resetPassword: viewer.can("users.reset_password"), remove: viewer.can("users.delete") }}
+      />
     </>
   );
 }

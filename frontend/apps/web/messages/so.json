@@ -331,7 +331,8 @@
     "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale.",
     "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD.",
     "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda.",
-    "plot_size_required": "Geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa."
+    "plot_size_required": "Geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa.",
+    "email_taken": "Akoon kale ayaa horay u isticmaalaya iimaylkan."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -765,7 +766,8 @@
           "send_reset_link": "Xiriirka dib-u-dejinta waa la diray",
           "resend_invite": "Casuumaadda mar kale ayaa la diray",
           "set_password": "Furaha waa la dejiyay waana lagu koobiyeeyay clipboard-kaaga",
-          "deleted": "Isticmaalaha waa la tirtiray"
+          "deleted": "Isticmaalaha waa la tirtiray",
+          "change_email": "Iimaylka waa la beddelay; isticmaalaha waa laga saaray"
         },
         "confirm": {
           "suspend": {
@@ -792,8 +794,14 @@
             "title": "Dib u dir casuumaadda?",
             "body": "Casuumaad cusub ayaa loo diri doonaa {email}."
           }
-        }
-      }
+        },
+        "changeEmail": "Beddel iimaylka",
+        "changeEmailTitle": "Beddel iimaylka {name}",
+        "changeEmailBody": "Cinwaanka cusub ayaa hadda laga bilaabo lagu soo galayaa, isticmaalahana meel kasta waa laga saarayaa. Ku xaqiiji eraygaaga sirta ah.",
+        "newEmail": "Iimayl cusub",
+        "hardDeleteListBody": "Akoonka si joogto ah ayuu u tirtiraa. Super Admin oo keliya ayaa samayn kara, akoon aan diiwaan lahayn oo keliya; haddii kale isticmaal tirtirka jilicsan."
+      },
+      "colActions": "Ficillo"
     },
     "roles": {
       "title": "Doorarka & ogolaanshaha",

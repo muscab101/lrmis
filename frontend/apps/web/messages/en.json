@@ -331,7 +331,8 @@
     "property_type_inactive": "That type has been hidden by an admin. Choose another.",
     "fx_rate_missing": "There's no SOS exchange rate yet. Add one in Accounting → Rates, or set the price in USD.",
     "location_in_use": "This location is still used by other records, so it can't be deleted. Archive it instead.",
-    "plot_size_required": "Enter the plot width and length: this property type is billed per m²."
+    "plot_size_required": "Enter the plot width and length: this property type is billed per m².",
+    "email_taken": "Another account already uses this email."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -765,7 +766,8 @@
           "send_reset_link": "Reset link sent",
           "resend_invite": "Invitation sent again",
           "set_password": "Password set and copied to your clipboard",
-          "deleted": "User deleted"
+          "deleted": "User deleted",
+          "change_email": "Email changed; the user was signed out"
         },
         "confirm": {
           "suspend": {
@@ -792,8 +794,14 @@
             "title": "Resend the invitation?",
             "body": "A new invitation will be sent to {email}."
           }
-        }
-      }
+        },
+        "changeEmail": "Change email",
+        "changeEmailTitle": "Change email for {name}",
+        "changeEmailBody": "The new address is used to sign in from now on, and the user is signed out everywhere. Confirm with your own password.",
+        "newEmail": "New email",
+        "hardDeleteListBody": "Removes the account for good. Only a Super Admin can, and only for an account with no records; otherwise use soft delete."
+      },
+      "colActions": "Actions"
     },
     "roles": {
       "title": "Roles & permissions",

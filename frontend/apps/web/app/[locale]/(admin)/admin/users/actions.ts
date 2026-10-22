@@ -18,7 +18,8 @@ type UserAction =
   | "send_reset_link"
   | "reset_2fa"
   | "force_signout"
-  | "resend_invite";
+  | "resend_invite"
+  | "change_email";
 
 /** Permission + target checks in Postgres before touching the Auth Admin API. */
 async function authorize(ctx: ActionContext, userId: string, action: UserAction) {
@@ -209,6 +210,32 @@ export const setUserPasswordAction = defineAction("admin.users.set_password", se
   await apply(ctx, input.userId, "set_password");
   return null;
 });
+
+/** Change a staff member's sign-in email. The admin re-enters their own password; the user is signed out. */
+export const changeUserEmailAction = defineAction(
+  "admin.users.change_email",
+  z.object({
+    userId: z.uuid(),
+    email: z.string().trim().toLowerCase().email("validation.email").max(254),
+    password: z.string().min(1, "validation.password_wrong"),
+  }),
+  async (input, ctx) => {
+    await reauthenticate(ctx, input.password);
+    await authorize(ctx, input.userId, "change_email");
+    const admin = await createAdminClient();
+    const { error } = await admin.auth.admin.updateUserById(input.userId, { email: input.email, email_confirm: true });
+    if (error) {
+      if (error.code === "email_exists" || /already/i.test(error.message)) {
+        throw new AppFailure("VALIDATION", undefined, { email: ["validation.email_taken"] });
+      }
+      throw new Error(`change email: ${error.message}`);
+    }
+    unwrap(await ctx.supabase.rpc("admin_set_user_email", { p_user_id: input.userId, p_email: input.email }), "set email");
+    revalidatePath("/[locale]/admin/users", "page");
+    revalidatePath(`/[locale]/admin/users/${input.userId}`, "page");
+    return null;
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Delete (soft by default; hard only for Super Admin and only without records)

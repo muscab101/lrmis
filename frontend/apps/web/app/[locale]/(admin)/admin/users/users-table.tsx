@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { RoleBadge, UserStatusBadge } from "@/components/admin/badges";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { RoleLite, UserRow } from "@/lib/server/users";
+import { UserRowActions, type UserRowPerms } from "./user-row-actions";
 
 interface Props {
   rows: UserRow[];
@@ -22,10 +23,13 @@ interface Props {
   query: UsersQuery;
   roles: RoleLite[];
   districts: { id: string; name_so: string; name_en: string }[];
+  /** Row actions the viewer may use, and who they are (no actions on their own row). */
+  perms: UserRowPerms;
+  me: string;
 }
 
 /** Filters, sort and page live in the URL: Back, refresh and shared links always work. */
-export function UsersTable({ rows, total, query, roles, districts }: Props) {
+export function UsersTable({ rows, total, query, roles, districts, perms, me }: Props) {
   const t = useTranslations("admin.users");
   const tc = useTranslations("common");
   const ts = useTranslations("status");
@@ -38,6 +42,8 @@ export function UsersTable({ rows, total, query, roles, districts }: Props) {
   const [q, setQ] = useState(query.q);
 
   const roleMap = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles]);
+  // No actions on your own account or on one already deleted.
+  const canAct = (u: UserRow) => u.user_id !== me && u.status !== "deleted" && (perms.changeEmail || perms.resetPassword || perms.remove);
   const districtMap = useMemo(() => new Map(districts.map((d) => [d.id, locale === "so" ? d.name_so : d.name_en])), [districts, locale]);
 
   function setParams(patch: Record<string, string | number | null>) {
@@ -134,6 +140,11 @@ export function UsersTable({ rows, total, query, roles, districts }: Props) {
       header: t("colCreatedBy"),
       cell: ({ row }) => <span className="text-xs text-muted-foreground">{row.original.created_by_name ?? t("system")}</span>,
     },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">{t("colActions")}</span>,
+      cell: ({ row }) => (canAct(row.original) ? <UserRowActions user={row.original} perms={perms} /> : null),
+    },
   ];
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel(), manualPagination: true, manualSorting: true });
@@ -212,6 +223,11 @@ export function UsersTable({ rows, total, query, roles, districts }: Props) {
                   </Link>
                   <UserStatusBadge status={u.status} />
                 </div>
+                {canAct(u) && (
+                  <div className="flex justify-end">
+                    <UserRowActions user={u} perms={perms} />
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1">
                   {u.role_ids.map((id) => {
                     const role = roleMap.get(id);
