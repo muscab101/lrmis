@@ -10,7 +10,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { createApplicationAction, nearbyPinsAction, setApplicationPartiesAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
+import { createApplicationAction, houseNumbersTakenAction, nearbyPinsAction, setApplicationPartiesAction, updateApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
 import { getGeometryAction, locatePointAction, searchNeighbourhoodsAction } from "@/app/[locale]/(staff)/locations/actions";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
@@ -59,6 +59,8 @@ interface Props {
 }
 
 const OFFLINE_KEY = "lrmis.offline-location";
+/** House numbers offered in each neighbourhood: 01 … 50. */
+const HOUSE_NUMBERS = 50;
 
 /** Step 1 — what and where: type, district, neighbourhood, map pin, plot / deed numbers. */
 export function LocationForm({ mode, applicationId, initial, districts, isStaff, basePath, readOnly = false, onSaved, canCaptureLocation = true, captured = null, ownerId, propertyTypes = [] }: Props) {
@@ -118,6 +120,39 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
   const num = (x: string) => (x.trim() === "" ? null : Number(x));
   const declaredArea = num(v.plotWidthM) && num(v.plotLengthM) ? Math.round(num(v.plotWidthM)! * num(v.plotLengthM)! * 100) / 100 : null;
   const apartment = isApartmentType(v.propertyType, propertyTypes);
+
+  // House numbers already given to other land in the chosen neighbourhood.
+  const [takenHouses, setTakenHouses] = useState<{ house_no: string; apartment: boolean }[] | null>(null);
+  useEffect(() => {
+    setTakenHouses(null);
+    if (!v.neighbourhood) return;
+    let live = true;
+    void houseNumbersTakenAction({ neighbourhoodId: v.neighbourhood.value, applicationId: applicationId ?? null }).then((r) => {
+      if (live) setTakenHouses(r.ok ? (r.data ?? []) : []);
+    });
+    return () => {
+      live = false;
+    };
+  }, [v.neighbourhood, applicationId]);
+  // 01–50, without the taken ones; an apartment's number stays for other flats of an apartment.
+  const houseOptions = (() => {
+    const taken = new Map((takenHouses ?? []).map((h) => [h.house_no, h.apartment]));
+    const list = Array.from({ length: HOUSE_NUMBERS }, (_, i) => String(i + 1).padStart(2, "0"))
+      .filter((n) => !taken.has(n) || (apartment && taken.get(n)))
+      .map((n) => ({ value: n, shared: taken.has(n) }));
+    // Keep the saved number even if it's outside the list (typed in before the list existed).
+    if (v.houseNo && !taken.has(v.houseNo) && !list.some((o) => o.value === v.houseNo)) list.unshift({ value: v.houseNo, shared: false });
+    return list;
+  })();
+  // A number taken in this neighbourhood is cleared (e.g. after moving the pin); a new house starts on the first free one.
+  useEffect(() => {
+    if (readOnly || takenHouses === null) return;
+    const ok = !v.houseNo || houseOptions.some((o) => o.value === v.houseNo);
+    if (ok && v.houseNo) return;
+    const first = mode === "create" ? houseOptions.find((o) => !o.shared) : undefined;
+    set("houseNo", first?.value ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [takenHouses]);
 
   async function save(fromQueue = false) {
     setSaving(true);
@@ -331,7 +366,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
         <Field id="govtFileNo" label={t("govtFileNo")} error={fe("govtFileNo")}>
           <Input value={v.govtFileNo} disabled={readOnly} onChange={(e) => set("govtFileNo", e.target.value)} />
         </Field>
-        {/* The house is read as "<neighbourhood> · <House No>", so the chosen neighbourhood sits in front of the number. */}
+        {/* The house is read as "<neighbourhood> · <House No>": pick a free number (01–50) in the chosen neighbourhood. */}
         <Field id="houseNo" label={t("houseNo")} hint={v.neighbourhood ? undefined : t("houseNoHint")} error={fe("houseNo")}>
           <div className="flex min-w-0">
             {v.neighbourhood && (
@@ -339,14 +374,20 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
                 {v.neighbourhood.label}
               </span>
             )}
-            <Input
+            <NativeSelect
               id="houseNo"
               value={v.houseNo}
-              maxLength={40}
-              disabled={readOnly}
-              className={v.neighbourhood ? "min-w-0 rounded-s-none" : undefined}
+              disabled={readOnly || !v.neighbourhood}
+              className={v.neighbourhood ? "min-w-0 flex-1 rounded-s-none" : "flex-1"}
               onChange={(e) => set("houseNo", e.target.value)}
-            />
+            >
+              <option value="">{v.neighbourhood ? t("choose") : t("houseNoPickNeighbourhood")}</option>
+              {houseOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.shared ? `${o.value} — ${t("houseNoApartment")}` : o.value}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
         </Field>
         {apartment && (

@@ -11,6 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, fail, unwrap, withIdempotency } from "@/lib/server/action";
+import { isApartmentType } from "@/lib/apartment";
 import { log } from "@/lib/server/log";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -67,6 +68,9 @@ export const nearbyPinsAction = defineAction(
 
 /** Map location RPC errors (e.g. "VALIDATION: pin_outside_neighbourhood") onto form fields. */
 function locationFieldError(err: unknown): never {
+  if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
+    throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
+  }
   if (err instanceof AppFailure && err.code === "VALIDATION") {
     const detail = String(err.values?.detail ?? "");
     const field = detail.startsWith("pin") ? "pin" : detail.startsWith("neighbourhood") ? "neighbourhoodId" : "districtId";
@@ -75,12 +79,41 @@ function locationFieldError(err: unknown): never {
   throw err;
 }
 
+/** House numbers already given to other land in a neighbourhood (for the 01–50 House No list). */
+export const houseNumbersTakenAction = defineAction(
+  "applications.house_numbers",
+  z.object({ neighbourhoodId: z.uuid(), applicationId: z.uuid().nullable().default(null) }),
+  async ({ neighbourhoodId, applicationId }, ctx) =>
+    unwrap(await ctx.supabase.rpc("house_numbers_taken", { p_neighbourhood: neighbourhoodId, p_application: applicationId }), "house numbers") as {
+      house_no: string;
+      apartment: boolean;
+    }[],
+);
+
+async function assertHouseNoFree(
+  ctx: { supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>> },
+  neighbourhoodId: string,
+  applicationId: string | null,
+  houseNo: string,
+  propertyType: string,
+) {
+  if (!houseNo || !neighbourhoodId) return;
+  const taken = unwrap(await ctx.supabase.rpc("house_numbers_taken", { p_neighbourhood: neighbourhoodId, p_application: applicationId }), "house numbers") as {
+    house_no: string;
+    apartment: boolean;
+  }[];
+  const hit = taken.find((t) => t.house_no === houseNo);
+  if (hit && !(hit.apartment && isApartmentType(propertyType))) fail("CONFLICT", { detail: "house_no_taken" });
+}
+
 export const createApplicationAction = defineAction(
   "applications.create",
   saveApplicationLocationSchema.extend({ idempotencyKey: z.uuid() }),
   async ({ idempotencyKey, ...input }, ctx) =>
     withIdempotency(ctx, idempotencyKey, "applications.create", async () => {
       try {
+        // Checked before the application exists, so a taken House No doesn't leave a half-saved one behind.
+        await assertHouseNoFree(ctx, input.neighbourhoodId, null, input.houseNo, input.propertyType);
         const out = unwrap(await ctx.supabase.rpc("application_create", { p: locationPayload(input) }), "create application") as {
           id: string;
           number: string;
