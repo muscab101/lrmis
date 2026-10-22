@@ -161,14 +161,10 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
                     </div>
                     {/* Long labels wrap on a phone instead of running out of the box. */}
                     <div className="flex w-full min-w-0 flex-wrap gap-2 xl:w-auto [&_a]:h-auto [&_a]:min-h-8 [&_a]:max-w-full [&_a]:whitespace-normal [&_a]:text-start">
-                      {inv.pay_link && Number(inv.balance) > 0 && (
+                      {/* Staff only see the bills here; payment is taken at the cashier. Owners pay online from the portal. */}
+                      {mode !== "staff" && inv.pay_link && Number(inv.balance) > 0 && (
                         <Button size="sm" asChild>
                           <Link href={inv.pay_link}>{t("payOnline")}</Link>
-                        </Button>
-                      )}
-                      {mode === "staff" && viewer.can("payments.create") && Number(inv.balance) > 0 && (
-                        <Button size="sm" variant="outline" asChild>
-                          <Link href={`/cashier?find=${inv.number}`}>{t("payAtCashier")}</Link>
                         </Button>
                       )}
                       {mode === "staff" && viewer.can("invoices.view") && (
