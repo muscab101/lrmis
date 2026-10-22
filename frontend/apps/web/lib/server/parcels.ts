@@ -32,9 +32,14 @@ export type ParcelStage = (typeof PARCEL_STAGES)[number];
 /** Not registered yet: partial registration, still worked on through its application. */
 const PARTIAL = "(draft,surveyed,verified)";
 
-export async function searchParcels(q: string, stage: ParcelStage = "all") {
+export async function searchParcels(q: string, stage: ParcelStage = "all", neighbourhoodId: string | null = null) {
   const supabase = await createClient();
   let req = supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 1000 });
+  if (neighbourhoodId) {
+    const { data } = await supabase.from("parcels").select("id").eq("neighbourhood_id", neighbourhoodId).is("deleted_at", null).limit(1000);
+    const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
+    req = req.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+  }
   if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
   if (stage === "registered") req = req.not("status", "in", PARTIAL);
   const res = await req.limit(100);
@@ -96,4 +101,30 @@ export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> 
   const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).neq("status", "archived");
   const [draft, registered] = await Promise.all([base().in("status", ["draft", "surveyed", "verified"]), base().not("status", "in", PARTIAL)]);
   return { draft: draft.count ?? 0, registered: registered.count ?? 0, all: (draft.count ?? 0) + (registered.count ?? 0) };
+}
+
+export interface NeighbourhoodStatusRow {
+  id: string;
+  code: string;
+  name_so: string;
+  name_en: string;
+  district_id: string;
+  district_so: string;
+  district_en: string;
+  has_boundary: boolean;
+  partial: number;
+  open_applications: number;
+  registered: number;
+}
+
+/** Per neighbourhood: land waiting (partial parcels, open applications) and land registered. */
+export async function neighbourhoodStatus(districtId: string | null) {
+  const supabase = await createClient();
+  const res = await supabase.rpc("neighbourhood_registration_status", { p_district: districtId });
+  return (unwrap(res, "neighbourhoods") as NeighbourhoodStatusRow[]).map((r) => ({
+    ...r,
+    partial: Number(r.partial),
+    open_applications: Number(r.open_applications),
+    registered: Number(r.registered),
+  }));
 }

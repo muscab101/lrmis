@@ -27,7 +27,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const q = (sp.q ?? "").slice(0, 80);
   const stage: ParcelStage = (PARCEL_STAGES as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as ParcelStage) : "all";
-  const [rows, counts] = await Promise.all([searchParcels(q, stage), parcelStageCounts()]);
+  const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
+  const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
   // Surveyors (and admins) add land found in the field, and start its registration.
   const canAddLand = viewer.can("surveys.create") || viewer.can("applications.create");
@@ -55,7 +56,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
           {PARCEL_STAGES.map((k) => (
             <Link
               key={k}
-              href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}) })}`}
+              href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
               aria-current={stage === k ? "page" : undefined}
               className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${stage === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
             >
@@ -67,6 +68,12 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
       <Card className="overflow-hidden">
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
           <input type="hidden" name="stage" value={stage} />
+          {nbhdId && <input type="hidden" name="nbhd" value={nbhdId} />}
+          {nbhdId && (
+            <Link href={`/parcels?stage=${stage}`} className="text-muted-foreground text-xs underline">
+              {t("clearNeighbourhood")}
+            </Link>
+          )}
           <Input name="q" defaultValue={q} placeholder={t("searchPlaceholderMore")} aria-label={t("searchPlaceholderMore")} className="max-w-md" />
           <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
         </form>

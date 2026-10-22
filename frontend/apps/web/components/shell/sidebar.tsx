@@ -19,6 +19,11 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
   const t = useTranslations("nav");
   const tc = useTranslations("common");
   const pathname = usePathname();
+  // The longest matching link wins, so /parcels/yet-to-register lights up its own item, not Parcels too.
+  const activeHref = groups
+    .flatMap((g) => g.items.map((i) => i.href))
+    .filter((href) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <nav aria-label={t("label")} className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
@@ -36,7 +41,7 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
             )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active = item.href === activeHref;
                 const label = t(`items.${item.key}`);
                 const soon = item.phase !== undefined;
                 const content = (

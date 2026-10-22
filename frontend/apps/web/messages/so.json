@@ -78,7 +78,8 @@
       "audit": "Diiwaanka hubinta",
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
-      "assistant": "Kaaliyaha AI"
+      "assistant": "Kaaliyaha AI",
+      "yetToRegister": "Weli lama diiwaangelin"
     }
   },
   "status": {
@@ -1985,7 +1986,8 @@
       "started": "Codsiga waa la abuuray."
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
-    "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo."
+    "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",
+    "clearNeighbourhood": "Muuji xaafad kasta"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
@@ -3439,5 +3441,31 @@
       "fee_paid": "Khidmadda waa la bixiyay",
       "fee_waived": "Khidmadda waa laga cafiyay"
     }
+  },
+  "yetToRegister": {
+    "title": "Weli lama diiwaangelin",
+    "tab_waiting": "Dhul sugaya",
+    "tab_not_started": "Waxba lama diiwaangelin",
+    "body_waiting": "Xaafadaha leh dhul aan weli la diiwaangelin (dhul qayb ah ama codsiyo furan), kuwa ugu badan marka hore.",
+    "body_not_started": "Xaafadaha aan weli dhul laga diiwaangelin: halka sahamiyayaashu u socon karaan marka xigta.",
+    "kpiPartial": "Dhul qayb ah",
+    "kpiApplications": "Codsiyo furan",
+    "kpiNotStarted": "Xaafado aan waxba laga diiwaangelin",
+    "addLand": "Ku dar dhul",
+    "district": "Degmo",
+    "allDistricts": "Dhammaan degmooyinka",
+    "apply": "Codso",
+    "neighbourhood": "Xaafad",
+    "partial": "Qayb ah",
+    "applications": "Codsiyo furan",
+    "registered": "La diiwaangeliyey",
+    "boundary": "Xuduud",
+    "yes": "Haa",
+    "no": "Maya",
+    "showLand": "Muuji dhulka",
+    "empty_waiting": "Dhul sugaya ma jiro",
+    "emptyBody_waiting": "Dhulka xaafadahan oo dhan waa la diiwaangeliyey.",
+    "empty_not_started": "Xaafad kasta waxay leedahay dhul la diiwaangeliyey",
+    "emptyBody_not_started": "Halkan ma jirto xaafad aan dhul laga diiwaangelin."
   }
 }

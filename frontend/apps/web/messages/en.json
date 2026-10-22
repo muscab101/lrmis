@@ -78,7 +78,8 @@
       "audit": "Audit log",
       "settings": "Settings",
       "health": "System health",
-      "assistant": "AI assistant"
+      "assistant": "AI assistant",
+      "yetToRegister": "Yet to register"
     }
   },
   "status": {
@@ -1985,7 +1986,8 @@
       "started": "Application created."
     },
     "emptyDraftTitle": "No land waiting for registration",
-    "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered."
+    "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",
+    "clearNeighbourhood": "Show every neighbourhood"
   },
   "notices": {
     "eyebrow": "Public notice",
@@ -3439,5 +3441,31 @@
       "fee_paid": "Fee paid",
       "fee_waived": "Fee waived"
     }
+  },
+  "yetToRegister": {
+    "title": "Yet to register",
+    "tab_waiting": "Land waiting",
+    "tab_not_started": "Nothing registered yet",
+    "body_waiting": "Neighbourhoods with land not registered yet (partial parcels or open applications), most waiting first.",
+    "body_not_started": "Neighbourhoods where no land is registered yet: where surveyors can go next.",
+    "kpiPartial": "Partial parcels",
+    "kpiApplications": "Open applications",
+    "kpiNotStarted": "Neighbourhoods with nothing registered",
+    "addLand": "Add land",
+    "district": "District",
+    "allDistricts": "All districts",
+    "apply": "Apply",
+    "neighbourhood": "Neighbourhood",
+    "partial": "Partial",
+    "applications": "Open applications",
+    "registered": "Registered",
+    "boundary": "Boundary",
+    "yes": "Yes",
+    "no": "No",
+    "showLand": "Show land",
+    "empty_waiting": "No land waiting",
+    "emptyBody_waiting": "Every parcel in these neighbourhoods is registered.",
+    "empty_not_started": "Every neighbourhood has registered land",
+    "emptyBody_not_started": "There is no neighbourhood without registered land here."
   }
 }
