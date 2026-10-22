@@ -5,7 +5,6 @@ import {
   Banknote,
   BarChart3,
   Building2,
-  ClipboardList,
   FileStack,
   Gavel,
   History,
@@ -55,7 +54,7 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "land",
     items: [
-      { key: "applications", href: "/applications", icon: ClipboardList, permission: "applications.view" },
+      // Applications are worked from Parcels → Partial registration; /applications stays for their detail pages.
       { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
       { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
       { key: "yetToRegister", href: "/parcels/yet-to-register", icon: MapPinOff, permission: "parcels.view" },

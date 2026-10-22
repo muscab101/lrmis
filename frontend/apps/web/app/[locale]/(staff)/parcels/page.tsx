@@ -4,12 +4,14 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Lock, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { ApplicationRowActions } from "@/components/applications/application-row-actions";
+import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { PARCEL_STAGES, type ParcelStage, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
+import { applicationsByNumber, PARCEL_STAGES, type ParcelStage, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -28,6 +30,16 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const stage: ParcelStage = (PARCEL_STAGES as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as ParcelStage) : "all";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
+  // Partial parcels are worked through their application, with the same keys as the Applications list.
+  const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
+  const apps = await applicationsByNumber(rows.filter((r) => partial(r.status) && r.application_number).map((r) => r.application_number!));
+  const appCan = {
+    update: viewer.can("applications.update"),
+    cancel: viewer.can("applications.cancel"),
+    checkAny: viewer.can("surveys.approve"),
+    checkOwn: viewer.can("surveys.update"),
+    register: viewer.can("parcels.approve"),
+  };
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
   // Land is added from a survey zone (Surveys → Zones); here it can start its registration.
   const canStart = viewer.can("applications.create");
@@ -104,11 +116,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                         {canStart && <StartRegistrationButton parcelId={p.id} label={[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />}
                       </>
                     )}
-                    {p.application_number && ["draft", "surveyed", "verified"].includes(p.status) && (
-                      <Link href={`/applications?${new URLSearchParams({ q: p.application_number, status: "any" })}`} className="text-primary block text-xs underline">
-                        {t("openApplication", { number: p.application_number })}
-                      </Link>
-                    )}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
                       {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
@@ -137,9 +144,18 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />
+                    {partial(p.status) && p.application_number && apps.get(p.application_number) && (
+                      <div className="mt-1">
+                        <ApplicationStatusBadge status={apps.get(p.application_number)!.status} />
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <ParcelRowActions parcel={p} can={can} />
+                    {partial(p.status) && p.application_number && apps.get(p.application_number) ? (
+                      <ApplicationRowActions application={apps.get(p.application_number)!} me={viewer.user.id} can={appCan} />
+                    ) : (
+                      <ParcelRowActions parcel={p} can={can} />
+                    )}
                   </TableCell>
                 </TableRow>
                 );

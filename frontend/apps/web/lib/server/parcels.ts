@@ -1,7 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
-import { PARTY_COLUMNS, type PartyRow } from "./applications";
+import type { ApplicationStatus } from "@dhulka/core/schemas";
+import { PARTY_COLUMNS, type PartyRow, type SiteCheckStatus } from "./applications";
 
 export type ParcelStatus = "draft" | "surveyed" | "verified" | "registered" | "disputed" | "archived";
 
@@ -127,4 +128,25 @@ export async function neighbourhoodStatus(districtId: string | null) {
     open_applications: Number(r.open_applications),
     registered: Number(r.registered),
   }));
+}
+
+export interface ParcelApplicationRow {
+  id: string;
+  number: string;
+  status: ApplicationStatus;
+  created_by: string | null;
+  land_use: string | null;
+  site_check_status: SiteCheckStatus | null;
+  site_check_surveyor: string | null;
+}
+
+/** The applications behind partial parcels, so their work (edit, site check, register, delete) runs from Parcels. */
+export async function applicationsByNumber(numbers: string[]) {
+  if (numbers.length === 0) return new Map<string, ParcelApplicationRow>();
+  const supabase = await createClient();
+  const res = await supabase
+    .from("applications")
+    .select("id, number, status, created_by, land_use, site_check_status, site_check_surveyor")
+    .in("number", numbers);
+  return new Map((unwrap(res, "applications") as ParcelApplicationRow[]).map((a) => [a.number, a]));
 }

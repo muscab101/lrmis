@@ -1967,7 +1967,7 @@
     "stage_draft": "Partial registration",
     "stage_registered": "Registered",
     "stage_all": "All",
-    "stageBody_draft": "Land not registered yet (draft, surveyed or verified). Open the application to survey, check the site, bill or register it.",
+    "stageBody_draft": "Land not registered yet (draft, surveyed or verified). Work it from here: view, edit, check the land exists, register or delete.",
     "stageBody_registered": "Registered parcels with a PUN in your districts.",
     "stageBody_all": "Registered and in-progress parcels in your districts.",
     "openApplication": "Open application {number}",
