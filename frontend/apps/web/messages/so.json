@@ -78,9 +78,7 @@
       "audit": "Diiwaanka hubinta",
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
-      "assistant": "Kaaliyaha AI",
-      "propertyTypes": "Noocyada hantida",
-      "fees": "Khidmadaha"
+      "assistant": "Kaaliyaha AI"
     }
   },
   "status": {
@@ -969,49 +967,6 @@
         "audit_rows": "Diiwaanka hubinta",
         "active_staff": "Shaqaale firfircoon"
       }
-    },
-    "propertyTypes": {
-      "title": "Noocyada hantida",
-      "subtitle": "Noocyada guryaha iyo dhulka ee shaqaaluhu ka doortaan marka ay dhul ku darayaan, iyo qiimahooda.",
-      "add": "Ku dar nooc",
-      "editTitle": "Wax ka beddel {name}",
-      "formBody": "Shaqaaluhu waxay ku arkaan noocyada firfircoon foomka dhulka, luqaddooda, iyo qiimaha.",
-      "nameSo": "Magaca",
-      "nameEn": "Magaca Ingiriisiga",
-      "price": "Qiimaha m² kiiba",
-      "priceHint": "Biilka hantida waa ballac × dherer (m²) × qiimahan, biil gaar ah ayuu noqdaa marka dhulka la gudbiyo.",
-      "currency": "Lacagta",
-      "activeLabel": "Shaqaaluhu way dooran karaan noocan",
-      "status": "Xaalad",
-      "active": "Firfircoon",
-      "hiddenLabel": "Qarsoon",
-      "code": "Koodh",
-      "actions": "Ficillo",
-      "delete": "Tirtir",
-      "deleteTitle": "Ma tirtirtaa {name}?",
-      "deleteBody": "Haddii dhul hore u isticmaalo noocan waa la qarinayaa, si diiwaankaasi u haystaan. Haddii kale waa la tirtirayaa.",
-      "deleted": "Nooca waa la tirtiray",
-      "hidden": "Nooca waa la isticmaalayaa, sidaa darteed waa la qariyey",
-      "emptyTitle": "Weli nooc hanti ma jiro",
-      "emptyBody": "Ku dar noocyada guryaha iyo dhulka ee shaqaaluhu ka dooran karaan.",
-      "name": "Magaca"
-    },
-    "fees": {
-      "title": "Khidmadaha",
-      "subtitle": "Khidmadaha go'an ee masuulka laga qaado. Khidmadda diiwaangelinta cusub waxay noqotaa biil gaar ah marka dhul cusub la gudbiyo.",
-      "name": "Khidmad",
-      "amount": "Qadarka (USD)",
-      "amountHint": "0 macnaheedu waa waxba lama qaado.",
-      "status": "Xaalad",
-      "active": "Waa la qaadaa",
-      "off": "Dami",
-      "code": "Koodh",
-      "actions": "Ficillo",
-      "editTitle": "Wax ka beddel {name}",
-      "formBody": "Qadarka cusub waxaa loo isticmaalayaa biilasha hadda ka dib la sameeyo; biilasha hore qadarkoodii ayay haystaan.",
-      "activeLabel": "Qaad khidmaddan",
-      "registrationHint": "Hal mar ayaa laga qaadaa diiwaangelin kasta oo cusub, biil gaar ah.",
-      "billFromTypes": "Qiimaha m² kiiba — waxaa lagu dejiyaa Noocyada hantida"
     }
   },
   "audit": {
@@ -1492,7 +1447,7 @@
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
     "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
     "propertyType": "Nooca hantida",
-    "propertyTypeHint": "Waxa hadda dhulka saaran. Qiimihiisa waxaa lagu darayaa biilka khidmadda marka dhulka la gudbiyo.",
+    "propertyTypeHint": "Heerka hantida (Qiimaynta → Heerarka hantida). Biilka hantida waa ballac × dherer × qiimihiisa m² kiiba.",
     "feeInvoicesBody": "Bixi biilashan si dhulka loogu diro sahanka. Waxaa harsan: {amount}.",
     "invoicePaid": "La bixiyay"
   },

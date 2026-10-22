@@ -78,9 +78,7 @@
       "audit": "Audit log",
       "settings": "Settings",
       "health": "System health",
-      "assistant": "AI assistant",
-      "propertyTypes": "Property types",
-      "fees": "Fees"
+      "assistant": "AI assistant"
     }
   },
   "status": {
@@ -969,49 +967,6 @@
         "audit_rows": "Audit log entries",
         "active_staff": "Active staff"
       }
-    },
-    "propertyTypes": {
-      "title": "Property types",
-      "subtitle": "The types of house and land staff choose from when they add land, with their prices.",
-      "add": "Add type",
-      "editTitle": "Edit {name}",
-      "formBody": "Staff see the active types in the land form, in their language, with the price.",
-      "nameSo": "Somali name",
-      "nameEn": "Name",
-      "price": "Price per m²",
-      "priceHint": "The property bill is width × length (m²) × this price, raised as its own invoice when the land is submitted.",
-      "currency": "Currency",
-      "activeLabel": "Staff can choose this type",
-      "status": "Status",
-      "active": "Active",
-      "hiddenLabel": "Hidden",
-      "code": "Code",
-      "actions": "Actions",
-      "delete": "Delete",
-      "deleteTitle": "Delete {name}?",
-      "deleteBody": "If any land already uses this type it's hidden instead, so those records keep it. Otherwise it's removed.",
-      "deleted": "Type deleted",
-      "hidden": "Type is in use, so it was hidden",
-      "emptyTitle": "No property types yet",
-      "emptyBody": "Add the types of house and land staff can choose from.",
-      "name": "Name"
-    },
-    "fees": {
-      "title": "Fees",
-      "subtitle": "Fixed fees charged to owners. The new registration fee is billed as its own invoice when new land is submitted.",
-      "name": "Fee",
-      "amount": "Amount (USD)",
-      "amountHint": "0 means nothing is charged.",
-      "status": "Status",
-      "active": "Charged",
-      "off": "Off",
-      "code": "Code",
-      "actions": "Actions",
-      "editTitle": "Edit {name}",
-      "formBody": "The new amount is used for invoices raised from now on; invoices already raised keep their amount.",
-      "activeLabel": "Charge this fee",
-      "registrationHint": "Billed once for each new registration, as its own invoice.",
-      "billFromTypes": "Price per m² — set on Property types"
     }
   },
   "audit": {
@@ -1492,7 +1447,7 @@
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
     "rowRegistered": "Registered as {pun}",
     "propertyType": "Property type",
-    "propertyTypeHint": "What's on the land now. Its price is added to the fee invoice when the land is submitted.",
+    "propertyTypeHint": "The property grade (Valuation → Property grades). The property bill is width × length × its price per m².",
     "feeInvoicesBody": "Pay these invoices to send the land to survey. Still to pay: {amount}.",
     "invoicePaid": "Paid"
   },

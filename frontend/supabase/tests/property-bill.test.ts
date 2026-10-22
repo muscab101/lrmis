@@ -28,39 +28,28 @@ beforeAll(async () => {
   surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [hodan]);
 });
 
-describe("property types (admin list)", () => {
-  it("starts with the ten types; everyone can read them", async () => {
-    const n = await asUser(db, surveyor, (tx) => scalar<number>(tx, `select count(*)::int from public.property_types`));
-    expect(n).toBe(10);
-  });
-
-  it("only admins add and edit; the code comes from the English name", async () => {
-    const p = JSON.stringify({ name_so: "Guri laba dabaq", name_en: "Two-storey house", price: 1500 });
-    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.property_type_save(null, $1)`, [p])), "PERMISSION_DENIED");
-    const id = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.property_type_save(null, $1)`, [p]));
-    const t = await scalar<{ code: string; price: string }>(db, `select to_jsonb(t) from public.property_types t where id = $1`, [id]);
-    expect(t.code).toBe("two_storey_house");
-    expect(Number(t.price)).toBe(1500);
-    await asUser(db, admin, (tx) => tx.query(`select public.property_type_save($1, $2)`, [id, JSON.stringify({ name_so: "Guri laba dabaq", name_en: "Two-storey house", price: 1800 })]));
-    expect(Number(await scalar<string>(db, `select price from public.property_types where id = $1`, [id]))).toBe(1800);
-  });
-
-  it("staff pick an admin type for new land; a hidden type can't be picked", async () => {
+describe("the type of house / land is a property grade (0054)", () => {
+  it("staff pick a grade for new land; a grade switched off can't be picked", async () => {
     const app = await asUser(db, surveyor, (tx) => scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd })]));
-    await asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'two_storey_house', 'residential')`, [app.id]));
-    expect(await scalar<string>(db, `select property_type from public.applications where id = $1`, [app.id])).toBe("two_storey_house");
-    // In use → hidden, not deleted.
-    const id = await scalar<string>(db, `select id from public.property_types where code = 'two_storey_house'`);
-    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.property_type_delete($1)`, [id]))).toBe("hidden");
+    await asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'brick_house', 'residential')`, [app.id]));
+    expect(await scalar<string>(db, `select property_type from public.applications where id = $1`, [app.id])).toBe("brick_house");
+    await db.query(`update public.property_grades set active = false where code = 'shop'`);
     const app2 = await asUser(db, surveyor, (tx) => scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd })]));
-    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'two_storey_house', null)`, [app2.id])), "VALIDATION: property_type_inactive");
-    // An unused type is really deleted.
-    const unused = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.property_type_save(null, '{"name_so":"Tijaabo","name_en":"Trial type"}')`));
-    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.property_type_delete($1)`, [unused]))).toBe("deleted");
+    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'shop', null)`, [app2.id])), "VALIDATION: property_type_inactive");
+    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.application_set_details($1, '', '', 'no_such_grade', null)`, [app2.id])), "");
+  });
+
+  it("the storey building (dabaq) grade counts as flats", async () => {
+    expect(await scalar<boolean>(db, `select private.is_apartment_type('storey')`)).toBe(true);
+    expect(await scalar<boolean>(db, `select private.is_apartment_type('villa')`)).toBe(false);
+  });
+
+  it("the old list is gone", async () => {
+    expect(await scalar<string | null>(db, `select to_regclass('public.property_types')::text`)).toBeNull();
   });
 });
 
-describe("two invoices on submit: property bill and registration fee (0052)", () => {
+describe("two invoices on submit: property bill and registration fee (0052, 0054: from property grades)", () => {
   async function submitWithType(code: string | null, lon: number, size: [number, number] | null = [12, 12]) {
     return asUser(db, surveyor, async (tx) => {
       const owner = await scalar<string>(tx, `select public.save_party(null, $1)`, [JSON.stringify({ full_name: `Owner ${lon}`, phone: `+2526122${String(lon).slice(-5).replace(".", "")}`, district_id: hodan })]);
@@ -85,7 +74,7 @@ describe("two invoices on submit: property bill and registration fee (0052)", ()
       .then((r) => r.rows);
 
   it("bills width × length × the type's price per m², plus the $12 registration fee", async () => {
-    await asUser(db, admin, (tx) => tx.query(`select public.property_type_save((select id from public.property_types where code = 'villa'), '{"name_so":"Fiilo","name_en":"Villa","price":0.3}')`));
+    await db.query(`update public.property_grades set amount = 0.3 where code = 'villa'`);
     const inv = await invoicesOf(await submitWithType("villa", 45.2981));
     expect(inv.map((i) => [i.fee, Number(i.total)])).toEqual([
       ["property_bill", 43.2],
@@ -94,8 +83,9 @@ describe("two invoices on submit: property bill and registration fee (0052)", ()
     expect(inv[0]!.line).toBe("Villa: 12 m × 12 m = 144 m² × 0.30 USD per m²");
   });
 
-  it("no type or a zero price: only the registration fee", async () => {
-    expect((await invoicesOf(await submitWithType("hut", 45.2983))).map((i) => i.fee)).toEqual(["registration_fee"]);
+  it("no grade or a zero amount: only the registration fee", async () => {
+    await db.query(`update public.property_grades set amount = 0 where code = 'baraako'`);
+    expect((await invoicesOf(await submitWithType("baraako", 45.2983))).map((i) => i.fee)).toEqual(["registration_fee"]);
     expect((await invoicesOf(await submitWithType(null, 45.2984))).map((i) => i.fee)).toEqual(["registration_fee"]);
   });
 
@@ -114,27 +104,5 @@ describe("two invoices on submit: property bill and registration fee (0052)", ()
     await db.query(`update public.invoices set status = 'paid' where id = $1`, [ids[1]!.id]);
     expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("in_survey");
     await db.query(`update public.fee_types set amount = 12 where code = 'registration_fee'`);
-  });
-});
-
-describe("a price in SOS needs an exchange rate (0048)", () => {
-  it("is refused until a rate exists", async () => {
-    const p = JSON.stringify({ name_so: "Guri SOS", name_en: "SOS priced", price: 500000, currency: "SOS" });
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.property_type_save(null, $1)`, [p])), "VALIDATION: fx_rate_missing");
-    await db.query(`insert into public.fx_rates (currency, rate, rate_date) values ('SOS', 571, current_date)`);
-    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.property_type_save(null, $1)`, [p]))).toBeTruthy();
-  });
-});
-
-describe("Admin → Fees (0053)", () => {
-  it("only admins set a fee amount; the property bill comes from the types", async () => {
-    const reg = await scalar<string>(db, `select id from public.fee_types where code = 'registration_fee'`);
-    await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.fee_set_amount($1, 20, true)`, [reg])), "PERMISSION_DENIED");
-    await asUser(db, admin, (tx) => tx.query(`select public.fee_set_amount($1, 20, true)`, [reg]));
-    expect(Number(await scalar<string>(db, `select amount::text from public.fee_types where id = $1`, [reg]))).toBe(20);
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.fee_set_amount($1, -1, true)`, [reg])), "VALIDATION");
-    const bill = await scalar<string>(db, `select id from public.fee_types where code = 'property_bill'`);
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.fee_set_amount($1, 5, true)`, [bill])), "VALIDATION: property_bill_from_types");
-    await asUser(db, admin, (tx) => tx.query(`select public.fee_set_amount($1, 12, true)`, [reg]));
   });
 });

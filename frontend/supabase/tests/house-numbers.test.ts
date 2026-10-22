@@ -54,10 +54,10 @@ describe("House No in a neighbourhood", () => {
 
   it("flats of an apartment block share its House No", async () => {
     const a = await newApp();
-    await setHouse(a, "03", "apartment");
+    await setHouse(a, "03", "storey");
     expect((await taken()).find((t) => t.house_no === "03")).toEqual({ house_no: "03", apartment: true });
     const b = await newApp();
-    await setHouse(b, "03", "apartment");
+    await setHouse(b, "03", "storey");
     const c = await newApp();
     await expect(setHouse(c, "03", "villa")).rejects.toThrow(/^CONFLICT/);
   });

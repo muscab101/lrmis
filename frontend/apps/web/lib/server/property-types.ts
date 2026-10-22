@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 
-/** A type of house or land, from the admin's list (Admin → Property types). */
+/** A type of house or land: a Valuation → Property grade, priced in USD per m². */
 export interface PropertyTypeRow {
   id: string;
   code: string;
@@ -16,8 +16,9 @@ export interface PropertyTypeRow {
 
 export async function listPropertyTypes(): Promise<PropertyTypeRow[]> {
   const supabase = await createClient();
-  const res = await supabase.from("property_types").select("id, code, name_so, name_en, price, currency, active, sort").order("sort").order("name_en");
-  return unwrap(res, "property types") as PropertyTypeRow[];
+  const res = await supabase.from("property_grades").select("id, code, name_so, name_en, amount, active, sort").order("sort").order("name_en");
+  const rows = unwrap(res, "property grades") as { id: string; code: string; name_so: string; name_en: string; amount: number; active: boolean; sort: number }[];
+  return rows.map(({ amount, ...g }) => ({ ...g, price: Number(amount), currency: "USD" }));
 }
 
 /** The type's name in the page language, or null. */

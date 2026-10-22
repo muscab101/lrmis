@@ -54,7 +54,7 @@ interface Props {
   captured?: { at: string | null; lowAccuracy: boolean } | null;
   /** Staff only: put this owner on the new application (the + key on the owners list). */
   ownerId?: string;
-  /** The admin's types of house / land (Admin → Property types). */
+  /** The types of house / land: Valuation → Property grades, priced per m². */
   propertyTypes?: { code: string; name_so: string; name_en: string; price: number; currency: string; active: boolean }[];
 }
 
@@ -327,7 +327,7 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
               .map((p) => (
                 <option key={p.code} value={p.code}>
                   {locale === "so" ? p.name_so : p.name_en}
-                  {Number(p.price) > 0 ? ` — ${format.number(Number(p.price), { style: "currency", currency: p.currency })}` : ""}
+                  {Number(p.price) > 0 ? ` — ${format.number(Number(p.price), { style: "currency", currency: p.currency })} / m²` : ""}
                 </option>
               ))}
           </NativeSelect>
