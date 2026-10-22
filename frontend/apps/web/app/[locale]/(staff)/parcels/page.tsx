@@ -8,7 +8,7 @@ import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { searchParcels } from "@/lib/server/parcels";
+import { PARCEL_STAGES, type ParcelStage, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -22,17 +22,33 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const t = await getTranslations("parcels");
   const format = await getFormatter();
   const lang = await getLocale();
-  const q = ((await searchParams).q ?? "").slice(0, 80);
-  const rows = await searchParcels(q);
+  const sp = await searchParams;
+  const q = (sp.q ?? "").slice(0, 80);
+  const stage: ParcelStage = (PARCEL_STAGES as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as ParcelStage) : "all";
+  const [rows, counts] = await Promise.all([searchParcels(q, stage), parcelStageCounts()]);
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
+          {PARCEL_STAGES.map((k) => (
+            <Link
+              key={k}
+              href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}) })}`}
+              aria-current={stage === k ? "page" : undefined}
+              className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${stage === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+            >
+              {t(`stage_${k}`)} <span className="text-muted-foreground tabular-nums">{counts[k]}</span>
+            </Link>
+          ))}
+        </nav>
+      </PageHeader>
       <Card className="overflow-hidden">
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
+          <input type="hidden" name="stage" value={stage} />
           <Input name="q" defaultValue={q} placeholder={t("searchPlaceholderMore")} aria-label={t("searchPlaceholderMore")} className="max-w-md" />
           <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
         </form>
@@ -68,6 +84,11 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
                       <Mono>{p.pun ?? p.application_number ?? t("noPun")}</Mono>
                     </Link>
+                    {p.application_number && ["draft", "surveyed", "verified"].includes(p.status) && (
+                      <Link href={`/applications?${new URLSearchParams({ q: p.application_number, status: "any" })}`} className="text-primary block text-xs underline">
+                        {t("openApplication", { number: p.application_number })}
+                      </Link>
+                    )}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
                       {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}

@@ -54,8 +54,8 @@
     "items": {
       "dashboard": "Shaashadda guud",
       "map": "Khariidad",
-      "applications": "Dhulalka",
-      "parcels": "La diiwaangeliyay",
+      "applications": "Codsiyada",
+      "parcels": "Dhulalka",
       "owners": "Milkiilayaasha",
       "surveys": "Sahamada",
       "valuation": "Qiimeynta",
@@ -1244,8 +1244,8 @@
     "deleted": "Goobta waa la tirtiray"
   },
   "applications": {
-    "title": "Dhulalka",
-    "subtitle": "Dhulka ku socda diiwaangelinta: codsiyo cusub, sahan, hubin goob, biilal iyo wareejin ka yimid bogga, xafiiska iyo goobta.",
+    "title": "Codsiyada",
+    "subtitle": "Codsiyada diiwaangelinta, wareejinta iyo kuwa kale ee bogga, xafiiska iyo goobta.",
     "new": "Codsi cusub",
     "newSubtitle": "Ku bilow waxa iyo meesha. Qabyada waa la kaydiyaa, markaas waad sii wadan kartaa.",
     "citizenNewTitle": "Codso diiwaangelin",
@@ -1850,12 +1850,12 @@
     "note": "Qoraal"
   },
   "parcels": {
-    "title": "La diiwaangeliyay",
-    "subtitle": "Dhulalka diiwaangashan ee degmooyinkaaga.",
+    "title": "Dhulal",
+    "subtitle": "Dhulalka diiwaangashan iyo kuwa socda ee degmooyinkaaga.",
     "searchPlaceholder": "Ku raadi PUN, lambarka akoonka ama milkiilaha",
     "noMatches": "Dhul ku habboon ma jiro",
-    "emptyTitle": "Weli dhul la diiwaangeliyay ma jiro",
-    "emptyBody": "Dhulku halkan wuxuu ka muuqdaa marka diiwaangeliyuhu diiwaangeliyo oo uu helo PUN. Dhulka weli socda wuxuu ku jiraa Dhulalka.",
+    "emptyTitle": "Weli dhul ma jiro",
+    "emptyBody": "Dhulalka waxaa la abuuraa marka sahan la gudbiyo, waxayna helaan PUN marka diiwaangeliyuhu ansixiyo.",
     "pun": "PUN",
     "noPun": "Weli PUN ma leh",
     "owners": "Milkiilayaasha",
@@ -1951,7 +1951,15 @@
     "lockReasonHint": "Tusaale lambarka amarka maxkamadda ama kiiska. Waxaa lagu qorayaa taariikhda dhulka.",
     "locked": "Dhulka waa la xiray",
     "unlocked": "Dhulka waa la furay",
-    "lockedTitle": "Xiran tan iyo {date}"
+    "lockedTitle": "Xiran tan iyo {date}",
+    "stages": "Heerka diiwaangelinta",
+    "stage_draft": "Diiwaangelin qayb ah",
+    "stage_registered": "La diiwaangeliyey",
+    "stage_all": "Dhammaan",
+    "stageBody_draft": "Dhul aan weli la diiwaangelin (qabyo, la sahamiyay ama la hubiyay). Fur codsiga si aad u sahamiso, u hubiso goobta, u biileyso ama u diiwaangeliso.",
+    "stageBody_registered": "Dhulalka diiwaangashan ee PUN leh ee degmooyinkaaga.",
+    "stageBody_all": "Dhulalka diiwaangashan iyo kuwa socda ee degmooyinkaaga.",
+    "openApplication": "Fur codsiga {number}"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

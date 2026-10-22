@@ -27,13 +27,17 @@ export interface ParcelListRow {
   plot_no: string | null;
 }
 
-export async function searchParcels(q: string) {
+export const PARCEL_STAGES = ["draft", "registered", "all"] as const;
+export type ParcelStage = (typeof PARCEL_STAGES)[number];
+/** Not registered yet: partial registration, still worked on through its application. */
+const PARTIAL = "(draft,surveyed,verified)";
+
+export async function searchParcels(q: string, stage: ParcelStage = "all") {
   const supabase = await createClient();
-  // Registered land only (registered, disputed); drafts still in progress are on the applications ("Parcels") page.
-  const res = await supabase
-    .rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 1000 })
-    .not("status", "in", "(draft,surveyed,verified)")
-    .limit(100);
+  let req = supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 1000 });
+  if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
+  if (stage === "registered") req = req.not("status", "in", PARTIAL);
+  const res = await req.limit(100);
   return unwrap(res, "parcels") as ParcelListRow[];
 }
 
@@ -84,4 +88,12 @@ export async function getParcel(id: string) {
   const parcel = unwrap(res, "parcel") as unknown as ParcelDetail | null;
   if (parcel) parcel.parcel_history.sort((a, b) => b.id - a.id);
   return parcel;
+}
+
+/** Parcel counts for the stage tabs (RLS: only districts the viewer can see). */
+export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> {
+  const supabase = await createClient();
+  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).neq("status", "archived");
+  const [draft, registered] = await Promise.all([base().in("status", ["draft", "surveyed", "verified"]), base().not("status", "in", PARTIAL)]);
+  return { draft: draft.count ?? 0, registered: registered.count ?? 0, all: (draft.count ?? 0) + (registered.count ?? 0) };
 }
