@@ -72,7 +72,7 @@ export const partySchema = partyFields.refine(idPair, { path: ["idNumber"], mess
 export type PartyInput = z.input<typeof partySchema>;
 
 /**
- * Owners saved by staff: every field is required, the ID document included (email stays optional).
+ * Owners saved by staff: every field is required, the ID document and email included.
  * A person needs mother's name, gender, date of birth, nationality, ID, phone, address, next of kin
  * and district; an organisation needs its registration number, phone, address and district.
  */
@@ -80,7 +80,7 @@ export const ownerSchema = partyFields.superRefine((v, ctx) => {
   const need = (key: keyof typeof v) => {
     if (v[key] === null || v[key] === "") ctx.addIssue({ code: "custom", path: [key], message: "validation.required" });
   };
-  const common = ["phone", "address", "districtId"] as const;
+  const common = ["phone", "email", "address", "districtId"] as const;
   const person = ["motherName", "gender", "dateOfBirth", "nationality", "idType", "idNumber", "nextOfKinName", "nextOfKinPhone"] as const;
   for (const k of v.kind === "organisation" ? (["orgRegistrationNo", ...common] as const) : ([...person, ...common] as const)) need(k);
   // An organisation's ID is optional, but a type needs a number and the other way round.

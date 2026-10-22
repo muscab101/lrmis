@@ -11,7 +11,7 @@ const full = {
   idType: "national_id",
   idNumber: "SO123",
   phone: "+252 61 555 0101",
-  email: "",
+  email: "cali@example.com",
   address: "Hodan, near the market",
   nextOfKinName: "Faadumo Cali",
   nextOfKinPhone: "+252615550102",
@@ -22,21 +22,20 @@ const errors = (r: { success: boolean; error?: { issues: { path: PropertyKey[]; 
   Object.fromEntries((r.error?.issues ?? []).map((i) => [i.path.join("."), i.message]));
 
 describe("owner schema (staff)", () => {
-  it("accepts a complete person; email stays optional", () => {
+  it("accepts a complete person", () => {
     expect(ownerSchema.safeParse(full).success).toBe(true);
   });
 
   it("requires every field of a person, the ID document included", () => {
     const e = errors(ownerSchema.safeParse({ kind: "person", fullName: "Cali" }));
-    for (const k of ["motherName", "gender", "dateOfBirth", "idType", "idNumber", "phone", "address", "nextOfKinName", "nextOfKinPhone", "districtId"]) {
+    for (const k of ["motherName", "gender", "dateOfBirth", "idType", "idNumber", "phone", "email", "address", "nextOfKinName", "nextOfKinPhone", "districtId"]) {
       expect(e[k], k).toBe("validation.required");
     }
-    expect(e.email).toBeUndefined();
   });
 
-  it("an organisation needs its registration number, phone, address and district", () => {
+  it("an organisation needs its registration number, phone, email, address and district", () => {
     const e = errors(ownerSchema.safeParse({ kind: "organisation", fullName: "Shirkadda Hormuud" }));
-    expect(Object.keys(e).sort()).toEqual(["address", "districtId", "orgRegistrationNo", "phone"]);
+    expect(Object.keys(e).sort()).toEqual(["address", "districtId", "email", "orgRegistrationNo", "phone"]);
   });
 
   it("refuses a date of birth before 1900 or in the future (the register's rule)", () => {

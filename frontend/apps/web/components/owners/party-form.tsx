@@ -166,7 +166,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
         <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(e.phone?.message)} required={mode === "staff"}>
           <Input type="tel" inputMode="tel" placeholder="+252 61 …" disabled={mode === "self"} {...form.register("phone")} />
         </Field>
-        <Field id="email" label={t("email")} error={vm(e.email?.message)}>
+        <Field id="email" label={t("email")} error={vm(e.email?.message)} required={mode === "staff"}>
           <Input type="email" {...form.register("email")} />
         </Field>
         <Field id="address" label={t("address")} error={vm(e.address?.message)} className="sm:col-span-2" required={mode === "staff"}>
