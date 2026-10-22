@@ -56,10 +56,11 @@ export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail
       <p className="relative mt-5 text-center text-[11px] text-neutral-700">{t("certifies")}</p>
 
       <section className="relative mt-4">
-        <table className="w-full border-collapse">
+        <p className="text-[10px] font-semibold tracking-wide text-neutral-500 uppercase">{t("owners")}</p>
+        <table className="mt-1 w-full border-collapse">
           <thead>
             <tr className="border-b border-neutral-300 text-[10px] text-neutral-500">
-              <th className="py-1 text-start font-semibold tracking-wide uppercase">{t("owners")}</th>
+              <th className="py-1 text-start font-medium">{t("name")}</th>
               <th className="py-1 text-start font-medium">{t("motherName")}</th>
               <th className="py-1 text-start font-medium">{t("idDocument")}</th>
               <th className="py-1 text-end font-medium">{t("share")}</th>
