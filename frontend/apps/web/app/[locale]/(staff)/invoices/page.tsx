@@ -1,8 +1,9 @@
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Receipt } from "lucide-react";
+import { Eye, Printer, Receipt } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { CreditNoteQueue, PlanQueue } from "@/components/billing/queues";
@@ -74,6 +75,7 @@ export default async function InvoicesPage({ params, searchParams }: { params: P
                 <TableHead className="text-end">{t("total")}</TableHead>
                 <TableHead className="text-end">{t("balance")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -95,6 +97,20 @@ export default async function InvoicesPage({ params, searchParams }: { params: P
                   <TableCell className="text-end text-sm font-medium tabular-nums">{usd(i.balance)}</TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} dueDate={i.due_date} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-0.5">
+                      <Button variant="ghost" size="icon-sm" className="text-primary" asChild>
+                        <Link href={`/invoices/${i.id}`} aria-label={t("viewInvoice")} title={t("viewInvoice")}>
+                          <Eye aria-hidden />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon-sm" asChild>
+                        <Link href={`/invoices/${i.id}/print`} aria-label={t("printInvoice")} title={t("printInvoice")}>
+                          <Printer aria-hidden />
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

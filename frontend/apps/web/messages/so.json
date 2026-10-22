@@ -79,7 +79,8 @@
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
       "assistant": "Kaaliyaha AI",
-      "propertyTypes": "Noocyada hantida"
+      "propertyTypes": "Noocyada hantida",
+      "fees": "Khidmadaha"
     }
   },
   "status": {
@@ -198,7 +199,8 @@
       "pin_method": "Habka goobta lama yaqaan.",
       "plot_size": "Hubi ballaca iyo dhererka.",
       "ownership": "Dooro dowladda ama gaar.",
-      "developed": "Dooro haa ama maya."
+      "developed": "Dooro haa ama maya.",
+      "plot_size_required": "Marka hore geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa (ballac × dherer × qiime)."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -321,7 +323,8 @@
     "property_type": "Ka dooro nooc liiska.",
     "property_type_inactive": "Noocaas maamuluhu wuu qariyey. Dooro mid kale.",
     "fx_rate_missing": "Weli ma jiro sicirka shilinka (SOS). Ku dar Xisaabaadka → Sicirada, ama qiimaha ku qor USD.",
-    "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda."
+    "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda.",
+    "plot_size_required": "Geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -975,8 +978,8 @@
       "formBody": "Shaqaaluhu waxay ku arkaan noocyada firfircoon foomka dhulka, luqaddooda, iyo qiimaha.",
       "nameSo": "Magaca",
       "nameEn": "Magaca Ingiriisiga",
-      "price": "Qiimaha",
-      "priceHint": "Waxaa masuulka lagu dalacayaa iyadoo lala socodsiinayo khidmadda codsiga marka dhul noocan ah la gudbiyo.",
+      "price": "Qiimaha m² kiiba",
+      "priceHint": "Biilka hantida waa ballac × dherer (m²) × qiimahan, biil gaar ah ayuu noqdaa marka dhulka la gudbiyo.",
       "currency": "Lacagta",
       "activeLabel": "Shaqaaluhu way dooran karaan noocan",
       "status": "Xaalad",
@@ -992,6 +995,23 @@
       "emptyTitle": "Weli nooc hanti ma jiro",
       "emptyBody": "Ku dar noocyada guryaha iyo dhulka ee shaqaaluhu ka dooran karaan.",
       "name": "Magaca"
+    },
+    "fees": {
+      "title": "Khidmadaha",
+      "subtitle": "Khidmadaha go'an ee masuulka laga qaado. Khidmadda diiwaangelinta cusub waxay noqotaa biil gaar ah marka dhul cusub la gudbiyo.",
+      "name": "Khidmad",
+      "amount": "Qadarka (USD)",
+      "amountHint": "0 macnaheedu waa waxba lama qaado.",
+      "status": "Xaalad",
+      "active": "Waa la qaadaa",
+      "off": "Dami",
+      "code": "Koodh",
+      "actions": "Ficillo",
+      "editTitle": "Wax ka beddel {name}",
+      "formBody": "Qadarka cusub waxaa loo isticmaalayaa biilasha hadda ka dib la sameeyo; biilasha hore qadarkoodii ayay haystaan.",
+      "activeLabel": "Qaad khidmaddan",
+      "registrationHint": "Hal mar ayaa laga qaadaa diiwaangelin kasta oo cusub, biil gaar ah.",
+      "billFromTypes": "Qiimaha m² kiiba — waxaa lagu dejiyaa Noocyada hantida"
     }
   },
   "audit": {
@@ -1472,7 +1492,9 @@
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
     "rowRegistered": "Waxaa loo diiwaangeliyey {pun}",
     "propertyType": "Nooca hantida",
-    "propertyTypeHint": "Waxa hadda dhulka saaran. Qiimihiisa waxaa lagu darayaa biilka khidmadda marka dhulka la gudbiyo."
+    "propertyTypeHint": "Waxa hadda dhulka saaran. Qiimihiisa waxaa lagu darayaa biilka khidmadda marka dhulka la gudbiyo.",
+    "feeInvoicesBody": "Bixi biilashan si dhulka loogu diro sahanka. Waxaa harsan: {amount}.",
+    "invoicePaid": "La bixiyay"
   },
   "owners": {
     "title": "Milkiilayaasha",
@@ -2279,7 +2301,10 @@
     "printDiscount": "Bixi lacagta oo dhan ka hor {date} oo hel {pct}% dhimis.",
     "howToPay": "Sida loo bixiyo",
     "howToPayBody": "Ku bixi EVC Plus, Zaad, Sahal ama eDahab adoo tixraac ka dhigaya PUN-kaaga {pun}, khasnajiga degmada, ama sawir koodhka si aad biilkan onlayn u furto.",
-    "qrLabel": "Koodhka QR ee biilka onlaynka"
+    "qrLabel": "Koodhka QR ee biilka onlaynka",
+    "viewInvoice": "Eeg biilka",
+    "printInvoice": "Daabac biilka",
+    "actions": "Ficillo"
   },
   "pay": {
     "title": "Bixi biilkaaga",

@@ -39,6 +39,7 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
   const format = await getFormatter();
   const locale = await getLocale();
   const { app, checklist, nearby, docTypes, stage, fee } = data;
+  const usdFmt = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
   const propertyTypes = await listPropertyTypes();
   const me = viewer.user.id;
   const isApplicant = app.citizen_user_id === me || app.created_by === me;
@@ -130,29 +131,39 @@ export async function ApplicationView({ data, viewer, mode, districts, basePath,
         <Alert tone="info" title={t("awaitingPaymentTitle")} className="mb-5">
           {fee ? (
             <>
-              <p>
-                {t("feeInvoiceBody", {
-                  number: fee.number,
-                  amount: format.number(Number(fee.balance), { style: "currency", currency: "USD" }),
-                })}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {fee.pay_link && (
-                  <Button size="sm" asChild>
-                    <Link href={fee.pay_link}>{t("payOnline")}</Link>
-                  </Button>
-                )}
-                {mode === "staff" && viewer.can("payments.create") && (
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/cashier?find=${fee.number}`}>{t("payAtCashier")}</Link>
-                  </Button>
-                )}
-                {mode === "staff" && viewer.can("invoices.view") && (
-                  <Button size="sm" variant="ghost" asChild>
-                    <Link href={`/invoices/${fee.id}`}>{t("openInvoice")}</Link>
-                  </Button>
-                )}
-              </div>
+              <p>{t("feeInvoicesBody", { amount: usdFmt(fee.balance_all ?? fee.balance) })}</p>
+              {/* One row per invoice: the property bill and the new registration fee. */}
+              <ul className="mt-3 divide-y rounded-md border bg-card">
+                {(fee.invoices ?? [{ ...fee, fee_code: "", name_so: "", name_en: "" }]).map((inv) => (
+                  <li key={inv.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">{(locale === "so" ? inv.name_so : inv.name_en) || t("openInvoice")}</div>
+                      <div className="text-muted-foreground font-mono text-xs">{inv.number}</div>
+                    </div>
+                    <div className="text-end tabular-nums">
+                      <div className="font-semibold">{usdFmt(inv.balance)}</div>
+                      {Number(inv.balance) <= 0 && <div className="text-success text-xs">{t("invoicePaid")}</div>}
+                    </div>
+                    <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+                      {inv.pay_link && Number(inv.balance) > 0 && (
+                        <Button size="sm" asChild>
+                          <Link href={inv.pay_link}>{t("payOnline")}</Link>
+                        </Button>
+                      )}
+                      {mode === "staff" && viewer.can("payments.create") && Number(inv.balance) > 0 && (
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/cashier?find=${inv.number}`}>{t("payAtCashier")}</Link>
+                        </Button>
+                      )}
+                      {mode === "staff" && viewer.can("invoices.view") && (
+                        <Button size="sm" variant="ghost" asChild>
+                          <Link href={`/invoices/${inv.id}`}>{t("openInvoice")}</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
               {mode === "staff" && <p className="text-muted-foreground mt-2 text-xs">{t("waiveNote")}</p>}
             </>
           ) : (

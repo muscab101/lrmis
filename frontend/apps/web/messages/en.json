@@ -79,7 +79,8 @@
       "settings": "Settings",
       "health": "System health",
       "assistant": "AI assistant",
-      "propertyTypes": "Property types"
+      "propertyTypes": "Property types",
+      "fees": "Fees"
     }
   },
   "status": {
@@ -198,7 +199,8 @@
       "pin_method": "Unknown location method.",
       "plot_size": "Check the width and length.",
       "ownership": "Pick public or private.",
-      "developed": "Pick yes or no."
+      "developed": "Pick yes or no.",
+      "plot_size_required": "Enter the plot width and length first: this property type is billed per m² (width × length × price)."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -321,7 +323,8 @@
     "property_type": "Choose a type from the list.",
     "property_type_inactive": "That type has been hidden by an admin. Choose another.",
     "fx_rate_missing": "There's no SOS exchange rate yet. Add one in Accounting → Rates, or set the price in USD.",
-    "location_in_use": "This location is still used by other records, so it can't be deleted. Archive it instead."
+    "location_in_use": "This location is still used by other records, so it can't be deleted. Archive it instead.",
+    "plot_size_required": "Enter the plot width and length: this property type is billed per m²."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -975,8 +978,8 @@
       "formBody": "Staff see the active types in the land form, in their language, with the price.",
       "nameSo": "Somali name",
       "nameEn": "Name",
-      "price": "Price",
-      "priceHint": "Billed to the owner with the application fee when land of this type is submitted.",
+      "price": "Price per m²",
+      "priceHint": "The property bill is width × length (m²) × this price, raised as its own invoice when the land is submitted.",
       "currency": "Currency",
       "activeLabel": "Staff can choose this type",
       "status": "Status",
@@ -992,6 +995,23 @@
       "emptyTitle": "No property types yet",
       "emptyBody": "Add the types of house and land staff can choose from.",
       "name": "Name"
+    },
+    "fees": {
+      "title": "Fees",
+      "subtitle": "Fixed fees charged to owners. The new registration fee is billed as its own invoice when new land is submitted.",
+      "name": "Fee",
+      "amount": "Amount (USD)",
+      "amountHint": "0 means nothing is charged.",
+      "status": "Status",
+      "active": "Charged",
+      "off": "Off",
+      "code": "Code",
+      "actions": "Actions",
+      "editTitle": "Edit {name}",
+      "formBody": "The new amount is used for invoices raised from now on; invoices already raised keep their amount.",
+      "activeLabel": "Charge this fee",
+      "registrationHint": "Billed once for each new registration, as its own invoice.",
+      "billFromTypes": "Price per m² — set on Property types"
     }
   },
   "audit": {
@@ -1472,7 +1492,9 @@
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
     "rowRegistered": "Registered as {pun}",
     "propertyType": "Property type",
-    "propertyTypeHint": "What's on the land now. Its price is added to the fee invoice when the land is submitted."
+    "propertyTypeHint": "What's on the land now. Its price is added to the fee invoice when the land is submitted.",
+    "feeInvoicesBody": "Pay these invoices to send the land to survey. Still to pay: {amount}.",
+    "invoicePaid": "Paid"
   },
   "owners": {
     "title": "Owners",
@@ -2279,7 +2301,10 @@
     "printDiscount": "Pay the full amount by {date} and get {pct}% off.",
     "howToPay": "How to pay",
     "howToPayBody": "Pay by EVC Plus, Zaad, Sahal or eDahab using your PUN {pun} as the reference, at a district cashier, or scan the code to open this invoice online.",
-    "qrLabel": "QR code to the online invoice"
+    "qrLabel": "QR code to the online invoice",
+    "viewInvoice": "View invoice",
+    "printInvoice": "Print invoice",
+    "actions": "Actions"
   },
   "pay": {
     "title": "Pay your invoice",

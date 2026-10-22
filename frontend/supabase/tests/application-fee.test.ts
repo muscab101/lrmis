@@ -32,7 +32,7 @@ const feeInvoice = (app: string) =>
   db
     .query<{ id: string; number: string; total: string; status: string; parcel_id: string; provisional: boolean; parcel_status: string }>(
       `select i.id, i.number, i.total::text, i.status::text, i.parcel_id, p.geom_provisional as provisional, p.status::text as parcel_status
-         from public.invoices i join public.fee_types f on f.id = i.fee_type_id and f.code = 'application_fee'
+         from public.invoices i join public.fee_types f on f.id = i.fee_type_id and f.code = 'registration_fee'
          join public.parcels p on p.id = i.parcel_id
         where p.application_id = $1`,
       [app],
@@ -62,12 +62,12 @@ beforeAll(async () => {
 });
 
 describe("application fee invoice", () => {
-  it("submitting raises a $25 invoice on a provisional draft parcel around the pin", async () => {
+  it("submitting raises the $12 registration fee invoice on a provisional draft parcel around the pin", async () => {
     const app = await submitted(45.3);
     expect(await status(app)).toBe("awaiting_payment");
     const [inv] = await feeInvoice(app);
     expect(inv).toBeDefined();
-    expect(Number(inv!.total)).toBe(25);
+    expect(Number(inv!.total)).toBe(12);
     expect(inv!.provisional).toBe(true);
     expect(inv!.parcel_status).toBe("draft");
     // The provisional square is sized from the declared 20 m × 20 m plot.
@@ -82,11 +82,11 @@ describe("application fee invoice", () => {
     const app = await submitted(45.301);
     const [inv] = await feeInvoice(app);
     await asUser(db, cashier, (tx) =>
-      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 10, method: "cash" })]),
+      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
     );
     expect(await status(app)).toBe("awaiting_payment"); // part-paid
     await asUser(db, cashier, (tx) =>
-      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 15, method: "cash" })]),
+      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 7, method: "cash" })]),
     );
     expect(await status(app)).toBe("in_survey");
     expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("paid");
@@ -121,7 +121,7 @@ describe("application fee for the application page", () => {
   it("staff in the district see the invoice and its pay link; other districts don't", async () => {
     const app = await submitted(45.2995);
     const fee = await asUser(db, clerk, (tx) => scalar<{ number: string; balance: number; pay_link: string } | null>(tx, `select public.application_fee($1)`, [app]));
-    expect(Number(fee!.balance)).toBe(25);
+    expect(Number(fee!.balance)).toBe(12);
     expect(fee!.pay_link).toMatch(/^\/pay\//);
     const region = await scalar<string>(db, `select region_id from public.districts where id = $1`, [hodan]);
     const wadajir = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'WDJ','Wadajir','Wadajir') returning id`, [region]);

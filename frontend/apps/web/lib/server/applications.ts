@@ -209,8 +209,19 @@ export async function getApplication(id: string) {
   return {
     app,
     stage,
-    /** The application fee invoice (raised on submit), with its pay link. */
-    fee: (fee.data ?? null) as { id: string; number: string; total: number; balance: number; status: string; pay_link: string | null } | null,
+    /** The fee invoices raised on submit (property bill, registration fee), with pay links. */
+    fee: (fee.data ?? null) as {
+      id: string;
+      number: string;
+      total: number;
+      balance: number;
+      status: string;
+      pay_link: string | null;
+      total_all?: number;
+      balance_all?: number;
+      /** Each fee invoice: the property bill and the new registration fee. */
+      invoices?: { id: string; number: string; fee_code: string; name_so: string; name_en: string; total: number; balance: number; status: string; pay_link: string | null }[];
+    } | null,
     checklist: (checklist.data ?? []) as { code: string; value?: string | number }[],
     nearby: (nearby.data ?? []) as { id: string; number: string; status: ApplicationStatus; distance_m: number }[],
     docTypes: (docTypes.data ?? []) as { code: string; name_so: string; name_en: string; required_for: ApplicationType[] }[],
