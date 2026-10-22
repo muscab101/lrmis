@@ -66,6 +66,12 @@ export const saveFeeTypeAction = defineAction(
   },
 );
 
+/** Delete a fee type nobody uses; one already billed is switched off instead. Built-in ones are refused. */
+export const deleteFeeTypeAction = defineAction("valuation.delete_fee_type", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const result = unwrap(await ctx.supabase.rpc("valuation_delete_fee_type", { p_id: id }), "delete fee type") as "deleted" | "hidden";
+  return done({ result });
+});
+
 export const setRateAction = defineAction(
   "valuation.set_rate",
   z.object({

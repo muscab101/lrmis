@@ -6,14 +6,17 @@ import { NativeSelect, Switch } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Pencil, Plus } from "lucide-react";
+import { toast } from "@dhulka/ui/toaster";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
+import { deleteFeeTypeAction, saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import type { FeeType, Grade } from "@/lib/server/valuation";
 
 const INTERVALS = ["annual", "biannual", "quarterly", "monthly", "one_off"] as const;
+/** Fee types the system uses by code: they can be switched off but not deleted. */
+const BUILT_IN_FEES = new Set(["property_tax", "service_charge", "application_fee", "certificate_fee", "transfer_stamp_duty", "building_permit", "registration_fee", "property_bill"]);
 type Item = Grade & { interval?: FeeType["interval"] };
 
 /** Property grades or fee types: list + add/edit dialog. */
@@ -23,6 +26,7 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
   const locale = useLocale();
   const blank = { id: null as string | null, code: "", nameSo: "", nameEn: "", amount: "0", active: true, sort: "100", interval: "annual" as FeeType["interval"] };
   const [form, setForm] = useState<typeof blank | null>(null);
+  const [deleting, setDeleting] = useState<Item | null>(null);
   const set = (k: keyof typeof blank, v: string | boolean) => setForm((f) => (f ? { ...f, [k]: v } : f));
 
   return (
@@ -44,7 +48,7 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
             {kind === "fees" && <TableHead>{t("interval")}</TableHead>}
             <TableHead className="text-end">{t(kind === "grades" ? "amountPerUnit" : "defaultAmount")}</TableHead>
             <TableHead>{t("statusLabel")}</TableHead>
-            {canEdit && <TableHead className="w-12" />}
+            {canEdit && <TableHead className={kind === "fees" ? "w-20" : "w-12"} />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,6 +73,11 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                   >
                     <Pencil aria-hidden />
                   </Button>
+                  {kind === "fees" && !BUILT_IN_FEES.has(i.code) && (
+                    <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("deleteFee")} title={t("deleteFee")} onClick={() => setDeleting(i)}>
+                      <Trash2 aria-hidden />
+                    </Button>
+                  )}
                 </TableCell>
               )}
             </TableRow>
@@ -132,6 +141,19 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
           )
         }
       </FormDialog>
+
+      {deleting && (
+        <FormDialog
+          open
+          onOpenChange={(o) => !o && setDeleting(null)}
+          title={t("deleteFeeTitle", { name: locale === "so" ? deleting.name_so : deleting.name_en })}
+          description={t("deleteFeeBody")}
+          confirmLabel={t("deleteFee")}
+          destructive
+          submit={() => deleteFeeTypeAction({ id: deleting.id })}
+          onDone={(d) => toast.success((d as { result: string }).result === "hidden" ? t("feeHidden") : t("feeDeleted"))}
+        />
+      )}
     </div>
   );
 }

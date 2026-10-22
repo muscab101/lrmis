@@ -149,3 +149,21 @@ describe("valuation (Phase 5)", () => {
     expect(out).toEqual({ assessed: 1, skipped: 0 });
   });
 });
+
+describe("deleting a fee type (0055)", () => {
+  it("built-in fees can't be deleted; a used one is switched off; an unused one is removed", async () => {
+    const admin = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    const reg = await scalar<string>(db, `select id from public.fee_types where code = 'registration_fee'`);
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.valuation_delete_fee_type($1)`, [reg]))).rejects.toThrow(/^CONFLICT: fee_built_in/);
+    const mk = (code: string) =>
+      asUser(db, admin, (tx) => scalar<string>(tx, `select public.valuation_save_fee_type(null, $1)`, [JSON.stringify({ code, name_so: code, name_en: code, interval: "one_off", amount: 5 })]));
+    const unused = await mk("trial_fee");
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.valuation_delete_fee_type($1)`, [unused]))).toBe("deleted");
+    expect(await scalar<number>(db, `select count(*)::int from public.fee_types where id = $1`, [unused])).toBe(0);
+    const used = await mk("market_fee");
+    const parcel = await scalar<{ id: string; district_id: string }>(db, `select to_jsonb(p) from public.parcels p limit 1`);
+    await db.query(`insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total) values ('INV-2026-009901', $1, $2, $3, 'x', current_date + 30, 5)`, [parcel.id, parcel.district_id, used]);
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.valuation_delete_fee_type($1)`, [used]))).toBe("hidden");
+    expect(await scalar<boolean>(db, `select active from public.fee_types where id = $1`, [used])).toBe(false);
+  });
+});

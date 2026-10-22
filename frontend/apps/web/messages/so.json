@@ -198,7 +198,8 @@
       "plot_size": "Hubi ballaca iyo dhererka.",
       "ownership": "Dooro dowladda ama gaar.",
       "developed": "Dooro haa ama maya.",
-      "plot_size_required": "Marka hore geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa (ballac × dherer × qiime)."
+      "plot_size_required": "Marka hore geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa (ballac × dherer × qiime).",
+      "fee_built_in": "Khidmaddan nidaamka ayaa isticmaala, lama tirtiri karo. Dami halkii."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -2087,7 +2088,12 @@
     "exemptionRequested": "Dhaafidda waa la codsaday.",
     "pct": "Boqolleyda dhaafidda",
     "noExemptionsParcel": "Dhaafid ma jirto.",
-    "noLiveAssessment": "Weli qiimeyn hadda ah ma jirto."
+    "noLiveAssessment": "Weli qiimeyn hadda ah ma jirto.",
+    "deleteFee": "Tirtir",
+    "deleteFeeTitle": "Ma tirtiraysaa {name}?",
+    "deleteFeeBody": "Haddii khidmaddan ay horay ugu jirto biil ama wareeg biilasha waa la damiyaa, si ay u haystaan. Haddii kale waa la tirtirayaa.",
+    "feeDeleted": "Nooca khidmadda waa la tirtiray",
+    "feeHidden": "Nooca khidmadda waa la isticmaalayaa, sidaas darteed waa la damiyay"
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

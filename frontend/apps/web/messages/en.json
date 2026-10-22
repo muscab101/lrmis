@@ -198,7 +198,8 @@
       "plot_size": "Check the width and length.",
       "ownership": "Pick public or private.",
       "developed": "Pick yes or no.",
-      "plot_size_required": "Enter the plot width and length first: this property type is billed per m² (width × length × price)."
+      "plot_size_required": "Enter the plot width and length first: this property type is billed per m² (width × length × price).",
+      "fee_built_in": "This fee is used by the system, so it can't be deleted. Switch it off instead."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -2087,7 +2088,12 @@
     "exemptionRequested": "Exemption requested.",
     "pct": "Exemption %",
     "noExemptionsParcel": "No exemptions.",
-    "noLiveAssessment": "No current assessment yet."
+    "noLiveAssessment": "No current assessment yet.",
+    "deleteFee": "Delete",
+    "deleteFeeTitle": "Delete {name}?",
+    "deleteFeeBody": "If this fee is already on an invoice or a billing run it's switched off instead, so those keep it. Otherwise it's removed.",
+    "feeDeleted": "Fee type deleted",
+    "feeHidden": "Fee type is in use, so it was switched off"
   },
   "billing": {
     "runsTitle": "Billing runs",
