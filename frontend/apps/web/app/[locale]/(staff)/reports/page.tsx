@@ -435,7 +435,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {usesDistrict && districts.length > 1 && (
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("district")}</span>
-                <NativeSelect name="district" defaultValue={district} className="w-44">
+                <NativeSelect name="district" defaultValue={district} className="w-auto min-w-44">
                   <option value="">{t("allDistricts")}</option>
                   {districts.map((d) => (
                     <option key={d.id} value={d.id}>
@@ -448,7 +448,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {report === "parcels" && (
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("kind")}</span>
-                <NativeSelect name="kind" defaultValue={kind} className="w-48">
+                <NativeSelect name="kind" defaultValue={kind} className="w-auto min-w-44">
                   {PARCEL_KINDS.map((k) => (
                     <option key={k} value={k}>
                       {t(`kinds.${k}`)}
