@@ -39,7 +39,6 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
   const [sector, setSector] = useState("");
   const [nbhd, setNbhd] = useState("");
   const [surveyor, setSurveyor] = useState("");
-  const [target, setTarget] = useState("");
   const [note, setNote] = useState("");
   const [surveyors, setSurveyors] = useState<{ user_id: string; full_name: string; open_zones: number; open_tasks: number }[]>([]);
   const [error, setError] = useState<AppError | null>(null);
@@ -59,13 +58,11 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
     void districtSurveyorsAction({ districtId: district }).then((r) => r.ok && setSurveyors(r.data));
   }, [district]);
 
-  // The target starts at the neighbourhood's capacity.
-  useEffect(() => setTarget(chosen?.capacity ? String(chosen.capacity) : ""), [chosen]);
-
   const assign = async () => {
     setSaving(true);
     setError(null);
-    const res = await assignZoneAction({ neighbourhoodId: nbhd, surveyorId: surveyor, target: target.trim() === "" ? Number.NaN : Number(target), note });
+    // The zone's size is the neighbourhood's capacity.
+    const res = await assignZoneAction({ neighbourhoodId: nbhd, surveyorId: surveyor, note });
     setSaving(false);
     if (!res.ok) return setError(res.error);
     toast.success(t("assigned"));
@@ -146,7 +143,8 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
         <div className="grid gap-3 rounded-md border bg-muted/30 p-3 text-sm sm:grid-cols-4">
           <div>
             <div className="label-caps text-muted-foreground">{t("capacity")}</div>
-            <div className="text-lg font-semibold tabular-nums">{chosen.capacity != null ? format.number(chosen.capacity) : "—"}</div>
+            <div className="text-lg font-semibold tabular-nums">{chosen.capacity ? format.number(chosen.capacity) : "—"}</div>
+            {!chosen.capacity && <div className="text-status-rejected text-xs">{t("noCapacity")}</div>}
           </div>
           <div>
             <div className="label-caps text-muted-foreground">{t("registered")}</div>
@@ -163,7 +161,7 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_9rem_1fr]">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Field id="surveyorId" label={t("surveyor")} error={fe("surveyorId")} hint={district && surveyors.length === 0 ? t("noSurveyors") : undefined} required>
           <NativeSelect value={surveyor} disabled={!district || surveyors.length === 0} onChange={(e) => setSurveyor(e.target.value)}>
             <option value="">{t("choose")}</option>
@@ -174,17 +172,15 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
             ))}
           </NativeSelect>
         </Field>
-        <Field id="target" label={t("target")} hint={t("targetHint")} error={fe("target")} required>
-          <Input type="number" inputMode="numeric" min={1} value={target} onChange={(e) => setTarget(e.target.value)} />
-        </Field>
         <Field id="note" label={t("note")} error={fe("note")}>
           <Input value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
       </div>
 
+      {fe("target") && <p className="text-status-rejected text-sm">{fe("target")}</p>}
       <FormError error={error} />
       <div className="flex justify-end">
-        <Button onClick={() => void assign()} loading={saving} disabled={!nbhd || !surveyor || Boolean(info?.openZone)}>
+        <Button onClick={() => void assign()} loading={saving} disabled={!nbhd || !surveyor || !chosen?.capacity || Boolean(info?.openZone)}>
           <UserCheck aria-hidden />
           {t("submit")}
         </Button>

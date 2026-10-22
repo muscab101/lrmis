@@ -40,7 +40,9 @@ export function ZoneTable({ rows, me, canManage, canAddLand }: { rows: ZoneRow[]
             return (
               <TableRow key={z.id}>
                 <TableCell className="text-sm">
-                  {name(z)}
+                  <Link href={`/surveys/zones/${z.id}`} className="hover:text-primary font-medium underline-offset-2 hover:underline">
+                    {name(z)}
+                  </Link>
                   <Mono className="text-muted-foreground ms-2 text-xs">{z.code}</Mono>
                   <div className="text-muted-foreground text-xs">{locale === "so" ? z.district_so : z.district_en}</div>
                   {z.note && <div className="text-muted-foreground text-xs italic">{z.note}</div>}
@@ -63,14 +65,14 @@ export function ZoneTable({ rows, me, canManage, canAddLand }: { rows: ZoneRow[]
                   <div className="flex flex-wrap justify-end gap-1.5">
                     {z.status === "open" && mine && canAddLand && (
                       <Button size="sm" asChild>
-                        <Link href={`/parcels/new?nbhd=${z.neighbourhood_id}`}>
+                        <Link href={`/parcels/new?${new URLSearchParams({ nbhd: z.neighbourhood_id, zone: z.id })}`}>
                           <MapPinPlus aria-hidden />
                           {t("addLand")}
                         </Link>
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" asChild>
-                      <Link href={`/parcels?${new URLSearchParams({ stage: "all", nbhd: z.neighbourhood_id })}`}>{t("showLand")}</Link>
+                      <Link href={`/surveys/zones/${z.id}`}>{t("open")}</Link>
                     </Button>
                     {z.status === "open" && (mine || canManage) && (
                       <Button size="sm" variant="outline" onClick={() => setTarget({ id: z.id, status: "done", name: name(z) })}>

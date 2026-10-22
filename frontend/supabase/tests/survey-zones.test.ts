@@ -45,6 +45,8 @@ describe("survey zones", () => {
   it("assigns a neighbourhood with its capacity as the target; one open zone per neighbourhood", async () => {
     await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.survey_zone_assign($1, $2, null)`, [nbhd, surveyor])), "PERMISSION_DENIED");
     await expectError(asUser(db, landOfficer, (tx) => tx.query(`select public.survey_zone_assign($1, $2, null)`, [nbhd, karaanSurveyor])), "VALIDATION: surveyor");
+    const empty = await scalar<string>(db, `insert into public.neighbourhoods (sector_id, code, name_so, name_en) select sector_id, '099', 'X', 'X' from public.neighbourhoods where id = $1 returning id`, [nbhd]);
+    await expectError(asUser(db, landOfficer, (tx) => tx.query(`select public.survey_zone_assign($1, $2, null)`, [empty, surveyor])), "VALIDATION: target");
     zone = await asUser(db, landOfficer, (tx) => scalar<string>(tx, `select public.survey_zone_assign($1, $2, null, 'Start from the market')`, [nbhd, surveyor]));
     expect(await scalar<number>(db, `select target from public.survey_zones where id = $1`, [zone])).toBe(50);
     expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and kind = 'survey_zone.assigned'`, [surveyor])).toBe(1);
@@ -59,6 +61,7 @@ describe("survey zones", () => {
     );
     const mine = await asUser(db, surveyor, (tx) => tx.query<{ id: string; target: number; recorded: string; partial: string }>(`select * from public.survey_zone_list(true)`));
     expect(mine.rows).toHaveLength(1);
+    // 1 house of the neighbourhood's 50.
     expect([mine.rows[0]!.target, Number(mine.rows[0]!.recorded), Number(mine.rows[0]!.partial)]).toEqual([50, 1, 1]);
     expect((await asUser(db, surveyor2, (tx) => tx.query(`select * from public.survey_zone_list(true)`))).rows).toHaveLength(0);
     expect((await asUser(db, landOfficer, (tx) => tx.query(`select * from public.survey_zone_list(false)`))).rows).toHaveLength(1);

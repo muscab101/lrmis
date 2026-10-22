@@ -14,9 +14,9 @@ export async function generateMetadata() {
 }
 
 /** Surveyors (and admins) add land found in the field; it lands in Parcels → Partial registration. */
-export default async function AddFieldLandPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ nbhd?: string }> }) {
+export default async function AddFieldLandPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ nbhd?: string; zone?: string }> }) {
   const { locale } = await params;
-  const { nbhd } = await searchParams;
+  const { nbhd, zone } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "parcels.view");
   if (!viewer.can("surveys.create") && !viewer.can("applications.create")) forbidden();
@@ -35,7 +35,9 @@ export default async function AddFieldLandPage({ params, searchParams }: { param
       <PageHeader title={t("title")} description={t("subtitle")} />
       <Card>
         <CardContent className="pt-5">
-          <FieldLandForm districts={all.filter((d) => allowed.has(d.id))} grades={grades} start={start && allowed.has(start.district_id) ? start : null} />
+          <FieldLandForm districts={all.filter((d) => allowed.has(d.id))} grades={grades} start={start && allowed.has(start.district_id) ? start : null}
+            returnTo={zone && /^[0-9a-f-]{36}$/i.test(zone) ? `/surveys/zones/${zone}` : undefined}
+          />
         </CardContent>
       </Card>
     </div>

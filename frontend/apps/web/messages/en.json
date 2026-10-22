@@ -3491,11 +3491,10 @@
       "surveyor": "Surveyor",
       "noSurveyors": "No surveyor works in this district yet. Give a surveyor this district in Admin → Users.",
       "load": "{zones} zones · {tasks} surveys open",
-      "target": "Houses",
-      "targetHint": "Starts at the capacity.",
       "note": "Note for the surveyor",
       "submit": "Assign zone",
-      "assigned": "Zone assigned. The surveyor has been notified."
+      "assigned": "Zone assigned. The surveyor has been notified.",
+      "noCapacity": "Set this neighbourhood's capacity in Locations first."
     },
     "zones": {
       "empty": "No zones assigned",
@@ -3515,7 +3514,6 @@
         "cancelled": "Cancelled"
       },
       "addLand": "Add land here",
-      "showLand": "Show land",
       "done": "Mark done",
       "cancel": "Cancel zone",
       "doneTitle": "Mark {name} done?",
@@ -3524,7 +3522,25 @@
       "cancelBody": "The surveyor no longer sees it. The land already added stays in Parcels.",
       "closed": "Zone closed.",
       "showClosed": "Show finished zones too",
-      "hideClosed": "Show open zones only"
+      "hideClosed": "Show open zones only",
+      "open": "Open"
+    },
+    "zone": {
+      "title": "Survey zone",
+      "eyebrow": "Survey zone",
+      "yours": "Assigned to you. Add each house you find here.",
+      "assignedTo": "Assigned to {name}",
+      "addLand": "Add land",
+      "addOwner": "Add owner",
+      "houses": "Houses",
+      "waiting": "Waiting",
+      "registered": "Registered",
+      "left": "Left to add",
+      "closed_done": "This zone is done.",
+      "closed_cancelled": "This zone was cancelled.",
+      "closed_open": "Open",
+      "empty": "No houses yet",
+      "emptyBody": "Use Add land for each house in this neighbourhood; the count goes up by one each time."
     }
   }
 }

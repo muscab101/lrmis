@@ -24,10 +24,12 @@ interface Props {
   grades: { code: string; name_so: string; name_en: string; active: boolean }[];
   /** Opened from a survey zone: its neighbourhood. */
   start?: { id: string; district_id: string; code: string; name_so: string; name_en: string } | null;
+  /** Where to go after saving (the survey zone it came from); else Parcels → Partial registration. */
+  returnTo?: string;
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, start = null }: Props) {
+export function FieldLandForm({ districts, grades, start = null, returnTo }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -107,7 +109,7 @@ export function FieldLandForm({ districts, grades, start = null }: Props) {
     setSaving(false);
     if (!res.ok) return setError(res.error);
     toast.success(t("saved"));
-    router.push("/parcels?stage=draft");
+    router.push(returnTo ?? "/parcels?stage=draft");
   };
 
   return (

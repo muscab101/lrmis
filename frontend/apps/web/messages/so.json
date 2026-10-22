@@ -3491,11 +3491,10 @@
       "surveyor": "Sahamiye",
       "noSurveyors": "Weli sahamiye kama shaqeeyo degmadan. Sahamiye sii degmadan gudaha Maamulka → Isticmaalayaasha.",
       "load": "{zones} aag · {tasks} sahan furan",
-      "target": "Guryo",
-      "targetHint": "Wuxuu ka bilaabmaa awoodda.",
       "note": "Qoraal sahamiyaha",
       "submit": "Xilsaar aagga",
-      "assigned": "Aagga waa la xilsaaray. Sahamiyaha waa la ogeysiiyay."
+      "assigned": "Aagga waa la xilsaaray. Sahamiyaha waa la ogeysiiyay.",
+      "noCapacity": "Marka hore ku dhig awoodda xaafaddan gudaha Goobaha."
     },
     "zones": {
       "empty": "Aag lama xilsaarin",
@@ -3515,7 +3514,6 @@
         "cancelled": "La joojiyay"
       },
       "addLand": "Halkan ku dar dhul",
-      "showLand": "Muuji dhulka",
       "done": "Calaamadee dhammaad",
       "cancel": "Jooji aagga",
       "doneTitle": "Ma calaamadeysaa {name} inuu dhammaaday?",
@@ -3524,7 +3522,25 @@
       "cancelBody": "Sahamiyuhu mar dambe ma arko. Dhulka horay loo daray wuxuu ku jiraa Dhulalka.",
       "closed": "Aagga waa la xiray.",
       "showClosed": "Sidoo kale muuji aagagga dhammaaday",
-      "hideClosed": "Muuji aagagga furan oo keliya"
+      "hideClosed": "Muuji aagagga furan oo keliya",
+      "open": "Fur"
+    },
+    "zone": {
+      "title": "Aagga sahanka",
+      "eyebrow": "Aagga sahanka",
+      "yours": "Adiga ayaa laguu xilsaaray. Ku dar guri kasta oo aad halkan ka hesho.",
+      "assignedTo": "Waxaa loo xilsaaray {name}",
+      "addLand": "Ku dar dhul",
+      "addOwner": "Ku dar milkiile",
+      "houses": "Guryaha",
+      "waiting": "Sugaya",
+      "registered": "La diiwaangeliyey",
+      "left": "Inta hartay",
+      "closed_done": "Aaggan wuu dhammaaday.",
+      "closed_cancelled": "Aaggan waa la joojiyay.",
+      "closed_open": "Furan",
+      "empty": "Weli guri ma jiro",
+      "emptyBody": "Isticmaal Ku dar dhul guri kasta oo xaafaddan ku yaal; tirada waxay kordhaysaa mar kasta hal."
     }
   }
 }

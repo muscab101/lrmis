@@ -21,12 +21,11 @@ export const assignZoneAction = defineAction(
   z.object({
     neighbourhoodId: z.uuid("validation.neighbourhood"),
     surveyorId: z.uuid("validation.surveyor"),
-    target: z.number({ error: "validation.target" }).int("validation.target").min(1, "validation.target").max(100000, "validation.target"),
     note: z.string().trim().max(400, "validation.too_long").default(""),
   }),
   async (v, ctx) => {
     try {
-      const id = unwrap(await ctx.supabase.rpc("survey_zone_assign", { p_neighbourhood: v.neighbourhoodId, p_surveyor: v.surveyorId, p_target: v.target, p_note: v.note }), "assign zone") as string;
+      const id = unwrap(await ctx.supabase.rpc("survey_zone_assign", { p_neighbourhood: v.neighbourhoodId, p_surveyor: v.surveyorId, p_target: null, p_note: v.note }), "assign zone") as string;
       refresh();
       return { id };
     } catch (err) {

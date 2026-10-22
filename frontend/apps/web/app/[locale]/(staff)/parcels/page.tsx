@@ -1,9 +1,8 @@
-import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Lock, MapPinned, MapPinPlus } from "lucide-react";
+import { Lock, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
@@ -30,28 +29,14 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
-  // Surveyors (and admins) add land found in the field, and start its registration.
-  const canAddLand = viewer.can("surveys.create") || viewer.can("applications.create");
+  // Land is added from a survey zone (Surveys → Zones); here it can start its registration.
   const canStart = viewer.can("applications.create");
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader
-        title={t("title")}
-        description={t(`stageBody_${stage}`)}
-        actions={
-          canAddLand && (
-            <Button asChild>
-              <Link href="/parcels/new">
-                <MapPinPlus aria-hidden />
-                {t("fieldLand.add")}
-              </Link>
-            </Button>
-          )
-        }
-      >
+      <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {PARCEL_STAGES.map((k) => (
             <Link
