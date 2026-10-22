@@ -28,13 +28,15 @@ export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail
   return (
     <article className="relative mx-auto flex h-[297mm] w-[210mm] flex-col overflow-hidden bg-white p-[14mm] text-[11.5px] text-[#0b1a3a] print:shadow-none">
       <div aria-hidden className="pointer-events-none absolute inset-[6mm] border-[3px] border-double border-[#1f45b8]/60" />
-      {/* Security watermark: the owner and bill details as vertical (90°) lines behind the content. */}
-      <div aria-hidden className="pointer-events-none absolute inset-[7mm] flex justify-around overflow-hidden select-none">
-        {Array.from({ length: 9 }, (_, i) => (
-          <p key={i} className="text-[8.5px] leading-none font-semibold tracking-[0.12em] whitespace-nowrap text-[#1f45b8]/[0.09] uppercase [writing-mode:vertical-rl]">
-            {Array.from({ length: 4 }, () => mark).join("   ✦   ")}
-          </p>
-        ))}
+      {/* Security watermark: the owner and bill details tiled diagonally over the whole page, behind the content. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+        <div className="absolute top-1/2 left-1/2 flex w-[200%] -translate-x-1/2 -translate-y-1/2 -rotate-30 flex-col gap-[7mm]">
+          {Array.from({ length: 44 }, (_, i) => (
+            <p key={i} className={`text-[12px] leading-none font-semibold tracking-[0.08em] whitespace-pre text-[#1f45b8]/[0.11] uppercase ${i % 2 ? "-ms-[40mm]" : ""}`}>
+              {Array.from({ length: 5 }, () => mark).join("     ✦     ")}
+            </p>
+          ))}
+        </div>
       </div>
       <header className="relative flex items-center justify-between gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
