@@ -22,10 +22,12 @@ import { useValidationMessage } from "@/lib/client/errors";
 interface Props {
   districts: { id: string; name_so: string; name_en: string }[];
   grades: { code: string; name_so: string; name_en: string; active: boolean }[];
+  /** Opened from a survey zone: its neighbourhood. */
+  start?: { id: string; district_id: string; code: string; name_so: string; name_en: string } | null;
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades }: Props) {
+export function FieldLandForm({ districts, grades, start = null }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -33,8 +35,10 @@ export function FieldLandForm({ districts, grades }: Props) {
   const locale = useLocale();
   const vm = useValidationMessage();
   const router = useRouter();
-  const [districtId, setDistrictId] = useState(districts.length === 1 ? districts[0]!.id : "");
-  const [neighbourhood, setNeighbourhood] = useState<ComboOption | null>(null);
+  const [districtId, setDistrictId] = useState(start?.district_id ?? (districts.length === 1 ? districts[0]!.id : ""));
+  const [neighbourhood, setNeighbourhood] = useState<ComboOption | null>(
+    start ? { value: start.id, label: locale === "so" ? start.name_so : start.name_en, hint: start.code } : null,
+  );
   const [pin, setPin] = useState<Pin | null>(null);
   const [pinPlace, setPinPlace] = useState<string | null>(null);
   const [outline, setOutline] = useState<{ geometry: GeoJSON.Geometry; bbox: [number, number, number, number] } | null>(null);

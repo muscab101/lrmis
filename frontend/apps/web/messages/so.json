@@ -216,7 +216,9 @@
       "super_admin": "Maamulaha sare oo keliya ayaa samayn kara tan.",
       "selection": "Dooro inta u dhaxaysa 1 ilaa 100.",
       "document": "Dukumentigaas lama helin.",
-      "already_started": "Dhulkan diiwaangelintiisa horay ayaa loo bilaabay."
+      "already_started": "Dhulkan diiwaangelintiisa horay ayaa loo bilaabay.",
+      "zone_open": "Xaafaddan horay ayaa loogu xilsaaray sahamiye. Marka hore xir aaggaas.",
+      "zone": "Aaggaas lama helin."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -344,7 +346,9 @@
     "email_taken": "Akoon kale ayaa horay u isticmaalaya iimaylkan.",
     "pin_required": "Khariidadda ku dhig biin meesha guriga.",
     "owner_name": "Geli magaca buuxa ee milkiilaha.",
-    "neighbourhood": "Dooro xaafad, ama biinka ku dhig mid gudaheed."
+    "neighbourhood": "Dooro xaafad, ama biinka ku dhig mid gudaheed.",
+    "surveyor": "Dooro sahamiye ka shaqeeya degmadan.",
+    "target": "Geli imisa guri (1 ama ka badan)."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1717,7 +1721,8 @@
       "returned": "La celiyay",
       "submitted": "La gudbiyay",
       "any": "Dhammaan",
-      "site_checks": "Hubinta goobta"
+      "site_checks": "Hubinta goobta",
+      "zones": "Aagagga"
     },
     "status": {
       "assigned": "La xilsaaray",
@@ -3466,6 +3471,60 @@
     "empty_waiting": "Dhul sugaya ma jiro",
     "emptyBody_waiting": "Dhulka xaafadahan oo dhan waa la diiwaangeliyey.",
     "empty_not_started": "Xaafad kasta waxay leedahay dhul la diiwaangeliyey",
-    "emptyBody_not_started": "Halkan ma jirto xaafad aan dhul laga diiwaangelin."
+    "emptyBody_not_started": "Halkan ma jirto xaafad aan dhul laga diiwaangelin.",
+    "tab_zones": "Aagagga la xilsaaray",
+    "body_zones": "Dooro xaafad, eeg awoodeeda oo u dhiib sahamiye. Sahamiyuhu wuxuu ka helayaa Sahannada → Aagagga, wuxuuna ku darayaa guri kasta.",
+    "assign": {
+      "title": "Aag u xilsaar sahamiye",
+      "district": "Degmo",
+      "section": "Qayb",
+      "sector": "Waax",
+      "neighbourhood": "Xaafad",
+      "choose": "Dooro…",
+      "none": "Halkan waxba ma jiraan",
+      "capacity": "Awood",
+      "registered": "La diiwaangeliyey",
+      "partial": "Sugaya",
+      "zone": "Aag",
+      "openZone": "Horay loogu xilsaaray {name}",
+      "noZone": "Lama xilsaarin",
+      "surveyor": "Sahamiye",
+      "noSurveyors": "Weli sahamiye kama shaqeeyo degmadan. Sahamiye sii degmadan gudaha Maamulka → Isticmaalayaasha.",
+      "load": "{zones} aag · {tasks} sahan furan",
+      "target": "Guryo",
+      "targetHint": "Wuxuu ka bilaabmaa awoodda.",
+      "note": "Qoraal sahamiyaha",
+      "submit": "Xilsaar aagga",
+      "assigned": "Aagga waa la xilsaaray. Sahamiyaha waa la ogeysiiyay."
+    },
+    "zones": {
+      "empty": "Aag lama xilsaarin",
+      "emptyBody": "Aagagga aad xilsaarto ama laguu xilsaaro halkan ayay ka muuqdaan iyo horumarkooda.",
+      "neighbourhood": "Xaafad",
+      "surveyor": "Sahamiye",
+      "progress": "Guryaha la diiwaangeliyey",
+      "partial": "Sugaya",
+      "registered": "La diiwaangeliyey",
+      "assigned": "La xilsaaray",
+      "actions": "Ficillo",
+      "you": "Adiga",
+      "count": "{recorded} ka mid ah {target}",
+      "status": {
+        "open": "Furan",
+        "done": "Dhammaaday",
+        "cancelled": "La joojiyay"
+      },
+      "addLand": "Halkan ku dar dhul",
+      "showLand": "Muuji dhulka",
+      "done": "Calaamadee dhammaad",
+      "cancel": "Jooji aagga",
+      "doneTitle": "Ma calaamadeysaa {name} inuu dhammaaday?",
+      "doneBody": "Aaggu wuu xirmayaa. Dhulka horay loo daray wuxuu ku jiraa Dhulalka.",
+      "cancelTitle": "Ma joojinaysaa aagga {name}?",
+      "cancelBody": "Sahamiyuhu mar dambe ma arko. Dhulka horay loo daray wuxuu ku jiraa Dhulalka.",
+      "closed": "Aagga waa la xiray.",
+      "showClosed": "Sidoo kale muuji aagagga dhammaaday",
+      "hideClosed": "Muuji aagagga furan oo keliya"
+    }
   }
 }

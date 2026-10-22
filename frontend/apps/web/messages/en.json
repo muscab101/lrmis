@@ -216,7 +216,9 @@
       "super_admin": "Only a super admin can do this.",
       "selection": "Select between 1 and 100 items.",
       "document": "That document wasn't found.",
-      "already_started": "Registration has already been started for this land."
+      "already_started": "Registration has already been started for this land.",
+      "zone_open": "This neighbourhood is already assigned to a surveyor. Close that zone first.",
+      "zone": "That zone wasn't found."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -344,7 +346,9 @@
     "email_taken": "Another account already uses this email.",
     "pin_required": "Put a pin on the map at the house.",
     "owner_name": "Enter the owner's full name.",
-    "neighbourhood": "Choose a neighbourhood, or drop the pin inside one."
+    "neighbourhood": "Choose a neighbourhood, or drop the pin inside one.",
+    "surveyor": "Choose a surveyor who works in this district.",
+    "target": "Enter how many houses (1 or more)."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1717,7 +1721,8 @@
       "returned": "Returned",
       "submitted": "Submitted",
       "any": "All",
-      "site_checks": "Site checks"
+      "site_checks": "Site checks",
+      "zones": "Zones"
     },
     "status": {
       "assigned": "Assigned",
@@ -3466,6 +3471,60 @@
     "empty_waiting": "No land waiting",
     "emptyBody_waiting": "Every parcel in these neighbourhoods is registered.",
     "empty_not_started": "Every neighbourhood has registered land",
-    "emptyBody_not_started": "There is no neighbourhood without registered land here."
+    "emptyBody_not_started": "There is no neighbourhood without registered land here.",
+    "tab_zones": "Assigned zones",
+    "body_zones": "Pick a neighbourhood, see its capacity and give it to a surveyor. The surveyor finds it under Surveys → Zones and adds each house.",
+    "assign": {
+      "title": "Assign a zone to a surveyor",
+      "district": "District",
+      "section": "Section",
+      "sector": "Sector",
+      "neighbourhood": "Neighbourhood",
+      "choose": "Choose…",
+      "none": "None here",
+      "capacity": "Capacity",
+      "registered": "Registered",
+      "partial": "Waiting",
+      "zone": "Zone",
+      "openZone": "Already assigned to {name}",
+      "noZone": "Not assigned",
+      "surveyor": "Surveyor",
+      "noSurveyors": "No surveyor works in this district yet. Give a surveyor this district in Admin → Users.",
+      "load": "{zones} zones · {tasks} surveys open",
+      "target": "Houses",
+      "targetHint": "Starts at the capacity.",
+      "note": "Note for the surveyor",
+      "submit": "Assign zone",
+      "assigned": "Zone assigned. The surveyor has been notified."
+    },
+    "zones": {
+      "empty": "No zones assigned",
+      "emptyBody": "Zones you assign, or that are assigned to you, appear here with their progress.",
+      "neighbourhood": "Neighbourhood",
+      "surveyor": "Surveyor",
+      "progress": "Houses recorded",
+      "partial": "Waiting",
+      "registered": "Registered",
+      "assigned": "Assigned",
+      "actions": "Actions",
+      "you": "You",
+      "count": "{recorded} of {target}",
+      "status": {
+        "open": "Open",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      },
+      "addLand": "Add land here",
+      "showLand": "Show land",
+      "done": "Mark done",
+      "cancel": "Cancel zone",
+      "doneTitle": "Mark {name} done?",
+      "doneBody": "The zone closes. The land already added stays in Parcels.",
+      "cancelTitle": "Cancel the zone {name}?",
+      "cancelBody": "The surveyor no longer sees it. The land already added stays in Parcels.",
+      "closed": "Zone closed.",
+      "showClosed": "Show finished zones too",
+      "hideClosed": "Show open zones only"
+    }
   }
 }

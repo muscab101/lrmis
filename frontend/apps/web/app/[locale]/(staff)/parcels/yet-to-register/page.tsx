@@ -1,5 +1,5 @@
 import { Button } from "@dhulka/ui/button";
-import { Card } from "@dhulka/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -7,7 +7,10 @@ import { MapPinOff, MapPinPlus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { ZoneAssigner } from "@/components/parcels/zone-assigner";
+import { ZoneTable } from "@/components/parcels/zone-table";
 import { neighbourhoodStatus } from "@/lib/server/parcels";
+import { listZones, zonePlaces } from "@/lib/server/zones";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,10 +19,13 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const TABS = ["waiting", "not_started"] as const;
+const TABS = ["zones", "waiting", "not_started"] as const;
 type Tab = (typeof TABS)[number];
 
-/** Neighbourhoods with land waiting to be registered, and neighbourhoods where nothing is registered yet. */
+/**
+ * Assign neighbourhoods to surveyors (district → section → sector → neighbourhood, its capacity, the
+ * surveyor), follow the assigned zones, and see where land is waiting or nothing is registered yet.
+ */
 export default async function YetToRegisterPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -28,17 +34,25 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "waiting";
+  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "zones";
   const supabase = await createClient();
   const [all, { data: mine }] = await Promise.all([listDistricts(), supabase.rpc("user_district_ids")]);
   const allowed = new Set((mine as string[] | null) ?? []);
   const districts = all.filter((d) => allowed.has(d.id));
   const district = districts.some((d) => d.id === sp.district) ? sp.district! : "";
-  const status = await neighbourhoodStatus(district || null);
+  const canAssign = viewer.can("surveys.approve");
+  const [status, zones, places] = await Promise.all([
+    neighbourhoodStatus(district || null),
+    listZones(!canAssign, sp.closed === "1" ? "any" : "open"),
+    canAssign ? zonePlaces(districts.map((d) => d.id)) : Promise.resolve(null),
+  ]);
+  const shownZones = district ? zones.filter((z) => z.district_id === district) : zones;
+  const openZoneBy = new Map(zones.filter((z) => z.status === "open").map((z) => [z.neighbourhood_id, z.surveyor ?? ""]));
+  const statusById = Object.fromEntries(status.map((r) => [r.id, { partial: r.partial, registered: r.registered, openZone: openZoneBy.get(r.id) ?? null }]));
   const waiting = status.filter((r) => r.partial > 0 || r.open_applications > 0).sort((a, b) => b.partial + b.open_applications - (a.partial + a.open_applications));
   const notStarted = status.filter((r) => r.registered === 0);
-  const rows = tab === "waiting" ? waiting : notStarted;
-  const counts: Record<Tab, number> = { waiting: waiting.length, not_started: notStarted.length };
+  const rows = tab === "not_started" ? notStarted : waiting;
+  const counts: Record<Tab, number> = { zones: shownZones.filter((z) => z.status === "open").length, waiting: waiting.length, not_started: notStarted.length };
   const canAddLand = viewer.can("surveys.create") || viewer.can("applications.create");
   const name = (o: { name_so: string; name_en: string }) => (lang === "so" ? o.name_so : o.name_en);
   const href = (k: Tab) => `/parcels/yet-to-register?${new URLSearchParams({ tab: k, ...(district ? { district } : {}) })}`;
@@ -73,6 +87,16 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
           ))}
         </nav>
       </PageHeader>
+      {canAssign && places && (
+        <Card className="mb-5">
+          <CardHeader>
+            <CardTitle className="text-base">{t("assign.title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ZoneAssigner districts={districts} sections={places.sections} sectors={places.sectors} neighbourhoods={places.neighbourhoods} status={statusById} />
+          </CardContent>
+        </Card>
+      )}
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         <KpiChip label={t("kpiPartial")} value={n(status.reduce((s, r) => s + r.partial, 0))} />
         <KpiChip label={t("kpiApplications")} value={n(status.reduce((s, r) => s + r.open_applications, 0))} />
@@ -95,7 +119,16 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
             </Button>
           </form>
         )}
-        {rows.length === 0 ? (
+        {tab === "zones" && (
+          <div className="border-b px-3 py-2 text-xs">
+            <Link href={`/parcels/yet-to-register?${new URLSearchParams({ tab: "zones", ...(district ? { district } : {}), ...(sp.closed === "1" ? {} : { closed: "1" }) })}`} className="text-primary underline">
+              {sp.closed === "1" ? t("zones.hideClosed") : t("zones.showClosed")}
+            </Link>
+          </div>
+        )}
+        {tab === "zones" ? (
+          <ZoneTable rows={shownZones} me={viewer.user.id} canManage={canAssign} canAddLand={canAddLand} />
+        ) : rows.length === 0 ? (
           <EmptyState icon={<MapPinOff />} title={t(`empty_${tab}`)} description={t(`emptyBody_${tab}`)} />
         ) : (
           <Table>

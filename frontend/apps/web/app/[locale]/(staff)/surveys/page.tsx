@@ -9,13 +9,15 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { querySiteChecks, querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
 import { SiteCheckActions } from "@/components/applications/site-check";
+import { ZoneTable } from "@/components/parcels/zone-table";
+import { listZones } from "@/lib/server/zones";
 
 export async function generateMetadata() {
   const t = await getTranslations("surveys");
   return { title: t("title") };
 }
 
-const TABS = ["open", "site_checks", "assigned", "in_progress", "overlap_review", "returned", "submitted", "any"] as const;
+const TABS = ["open", "zones", "site_checks", "assigned", "in_progress", "overlap_review", "returned", "submitted", "any"] as const;
 
 export default async function SurveysPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
@@ -28,15 +30,18 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const status = (TABS as readonly string[]).includes(sp.status ?? "") ? (sp.status as (typeof TABS)[number]) : "open";
   const mine = sp.mine === "1" || !viewer.can("surveys.approve");
-  const [rows, counts, checks] = await Promise.all([
-    status === "site_checks" ? Promise.resolve([]) : querySurveys({ status: status as SurveyStatus | "open" | "any", mine }),
+  const [rows, counts, checks, zones] = await Promise.all([
+    status === "site_checks" || status === "zones" ? Promise.resolve([]) : querySurveys({ status: status as SurveyStatus | "open" | "any", mine }),
     surveyStatusCounts(),
     querySiteChecks(mine),
+    listZones(mine),
   ]);
   const siteCan = { request: false, checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
   const count = (tab: (typeof TABS)[number]) =>
     tab === "site_checks"
       ? checks.length
+      : tab === "zones"
+      ? zones.length
       : tab === "open"
       ? (["assigned", "in_progress", "returned", "overlap_review"] as const).reduce((s, k) => s + (counts[k] ?? 0), 0)
       : tab === "any"
@@ -85,7 +90,16 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
           ))}
         </nav>
       </PageHeader>
-      {status === "site_checks" ? (
+      {status === "zones" ? (
+        <Card className="overflow-hidden">
+          <ZoneTable
+            rows={zones}
+            me={viewer.user.id}
+            canManage={viewer.can("surveys.approve")}
+            canAddLand={viewer.can("surveys.create") || viewer.can("applications.create")}
+          />
+        </Card>
+      ) : status === "site_checks" ? (
         <Card className="overflow-hidden">
           {checks.length === 0 ? (
             <EmptyState icon={<Compass />} title={t("noSiteChecks")} description={t("noSiteChecksBody")} />
