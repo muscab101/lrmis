@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   transpilePackages: ["@dhulka/ui", "@dhulka/core"],
+  // Report files (PDF/Excel) are built on the server with these; load them from node_modules as-is.
+  serverExternalPackages: ["exceljs", "jspdf", "jspdf-autotable"],
   experimental: {
     authInterrupts: true,
     // Document uploads go through server actions (10 MB files + form overhead).

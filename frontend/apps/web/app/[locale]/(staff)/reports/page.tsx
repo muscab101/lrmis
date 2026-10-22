@@ -4,16 +4,22 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { BarChart3, Download } from "lucide-react";
+import { BarChart3, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { AssistantPanel } from "@/components/reports/assistant-panel";
 import { BarChart } from "@/components/reports/bar-chart";
 import { GroupedBars } from "@/components/reports/charts";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table";
 import {
   accountTotals,
+  type BillingRow,
+  DISTRICT_REPORTS,
+  PARCEL_KINDS,
+  parcelKind,
   REPORTS,
+  SNAPSHOT_REPORTS,
   reportRange,
   type IncomeRow,
   runReport,
@@ -43,18 +49,104 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const { from, to } = reportRange(sp);
   const districts = await listDistricts();
   const district = districts.some((d) => d.id === sp.district) ? sp.district! : "";
-  const rows = await runReport(report, { from, to, district: district || null });
+  const kind = parcelKind(sp.kind);
+  const rows = await runReport(report, { from, to, district: district || null, kind });
   const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
   const usd0 = (n: number) => format.number(n, { style: "currency", currency: "USD", notation: "compact" });
   const name = (r: { district_so: string; district_en: string }) => (lang === "so" ? r.district_so : r.district_en);
-  const qs = new URLSearchParams({ r: report, from, to, ...(district ? { district } : {}) }).toString();
-  const usesRange = report !== "arrears";
-  const usesDistrict = report === "revenue" || report === "income" || report === "arrears" || report === "registrations";
+  const usesRange = !SNAPSHOT_REPORTS.includes(report);
+  const usesDistrict = DISTRICT_REPORTS.includes(report);
+  const qs = new URLSearchParams({
+    lang,
+    ...(usesRange ? { from, to } : {}),
+    ...(usesDistrict && district ? { district } : {}),
+    ...(report === "parcels" ? { kind } : {}),
+  }).toString();
+  const cell = (v: Cell, k: CellKind) =>
+    v === null || v === ""
+      ? "—"
+      : k === "money"
+        ? usd(v)
+        : k === "int" || k === "num"
+          ? format.number(Number(v), { maximumFractionDigits: 2 })
+          : k === "pct"
+            ? `${format.number(Number(v), { maximumFractionDigits: 1 })} %`
+            : k === "datetime"
+              ? format.dateTime(new Date(String(v)), { dateStyle: "medium", timeStyle: "short" })
+              : String(v);
+  const right = (k: CellKind) => k === "money" || k === "int" || k === "num" || k === "pct";
+  const PAGE_ROWS = 500;
   const monthLabel = (m: string) => format.dateTime(new Date(`${m}-01T00:00:00`), { month: "short", year: "2-digit" });
 
   let body: React.ReactNode;
   if (rows.length === 0) body = <EmptyState icon={<BarChart3 />} title={t("empty")} description={t("emptyBody")} />;
-  else if (report === "revenue") {
+  else if (!["revenue", "income", "arrears", "collection", "registrations", "cashiers"].includes(report)) {
+    // The listing reports draw straight from the same table the PDF and Excel files use.
+    const table = await reportTable(report, rows, lang);
+    const shown = table.rows.slice(0, PAGE_ROWS);
+    let chart: React.ReactNode = null;
+    if (report === "billing") {
+      const r = rows as BillingRow[];
+      const months = [...new Set(r.map((x) => x.month))];
+      const sumBy = (m: string, k: "billed" | "collected" | "outstanding") => r.filter((x) => x.month === m).reduce((s, x) => s + Number(x[k]), 0);
+      chart = (
+        <CardContent className="pt-5">
+          <GroupedBars
+            label={t("names.billing")}
+            format={usd0}
+            categories={months.map(monthLabel)}
+            series={[
+              { label: t("billed"), values: months.map((m) => sumBy(m, "billed")) },
+              { label: t("collected"), values: months.map((m) => sumBy(m, "collected")), color: "var(--color-status-approved)" },
+              { label: t("outstanding"), values: months.map((m) => sumBy(m, "outstanding")), color: "var(--color-status-pending)" },
+            ]}
+          />
+        </CardContent>
+      );
+    }
+    body = (
+      <>
+        {chart}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {table.columns.map((c) => (
+                <TableHead key={c.label} className={right(c.kind) ? "text-end" : ""}>
+                  {c.label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {shown.map((r, i) => (
+              <TableRow key={i}>
+                {r.map((v, j) => {
+                  const k = table.columns[j]!.kind;
+                  return (
+                    <TableCell key={j} className={`text-sm ${right(k) ? "text-end tabular-nums" : ""} ${k === "mono" ? "font-mono text-xs whitespace-nowrap" : ""}`}>
+                      {cell(v, k)}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+            {table.totals && (
+              <TableRow>
+                {table.totals.map((v, j) => (
+                  <TableCell key={j} className={`font-medium ${right(table.columns[j]!.kind) ? "text-end tabular-nums" : ""}`}>
+                    {v === null ? "" : j === 0 && !table.columns[0]!.sum ? String(v) : cell(v, table.columns[j]!.kind)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <p className="border-t px-4 py-2 text-xs text-muted-foreground">
+          {table.rows.length > PAGE_ROWS ? t("showing", { shown: PAGE_ROWS, count: table.rows.length }) : t("rowsCount", { count: table.rows.length })}
+        </p>
+      </>
+    );
+  } else if (report === "revenue") {
     const r = rows as RevenueRow[];
     const months = [...new Set(r.map((x) => x.month))];
     body = (
@@ -316,7 +408,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           {REPORTS.map((r) => (
             <Link
               key={r}
-              href={`/reports?r=${r}&from=${from}&to=${to}`}
+              href={`/reports?r=${r}&from=${from}&to=${to}${district ? `&district=${district}` : ""}`}
               className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${report === r ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               {t(`names.${r}`)}
@@ -353,16 +445,42 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 </NativeSelect>
               </label>
             )}
+            {report === "parcels" && (
+              <label className="grid gap-1">
+                <span className="text-xs text-muted-foreground">{t("kind")}</span>
+                <NativeSelect name="kind" defaultValue={kind} className="w-48">
+                  {PARCEL_KINDS.map((k) => (
+                    <option key={k} value={k}>
+                      {t(`kinds.${k}`)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </label>
+            )}
             <Button type="submit" size="sm" variant="outline">
               {t("apply")}
             </Button>
             {viewer.can("reports.export") && rows.length > 0 && (
-              <Button size="sm" variant="ghost" asChild className="ms-auto">
-                <a href={`/api/exports/reports/${report}?${qs}`}>
-                  <Download aria-hidden />
-                  {t("csv")}
-                </a>
-              </Button>
+              <div className="ms-auto flex flex-wrap gap-1">
+                <Button size="sm" variant="outline" asChild>
+                  <a href={`/api/exports/reports/${report}?format=pdf&${qs}`}>
+                    <FileText aria-hidden />
+                    {t("pdf")}
+                  </a>
+                </Button>
+                <Button size="sm" variant="outline" asChild>
+                  <a href={`/api/exports/reports/${report}?format=xlsx&${qs}`}>
+                    <FileSpreadsheet aria-hidden />
+                    {t("xlsx")}
+                  </a>
+                </Button>
+                <Button size="sm" variant="ghost" asChild>
+                  <a href={`/api/exports/reports/${report}?format=csv&${qs}`}>
+                    <Download aria-hidden />
+                    {t("csv")}
+                  </a>
+                </Button>
+              </div>
             )}
           </form>
           <Card className="overflow-hidden">{body}</Card>
