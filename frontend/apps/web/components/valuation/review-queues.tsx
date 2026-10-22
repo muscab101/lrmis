@@ -16,8 +16,9 @@ import { Link } from "@/i18n/navigation";
 import type { AppealRow, ExemptionRow } from "@/lib/server/valuation";
 import type { ComboOption } from "@dhulka/ui/combobox";
 import { NeighbourhoodPicker } from "./neighbourhood-picker";
+import { AppealRowActions, ExemptionRowActions } from "./row-actions";
 
-export function ExemptionQueue({ rows, me, canDecide }: { rows: ExemptionRow[]; me: string; canDecide: boolean }) {
+export function ExemptionQueue({ rows, me, canDecide, canEdit }: { rows: ExemptionRow[]; me: string; canDecide: boolean; canEdit: boolean }) {
   const t = useTranslations("valuation");
   const format = useFormatter();
   const [decide, setDecide] = useState<{ id: string; approve: boolean } | null>(null);
@@ -35,6 +36,7 @@ export function ExemptionQueue({ rows, me, canDecide }: { rows: ExemptionRow[]; 
             <TableHead>{t("period")}</TableHead>
             <TableHead>{t("statusLabel")}</TableHead>
             {canDecide && <TableHead />}
+            {canEdit && <TableHead className="w-20" />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,6 +69,11 @@ export function ExemptionQueue({ rows, me, canDecide }: { rows: ExemptionRow[]; 
                   {r.status === "pending" && r.requested_by === me && <span className="text-xs text-muted-foreground">{t("needsSomeoneElse")}</span>}
                 </TableCell>
               )}
+              {canEdit && (
+                <TableCell className="text-end">
+                  <ExemptionRowActions row={r} />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -95,7 +102,7 @@ export function ExemptionQueue({ rows, me, canDecide }: { rows: ExemptionRow[]; 
   );
 }
 
-export function AppealQueue({ rows, me, canDecide }: { rows: AppealRow[]; me: string; canDecide: boolean }) {
+export function AppealQueue({ rows, me, canDecide, canEdit }: { rows: AppealRow[]; me: string; canDecide: boolean; canEdit: boolean }) {
   const t = useTranslations("valuation");
   const format = useFormatter();
   const [decide, setDecide] = useState<AppealRow | null>(null);
@@ -116,6 +123,7 @@ export function AppealQueue({ rows, me, canDecide }: { rows: AppealRow[]; me: st
             <TableHead>{t("reason")}</TableHead>
             <TableHead>{t("statusLabel")}</TableHead>
             {canDecide && <TableHead />}
+            {canEdit && <TableHead className="w-20" />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -151,6 +159,11 @@ export function AppealQueue({ rows, me, canDecide }: { rows: AppealRow[]; me: st
                       {t("decide")}
                     </Button>
                   )}
+                </TableCell>
+              )}
+              {canEdit && (
+                <TableCell className="text-end">
+                  <AppealRowActions row={r} />
                 </TableCell>
               )}
             </TableRow>

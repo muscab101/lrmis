@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Scale } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { setRateAction } from "@/app/[locale]/(staff)/valuation/actions";
+import { deleteRateAction, setRateAction, updateRateAction } from "@/app/[locale]/(staff)/valuation/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import type { RateRow } from "@/lib/server/valuation";
 import { NeighbourhoodPicker } from "./neighbourhood-picker";
+import { DeleteDialog, EditDeleteKeys } from "./row-actions";
 
 const USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
@@ -26,7 +27,8 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
   const router = useRouter();
   const pathname = usePathname();
   const today = new Date().toISOString().slice(0, 10);
-  const [form, setForm] = useState<null | { nbhd: ComboOption | null; landUse: (typeof USES)[number]; developed: boolean; rate: string; service: string; validFrom: string; note: string }>(null);
+  const [deleting, setDeleting] = useState<RateRow | null>(null);
+  const [form, setForm] = useState<null | { id?: string; nbhd: ComboOption | null; landUse: (typeof USES)[number]; developed: boolean; rate: string; service: string; validFrom: string; note: string }>(null);
   const money = (n: number) => format.number(Number(n), { style: "currency", currency: "USD", maximumFractionDigits: 4 });
   // Rows newer than or equal to today's date per (use, developed) are "in force"; the newest past one is current.
   const current = new Set<string>();
@@ -64,6 +66,7 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
               <TableHead className="text-end">{t("rateM2")}</TableHead>
               <TableHead className="text-end">{t("serviceCharge")}</TableHead>
               <TableHead>{t("validFrom")}</TableHead>
+              {canEdit && <TableHead className="w-20" />}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -82,6 +85,25 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
                   {current.has(r.id) && <span className="ms-2 rounded-sm bg-status-approved/10 px-1.5 text-[11px] text-status-approved">{t("inForce")}</span>}
                   {r.valid_from > today && <span className="ms-2 rounded-sm bg-muted px-1.5 text-[11px]">{t("upcoming")}</span>}
                 </TableCell>
+                {canEdit && (
+                  <TableCell className="text-end">
+                    <EditDeleteKeys
+                      onEdit={() =>
+                        setForm({
+                          id: r.id,
+                          nbhd: r.neighbourhood ? { value: r.neighbourhood.id, label: locale === "so" ? r.neighbourhood.name_so : r.neighbourhood.name_en, hint: r.neighbourhood.code } : null,
+                          landUse: r.land_use as (typeof USES)[number],
+                          developed: r.developed,
+                          rate: String(r.rate_m2),
+                          service: String(r.service_charge),
+                          validFrom: r.valid_from,
+                          note: r.note ?? "",
+                        })
+                      }
+                      onDelete={() => setDeleting(r)}
+                    />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -91,12 +113,14 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
       <FormDialog
         open={form !== null}
         onOpenChange={(o) => !o && setForm(null)}
-        title={t("addRate")}
-        description={t("addRateBody")}
+        title={form?.id ? t("editRate") : t("addRate")}
+        description={form?.id ? t("editRateBody") : t("addRateBody")}
         confirmLabel={t("save")}
         successMessage={t("rateSaved")}
         submit={() =>
-          setRateAction({
+          form!.id
+            ? updateRateAction({ id: form!.id, rate: form!.rate, serviceCharge: form!.service, validFrom: form!.validFrom, note: form!.note })
+            : setRateAction({
             neighbourhoodId: form!.nbhd?.value ?? "",
             landUse: form!.landUse,
             developed: form!.developed,
@@ -111,13 +135,13 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
           form && (
             <>
               <Field id="nbhd" label={t("neighbourhood")} error={fe("neighbourhoodId")} required>
-                <div>
+                <div className={form.id ? "pointer-events-none opacity-60" : undefined}>
                   <NeighbourhoodPicker value={form.nbhd} onChange={(o) => setForm({ ...form, nbhd: o })} />
                 </div>
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field id="use" label={ts("landUse")}>
-                  <NativeSelect value={form.landUse} onChange={(e) => setForm({ ...form, landUse: e.target.value as (typeof USES)[number] })}>
+                  <NativeSelect value={form.landUse} disabled={!!form.id} onChange={(e) => setForm({ ...form, landUse: e.target.value as (typeof USES)[number] })}>
                     {USES.map((u) => (
                       <option key={u} value={u}>
                         {ts(`landUses.${u}`)}
@@ -126,7 +150,7 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
                   </NativeSelect>
                 </Field>
                 <Field id="developed" label={t("developed")}>
-                  <NativeSelect value={form.developed ? "1" : "0"} onChange={(e) => setForm({ ...form, developed: e.target.value === "1" })}>
+                  <NativeSelect value={form.developed ? "1" : "0"} disabled={!!form.id} onChange={(e) => setForm({ ...form, developed: e.target.value === "1" })}>
                     <option value="1">{t("yes")}</option>
                     <option value="0">{t("no")}</option>
                   </NativeSelect>
@@ -148,6 +172,14 @@ export function RatesPanel({ rates, selected, canEdit }: { rates: RateRow[]; sel
           )
         }
       </FormDialog>
+
+      <DeleteDialog
+        open={deleting !== null}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title={t("deleteRateTitle")}
+        body={t("deleteRateBody")}
+        submit={() => deleteRateAction({ id: deleting!.id })}
+      />
     </div>
   );
 }

@@ -199,7 +199,13 @@
       "ownership": "Dooro dowladda ama gaar.",
       "developed": "Dooro haa ama maya.",
       "plot_size_required": "Marka hore geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa (ballac × dherer × qiime).",
-      "fee_built_in": "Khidmaddan nidaamka ayaa isticmaala, lama tirtiri karo. Dami halkii."
+      "fee_built_in": "Khidmaddan nidaamka ayaa isticmaala, lama tirtiri karo. Dami halkii.",
+      "rate_in_use": "Qiimayn ayaa lagu sameeyay qiimahan, lama beddeli karo. Ku dar qiime cusub oo taariikh dambe ka bilaabma.",
+      "rate_date_taken": "Waxaa jira qiime horay ugu ah xaafaddan, isticmaalkan iyo taariikhdan.",
+      "assessment_superseded": "Qiimaynta shaqaynaysa oo keliya ayaa la tirtiri karaa.",
+      "assessment_billed": "Qiimayntani waxay ku jirtaa biil, lama tirtiri karo.",
+      "assessment_appealed": "Qiimayntani racfaan ayay leedahay, lama tirtiri karo.",
+      "decided": "Tan horay ayaa go'aan loo gaaray, lama beddeli karo."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -2093,7 +2099,27 @@
     "deleteFeeTitle": "Ma tirtiraysaa {name}?",
     "deleteFeeBody": "Haddii khidmaddan ay horay ugu jirto biil ama wareeg biilasha waa la damiyaa, si ay u haystaan. Haddii kale waa la tirtirayaa.",
     "feeDeleted": "Nooca khidmadda waa la tirtiray",
-    "feeHidden": "Nooca khidmadda waa la isticmaalayaa, sidaas darteed waa la damiyay"
+    "feeHidden": "Nooca khidmadda waa la isticmaalayaa, sidaas darteed waa la damiyay",
+    "delete": "Tirtir",
+    "deleted": "Waa la tirtiray",
+    "reassess": "Dib u qiimee",
+    "reassessTitle": "Dib ma u qiimaynaysaa {number}?",
+    "reassessBody": "Canshuurta {year} ayaa mar kale lagu xisaabiyaa qiimayaasha, heerarka iyo dhaafitaannada maanta. Qiimaynta cusub ayaa beddelaysa tan; tan hore waxaa loo hayaa mid la beddelay.",
+    "deleteAssessmentTitle": "Ma tirtiraysaa {number}?",
+    "deleteAssessmentBody": "Qiimayn aan biil iyo racfaan lahayn oo keliya ayaa la tirtiri karaa. Haddii ay beddeshay mid hore, tii hore ayaa mar kale noqonaysa qiimaynta shaqaynaysa.",
+    "editExemption": "Wax ka beddel codsiga dhaafitaanka",
+    "deleteExemptionTitle": "Ma tirtiraysaa codsigan dhaafitaanka?",
+    "deleteExemptionBody": "Codsiga sugaya waa la tirtirayaa. Mar kale ayaa la codsan karaa.",
+    "editAppeal": "Wax ka beddel racfaanka",
+    "deleteAppealTitle": "Ma tirtiraysaa racfaanka {number}?",
+    "deleteAppealBody": "Racfaanka furan waa la tirtirayaa, qiimayntuna sideeda ayay ahaanaysaa.",
+    "editRate": "Wax ka beddel qiimaha",
+    "editRateBody": "Qiime aan qiimayn lagu samayn oo keliya ayaa la beddeli karaa. Xaafadda, isticmaalka dhulka iyo horumarka isma beddelaan.",
+    "deleteRateTitle": "Ma tirtiraysaa qiimahan?",
+    "deleteRateBody": "Qiime aan qiimayn lagu samayn oo keliya ayaa la tirtiri karaa. Qiime horay loo isticmaalay, ku dar qiime cusub oo taariikh dambe ka bilaabma.",
+    "deleteGradeBody": "Haddii dhul ama dhismayaal horay u isticmaalayaan heerkan waa la damiyaa, si ay u haystaan. Haddii kale waa la tirtirayaa.",
+    "gradeDeleted": "Heerka waa la tirtiray",
+    "gradeHidden": "Heerka waa la isticmaalayaa, sidaas darteed waa la damiyay"
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

@@ -10,7 +10,7 @@ import { toast } from "@dhulka/ui/toaster";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { deleteFeeTypeAction, saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
+import { deleteFeeTypeAction, deleteGradeAction, saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import type { FeeType, Grade } from "@/lib/server/valuation";
 
@@ -48,7 +48,7 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
             {kind === "fees" && <TableHead>{t("interval")}</TableHead>}
             <TableHead className="text-end">{t(kind === "grades" ? "amountPerUnit" : "defaultAmount")}</TableHead>
             <TableHead>{t("statusLabel")}</TableHead>
-            {canEdit && <TableHead className={kind === "fees" ? "w-20" : "w-12"} />}
+            {canEdit && <TableHead className="w-20" />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -73,8 +73,8 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                   >
                     <Pencil aria-hidden />
                   </Button>
-                  {kind === "fees" && !BUILT_IN_FEES.has(i.code) && (
-                    <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("deleteFee")} title={t("deleteFee")} onClick={() => setDeleting(i)}>
+                  {!(kind === "fees" && BUILT_IN_FEES.has(i.code)) && (
+                    <Button size="icon-sm" variant="ghost" className="text-danger" aria-label={t("delete")} title={t("delete")} onClick={() => setDeleting(i)}>
                       <Trash2 aria-hidden />
                     </Button>
                   )}
@@ -147,11 +147,13 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
           open
           onOpenChange={(o) => !o && setDeleting(null)}
           title={t("deleteFeeTitle", { name: locale === "so" ? deleting.name_so : deleting.name_en })}
-          description={t("deleteFeeBody")}
+          description={t(kind === "grades" ? "deleteGradeBody" : "deleteFeeBody")}
           confirmLabel={t("deleteFee")}
           destructive
-          submit={() => deleteFeeTypeAction({ id: deleting.id })}
-          onDone={(d) => toast.success((d as { result: string }).result === "hidden" ? t("feeHidden") : t("feeDeleted"))}
+          submit={() => (kind === "grades" ? deleteGradeAction({ id: deleting.id }) : deleteFeeTypeAction({ id: deleting.id }))}
+          onDone={(d) =>
+            toast.success((d as { result: string }).result === "hidden" ? t(kind === "grades" ? "gradeHidden" : "feeHidden") : t(kind === "grades" ? "gradeDeleted" : "feeDeleted"))
+          }
         />
       )}
     </div>

@@ -209,3 +209,78 @@ export const decideAppealAction = defineAction(
     return done(null);
   },
 );
+
+// --- Edit and delete on the Valuation tabs ---------------------------------
+
+/** Delete a grade nobody uses; one used by land or buildings is switched off. */
+export const deleteGradeAction = defineAction("valuation.delete_grade", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const result = unwrap(await ctx.supabase.rpc("valuation_delete_grade", { p_id: id }), "delete grade") as "deleted" | "hidden";
+  return done({ result });
+});
+
+/** Change a rate no assessment was made with yet. */
+export const updateRateAction = defineAction(
+  "valuation.update_rate",
+  z.object({ id: z.uuid(), rate: money, serviceCharge: money.default(0), validFrom: isoDate, note: z.string().trim().max(300).default("") }),
+  async (v, ctx) => {
+    unwrap(
+      await ctx.supabase.rpc("valuation_update_rate", {
+        p_id: v.id,
+        p: { rate_m2: v.rate, service_charge: v.serviceCharge, valid_from: v.validFrom, note: v.note },
+      }),
+      "update rate",
+    );
+    return done(null);
+  },
+);
+
+export const deleteRateAction = defineAction("valuation.delete_rate", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("valuation_delete_rate", { p_id: id }), "delete rate");
+  return done(null);
+});
+
+/** Delete the live assessment (no invoice, no appeal); the one it replaced is live again. */
+export const deleteAssessmentAction = defineAction("valuation.delete_assessment", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("assessment_delete", { p_id: id }), "delete assessment");
+  return done(null);
+});
+
+const exemptionFields = z.object({
+  kind: z.enum(["mosque", "school", "hospital", "government", "hardship", "other"]),
+  pct: z.coerce.number().gt(0, "validation.pct").max(100, "validation.pct"),
+  reason: z.string().trim().min(3, "validation.reason").max(500),
+  validFrom: isoDate,
+  validTo: z.union([isoDate, z.literal("")]).default(""),
+});
+
+/** Change a pending exemption request. */
+export const updateExemptionAction = defineAction("valuation.update_exemption", exemptionFields.extend({ id: z.uuid() }), async (v, ctx) => {
+  unwrap(
+    await ctx.supabase.rpc("exemption_update", {
+      p_id: v.id,
+      p: { kind: v.kind, pct: v.pct, reason: v.reason, valid_from: v.validFrom, valid_to: v.validTo },
+    }),
+    "update exemption",
+  );
+  return done(null);
+});
+
+export const deleteExemptionAction = defineAction("valuation.delete_exemption", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("exemption_delete", { p_id: id }), "delete exemption");
+  return done(null);
+});
+
+/** Change an open appeal's reason or the amount asked for. */
+export const updateAppealAction = defineAction(
+  "valuation.update_appeal",
+  z.object({ id: z.uuid(), reason: z.string().trim().min(10, "validation.reason_long").max(2000), requestedTotal: money.nullable() }),
+  async (v, ctx) => {
+    unwrap(await ctx.supabase.rpc("appeal_update", { p_id: v.id, p_reason: v.reason, p_requested: v.requestedTotal }), "update appeal");
+    return done(null);
+  },
+);
+
+export const deleteAppealAction = defineAction("valuation.delete_appeal", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("appeal_delete", { p_id: id }), "delete appeal");
+  return done(null);
+});

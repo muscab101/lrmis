@@ -199,7 +199,13 @@
       "ownership": "Pick public or private.",
       "developed": "Pick yes or no.",
       "plot_size_required": "Enter the plot width and length first: this property type is billed per m² (width × length × price).",
-      "fee_built_in": "This fee is used by the system, so it can't be deleted. Switch it off instead."
+      "fee_built_in": "This fee is used by the system, so it can't be deleted. Switch it off instead.",
+      "rate_in_use": "An assessment was made with this rate, so it can't change. Add a new rate from a later date instead.",
+      "rate_date_taken": "There's already a rate for this neighbourhood, land use and date.",
+      "assessment_superseded": "Only the live assessment can be deleted.",
+      "assessment_billed": "This assessment is on an invoice, so it can't be deleted.",
+      "assessment_appealed": "This assessment has an appeal, so it can't be deleted.",
+      "decided": "This has already been decided, so it can't be changed."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -2093,7 +2099,27 @@
     "deleteFeeTitle": "Delete {name}?",
     "deleteFeeBody": "If this fee is already on an invoice or a billing run it's switched off instead, so those keep it. Otherwise it's removed.",
     "feeDeleted": "Fee type deleted",
-    "feeHidden": "Fee type is in use, so it was switched off"
+    "feeHidden": "Fee type is in use, so it was switched off",
+    "delete": "Delete",
+    "deleted": "Deleted",
+    "reassess": "Re-assess",
+    "reassessTitle": "Re-assess {number}?",
+    "reassessBody": "Works out the {year} tax again with today's rates, grades and exemptions. The new assessment replaces this one; the old one is kept as superseded.",
+    "deleteAssessmentTitle": "Delete {number}?",
+    "deleteAssessmentBody": "Only an assessment with no invoice and no appeal can be deleted. If it replaced an earlier one, that one becomes the live assessment again.",
+    "editExemption": "Edit exemption request",
+    "deleteExemptionTitle": "Delete this exemption request?",
+    "deleteExemptionBody": "The pending request is removed. It can be asked for again later.",
+    "editAppeal": "Edit appeal",
+    "deleteAppealTitle": "Delete the appeal on {number}?",
+    "deleteAppealBody": "The open appeal is removed and the assessment stands as issued.",
+    "editRate": "Edit rate",
+    "editRateBody": "Only a rate no assessment was made with can be changed. The neighbourhood, land use and developed flag stay the same.",
+    "deleteRateTitle": "Delete this rate?",
+    "deleteRateBody": "Only a rate no assessment was made with can be deleted. For a rate already used, add a new rate from a later date instead.",
+    "deleteGradeBody": "If land or buildings already use this grade it's switched off instead, so they keep it. Otherwise it's removed.",
+    "gradeDeleted": "Grade deleted",
+    "gradeHidden": "Grade is in use, so it was switched off"
   },
   "billing": {
     "runsTitle": "Billing runs",

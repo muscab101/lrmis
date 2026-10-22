@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Calculator } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CatalogEditor } from "@/components/valuation/catalog-editor";
+import { AssessmentRowActions } from "@/components/valuation/row-actions";
 import { RatesPanel } from "@/components/valuation/rates-panel";
 import { AppealQueue, AssessNeighbourhoodButton, ExemptionQueue } from "@/components/valuation/review-queues";
 import { Link } from "@/i18n/navigation";
@@ -35,6 +36,8 @@ export default async function ValuationPage({ params, searchParams }: { params: 
   const badge: Partial<Record<Tab, number>> = { assessments: counts.assessments, exemptions: counts.exemptions_pending, appeals: counts.appeals_open };
 
   let body: React.ReactNode = null;
+  const canReassess = viewer.can("valuation.create");
+  const canDeleteAssessment = viewer.can("valuation.approve");
   if (tab === "assessments") {
     const year = sp.year && /^\d{4}$/.test(sp.year) ? Number(sp.year) : null;
     const rows = await listAssessments({ year, q: (sp.q ?? "").slice(0, 40), status: sp.all === "1" ? "any" : "issued" });
@@ -62,6 +65,7 @@ export default async function ValuationPage({ params, searchParams }: { params: 
                 <TableHead className="text-end">{t("annualTax")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
                 <TableHead className="text-end">{t("issued")}</TableHead>
+                {(canReassess || canDeleteAssessment) && <TableHead className="w-20" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -82,6 +86,11 @@ export default async function ValuationPage({ params, searchParams }: { params: 
                     {a.override_note && <span className="block text-xs text-muted-foreground">{a.override_note}</span>}
                   </TableCell>
                   <TableCell className="text-end text-xs text-muted-foreground">{format.relativeTime(new Date(a.created_at))}</TableCell>
+                  {(canReassess || canDeleteAssessment) && (
+                    <TableCell className="text-end">
+                      <AssessmentRowActions row={a} canReassess={canReassess} canDelete={canDeleteAssessment} />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -104,9 +113,9 @@ export default async function ValuationPage({ params, searchParams }: { params: 
   } else if (tab === "fees") {
     body = <CatalogEditor kind="fees" items={await listFeeTypes()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "exemptions") {
-    body = <ExemptionQueue rows={await listExemptions(sp.all === "1" ? "any" : "pending")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} />;
+    body = <ExemptionQueue rows={await listExemptions(sp.all === "1" ? "any" : "pending")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} canEdit={viewer.can("valuation.create")} />;
   } else {
-    body = <AppealQueue rows={await listAppeals(sp.all === "1" ? "any" : "open")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} />;
+    body = <AppealQueue rows={await listAppeals(sp.all === "1" ? "any" : "open")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} canEdit={viewer.can("valuation.create")} />;
   }
 
   return (
