@@ -54,8 +54,8 @@
     "items": {
       "dashboard": "Shaashadda guud",
       "map": "Khariidad",
-      "applications": "Codsiyada",
-      "parcels": "Dhulalka",
+      "applications": "Dhulalka",
+      "parcels": "La diiwaangeliyay",
       "owners": "Milkiilayaasha",
       "surveys": "Sahamada",
       "valuation": "Qiimeynta",
@@ -1244,8 +1244,8 @@
     "deleted": "Goobta waa la tirtiray"
   },
   "applications": {
-    "title": "Codsiyada",
-    "subtitle": "Codsiyada diiwaangelinta, wareejinta iyo kuwa kale ee bogga, xafiiska iyo goobta.",
+    "title": "Dhulalka",
+    "subtitle": "Dhulka ku socda diiwaangelinta: codsiyo cusub, sahan, hubin goob, biilal iyo wareejin ka yimid bogga, xafiiska iyo goobta.",
     "new": "Codsi cusub",
     "newSubtitle": "Ku bilow waxa iyo meesha. Qabyada waa la kaydiyaa, markaas waad sii wadan kartaa.",
     "citizenNewTitle": "Codso diiwaangelin",
@@ -1850,12 +1850,12 @@
     "note": "Qoraal"
   },
   "parcels": {
-    "title": "Dhulal",
-    "subtitle": "Dhulalka diiwaangashan iyo kuwa socda ee degmooyinkaaga.",
+    "title": "La diiwaangeliyay",
+    "subtitle": "Dhulalka diiwaangashan ee degmooyinkaaga.",
     "searchPlaceholder": "Ku raadi PUN, lambarka akoonka ama milkiilaha",
     "noMatches": "Dhul ku habboon ma jiro",
-    "emptyTitle": "Weli dhul ma jiro",
-    "emptyBody": "Dhulalka waxaa la abuuraa marka sahan la gudbiyo, waxayna helaan PUN marka diiwaangeliyuhu ansixiyo.",
+    "emptyTitle": "Weli dhul la diiwaangeliyay ma jiro",
+    "emptyBody": "Dhulku halkan wuxuu ka muuqdaa marka diiwaangeliyuhu diiwaangeliyo oo uu helo PUN. Dhulka weli socda wuxuu ku jiraa Dhulalka.",
     "pun": "PUN",
     "noPun": "Weli PUN ma leh",
     "owners": "Milkiilayaasha",

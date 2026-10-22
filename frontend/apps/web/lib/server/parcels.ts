@@ -29,7 +29,11 @@ export interface ParcelListRow {
 
 export async function searchParcels(q: string) {
   const supabase = await createClient();
-  const res = await supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 100 });
+  // Registered land only (registered, disputed); drafts still in progress are on the applications ("Parcels") page.
+  const res = await supabase
+    .rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 1000 })
+    .not("status", "in", "(draft,surveyed,verified)")
+    .limit(100);
   return unwrap(res, "parcels") as ParcelListRow[];
 }
 

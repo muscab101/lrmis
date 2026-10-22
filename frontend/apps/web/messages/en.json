@@ -54,8 +54,8 @@
     "items": {
       "dashboard": "Dashboard",
       "map": "Map",
-      "applications": "Applications",
-      "parcels": "Parcels",
+      "applications": "Parcels",
+      "parcels": "Registered",
       "owners": "Owners",
       "surveys": "Surveys",
       "valuation": "Valuation",
@@ -1244,8 +1244,8 @@
     "deleted": "Location deleted"
   },
   "applications": {
-    "title": "Applications",
-    "subtitle": "Registration, transfer and other requests from the portal, the office and the field.",
+    "title": "Parcels",
+    "subtitle": "Land on its way to registration: new requests, surveys, site checks, bills and transfers from the portal, the office and the field.",
     "new": "New application",
     "newSubtitle": "Start with what and where. The draft is saved, so you can continue later.",
     "citizenNewTitle": "Apply for registration",
@@ -1850,12 +1850,12 @@
     "note": "Note"
   },
   "parcels": {
-    "title": "Parcels",
-    "subtitle": "Registered and in-progress parcels in your districts.",
+    "title": "Registered",
+    "subtitle": "Registered parcels in your districts.",
     "searchPlaceholder": "Search by PUN, account number or owner",
     "noMatches": "No parcels match",
-    "emptyTitle": "No parcels yet",
-    "emptyBody": "Parcels are created when a survey is submitted and get a PUN when the registrar approves them.",
+    "emptyTitle": "No registered parcels yet",
+    "emptyBody": "A parcel appears here once the registrar registers it and it gets a PUN. Land still in progress is under Parcels.",
     "pun": "PUN",
     "noPun": "No PUN yet",
     "owners": "Owners",
