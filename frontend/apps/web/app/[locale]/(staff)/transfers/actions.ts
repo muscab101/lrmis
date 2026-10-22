@@ -129,7 +129,7 @@ export const requestChangeAction = defineAction(
   async (v, ctx) => {
     let ids = v.parcelIds;
     if (v.kind === "merge" && v.otherPuns.length) {
-      const { data } = await ctx.supabase.from("parcels").select("id, pun").in("pun", v.otherPuns.filter(Boolean).map((p) => p.toUpperCase()));
+      const { data } = await ctx.supabase.from("parcels").select("id, pun").in("pun", v.otherPuns.filter(Boolean).map((p) => p.toUpperCase().replace(/-/g, "")));
       const found = (data ?? []) as { id: string }[];
       if (found.length !== v.otherPuns.filter(Boolean).length) throw new AppFailure("VALIDATION", undefined, { otherPuns: ["validation.pun_not_found"] });
       ids = [...ids, ...found.map((p) => p.id)];

@@ -79,7 +79,7 @@ export async function listInvoices(opts: { filter: InvoiceFilter; q: string; run
   if (term) {
     if (/^inv/i.test(term)) req = req.ilike("number", `%${term}%`);
     else {
-      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term}%`).limit(50);
+      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term.replace(/-/g, "")}%`).limit(50);
       const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
       req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     }

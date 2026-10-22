@@ -95,7 +95,7 @@ export const recordBankPaymentAction = defineAction(
   async (v, ctx) => {
     let parcelId: string | null = null;
     if (v.pun) {
-      const { data } = await ctx.supabase.from("parcels").select("id").eq("pun", v.pun.toUpperCase()).maybeSingle();
+      const { data } = await ctx.supabase.from("parcels").select("id").eq("pun", v.pun.toUpperCase().replace(/-/g, "")).maybeSingle();
       if (!data) throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
       parcelId = (data as { id: string }).id;
     }
@@ -115,7 +115,7 @@ export const recordBankPaymentAction = defineAction(
 );
 
 export const matchPaymentAction = defineAction("payments.match", z.object({ id: z.uuid(), pun: z.string().trim().min(5, "validation.pun").max(40) }), async (v, ctx) => {
-  const { data } = await ctx.supabase.from("parcels").select("id").eq("pun", v.pun.toUpperCase()).maybeSingle();
+  const { data } = await ctx.supabase.from("parcels").select("id").eq("pun", v.pun.toUpperCase().replace(/-/g, "")).maybeSingle();
   if (!data) throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
   return done(unwrap(await ctx.supabase.rpc("payment_match", { p_id: v.id, p_parcel: (data as { id: string }).id }), "match"));
 });

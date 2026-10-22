@@ -34,8 +34,9 @@ export async function listPayments(opts: { status?: PaymentStatus | "any"; q?: s
   if (opts.parcelId) req = req.eq("parcel_id", opts.parcelId);
   const term = (opts.q ?? "").replace(/[,()*%\\]/g, " ").trim();
   if (term) {
-    if (/^bn-/i.test(term)) {
-      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term}%`).limit(50);
+    // PUNs are BN… with no dashes; dashes typed from an older printout are ignored.
+    if (/^bn/i.test(term)) {
+      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term.replace(/-/g, "")}%`).limit(50);
       const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
       req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     } else req = req.or(`receipt_no.ilike.%${term}%,provider_ref.ilike.%${term}%,reference.ilike.%${term}%`);
@@ -230,7 +231,7 @@ export async function parcelForCashier(term: string) {
   }
   const { data: p } = parcelId
     ? await supabase.from("parcels").select(cols).eq("id", parcelId).maybeSingle()
-    : await supabase.from("parcels").select(cols).eq("pun", key).maybeSingle();
+    : await supabase.from("parcels").select(cols).eq("pun", key.replace(/-/g, "")).maybeSingle();
   if (!p) return null;
   const parcel = p as unknown as { id: string; pun: string | null; account_no: string | null; district_id: string; application: { number: string } | null };
   const [{ data: inv }, { data: owners }] = await Promise.all([
