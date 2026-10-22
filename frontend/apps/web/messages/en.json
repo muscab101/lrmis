@@ -205,7 +205,9 @@
       "assessment_superseded": "Only the live assessment can be deleted.",
       "assessment_billed": "This assessment is on an invoice, so it can't be deleted.",
       "assessment_appealed": "This assessment has an appeal, so it can't be deleted.",
-      "decided": "This has already been decided, so it can't be changed."
+      "decided": "This has already been decided, so it can't be changed.",
+      "application_paid": "Money has already been paid on this application's invoices, so it can't be deleted.",
+      "application_land_registered": "This application's land is already surveyed or registered, so it can't be deleted."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -1448,7 +1450,7 @@
     "rowView": "View details",
     "rowDelete": "Delete",
     "rowDeleteTitle": "Delete {number}?",
-    "rowDeleteBody": "The application is cancelled and closed. It stays in the records with its history.",
+    "rowDeleteBody": "This removes the application from the database for good, with its documents, its draft land and that land's unpaid invoices. Its owners are removed too, unless they also have other land or applications. It can't be undone.",
     "rowRegister": "Move to Parcels",
     "rowRegisterTitle": "Move {number} to Parcels?",
     "rowRegisterBody": "The land was confirmed on site (✓). It's registered now: it gets its PUN and account number and the owners are recorded. The boundary survey, verification and public notice are skipped; until a boundary is surveyed the parcel keeps a rough square around the GPS pin. This can't be undone.",
@@ -1456,7 +1458,8 @@
     "propertyType": "Property type",
     "propertyTypeHint": "The property grade (Valuation → Property grades). The property bill is width × length × its price per m².",
     "feeInvoicesBody": "Pay these invoices to send the land to survey. Still to pay: {amount}.",
-    "invoicePaid": "Paid"
+    "invoicePaid": "Paid",
+    "rowDeleted": "Application deleted"
   },
   "owners": {
     "title": "Owners",

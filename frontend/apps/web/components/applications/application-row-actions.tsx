@@ -9,7 +9,7 @@ import { toast } from "@dhulka/ui/toaster";
 import { Info, Landmark, Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { registerConfirmedAction, transitionApplicationAction } from "@/app/[locale]/(staff)/applications/actions";
+import { deleteApplicationAction, registerConfirmedAction } from "@/app/[locale]/(staff)/applications/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { SiteCheckStatus } from "@/lib/server/applications";
@@ -35,7 +35,8 @@ interface Can {
 }
 
 const EDITABLE = ["draft", "returned"];
-const DELETABLE = ["draft", "awaiting_payment", "returned"];
+/** Delete removes it from the database; land under survey or registered can't be deleted. */
+const DELETABLE = ["draft", "awaiting_payment", "returned", "cancelled", "rejected"];
 const CLOSED = ["approved", "rejected", "cancelled"];
 const LAND_USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
@@ -47,7 +48,6 @@ export function ApplicationRowActions({ application: a, me, can }: { application
   const t = useTranslations("applications");
   const tc = useTranslations("common");
   const [deleting, setDeleting] = useState(false);
-  const [note, setNote] = useState("");
   const ts = useTranslations("stage");
   const router = useRouter();
   const [registering, setRegistering] = useState(false);
@@ -151,25 +151,14 @@ export function ApplicationRowActions({ application: a, me, can }: { application
       </FormDialog>
       <FormDialog
         open={deleting}
-        onOpenChange={(o) => {
-          if (!o) {
-            setDeleting(false);
-            setNote("");
-          }
-        }}
+        onOpenChange={(o) => !o && setDeleting(false)}
         title={t("rowDeleteTitle", { number: a.number })}
         description={t("rowDeleteBody")}
         confirmLabel={t("rowDelete")}
         destructive
-        successMessage={t("actions.cancelDone")}
-        submit={() => transitionApplicationAction({ applicationId: a.id, action: "cancel", note })}
-      >
-        {(fe) => (
-          <Field id={`del-note-${a.id}`} label={t("noteOptional")} error={fe("note")}>
-            <Textarea rows={2} value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} />
-          </Field>
-        )}
-      </FormDialog>
+        successMessage={t("rowDeleted")}
+        submit={() => deleteApplicationAction({ applicationId: a.id })}
+      />
     </div>
   );
 }

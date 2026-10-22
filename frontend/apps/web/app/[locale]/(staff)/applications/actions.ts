@@ -208,6 +208,15 @@ export const documentUrlAction = defineAction("applications.document_url", z.obj
   return { url: data.signedUrl };
 });
 
+/** Delete an application for good: its draft land, unpaid invoices and owners (unless used elsewhere) go with it. */
+export const deleteApplicationAction = defineAction("applications.delete", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
+  unwrap(await ctx.supabase.rpc("application_delete", { p_id: applicationId }), "delete application");
+  revalidatePath("/[locale]/applications", "layout");
+  revalidatePath("/[locale]/owners", "layout");
+  revalidatePath("/[locale]/parcels", "layout");
+  return null;
+});
+
 export const submitApplicationAction = defineAction("applications.submit", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
   const out = unwrap(await ctx.supabase.rpc("application_submit", { p_id: applicationId }), "submit") as { number: string };
   revalidatePath("/[locale]/applications", "layout");

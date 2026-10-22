@@ -130,3 +130,42 @@ describe("application fee for the application page", () => {
     expect(await asUser(db, outsider, (tx) => scalar(tx, `select public.application_fee($1)`, [app]))).toBeNull();
   });
 });
+
+describe("deleting an application (0058)", () => {
+  const count = (sql: string, args: unknown[]) => scalar<number>(db, `select count(*)::int from ${sql}`, args);
+
+  it("removes the application, its draft land, invoices and owner", async () => {
+    const app = await submitted(45.2971);
+    const [inv] = await feeInvoice(app);
+    const owner = await scalar<string>(db, `select party_id from public.application_parties where application_id = $1`, [app]);
+    await asUser(db, clerk, (tx) => tx.query(`select public.application_delete($1)`, [app]));
+    expect(await count(`public.applications where id = $1`, [app])).toBe(0);
+    expect(await count(`public.parcels where id = $1`, [inv!.parcel_id])).toBe(0);
+    expect(await count(`public.invoices where id = $1`, [inv!.id])).toBe(0);
+    expect(await count(`public.parties where id = $1`, [owner])).toBe(0);
+  });
+
+  it("a cancelled one is deleted too; an owner with other applications is kept", async () => {
+    const first = await submitted(45.2972);
+    const owner = await scalar<string>(db, `select party_id from public.application_parties where application_id = $1`, [first]);
+    const second = await asUser(db, clerk, (tx) =>
+      scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd, pin_lon: 45.2973, pin_lat: 2.04 })]),
+    );
+    await asUser(db, clerk, (tx) => tx.query(`select public.application_set_parties($1, $2)`, [second.id, JSON.stringify([{ party_id: owner, role: "owner", share_pct: 100 }])]));
+    await asUser(db, clerk, (tx) => tx.query(`select public.application_transition($1, 'cancel', 'Duplicate')`, [first]));
+    await asUser(db, clerk, (tx) => tx.query(`select public.application_delete($1)`, [first]));
+    expect(await count(`public.applications where id = $1`, [first])).toBe(0);
+    expect(await count(`public.parties where id = $1`, [owner])).toBe(1);
+  });
+
+  it("is refused once money was paid, or for staff without the right", async () => {
+    const app = await submitted(45.2974);
+    const [inv] = await feeInvoice(app);
+    await asUser(db, cashier, (tx) =>
+      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
+    );
+    await expect(asUser(db, clerk, (tx) => tx.query(`select public.application_delete($1)`, [app]))).rejects.toThrow(/^CONFLICT: application_paid/);
+    const other = await submitted(45.2975);
+    await expect(asUser(db, cashier, (tx) => tx.query(`select public.application_delete($1)`, [other]))).rejects.toThrow(/^(PERMISSION_DENIED|NOT_FOUND)/);
+  });
+});

@@ -205,7 +205,9 @@
       "assessment_superseded": "Qiimaynta shaqaynaysa oo keliya ayaa la tirtiri karaa.",
       "assessment_billed": "Qiimayntani waxay ku jirtaa biil, lama tirtiri karo.",
       "assessment_appealed": "Qiimayntani racfaan ayay leedahay, lama tirtiri karo.",
-      "decided": "Tan horay ayaa go'aan loo gaaray, lama beddeli karo."
+      "decided": "Tan horay ayaa go'aan loo gaaray, lama beddeli karo.",
+      "application_paid": "Lacag ayaa horay loogu bixiyay biilasha codsigan, lama tirtiri karo.",
+      "application_land_registered": "Dhulka codsigan horay ayaa loo sahamiyay ama loo diiwaangeliyay, lama tirtiri karo."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -1448,7 +1450,7 @@
     "rowView": "Eeg faahfaahinta",
     "rowDelete": "Tirtir",
     "rowDeleteTitle": "Ma tirtirtaa {number}?",
-    "rowDeleteBody": "Codsiga waa la joojinayaa oo la xirayaa. Wuxuu ku jiri doonaa diiwaanka iyo taariikhdiisa.",
+    "rowDeleteBody": "Tani waxay codsiga ka tirtiraysaa kaydka si joogto ah, oo ay la socdaan dukumentiyadiisa, dhulkiisa qabyada ah iyo biilasha aan la bixin. Masuuliyiintiisa sidoo kale waa la tirtirayaa, haddii aysan lahayn dhul ama codsiyo kale. Dib looma celin karo.",
     "rowRegister": "U gudbi Dhulka",
     "rowRegisterTitle": "Ma u gudbisaa {number} Dhulka?",
     "rowRegisterBody": "Dhulka goobta waa laga xaqiijiyey (✓). Hadda waa la diiwaangelinayaa: wuxuu helayaa PUN iyo lambar xisaab, masuuliyiintana waa la qorayaa. Sahanka xuduudda, hubinta iyo ogeysiiska dadweynaha waa laga boodayaa; ilaa xuduud la sahamiyo dhulku wuxuu haystaa afar-gees qiyaas ah oo ku wareegsan GPS-ka. Lama celin karo.",
@@ -1456,7 +1458,8 @@
     "propertyType": "Nooca hantida",
     "propertyTypeHint": "Heerka hantida (Qiimaynta → Heerarka hantida). Biilka hantida waa ballac × dherer × qiimihiisa m² kiiba.",
     "feeInvoicesBody": "Bixi biilashan si dhulka loogu diro sahanka. Waxaa harsan: {amount}.",
-    "invoicePaid": "La bixiyay"
+    "invoicePaid": "La bixiyay",
+    "rowDeleted": "Codsiga waa la tirtiray"
   },
   "owners": {
     "title": "Milkiilayaasha",
