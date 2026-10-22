@@ -5,6 +5,7 @@ import {
   applicationTransitionSchema,
   DOCUMENT_MAX_BYTES,
   DOCUMENT_MIME_TYPES,
+  ownerSchema,
   partySchema,
   saveApplicationLocationSchema,
 } from "@dhulka/core/schemas";
@@ -262,10 +263,14 @@ function partyErrors(err: unknown): never {
   if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "id_number") {
     throw new AppFailure("CONFLICT", undefined, { idNumber: ["validation.id_taken"] });
   }
+  // A date the register refuses (before 1900 or in the future) goes under the field, not "something went wrong".
+  if (err instanceof Error && err.message.includes("parties_date_of_birth_check")) {
+    throw new AppFailure("VALIDATION", undefined, { dateOfBirth: ["validation.birth_date"] });
+  }
   throw err;
 }
 
-export const savePartyAction = defineAction("owners.save", z.object({ id: z.uuid().nullable(), input: partySchema }), async ({ id, input }, ctx) => {
+export const savePartyAction = defineAction("owners.save", z.object({ id: z.uuid().nullable(), input: ownerSchema }), async ({ id, input }, ctx) => {
   try {
     const partyId = unwrap(await ctx.supabase.rpc("save_party", { p_id: id, p: partyPayload(input) }), "save party") as string;
     revalidatePath("/[locale]/owners", "layout");

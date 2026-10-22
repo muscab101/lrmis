@@ -37,8 +37,7 @@ const phoneOrEmpty = z
   .pipe(z.union([z.literal(""), z.string().regex(/^\+[1-9]\d{7,14}$/, "validation.phone")]))
   .transform((v) => (v === "" ? null : v));
 
-export const partySchema = z
-  .object({
+const partyFields = z.object({
     kind: z.enum(PARTY_KINDS).default("person"),
     fullName: z.string().trim().min(2, "validation.name").max(160, "validation.too_long"),
     motherName: optionalText(120),
@@ -46,7 +45,8 @@ export const partySchema = z
     dateOfBirth: z
       .string()
       .default("")
-      .refine((v) => v === "" || (/^\d{4}-\d{2}-\d{2}$/.test(v) && new Date(v) <= new Date()), "validation.date")
+      // The register accepts births from 1900 to today.
+      .refine((v) => v === "" || (/^\d{4}-\d{2}-\d{2}$/.test(v) && v >= "1900-01-01" && new Date(v) <= new Date()), "validation.birth_date")
       .transform((v) => (v === "" ? null : v)),
     nationality: z.string().trim().toUpperCase().regex(/^[A-Z]{2}$/, "validation.invalid").default("SO"),
     idType: z.enum([...ID_TYPES, ""]).default("").transform((v) => (v === "" ? null : v)),
@@ -64,9 +64,28 @@ export const partySchema = z
     nextOfKinName: optionalText(120),
     nextOfKinPhone: phoneOrEmpty.default(""),
     districtId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),
-  })
-  .refine((v) => (v.idNumber === null) === (v.idType === null), { path: ["idNumber"], message: "validation.id_pair" });
+});
+
+const idPair = (v: z.output<typeof partyFields>) => (v.idNumber === null) === (v.idType === null);
+
+export const partySchema = partyFields.refine(idPair, { path: ["idNumber"], message: "validation.id_pair" });
 export type PartyInput = z.input<typeof partySchema>;
+
+/**
+ * Owners saved by staff: every field is required, the ID document included (email stays optional).
+ * A person needs mother's name, gender, date of birth, nationality, ID, phone, address, next of kin
+ * and district; an organisation needs its registration number, phone, address and district.
+ */
+export const ownerSchema = partyFields.superRefine((v, ctx) => {
+  const need = (key: keyof typeof v) => {
+    if (v[key] === null || v[key] === "") ctx.addIssue({ code: "custom", path: [key], message: "validation.required" });
+  };
+  const common = ["phone", "address", "districtId"] as const;
+  const person = ["motherName", "gender", "dateOfBirth", "nationality", "idType", "idNumber", "nextOfKinName", "nextOfKinPhone"] as const;
+  for (const k of v.kind === "organisation" ? (["orgRegistrationNo", ...common] as const) : ([...person, ...common] as const)) need(k);
+  // An organisation's ID is optional, but a type needs a number and the other way round.
+  if (v.kind === "organisation" && !idPair(v)) ctx.addIssue({ code: "custom", path: ["idNumber"], message: "validation.id_pair" });
+});
 
 export const saveApplicationLocationSchema = z.object({
   type: z.enum(APPLICATION_TYPES),

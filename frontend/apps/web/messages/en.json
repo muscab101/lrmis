@@ -348,7 +348,8 @@
     "owner_name": "Enter the owner's full name.",
     "neighbourhood": "Choose a neighbourhood, or drop the pin inside one.",
     "surveyor": "Choose a surveyor who works in this district.",
-    "target": "Enter how many houses (1 or more)."
+    "target": "Enter how many houses (1 or more).",
+    "birth_date": "Enter a date of birth between 1900 and today."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",

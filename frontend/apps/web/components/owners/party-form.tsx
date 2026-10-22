@@ -1,7 +1,7 @@
 "use client";
 
 import type { AppError } from "@dhulka/core/errors";
-import { ID_TYPES, partySchema, type PartyInput } from "@dhulka/core/schemas";
+import { ID_TYPES, ownerSchema, partySchema, type PartyInput } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
@@ -60,7 +60,8 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   const [error, setError] = useState<AppError | null>(null);
   const [dupes, setDupes] = useState<Awaited<ReturnType<typeof duplicatePartiesAction>> | null>(null);
   const form = useForm<PartyInput, unknown, Out>({
-    resolver: zodResolver(partySchema) as unknown as Resolver<PartyInput, unknown, Out>,
+    // Staff record a full owner (every field, the ID included); citizens keep the lighter profile form.
+    resolver: zodResolver(mode === "staff" ? ownerSchema : partySchema) as unknown as Resolver<PartyInput, unknown, Out>,
     defaultValues: partyToInput(party, districtId),
   });
   const e = form.formState.errors;
@@ -126,30 +127,30 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
         </Field>
         {kind === "person" && (
           <>
-            <Field id="motherName" label={t("motherName")} hint={t("motherNameHint")} error={vm(e.motherName?.message)}>
+            <Field id="motherName" label={t("motherName")} hint={t("motherNameHint")} error={vm(e.motherName?.message)} required={mode === "staff"}>
               <Input autoComplete="off" {...form.register("motherName")} />
             </Field>
-            <Field id="gender" label={t("gender")}>
+            <Field id="gender" label={t("gender")} error={vm(e.gender?.message)} required={mode === "staff"}>
               <NativeSelect {...form.register("gender")}>
                 <option value="">—</option>
                 <option value="male">{t("male")}</option>
                 <option value="female">{t("female")}</option>
               </NativeSelect>
             </Field>
-            <Field id="dateOfBirth" label={t("dateOfBirth")} error={vm(e.dateOfBirth?.message)}>
-              <Input type="date" {...form.register("dateOfBirth")} />
+            <Field id="dateOfBirth" label={t("dateOfBirth")} error={vm(e.dateOfBirth?.message)} required={mode === "staff"}>
+              <Input type="date" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} {...form.register("dateOfBirth")} />
             </Field>
-            <Field id="nationality" label={t("nationality")} hint={t("nationalityHint")} error={vm(e.nationality?.message)}>
+            <Field id="nationality" label={t("nationality")} hint={t("nationalityHint")} error={vm(e.nationality?.message)} required={mode === "staff"}>
               <Input maxLength={2} className="uppercase" {...form.register("nationality")} />
             </Field>
           </>
         )}
         {kind === "organisation" && (
-          <Field id="orgRegistrationNo" label={t("orgRegistrationNo")} error={vm(e.orgRegistrationNo?.message)}>
+          <Field id="orgRegistrationNo" label={t("orgRegistrationNo")} error={vm(e.orgRegistrationNo?.message)} required={mode === "staff"}>
             <Input {...form.register("orgRegistrationNo")} />
           </Field>
         )}
-        <Field id="idType" label={t("idType")}>
+        <Field id="idType" label={t("idType")} error={vm(e.idType?.message)} required={mode === "staff" && kind === "person"}>
           <NativeSelect {...form.register("idType")}>
             <option value="">—</option>
             {ID_TYPES.map((it) => (
@@ -159,30 +160,30 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
             ))}
           </NativeSelect>
         </Field>
-        <Field id="idNumber" label={t("idNumber")} error={vm(e.idNumber?.message)}>
+        <Field id="idNumber" label={t("idNumber")} error={vm(e.idNumber?.message)} required={mode === "staff" && kind === "person"}>
           <Input className="font-mono uppercase" {...form.register("idNumber")} />
         </Field>
-        <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(e.phone?.message)}>
+        <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(e.phone?.message)} required={mode === "staff"}>
           <Input type="tel" inputMode="tel" placeholder="+252 61 …" disabled={mode === "self"} {...form.register("phone")} />
         </Field>
         <Field id="email" label={t("email")} error={vm(e.email?.message)}>
           <Input type="email" {...form.register("email")} />
         </Field>
-        <Field id="address" label={t("address")} error={vm(e.address?.message)} className="sm:col-span-2">
+        <Field id="address" label={t("address")} error={vm(e.address?.message)} className="sm:col-span-2" required={mode === "staff"}>
           <Textarea rows={2} {...form.register("address")} />
         </Field>
         {mode === "staff" && kind === "person" && (
           <>
-            <Field id="nextOfKinName" label={t("nextOfKinName")}>
+            <Field id="nextOfKinName" label={t("nextOfKinName")} error={vm(e.nextOfKinName?.message)} required>
               <Input {...form.register("nextOfKinName")} />
             </Field>
-            <Field id="nextOfKinPhone" label={t("nextOfKinPhone")} error={vm(e.nextOfKinPhone?.message)}>
+            <Field id="nextOfKinPhone" label={t("nextOfKinPhone")} error={vm(e.nextOfKinPhone?.message)} required>
               <Input type="tel" {...form.register("nextOfKinPhone")} />
             </Field>
           </>
         )}
         {mode === "staff" && districts && (
-          <Field id="districtId" label={t("district")} hint={t("districtHint")} className="sm:col-span-2">
+          <Field id="districtId" label={t("district")} hint={t("districtHint")} error={vm(e.districtId?.message)} className="sm:col-span-2" required>
             <NativeSelect {...form.register("districtId")}>
               <option value="">—</option>
               {districts.map((d) => (
