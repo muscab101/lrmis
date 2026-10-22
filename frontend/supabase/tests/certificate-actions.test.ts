@@ -39,24 +39,46 @@ beforeAll(async () => {
   for (let i = 1; i <= 3; i++) {
     const id = await scalar<string>(
       db,
-      `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, geom, status, registered_at)
-       values ($1, $2, $3, $4, 'residential', 400, extensions.st_setsrid(extensions.st_geomfromgeojson($5), 4326), 'registered', now()) returning id`,
-      [`BN-HDN-012-00000${i}`, `HDN000000${i}`, hodan, nbhd, JSON.stringify(square(45.3 + i * 0.0003, 2.04, 0.0001))],
+      `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, geom, status, registered_at, house_no)
+       values ($1, $2, $3, $4, 'residential', 400, extensions.st_setsrid(extensions.st_geomfromgeojson($5), 4326), 'registered', now(), '0' || $6) returning id`,
+      [`BN-HDN-012-00000${i}`, `HDN000000${i}`, hodan, nbhd, JSON.stringify(square(45.3 + i * 0.0003, 2.04, 0.0001)), String(i)],
     );
     parcels.push(id);
     // The third parcel has no owner, so it can't get a certificate.
     if (i < 3) await db.query(`insert into public.parcel_owners (parcel_id, party_id, role, share_pct) values ($1, $2, 'owner', 100)`, [id, partyA]);
   }
+  // A paid tax bill on the first parcel: its number goes in the certificate watermark.
+  const bill = await scalar<string>(
+    db,
+    `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total)
+     values ('INV-2026-000777', $1, $2, (select id from public.fee_types where code = 'property_bill'), '2026', current_date + 30, 10) returning id`,
+    [parcels[0], hodan],
+  );
+  await db.query(`select private.invoice_apply_payment($1, 10)`, [bill]);
 });
 
 describe("certificate actions", () => {
   it("bulk issue: issues what it can and reports the rest", async () => {
     await expectError(asUser(db, printer, (tx) => tx.query(`select public.certificate_issue_bulk($1)`, [parcels])), "PERMISSION_DENIED");
     const out = await asUser(db, registrar, (tx) => scalar<{ issued: number; id_cards: number; failed: { pun: string; error: string }[] }>(tx, `select public.certificate_issue_bulk($1)`, [parcels]));
-    expect(out.issued).toBe(2);
-    expect(out.id_cards).toBe(2);
-    expect(out.failed).toEqual([expect.objectContaining({ pun: "BN-HDN-012-000003", error: expect.stringContaining("no_owner") })]);
+    // Paying the first parcel's tax bill already issued its certificate (pay last → certificate).
+    expect(out.issued).toBe(1);
+    expect(out.id_cards).toBe(1);
+    expect(out.failed).toEqual([
+      expect.objectContaining({ pun: "BN-HDN-012-000001", error: expect.stringContaining("already_issued") }),
+      expect.objectContaining({ pun: "BN-HDN-012-000003", error: expect.stringContaining("no_owner") }),
+    ]);
     await expectError(asUser(db, registrar, (tx) => tx.query(`select public.certificate_issue_bulk('{}')`)), "VALIDATION: selection");
+  });
+
+  it("the snapshot freezes the watermark facts; older documents get them from the register", async () => {
+    const cert = await validCert(parcels[0]!);
+    const snap = await scalar<{ house_no: string; invoice_no: string; owners: { phone: string }[] }>(db, `select snapshot from public.issued_documents where id = $1`, [cert]);
+    expect(snap.house_no).toBe("01");
+    expect(snap.invoice_no).toBe("INV-2026-000777");
+    expect(snap.owners[0]!.phone).toBe("+252615550101");
+    const facts = await asUser(db, registrar, (tx) => scalar<{ house_no: string; invoice_no: string; phones: Record<string, string> }>(tx, `select public.document_watermark_facts($1)`, [cert]));
+    expect(facts).toEqual({ house_no: "01", invoice_no: "INV-2026-000777", phones: { [partyA]: "+252615550101" } });
   });
 
   it("bulk print logs each first print once and reports the already printed", async () => {

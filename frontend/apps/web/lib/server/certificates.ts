@@ -11,6 +11,9 @@ export interface Snapshot {
   ownership: string;
   plot_no: string | null;
   deed_no: string | null;
+  /** Frozen from migration 0065 on; older documents fall back to the register (see watermarkLine). */
+  house_no?: string | null;
+  invoice_no?: string | null;
   registered_at: string | null;
   district: { code: string; name_so: string; name_en: string };
   neighbourhood: { code: string; name_so: string; name_en: string } | null;
@@ -18,7 +21,7 @@ export interface Snapshot {
   geom: GeoJSON.Polygon;
   neighbours: { north?: string; east?: string; south?: string; west?: string };
   adjacent: { pun: string | null; geom: GeoJSON.Polygon }[];
-  owners: { party_id: string; full_name: string; mother_name: string | null; id_type: string | null; id_number: string | null; role: string; share_pct: number | null; photo_path: string | null }[];
+  owners: { party_id: string; full_name: string; mother_name: string | null; id_type: string | null; id_number: string | null; role: string; share_pct: number | null; photo_path: string | null; phone?: string | null }[];
   holder?: Snapshot["owners"][number];
   registrar: string | null;
 }
@@ -141,4 +144,32 @@ export async function documentChanges(id: string) {
   const supabase = await createClient();
   const { data } = await supabase.rpc("document_changes", { p_id: id });
   return (data ?? []) as DocumentChange[];
+}
+
+/**
+ * The certificate's security watermark: issue date, owners and their phones, house number, tax bill,
+ * neighbourhood and district on one line. Uses the frozen snapshot; documents issued before those
+ * facts were frozen get them from today's register.
+ */
+export async function watermarkLine(doc: DocumentDetail, lang: string) {
+  const s = doc.snapshot;
+  const frozen = "invoice_no" in s;
+  let facts = { house_no: s.house_no ?? null, invoice_no: s.invoice_no ?? null, phones: {} as Record<string, string> };
+  if (!frozen) {
+    const supabase = await createClient();
+    const { data } = await supabase.rpc("document_watermark_facts", { p_id: doc.id });
+    if (data) facts = data as typeof facts;
+  }
+  const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : null);
+  return [
+    doc.issued_at.slice(0, 10),
+    s.owners.map((o) => o.full_name).join(" / "),
+    s.owners.map((o) => o.phone ?? facts.phones[o.party_id]).filter(Boolean).join(" / "),
+    facts.house_no,
+    facts.invoice_no,
+    name(s.neighbourhood),
+    name(s.district),
+  ]
+    .filter((v): v is string => Boolean(v))
+    .join(" · ");
 }

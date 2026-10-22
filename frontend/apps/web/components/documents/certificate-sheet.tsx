@@ -1,6 +1,6 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import type { DocumentDetail } from "@/lib/server/certificates";
+import { type DocumentDetail, watermarkLine } from "@/lib/server/certificates";
 import { ParcelMapSvg } from "./parcel-map-svg";
 
 /** A4 title certificate (bilingual headings), rendered from the document's frozen snapshot. */
@@ -14,6 +14,7 @@ export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail
   const qr = await QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } });
   const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : "—");
   const vertices = (s.geom.coordinates[0] ?? []).slice(0, -1);
+  const mark = await watermarkLine(doc, lang);
   const facts: [string, string][] = [
     ["PUN", s.pun],
     [t("account"), s.account_no ?? "—"],
@@ -27,6 +28,14 @@ export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail
   return (
     <article className="relative mx-auto flex h-[297mm] w-[210mm] flex-col overflow-hidden bg-white p-[14mm] text-[11.5px] text-[#0b1a3a] print:shadow-none">
       <div aria-hidden className="pointer-events-none absolute inset-[6mm] border-[3px] border-double border-[#1f45b8]/60" />
+      {/* Security watermark: the owner and bill details as vertical (90°) lines behind the content. */}
+      <div aria-hidden className="pointer-events-none absolute inset-[7mm] flex justify-around overflow-hidden select-none">
+        {Array.from({ length: 9 }, (_, i) => (
+          <p key={i} className="text-[8.5px] leading-none font-semibold tracking-[0.12em] whitespace-nowrap text-[#1f45b8]/[0.09] uppercase [writing-mode:vertical-rl]">
+            {Array.from({ length: 4 }, () => mark).join("   ✦   ")}
+          </p>
+        ))}
+      </div>
       <header className="relative flex items-center justify-between gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
         <img src="/brand/banadir-emblem-256.png" alt="" className="size-20 object-contain" />
