@@ -4,7 +4,7 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { BadgeCheck } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import { IssueCertificateButton, ReprintQueue } from "@/components/documents/document-actions";
+import { IssueQueue, PrintQueue, ReprintQueue } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { certificatesCounts, listDocuments, listReprints, parcelsToCertify } from "@/lib/server/certificates";
@@ -35,35 +35,18 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
       rows.length === 0 ? (
         <EmptyState icon={<BadgeCheck />} title={t("nothingToIssue")} description={t("nothingToIssueBody")} />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>PUN</TableHead>
-              <TableHead>{t("registered")}</TableHead>
-              <TableHead>{t("eligibility")}</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell>
-                  <Link href={`/parcels/${p.id}`} className="hover:text-primary">
-                    <Mono>{p.pun}</Mono>
-                  </Link>
-                </TableCell>
-                <TableCell className="text-sm">{p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"}</TableCell>
-                <TableCell className="text-sm">
-                  {p.blockers.length === 0 ? <span className="text-status-approved">{t("eligible")}</span> : p.blockers.map((b) => t(`blockers.${b}`)).join(" · ")}
-                </TableCell>
-                <TableCell className="text-end">{p.blockers.length === 0 && viewer.can("certificates.approve") && <IssueCertificateButton parcelId={p.id} pun={p.pun} />}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <IssueQueue rows={rows} canIssue={viewer.can("certificates.approve")} />
       );
   } else if (tab === "reprints") {
-    body = <ReprintQueue rows={await listReprints(sp.all === "1" ? "any" : "pending")} me={viewer.user.id} canDecide={viewer.can("certificates.approve")} />;
+    body = (
+      <ReprintQueue
+        rows={await listReprints(sp.all === "1" ? "any" : "pending")}
+        me={viewer.user.id}
+        canDecide={viewer.can("certificates.approve")}
+        isSuperAdmin={viewer.isSuperAdmin}
+        canCashier={viewer.can("cashier.view")}
+      />
+    );
   } else {
     const rows = await listDocuments({ q: (sp.q ?? "").slice(0, 40), status: tab === "print" ? "valid" : sp.all === "1" ? "any" : "valid", unprinted: tab === "print" });
     body = (
@@ -76,6 +59,8 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
         )}
         {rows.length === 0 ? (
           <EmptyState icon={<BadgeCheck />} title={tab === "print" ? t("nothingToPrint") : t("noDocuments")} description={tab === "print" ? t("nothingToPrintBody") : t("noDocumentsBody")} />
+        ) : tab === "print" ? (
+          <PrintQueue rows={rows} canPrint={viewer.can("certificates.print")} />
         ) : (
           <Table>
             <TableHeader>

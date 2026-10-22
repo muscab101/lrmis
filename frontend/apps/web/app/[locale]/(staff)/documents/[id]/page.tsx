@@ -5,7 +5,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { DocumentActions } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { getDocument } from "@/lib/server/certificates";
+import { documentChanges, getDocument } from "@/lib/server/certificates";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,6 +21,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
   const format = await getFormatter();
   const d = await getDocument(id);
   if (!d) notFound();
+  const changes = d.status === "valid" ? await documentChanges(d.id) : [];
+  const pending = d.reprint_requests.find((r) => r.status === "pending") ?? null;
   const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
   return (
     <div className="mx-auto max-w-4xl">
@@ -28,8 +30,29 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
         eyebrow={t(`types.${d.type}`)}
         title={<Mono>{d.serial}</Mono>}
         description={`${t(`status.${d.status}`)} · PUN ${d.snapshot.pun}${d.party ? ` · ${d.party.full_name}` : ""}`}
-        actions={<DocumentActions id={d.id} status={d.status} can={{ reprint: viewer.can("certificates.reprint"), cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id }} />}
+        actions={
+          <DocumentActions
+            id={d.id}
+            status={d.status}
+            can={{ reprint: viewer.can("certificates.reprint"), cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id, direct: viewer.isSuperAdmin }}
+            changes={changes}
+            pendingReason={pending?.reason ?? null}
+          />
+        }
       />
+      {pending && (
+        <Alert tone="info" title={t("pendingRequest", { kind: t(`requestKinds.${pending.kind}`) })} className="mb-5">
+          {pending.reason} ·{" "}
+          <Link href="/documents/print?tab=reprints" className="underline">
+            {t("tabs.reprints")}
+          </Link>
+        </Alert>
+      )}
+      {d.status === "valid" && changes.length > 0 && !pending && (
+        <Alert tone="warning" title={t("registerChanged")} className="mb-5">
+          {t("registerChangedBody")}
+        </Alert>
+      )}
       {d.status === "cancelled" && (
         <Alert tone="warning" title={t("cancelledTitle")} className="mb-5">
           {d.cancel_reason}
@@ -92,7 +115,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
               <ul className="space-y-1 border-t pt-3">
                 {d.reprint_requests.map((r) => (
                   <li key={r.id}>
-                    {t("reprintLine", { status: t(`decision.${r.status}`) })} — {r.reason}
+                    {t("requestLine", { kind: t(`requestKinds.${r.kind}`), status: t(`decision.${r.status}`) })} — {r.reason}
                     {r.new_document_id && (
                       <Link href={`/documents/${r.new_document_id}`} className="ms-2 underline">
                         {t("newDocument")}

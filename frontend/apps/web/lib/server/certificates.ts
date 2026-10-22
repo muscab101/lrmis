@@ -61,7 +61,7 @@ export interface DocumentDetail extends DocumentRow {
   cancelled_at: string | null;
   issued_by: string | null;
   print_jobs: { id: number; kind: string; printed_at: string; printed_by: string | null }[];
-  reprint_requests: { id: string; reason: string; status: "pending" | "approved" | "rejected"; requested_by: string | null; requested_at: string; fee_invoice_id: string | null; decision_note: string | null; new_document_id: string | null }[];
+  reprint_requests: { id: string; kind: "reprint" | "correction"; reason: string; status: "pending" | "approved" | "rejected"; requested_by: string | null; requested_at: string; fee_invoice_id: string | null; decision_note: string | null; new_document_id: string | null }[];
 }
 
 export async function getDocument(id: string) {
@@ -69,7 +69,7 @@ export async function getDocument(id: string) {
   const supabase = await createClient();
   const res = await supabase
     .from("issued_documents")
-    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, issued_by, print_jobs(id, kind, printed_at, printed_by), reprint_requests!reprint_requests_document_id_fkey(id, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
+    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, issued_by, print_jobs(id, kind, printed_at, printed_by), reprint_requests!reprint_requests_document_id_fkey(id, kind, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
     .eq("id", id)
     .maybeSingle();
   return unwrap(res, "document") as unknown as DocumentDetail | null;
@@ -77,6 +77,7 @@ export async function getDocument(id: string) {
 
 export interface ReprintRow {
   id: string;
+  kind: "reprint" | "correction";
   reason: string;
   status: "pending" | "approved" | "rejected";
   requested_by: string | null;
@@ -89,7 +90,7 @@ export async function listReprints(status: "pending" | "any") {
   const supabase = await createClient();
   let req = supabase
     .from("reprint_requests")
-    .select("id, reason, status, requested_by, requested_at, fee_invoice:invoices(id, number, status, balance), document:issued_documents!reprint_requests_document_id_fkey(id, serial, type, parcel:parcels(pun))");
+    .select("id, kind, reason, status, requested_by, requested_at, fee_invoice:invoices(id, number, status, balance), document:issued_documents!reprint_requests_document_id_fkey(id, serial, type, parcel:parcels(pun))");
   if (status === "pending") req = req.eq("status", "pending");
   return unwrap(await req.order("requested_at", { ascending: false }).limit(100), "reprints") as unknown as ReprintRow[];
 }
@@ -127,4 +128,17 @@ export async function parcelCertificate(parcelId: string) {
     supabase.from("issued_documents").select(COLS).eq("parcel_id", parcelId).order("issued_at", { ascending: false }),
   ]);
   return { blockers: ((e as { blockers: string[] } | null)?.blockers ?? []) as string[], documents: (docs ?? []) as unknown as DocumentRow[] };
+}
+
+export interface DocumentChange {
+  field: "pun" | "area_m2" | "land_use" | "ownership" | "plot_no" | "deed_no" | "neighbourhood" | "owners";
+  before: string | null;
+  after: string | null;
+}
+
+/** What differs between the printed document and today's register (what a correction would change). */
+export async function documentChanges(id: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("document_changes", { p_id: id });
+  return (data ?? []) as DocumentChange[];
 }

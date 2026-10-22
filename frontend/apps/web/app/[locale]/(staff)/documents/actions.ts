@@ -44,3 +44,34 @@ export const cancelDocumentAction = defineAction("certificates.cancel", z.object
   unwrap(await ctx.supabase.rpc("document_cancel", { p_id: v.id, p_reason: v.reason }), "cancel");
   return done(null);
 });
+
+export const requestReissueAction = defineAction("certificates.reissue", z.object({ id: z.uuid(), reason: z.string().trim().min(5, "validation.reason").max(500) }), async (v, ctx) => {
+  try {
+    return done(unwrap(await ctx.supabase.rpc("reissue_request", { p_id: v.id, p_reason: v.reason }), "reissue") as { request_id: string });
+  } catch (err) {
+    field(err, { reason: "reason" });
+  }
+});
+
+/** Super admin: reprint now without a second person or a fee. An empty reason reuses a pending request's. */
+export const reprintDirectAction = defineAction("certificates.reprint_direct", z.object({ id: z.uuid(), reason: z.string().trim().max(500).default("") }), async (v, ctx) => {
+  try {
+    return done(unwrap(await ctx.supabase.rpc("reprint_direct", { p_id: v.id, p_reason: v.reason }), "reprint") as { status: string; document_id: string });
+  } catch (err) {
+    field(err, { reason: "reason" });
+  }
+});
+
+export interface BulkIssueResult {
+  issued: number;
+  id_cards: number;
+  failed: { parcel_id: string; pun: string | null; error: string }[];
+}
+
+export const issueBulkAction = defineAction("certificates.issue_bulk", z.object({ parcelIds: z.array(z.uuid()).min(1).max(100) }), async ({ parcelIds }, ctx) =>
+  done(unwrap(await ctx.supabase.rpc("certificate_issue_bulk", { p_parcels: parcelIds }), "issue") as BulkIssueResult),
+);
+
+export const printBulkAction = defineAction("certificates.print_bulk", z.object({ ids: z.array(z.uuid()).min(1).max(100) }), async ({ ids }, ctx) =>
+  done(unwrap(await ctx.supabase.rpc("document_print_bulk", { p_ids: ids }), "print") as { printed: string[]; failed: { id: string; serial: string | null; error: string }[] }),
+);
