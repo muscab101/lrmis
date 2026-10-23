@@ -1,5 +1,5 @@
 import "server-only";
-import type { ApplicationsQuery, ApplicationStatus, ApplicationType, LandUse, PartiesQuery } from "@dhulka/core/schemas";
+import { APPLICATION_STATUSES, type ApplicationsQuery, type ApplicationStatus, type ApplicationType, type LandUse, type PartiesQuery } from "@dhulka/core/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 
@@ -30,7 +30,7 @@ function cleanTerm(q: string) {
   return q.replace(/[,()*%\\]/g, " ").trim();
 }
 
-export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnly?: boolean } = {}) {
+export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnly?: boolean; excludeNewRegistration?: boolean } = {}) {
   const supabase = await createClient();
   let req = supabase
     .from("applications")
@@ -41,6 +41,7 @@ export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnl
   if (q.status === "open") req = req.not("status", "in", `(${CLOSED.join(",")})`);
   else if (q.status !== "any") req = req.eq("status", q.status);
   if (q.type) req = req.eq("type", q.type);
+  if (opts.excludeNewRegistration) req = req.neq("type", "new_registration");
   if (q.district) req = req.eq("district_id", q.district);
   if (opts.citizenOnly) {
     const {
@@ -67,6 +68,18 @@ export async function applicationStatusCounts(): Promise<Partial<Record<Applicat
   const supabase = await createClient();
   const { data } = await supabase.rpc("application_status_counts");
   return Object.fromEntries(((data ?? []) as { status: ApplicationStatus; total: number }[]).map((r) => [r.status, Number(r.total)]));
+}
+
+/** Status counts without new land registrations (those are worked from Parcels → Partial registration). */
+export async function officeApplicationStatusCounts(): Promise<Partial<Record<ApplicationStatus, number>>> {
+  const supabase = await createClient();
+  const counts = await Promise.all(
+    APPLICATION_STATUSES.map(async (status) => {
+      const { count } = await supabase.from("applications").select("id", { count: "exact", head: true }).eq("status", status).neq("type", "new_registration");
+      return [status, count ?? 0] as const;
+    }),
+  );
+  return Object.fromEntries(counts.filter(([, n]) => n > 0));
 }
 
 export interface PartyRow {

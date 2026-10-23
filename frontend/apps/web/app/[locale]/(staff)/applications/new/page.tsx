@@ -44,7 +44,7 @@ export default async function NewApplicationPage({ params, searchParams }: { par
             basePath="/applications"
             districts={districts}
             initial={{
-              type: "new_registration",
+              type: "transfer",
               channel: "office",
               districtId: ownerDistrict || (districts.length === 1 ? districts[0]!.id : ""),
               neighbourhood: null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { APPLICATION_TYPES, type ApplicationsQuery } from "@dhulka/core/schemas";
+import { OFFICE_APPLICATION_TYPES, type ApplicationsQuery } from "@dhulka/core/schemas";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { useLocale, useTranslations } from "next-intl";
@@ -49,7 +49,7 @@ export function ApplicationsFilters({
       <div className="w-48">
         <NativeSelect value={query.type} onChange={(e) => set({ type: e.target.value })} aria-label={t("type")}>
           <option value="">{t("anyType")}</option>
-          {APPLICATION_TYPES.map((ty) => (
+          {OFFICE_APPLICATION_TYPES.map((ty) => (
             <option key={ty} value={ty}>
               {t(`types.${ty}`)}
             </option>

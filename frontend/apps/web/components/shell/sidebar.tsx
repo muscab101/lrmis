@@ -18,8 +18,7 @@ interface SidebarProps {
 export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProps) {
   const t = useTranslations("nav");
   const tc = useTranslations("common");
-  // An application is opened from Parcels → Partial registration, so it keeps Parcels lit.
-  const pathname = usePathname().replace(/^\/applications(?=\/|$)/, "/parcels");
+  const pathname = usePathname();
   // The longest matching link wins, so /parcels/yet-to-register lights up its own item, not Parcels too.
   const activeHref = groups
     .flatMap((g) => g.items.map((i) => i.href))

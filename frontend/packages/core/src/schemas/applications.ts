@@ -4,6 +4,8 @@ import { uuid } from "./common";
 export const PARTY_KINDS = ["person", "organisation"] as const;
 export const ID_TYPES = ["national_id", "passport", "driving_licence", "birth_certificate", "company_registration", "other"] as const;
 export const APPLICATION_TYPES = ["new_registration", "transfer", "subdivision", "merge", "reprint", "permit", "correction"] as const;
+/** Applications staff work from the Applications page; new land registration goes through survey zones and Parcels. */
+export const OFFICE_APPLICATION_TYPES = ["transfer", "subdivision", "merge", "reprint", "permit", "correction"] as const;
 export const APPLICATION_STATUSES = [
   "draft", "awaiting_payment", "in_survey", "surveyed", "in_verification", "returned",
   "public_notice", "approved", "rejected", "cancelled",

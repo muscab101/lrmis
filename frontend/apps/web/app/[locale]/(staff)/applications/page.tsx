@@ -1,15 +1,16 @@
 import { applicationsQuerySchema } from "@dhulka/core/schemas";
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Plus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { ApplicationRowActions } from "@/components/applications/application-row-actions";
 import { SiteCheckMark } from "@/components/applications/site-check";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { Link } from "@/i18n/navigation";
-import { APP_PAGE_SIZE, applicationStatusCounts, queryApplications } from "@/lib/server/applications";
+import { APP_PAGE_SIZE, officeApplicationStatusCounts, queryApplications } from "@/lib/server/applications";
 import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
 import { ApplicationsFilters } from "./applications-filters";
@@ -29,7 +30,8 @@ export default async function ApplicationsPage({ params, searchParams }: { param
   const format = await getFormatter();
   const lang = await getLocale();
   const query = applicationsQuerySchema.parse(await searchParams);
-  const [{ rows, total }, counts, districts] = await Promise.all([queryApplications(query), applicationStatusCounts(), listDistricts()]);
+  // Transfers, subdivisions, merges, reprints, permits and corrections; new land comes in through survey zones.
+  const [{ rows, total }, counts, districts] = await Promise.all([queryApplications(query, { excludeNewRegistration: true }), officeApplicationStatusCounts(), listDistricts()]);
   const open = Object.entries(counts)
     .filter(([s]) => !["approved", "rejected", "cancelled"].includes(s))
     .reduce((sum, [, n]) => sum + (n ?? 0), 0);
@@ -44,6 +46,16 @@ export default async function ApplicationsPage({ params, searchParams }: { param
       <PageHeader
         title={t("title")}
         description={t("subtitle")}
+        actions={
+          viewer.can("applications.create") && (
+            <Button asChild>
+              <Link href="/applications/new">
+                <Plus aria-hidden />
+                {t("new")}
+              </Link>
+            </Button>
+          )
+        }
       >
         <nav className="flex gap-5 overflow-x-auto text-sm" aria-label={t("statusLabel")}>
           {TABS.map((tab) => (

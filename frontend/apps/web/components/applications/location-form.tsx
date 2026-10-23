@@ -1,7 +1,7 @@
 "use client";
 
 import type { AppError } from "@dhulka/core/errors";
-import { APPLICATION_TYPES, LAND_USES, type ApplicationType, type LandUse } from "@dhulka/core/schemas";
+import { APPLICATION_TYPES, LAND_USES, OFFICE_APPLICATION_TYPES, type ApplicationType, type LandUse } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
@@ -255,7 +255,8 @@ export function LocationForm({ mode, applicationId, initial, districts, isStaff,
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="type" label={t("type")} required>
           <NativeSelect value={v.type} disabled={readOnly || mode === "edit"} onChange={(e) => set("type", e.target.value as ApplicationType)}>
-            {APPLICATION_TYPES.map((ty) => (
+            {/* Staff creating new: the office types (new land goes through survey zones); editing shows the saved type. */}
+            {(mode === "create" && isStaff ? OFFICE_APPLICATION_TYPES : APPLICATION_TYPES).map((ty) => (
               <option key={ty} value={ty}>
                 {t(`types.${ty}`)}
               </option>
