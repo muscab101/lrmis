@@ -13,11 +13,17 @@ import {
   collectionsStatus,
   FINANCE_REPORTS,
   feeTypeCode,
+  POS_REPORTS,
   parcelKind,
   paymentMethod, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
 import { zonePlaces } from "@/lib/server/zones";
 import { createClient } from "@/lib/supabase/server";
+
+async function posName(supabase: Awaited<ReturnType<typeof createClient>>, id: string) {
+  const { data } = await supabase.from("points_of_sale").select("code, name").eq("id", id).maybeSingle();
+  return data ? `${data.code} · ${data.name}` : id;
+}
 
 async function feeTypeName(supabase: Awaited<ReturnType<typeof createClient>>, code: string, locale: string) {
   const { data } = await supabase.from("fee_types").select("name_so, name_en").eq("code", code).maybeSingle();
@@ -50,12 +56,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const kind = parcelKind(sp.kind);
   const method = report === "payments" ? paymentMethod(sp.method) : null;
   const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
+  const pos = POS_REPORTS.includes(report) && /^[0-9a-f-]{36}$/i.test(sp.pos ?? "") ? sp.pos! : null;
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
   const format = sp.format === "pdf" || sp.format === "xlsx" ? sp.format : "csv";
   const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "") ? sp.lang! : routing.defaultLocale;
   const place = usesArea ? { section: area.section, sector: area.sector, neighbourhood: area.neighbourhood } : {};
-  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, by, basis, ...place }, supabase)) as unknown[];
+  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, by, basis, pos, ...place }, supabase)) as unknown[];
   const snapshot = SNAPSHOT_REPORTS.includes(report);
   const stamp = snapshot ? new Date().toISOString().slice(0, 10) : `${from}-${to}`;
   const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}${method ? `-${method}` : ""}${fee ? `-${fee}` : ""}${report === "collections" ? `-${by}` : ""}-${stamp}`;
@@ -89,7 +96,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!FINANCE_REPORTS.includes(report)) return [];
     const tc = await getTranslations({ locale, namespace: "collections" });
     const money = (n: number) => new Intl.NumberFormat(locale === "so" ? "so" : "en-US", { style: "currency", currency: "USD" }).format(n);
-    const args = { from, to, district, basis, ...place };
+    const args = { from, to, district, basis, pos, ...place };
     const [st, cmp] = await Promise.all([collectionsStatus(args, supabase), BASIS_REPORTS.includes(report) ? collectionsCompare(args, supabase) : Promise.resolve(null)]);
     const out: string[] = [];
     if (report === "collections") out.push(`${t("groupBy")}: ${t(`by.${by}`)}`);
@@ -121,6 +128,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ...(found?.neighbourhood ? [`${t("neighbourhood")}: ${nm(found.neighbourhood)}`] : []),
     ...(report === "parcels" ? [`${t("kind")}: ${t(`kinds.${kind}`)}`] : []),
     ...(method ? [`${t("method")}: ${t(`methods.${method}`)}`] : []),
+    ...(pos ? [`${t("pos")}: ${await posName(supabase, pos)}`] : []),
     ...(fee ? [`${t("feeType")}: ${fee === "credit" ? t("unallocated") : (feeName ?? fee)}`] : []),
     ...(await financeLines()),
     t("generated", { at: cellText(new Date().toISOString(), "datetime"), by: viewer?.profile.full_name ?? "" }),

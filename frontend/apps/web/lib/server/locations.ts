@@ -33,9 +33,11 @@ const SELECT: Record<LocationLevel, string> = {
 const HAS_CODE = new Set<LocationLevel>(["districts", "sections", "sectors", "neighbourhoods"]);
 
 /** Paginated list for one level (RLS: any signed-in user sees active rows). */
-export async function queryLocations(q: LocationsQuery): Promise<{ rows: LocationRow[]; total: number }> {
+export async function queryLocations(q: LocationsQuery, districtIds?: string[] | null): Promise<{ rows: LocationRow[]; total: number }> {
   const supabase = await createClient();
   let req = supabase.from(q.level).select(SELECT[q.level], { count: "exact" });
+  // District staff see their own districts' places only.
+  if (districtIds) req = q.level === "districts" ? req.in("id", districtIds) : req.in("district_id", districtIds);
   req = q.archived === "1" ? req.not("deleted_at", "is", null) : req.is("deleted_at", null);
   if (q.district) req = q.level === "districts" ? req.eq("id", q.district) : req.eq("district_id", q.district);
   const term = q.q.replace(/[,()*%\\]/g, " ").trim();

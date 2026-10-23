@@ -61,7 +61,12 @@ export interface ReportArgs {
   /** Collections reports: group by day, week (Mon–Sun) or month; count verified payments only or everything recorded. */
   by?: CollectionBy;
   basis?: CollectionBasis;
+  /** Money reports (POS_REPORTS): one point of sale. */
+  pos?: string | null;
 }
+
+/** Reports that can be narrowed to one point of sale. */
+export const POS_REPORTS: readonly ReportName[] = ["payments", "collections", "collectionsCashier", "unreconciled"];
 
 export const COLLECTION_BY = ["day", "week", "month"] as const;
 export type CollectionBy = (typeof COLLECTION_BY)[number];
@@ -177,22 +182,22 @@ export async function runReport(name: ReportName, args: ReportArgs, client?: Sup
       return unwrap(await supabase.rpc("report_invoices", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as InvoiceRow[];
     case "payments":
       return unwrap(
-        await supabase.rpc("report_payments", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_method: args.method ?? null, p_fee_type: args.feeType ?? null }),
+        await supabase.rpc("report_payments", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_method: args.method ?? null, p_fee_type: args.feeType ?? null, p_pos: args.pos ?? null }),
         "report",
       ) as PaymentRow[];
     case "paymentTypes":
       return unwrap(await supabase.rpc("report_payment_types", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_basis: args.basis ?? "verified" }), "report") as PaymentTypeRow[];
     case "collections":
       return unwrap(
-        await supabase.rpc("report_collections", { p_from: args.from, p_to: args.to, p_by: args.by ?? "day", p_basis: args.basis ?? "verified", p_district: d, ...area }),
+        await supabase.rpc("report_collections", { p_from: args.from, p_to: args.to, p_by: args.by ?? "day", p_basis: args.basis ?? "verified", p_district: d, ...area, p_pos: args.pos ?? null }),
         "report",
       ) as CollectionsRow[];
     case "collectionsCashier":
-      return unwrap(await supabase.rpc("report_collections_cashier", { p_from: args.from, p_to: args.to, p_basis: args.basis ?? "verified", p_district: d, ...area }), "report") as CollectionsCashierRow[];
+      return unwrap(await supabase.rpc("report_collections_cashier", { p_from: args.from, p_to: args.to, p_basis: args.basis ?? "verified", p_district: d, ...area, p_pos: args.pos ?? null }), "report") as CollectionsCashierRow[];
     case "shortages":
       return unwrap(await supabase.rpc("report_cashier_shortages", { p_from: args.from, p_to: args.to, p_district: d }), "report") as ShortageRow[];
     case "unreconciled":
-      return unwrap(await supabase.rpc("report_unreconciled", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as UnreconciledRow[];
+      return unwrap(await supabase.rpc("report_unreconciled", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_pos: args.pos ?? null }), "report") as UnreconciledRow[];
     case "certificates":
       return unwrap(await supabase.rpc("report_certificates", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as CertificateRow[];
     case "parcels":
@@ -243,6 +248,7 @@ export async function collectionsCompare(args: ReportArgs, client?: SupabaseClie
       p_section: args.section || null,
       p_sector: args.sector || null,
       p_neighbourhood: args.neighbourhood || null,
+      p_pos: args.pos || null,
     }),
     "compare",
   ) as CollectionsCompareRow[];
@@ -260,6 +266,7 @@ export async function collectionsStatus(args: ReportArgs, client?: SupabaseClien
       p_section: args.section || null,
       p_sector: args.sector || null,
       p_neighbourhood: args.neighbourhood || null,
+      p_pos: args.pos || null,
     }),
     "collections status",
   ) as CollectionsStatus;

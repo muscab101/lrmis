@@ -293,3 +293,25 @@ describe("collections, stage 5: dashboard", () => {
     await expectError(asUser(db, cashier, (tx) => tx.query(`select public.collections_dashboard()`)), "PERMISSION_DENIED");
   });
 });
+
+describe("reports by point of sale, and the caller's scope", () => {
+  it("money reports narrow to one point of sale", async () => {
+    const pos = await scalar<string>(db, `select id from public.points_of_sale where code = 'HDN1'`);
+    const other = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDN2', 'Hodan market', $1, 'HDN2') returning id`, [hodan]);
+    const c = (p: string) => asUser(db, officer, (tx) => tx.query<{ total: string }>(`select * from public.report_collections(current_date, current_date, 'day', 'all', null, null, null, null, $1)`, [p]));
+    expect(Number((await c(pos)).rows[0]!.total)).toBe(125);
+    expect((await c(other)).rows).toHaveLength(0);
+    const pay = await asUser(db, officer, (tx) => tx.query(`select * from public.report_payments(current_date, current_date, null, null, null, null, null, null, $1)`, [other]));
+    expect(pay.rows).toHaveLength(0);
+    const st = await asUser(db, officer, (tx) => scalar<{ reconciled: { n: number } }>(tx, `select public.report_collections_status(current_date, current_date, null, null, null, null, $1)`, [pos]));
+    expect(st.reconciled.n).toBe(3);
+  });
+
+  it("my_scope gives the caller's districts and desk", async () => {
+    // Auditors cover every district by role; cashiers only theirs.
+    const s = await asUser(db, cashier, (tx) => scalar<{ all: boolean; district_ids: string[] }>(tx, `select public.my_scope()`));
+    expect(s).toMatchObject({ all: false, district_ids: [hodan] });
+    const m = await asUser(db, manager, (tx) => scalar<{ all: boolean }>(tx, `select public.my_scope()`));
+    expect(m.all).toBe(true);
+  });
+});

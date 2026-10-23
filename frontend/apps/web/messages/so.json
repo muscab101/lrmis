@@ -3392,7 +3392,8 @@
     "compareTitle": "Marka la barbardhigo muddadii hore ({from} – {to})",
     "thisPeriod": "Muddadan",
     "previousPeriod": "Muddadii hore",
-    "change": "Isbeddel"
+    "change": "Isbeddel",
+    "allPos": "Dhammaan goobaha lacag-qabashada"
   },
   "messages": {
     "title": "Fariimaha",

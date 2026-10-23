@@ -27,6 +27,7 @@ import {
   type CollectionsRow,
   collectionsStatus,
   FINANCE_REPORTS,
+  POS_REPORTS,
   type BillingRow,
   DISTRICT_REPORTS,
   feeTypeCode,
@@ -50,7 +51,7 @@ import {
   type ReportName,
   type RevenueRow,
 } from "@/lib/server/reports";
-import { listDistricts } from "@/lib/server/users";
+import { myDistricts, myPointsOfSale, myScope } from "@/lib/server/scope";
 import { listFeeTypes } from "@/lib/server/valuation";
 import { CHANNELS } from "@/lib/server/collections";
 import { zonePlaces } from "@/lib/server/zones";
@@ -71,7 +72,8 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const report = (REPORTS as readonly string[]).includes(sp.r ?? "") ? (sp.r as ReportName) : "revenue";
   const { from, to } = reportRange(sp);
-  const districts = await listDistricts();
+  // Only the districts (and desks) the user covers are offered; the figures are limited by the database anyway.
+  const districts = await myDistricts();
   const places = await zonePlaces(districts.map((d) => d.id));
   // Each level must sit inside the one above it; anything else is dropped.
   const a = reportArea(sp);
@@ -85,6 +87,10 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
   const feeTypes = report === "payments" ? await listFeeTypes() : [];
   // Collections reports: day / week / month, and verified payments only (default) or everything recorded.
+  // Point of sale: a user assigned to a desk sees that desk's takings by default; "all" shows every desk.
+  const usesPos = POS_REPORTS.includes(report);
+  const [scope, desks] = usesPos ? await Promise.all([myScope(), myPointsOfSale()]) : [null, []];
+  const pos = !usesPos ? "" : sp.pos === "all" ? "" : desks.some((p) => p.id === sp.pos) ? sp.pos! : sp.pos === undefined && scope?.pos && desks.some((p) => p.id === scope.pos!.id) ? scope.pos.id : "";
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
   const usesArea = AREA_REPORTS.includes(report);
@@ -97,6 +103,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     feeType: fee,
     by,
     basis,
+    pos: pos || null,
     ...(usesArea ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null } : {}),
   });
   const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
@@ -115,9 +122,10 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     ...(method ? { method } : {}),
     ...(fee ? { fee } : {}),
     ...(report === "collections" ? { by } : {}),
+    ...(usesPos ? { pos: pos || "all" } : {}),
     ...(BASIS_REPORTS.includes(report) ? { basis } : {}),
   }).toString();
-  const areaArgs = { from, to, district: district || null, basis, section: section || null, sector: sector || null, neighbourhood: nbhd || null };
+  const areaArgs = { from, to, district: district || null, basis, pos: pos || null, section: section || null, sector: sector || null, neighbourhood: nbhd || null };
   const [compare, status] = FINANCE_REPORTS.includes(report)
     ? await Promise.all([BASIS_REPORTS.includes(report) ? collectionsCompare(areaArgs) : Promise.resolve(null), collectionsStatus(areaArgs)])
     : [null, null];
@@ -547,6 +555,19 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   {districts.map((d) => (
                     <option key={d.id} value={d.id}>
                       {lang === "so" ? d.name_so : d.name_en}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </label>
+            )}
+            {usesPos && desks.length > 0 && (
+              <label className="grid gap-1">
+                <span className="text-xs text-muted-foreground">{t("pos")}</span>
+                <NativeSelect name="pos" defaultValue={pos || "all"} className="w-auto min-w-44">
+                  <option value="all">{t("allPos")}</option>
+                  {desks.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.code} · {p.name}
                     </option>
                   ))}
                 </NativeSelect>

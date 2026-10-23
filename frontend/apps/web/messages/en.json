@@ -3392,7 +3392,8 @@
     "compareTitle": "Against the previous period ({from} – {to})",
     "thisPeriod": "This period",
     "previousPeriod": "Previous period",
-    "change": "Change"
+    "change": "Change",
+    "allPos": "All points of sale"
   },
   "messages": {
     "title": "Messages",
