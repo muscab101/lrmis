@@ -1,57 +1,98 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import type { DocumentDetail } from "@/lib/server/certificates";
+import { banadirOutlines, type DocumentDetail } from "@/lib/server/certificates";
+import { BanadirMapSvg } from "./banadir-map-svg";
 
-/** CR80 property ID card (85.6 × 54 mm), front and back, print-ready for card printers. */
+/**
+ * CR80 property ID card (85.6 × 54 mm), print-ready for card printers.
+ * Front: Banadir Regional Administration header and emblem, the holder, the land and the issue date.
+ * Back: the Banadir region with the holder's district shaded and the house marked, and the verify QR.
+ */
 export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; verifyUrl: string }) {
   const t = await getTranslations("documents");
-  const tc = await getTranslations("common");
+  const to = await getTranslations("owners");
+  const [en, so] = await Promise.all([getTranslations({ locale: "en", namespace: "common" }), getTranslations({ locale: "so", namespace: "common" })]);
   const format = await getFormatter();
   const lang = await getLocale();
   const s = doc.snapshot;
   const h = s.holder;
-  const qr = await QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } });
+  const [qr, outlines] = await Promise.all([
+    QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } }),
+    banadirOutlines(),
+  ]);
+  const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : null);
   const initials = (h?.full_name ?? "?")
     .split(/\s+/)
     .slice(0, 2)
     .map((w) => w[0])
     .join("");
+  const date = (v: string | null | undefined) => (v ? format.dateTime(new Date(v), { day: "2-digit", month: "short", year: "numeric" }) : "—");
+  const id = h?.id_number ? `${h.id_type ? `${to(`id_${h.id_type}`)} ` : ""}${h.id_number}` : null;
+  const place = [s.house_no && t("cardHouse", { no: s.house_no }), name(s.neighbourhood), name(s.district)].filter(Boolean).join(" · ");
+
   return (
     <div className="flex flex-col items-center gap-6 print:gap-[6mm]">
-      <section className="relative h-[54mm] w-[85.6mm] overflow-hidden rounded-[3mm] bg-gradient-to-br from-[#0b2a8f] via-[#2a55d6] to-[#7c9cf0] p-[3.5mm] text-white shadow-md print:shadow-none">
-        <div className="flex items-center gap-[2mm]">
+      {/* Front */}
+      <section className="relative flex h-[54mm] w-[85.6mm] flex-col overflow-hidden rounded-[3mm] bg-gradient-to-br from-[#0b2a8f] via-[#1f45b8] to-[#3d6ee0] text-white shadow-md print:shadow-none">
+        <header className="flex items-center gap-[2mm] bg-white px-[3mm] py-[1.6mm] text-[#0b1a3a]">
           {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
-          <img src="/brand/banadir-emblem-256.png" alt="" className="size-[9mm] rounded-sm bg-white/90 object-contain p-[0.5mm]" />
-          <div className="leading-tight">
-            <p className="text-[6.5pt] font-semibold uppercase">{tc("orgName")}</p>
-            <p className="text-[6pt] opacity-90">{t("cardTitle")}</p>
+          <img src="/brand/banadir-emblem-256.png" alt="" className="size-[8.5mm] object-contain" />
+          <div className="min-w-0 flex-1 leading-[1.15]">
+            <p className="text-[6.4pt] font-bold tracking-[0.02em] uppercase">{en("orgName")}</p>
+            <p className="text-[5.6pt] font-semibold uppercase opacity-80">{so("orgName")}</p>
           </div>
-        </div>
-        <div className="mt-[2.5mm] flex gap-[3mm]">
-          <div className="grid h-[22mm] w-[18mm] shrink-0 place-items-center rounded-[1.5mm] bg-white/20 text-[14pt] font-semibold">{initials}</div>
-          <dl className="min-w-0 text-[6.5pt] leading-[1.35]">
-            <dt className="opacity-75">{t("name")}</dt>
-            <dd className="truncate text-[8pt] font-semibold">{h?.full_name}</dd>
-            <dt className="mt-[0.8mm] opacity-75">PUN</dt>
-            <dd className="font-mono text-[7.5pt] font-semibold">{s.pun}</dd>
-            <dt className="mt-[0.8mm] opacity-75">
-              {t("district")} · {t("neighbourhood")}
-            </dt>
-            <dd className="truncate">
-              {lang === "so" ? s.district.name_so : s.district.name_en} · {s.neighbourhood ? (lang === "so" ? s.neighbourhood.name_so : s.neighbourhood.name_en) : "—"}
-            </dd>
+          <p className="text-end text-[5pt] leading-tight font-semibold text-[#1f45b8] uppercase">{t("cardKind")}</p>
+        </header>
+        <div className="flex flex-1 gap-[2.5mm] px-[3mm] pt-[2mm]">
+          <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center rounded-[1.2mm] border border-white/40 bg-white/15 text-[13pt] font-semibold">{initials}</div>
+          <dl className="grid min-w-0 flex-1 grid-cols-[auto_1fr] content-start gap-x-[1.5mm] gap-y-[0.35mm] text-[5.6pt] leading-[1.3]">
+            <dt className="opacity-70">{t("name")}</dt>
+            <dd className="truncate text-[7.2pt] leading-[1.1] font-semibold">{h?.full_name ?? "—"}</dd>
+            {h?.mother_name && (
+              <>
+                <dt className="opacity-70">{t("motherName")}</dt>
+                <dd className="truncate">{h.mother_name}</dd>
+              </>
+            )}
+            {id && (
+              <>
+                <dt className="opacity-70">{t("cardId")}</dt>
+                <dd className="truncate font-mono">{id}</dd>
+              </>
+            )}
+            <dt className="opacity-70">PUN</dt>
+            <dd className="truncate font-mono font-semibold">{s.pun}</dd>
+            <dt className="opacity-70">{t("cardPlace")}</dt>
+            <dd className="truncate">{place || "—"}</dd>
+            <dt className="opacity-70">{t("issuedOn")}</dt>
+            <dd>{date(doc.issued_at)}</dd>
           </dl>
         </div>
-        <p className="absolute right-[3.5mm] bottom-[2.5mm] font-mono text-[6pt] opacity-90">{doc.serial}</p>
+        <footer className="flex items-center justify-between bg-black/15 px-[3mm] py-[0.9mm] text-[5.2pt]">
+          <span className="font-mono">{doc.serial}</span>
+          <span>
+            {t("validUntil")} {date(doc.expires_at)}
+          </span>
+        </footer>
       </section>
-      <section className="relative flex h-[54mm] w-[85.6mm] gap-[3mm] overflow-hidden rounded-[3mm] border border-neutral-300 bg-white p-[3.5mm] text-[#0b1a3a] shadow-md print:shadow-none">
-        <div className="size-[26mm] shrink-0" dangerouslySetInnerHTML={{ __html: qr }} />
-        <div className="text-[6.5pt] leading-[1.4]">
-          <p className="font-semibold">{t("cardBackTitle")}</p>
-          <p className="mt-[1mm]">{t("cardBackBody")}</p>
-          <p className="mt-[1.5mm] opacity-75">{t("validUntil")}</p>
-          <p className="font-semibold">{doc.expires_at ? format.dateTime(new Date(doc.expires_at), { dateStyle: "medium" }) : "—"}</p>
-          <p className="mt-[1mm] font-mono">{doc.verify_code}</p>
+
+      {/* Back */}
+      <section className="relative flex h-[54mm] w-[85.6mm] gap-[2.5mm] overflow-hidden rounded-[3mm] border border-neutral-300 bg-white p-[3mm] text-[#0b1a3a] shadow-md print:shadow-none">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <p className="text-[6pt] font-bold uppercase">{t("cardMapTitle")}</p>
+          <div className="flex flex-1 items-center">
+            <BanadirMapSvg districts={outlines} highlight={s.district.code} point={s.centroid} className="h-auto max-h-[36mm] w-full" />
+          </div>
+          <p className="text-[5.4pt]">
+            <span className="me-[1mm] inline-block size-[2mm] rounded-full bg-[#dc2626] align-middle" aria-hidden />
+            {place}
+          </p>
+        </div>
+        <div className="flex w-[22mm] shrink-0 flex-col items-center text-center text-[5pt] leading-[1.3]">
+          <div className="size-[20mm]" dangerouslySetInnerHTML={{ __html: qr }} />
+          <p className="mt-[1mm] font-semibold">{t("cardBackTitle")}</p>
+          <p className="opacity-80">{t("cardBackShort")}</p>
+          <p className="mt-[0.8mm] font-mono text-[5.2pt] font-semibold">{doc.verify_code}</p>
         </div>
       </section>
     </div>

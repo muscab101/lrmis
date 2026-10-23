@@ -2641,8 +2641,9 @@
     "tabs": {
       "issue": "To issue",
       "print": "To print",
-      "documents": "Issued",
-      "reprints": "Reprints"
+      "documents": "Certificates",
+      "reprints": "Reprints",
+      "cards": "ID cards"
     },
     "kpiValid": "Valid certificates",
     "kpiWithout": "Registered without a certificate",
@@ -2817,7 +2818,13 @@
     "pendingRequest": "{kind} request waiting for approval",
     "registerChanged": "The register has changed since this document was issued",
     "registerChangedBody": "Owner or parcel details differ from what is printed. Use Correct & reissue to issue an up-to-date document.",
-    "requestLine": "{kind} {status}"
+    "requestLine": "{kind} {status}",
+    "cardKind": "Property ID card",
+    "cardHouse": "House {no}",
+    "cardPlace": "Place",
+    "cardId": "ID",
+    "cardMapTitle": "Banadir Region",
+    "cardBackShort": "Scan to check it is valid."
   },
   "verify": {
     "title": "Verify a certificate",

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 
@@ -40,9 +41,10 @@ export interface DocumentRow {
 
 const COLS = "id, type, serial, status, issued_at, expires_at, print_count, parcel:parcels(id, pun), party:parties(full_name)";
 
-export async function listDocuments(opts: { q: string; status: "valid" | "any"; unprinted?: boolean }) {
+export async function listDocuments(opts: { q: string; status: "valid" | "any"; unprinted?: boolean; type?: "certificate" | "id_card" }) {
   const supabase = await createClient();
   let req = supabase.from("issued_documents").select(COLS);
+  if (opts.type) req = req.eq("type", opts.type);
   if (opts.status === "valid") req = req.eq("status", "valid");
   if (opts.unprinted) req = req.eq("print_count", 0);
   const term = opts.q.replace(/[,()*%\\]/g, " ").trim();
@@ -173,4 +175,18 @@ export async function watermarkLine(doc: DocumentDetail, lang: string) {
   ]
     .filter((v): v is string => Boolean(v))
     .join(" · ");
+}
+
+/** Banadir district outlines for the back of the ID card (fetched once per request). */
+export const banadirOutlines = cache(async () => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("banadir_map_outlines");
+  return (data ?? []) as import("@/components/documents/banadir-map-svg").DistrictOutline[];
+});
+
+/** Valid property ID cards (the ID cards tab). */
+export async function validIdCardCount() {
+  const supabase = await createClient();
+  const { count } = await supabase.from("issued_documents").select("id", { count: "exact", head: true }).eq("type", "id_card").eq("status", "valid");
+  return count ?? 0;
 }

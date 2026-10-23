@@ -2641,8 +2641,9 @@
     "tabs": {
       "issue": "La bixinayo",
       "print": "La daabacayo",
-      "documents": "La bixiyay",
-      "reprints": "Dib-u-daabacaad"
+      "documents": "Shahaadooyinka",
+      "reprints": "Dib-u-daabacaad",
+      "cards": "Kaararka aqoonsiga"
     },
     "kpiValid": "Shahaadooyin ansax ah",
     "kpiWithout": "Diiwaangashan shahaado la'aan",
@@ -2817,7 +2818,13 @@
     "pendingRequest": "Codsi {kind} ah ayaa sugaya ansixin",
     "registerChanged": "Diiwaanku wuu isbeddelay tan iyo markii dukumentigan la bixiyay",
     "registerChangedBody": "Faahfaahinta milkiilaha ama dhulka way ka duwan yihiin waxa ku daabacan. Isticmaal Sax oo dib u bixi si aad u bixiso dukumenti casri ah.",
-    "requestLine": "{kind} {status}"
+    "requestLine": "{kind} {status}",
+    "cardKind": "Kaarka hantida",
+    "cardHouse": "Guriga {no}",
+    "cardPlace": "Goobta",
+    "cardId": "Aqoonsi",
+    "cardMapTitle": "Gobolka Banaadir",
+    "cardBackShort": "Sawir si aad u hubiso inuu ansax yahay."
   },
   "verify": {
     "title": "Hubi shahaado",

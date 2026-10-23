@@ -7,14 +7,15 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { IssueQueue, PrintQueue, ReprintQueue } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { certificatesCounts, listDocuments, listReprints, parcelsToCertify } from "@/lib/server/certificates";
+import { certificatesCounts, listDocuments, listReprints, parcelsToCertify, validIdCardCount } from "@/lib/server/certificates";
 
 export async function generateMetadata() {
   const t = await getTranslations("documents");
   return { title: t("title") };
 }
 
-const TABS = ["issue", "print", "documents", "reprints"] as const;
+/** "documents" lists title certificates, "cards" the property ID cards. */
+const TABS = ["issue", "print", "documents", "cards", "reprints"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function DocumentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -25,8 +26,8 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
   const format = await getFormatter();
   const sp = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : viewer.can("certificates.approve") ? "issue" : "print";
-  const counts = await certificatesCounts();
-  const badge: Record<Tab, number> = { issue: counts.registered_without, print: counts.unprinted, documents: counts.valid_certificates, reprints: counts.reprints_pending };
+  const [counts, cardCount] = await Promise.all([certificatesCounts(), validIdCardCount()]);
+  const badge: Record<Tab, number> = { issue: counts.registered_without, print: counts.unprinted, documents: counts.valid_certificates, cards: cardCount, reprints: counts.reprints_pending };
 
   let body: React.ReactNode;
   if (tab === "issue") {
@@ -48,12 +49,17 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
       />
     );
   } else {
-    const rows = await listDocuments({ q: (sp.q ?? "").slice(0, 40), status: tab === "print" ? "valid" : sp.all === "1" ? "any" : "valid", unprinted: tab === "print" });
+    const rows = await listDocuments({
+      q: (sp.q ?? "").slice(0, 40),
+      status: tab === "print" ? "valid" : sp.all === "1" ? "any" : "valid",
+      unprinted: tab === "print",
+      type: tab === "documents" ? "certificate" : tab === "cards" ? "id_card" : undefined,
+    });
     body = (
       <>
-        {tab === "documents" && (
+        {(tab === "documents" || tab === "cards") && (
           <form className="border-b p-3" role="search">
-            <input type="hidden" name="tab" value="documents" />
+            <input type="hidden" name="tab" value={tab} />
             <Input name="q" defaultValue={sp.q ?? ""} placeholder={t("search")} aria-label={t("search")} className="max-w-sm" />
           </form>
         )}
