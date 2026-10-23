@@ -16,7 +16,7 @@ export async function generateMetadata() {
 }
 
 /** Title certificates only; property ID cards have their own page (/documents/cards). */
-const TABS = ["issue", "print", "documents", "reprints"] as const;
+const TABS = ["documents", "print", "issue", "reprints"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function DocumentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -26,7 +26,7 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
   const t = await getTranslations("documents");
   const format = await getFormatter();
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : viewer.can("certificates.approve") ? "issue" : "print";
+  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "documents";
   const counts = await certificatesCounts();
   const badge: Record<Tab, number> = { issue: counts.registered_without, print: counts.unprinted, documents: counts.valid_certificates, reprints: counts.reprints_pending };
 
