@@ -79,7 +79,8 @@
       "settings": "Settings",
       "health": "System health",
       "assistant": "AI assistant",
-      "yetToRegister": "Yet to register"
+      "yetToRegister": "Yet to register",
+      "idCards": "ID cards"
     }
   },
   "status": {
@@ -2642,8 +2643,7 @@
       "issue": "To issue",
       "print": "To print",
       "documents": "Certificates",
-      "reprints": "Reprints",
-      "cards": "ID cards"
+      "reprints": "Reprints"
     },
     "kpiValid": "Valid certificates",
     "kpiWithout": "Registered without a certificate",
@@ -2824,7 +2824,8 @@
     "cardPlace": "Place",
     "cardId": "ID",
     "cardMapTitle": "Banadir Region",
-    "cardBackShort": "Scan to check it is valid."
+    "cardBackShort": "Scan to check it is valid.",
+    "cardView": "View card"
   },
   "verify": {
     "title": "Verify a certificate",
@@ -3562,5 +3563,17 @@
       "empty": "No houses yet",
       "emptyBody": "Use Add land for each house in this neighbourhood; the count goes up by one each time."
     }
+  },
+  "idCards": {
+    "title": "ID cards",
+    "tab_valid": "Valid",
+    "tab_print": "To print",
+    "tab_all": "All",
+    "actions": "Actions",
+    "body_valid": "Property ID cards in use. View, print, ask for a reprint or cancel one from its row.",
+    "body_print": "Cards waiting for their first print. Tick several to print them together.",
+    "body_all": "Every card, cancelled and replaced ones too.",
+    "empty": "No ID cards here",
+    "emptyBody": "A card is issued for each owner when a parcel gets its certificate."
   }
 }

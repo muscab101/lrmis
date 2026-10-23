@@ -29,6 +29,7 @@ export interface Snapshot {
 
 export interface DocumentRow {
   id: string;
+  issued_by: string | null;
   type: "certificate" | "id_card";
   serial: string;
   status: "valid" | "cancelled";
@@ -39,7 +40,7 @@ export interface DocumentRow {
   party: { full_name: string } | null;
 }
 
-const COLS = "id, type, serial, status, issued_at, expires_at, print_count, parcel:parcels(id, pun), party:parties(full_name)";
+const COLS = "id, type, serial, status, issued_at, issued_by, expires_at, print_count, parcel:parcels(id, pun), party:parties(full_name)";
 
 export async function listDocuments(opts: { q: string; status: "valid" | "any"; unprinted?: boolean; type?: "certificate" | "id_card" }) {
   const supabase = await createClient();
@@ -75,7 +76,7 @@ export async function getDocument(id: string) {
   const supabase = await createClient();
   const res = await supabase
     .from("issued_documents")
-    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, issued_by, print_jobs(id, kind, printed_at, printed_by), reprint_requests!reprint_requests_document_id_fkey(id, kind, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
+    .select(`${COLS}, verify_code, snapshot, replaces_id, cancel_reason, cancelled_at, print_jobs(id, kind, printed_at, printed_by), reprint_requests!reprint_requests_document_id_fkey(id, kind, reason, status, requested_by, requested_at, fee_invoice_id, decision_note, new_document_id)`)
     .eq("id", id)
     .maybeSingle();
   return unwrap(res, "document") as unknown as DocumentDetail | null;
@@ -183,10 +184,3 @@ export const banadirOutlines = cache(async () => {
   const { data } = await supabase.rpc("banadir_map_outlines");
   return (data ?? []) as import("@/components/documents/banadir-map-svg").DistrictOutline[];
 });
-
-/** Valid property ID cards (the ID cards tab). */
-export async function validIdCardCount() {
-  const supabase = await createClient();
-  const { count } = await supabase.from("issued_documents").select("id", { count: "exact", head: true }).eq("type", "id_card").eq("status", "valid");
-  return count ?? 0;
-}

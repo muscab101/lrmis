@@ -79,7 +79,8 @@
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
       "assistant": "Kaaliyaha AI",
-      "yetToRegister": "Weli lama diiwaangelin"
+      "yetToRegister": "Weli lama diiwaangelin",
+      "idCards": "Kaararka aqoonsiga"
     }
   },
   "status": {
@@ -2642,8 +2643,7 @@
       "issue": "La bixinayo",
       "print": "La daabacayo",
       "documents": "Shahaadooyinka",
-      "reprints": "Dib-u-daabacaad",
-      "cards": "Kaararka aqoonsiga"
+      "reprints": "Dib-u-daabacaad"
     },
     "kpiValid": "Shahaadooyin ansax ah",
     "kpiWithout": "Diiwaangashan shahaado la'aan",
@@ -2824,7 +2824,8 @@
     "cardPlace": "Goobta",
     "cardId": "Aqoonsi",
     "cardMapTitle": "Gobolka Banaadir",
-    "cardBackShort": "Sawir si aad u hubiso inuu ansax yahay."
+    "cardBackShort": "Sawir si aad u hubiso inuu ansax yahay.",
+    "cardView": "Eeg kaarka"
   },
   "verify": {
     "title": "Hubi shahaado",
@@ -3562,5 +3563,17 @@
       "empty": "Weli guri ma jiro",
       "emptyBody": "Isticmaal Ku dar dhul guri kasta oo xaafaddan ku yaal; tirada waxay kordhaysaa mar kasta hal."
     }
+  },
+  "idCards": {
+    "title": "Kaararka aqoonsiga",
+    "tab_valid": "Ansax",
+    "tab_print": "La daabacayo",
+    "tab_all": "Dhammaan",
+    "actions": "Ficillo",
+    "body_valid": "Kaararka aqoonsiga hantida ee la isticmaalo. Ka eeg, daabac, codso dib-u-daabac ama jooji safkiisa.",
+    "body_print": "Kaararka sugaya daabacaaddooda ugu horreysa. Calaamadee dhowr si wada jir loogu daabaco.",
+    "body_all": "Kaar kasta, kuwa la joojiyay iyo kuwa la beddelay sidoo kale.",
+    "empty": "Halkan kaar aqoonsi ma jiro",
+    "emptyBody": "Kaar ayaa milkiile kasta loo bixiyaa marka dhulku helo shahaadadiisa."
   }
 }

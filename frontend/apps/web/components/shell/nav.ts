@@ -10,6 +10,7 @@ import {
   Gavel,
   History,
   Home,
+  IdCard,
   KeyRound,
   Landmark,
   LayoutDashboard,
@@ -80,6 +81,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "disputes", href: "/disputes", icon: Gavel, permission: "disputes.view" },
       { key: "permits", href: "/permits", icon: Building2, permission: "permits.view" },
       { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
+      { key: "idCards", href: "/documents/cards", icon: IdCard, permission: "certificates.view" },
     ],
   },
   {
