@@ -55,6 +55,9 @@ describe("ID card print fee", () => {
     expect(found.rows.every((r) => r.fee_on && r.invoice_id === null)).toBe(true);
 
     await expectError(asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[1]])), "CONFLICT: card_fee_unpaid");
+    // The print page sees it first: fee on, no bill yet.
+    const before = await asUser(db, printer, (tx) => tx.query<{ fee_on: boolean; invoice_number: string | null; paid: boolean }>(`select * from public.card_print_status($1)`, [[cards[1]]]));
+    expect(before.rows[0]).toMatchObject({ fee_on: true, invoice_number: null, paid: false });
     await expectError(asUser(db, printer, (tx) => tx.query(`select public.card_print_bill($1)`, [cards[1]])), "PERMISSION_DENIED");
     const bill = await asUser(db, cashier, (tx) => scalar<{ invoice_id: string; number: string; existing: boolean }>(tx, `select public.card_print_bill($1)`, [cards[1]]));
     expect(bill.existing).toBe(false);
@@ -67,6 +70,8 @@ describe("ID card print fee", () => {
     expect(collect.rows.map((r) => r.invoice_id)).toContain(bill.invoice_id);
 
     await db.query(`select private.invoice_apply_payment($1, 5)`, [bill.invoice_id]);
+    const after = await asUser(db, printer, (tx) => tx.query<{ invoice_number: string; paid: boolean }>(`select * from public.card_print_status($1)`, [[cards[1]]]));
+    expect(after.rows[0]).toMatchObject({ invoice_number: bill.number, paid: true });
     await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[1]]));
     await expectError(asUser(db, cashier, (tx) => tx.query(`select public.card_print_bill($1)`, [cards[1]])), "CONFLICT: already_printed");
   });

@@ -411,7 +411,7 @@ export function IssueQueue({ rows, canIssue }: { rows: IssueRow[]; canIssue: boo
 }
 
 /** "To print": tick documents and open them together for one print run. */
-export function PrintQueue({ rows, canPrint }: { rows: DocumentRow[]; canPrint: boolean }) {
+export function PrintQueue({ rows, canPrint, notes = {} }: { rows: DocumentRow[]; canPrint: boolean; notes?: Record<string, { text: string; warn: boolean }> }) {
   const t = useTranslations("documents");
   const format = useFormatter();
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -464,6 +464,7 @@ export function PrintQueue({ rows, canPrint }: { rows: DocumentRow[]; canPrint: 
                 <Link href={`/documents/${d.id}`} className="hover:text-primary">
                   <Mono>{d.serial}</Mono>
                 </Link>
+                {notes[d.id] && <div className={`text-xs ${notes[d.id]!.warn ? "text-status-pending" : "text-status-approved"}`}>{notes[d.id]!.text}</div>}
               </TableCell>
               <TableCell className="text-sm">{t(`types.${d.type}`)}</TableCell>
               <TableCell>

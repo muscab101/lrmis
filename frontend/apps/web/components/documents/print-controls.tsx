@@ -13,12 +13,38 @@ import { FormError } from "@/components/forms/form-error";
  * Screen copies carry a PREVIEW watermark. The official print is logged first (once); after that
  * the watermark goes and the browser print dialog opens.
  */
-export function PrintControls({ id, printed, status, canPrint, children }: { id: string; printed: boolean; status: string; canPrint: boolean; children: React.ReactNode }) {
+export function PrintControls({
+  id,
+  printed,
+  status,
+  canPrint,
+  payment = null,
+  children,
+}: {
+  id: string;
+  printed: boolean;
+  status: string;
+  canPrint: boolean;
+  /** An ID card whose print bill isn't paid yet: printing waits for the cashier. */
+  payment?: { invoiceNumber: string | null } | null;
+  children: React.ReactNode;
+}) {
   const t = useTranslations("documents");
   const [official, setOfficial] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
-  const blocked = status !== "valid" ? t("printCancelled") : printed && !official ? t("printAlreadyDone") : !canPrint ? t("printNoPermission") : null;
+  const blocked =
+    status !== "valid"
+      ? t("printCancelled")
+      : printed && !official
+        ? t("printAlreadyDone")
+        : !canPrint
+          ? t("printNoPermission")
+          : payment
+            ? payment.invoiceNumber
+              ? t("cardPayOpen", { number: payment.invoiceNumber })
+              : t("cardPayNone")
+            : null;
   return (
     <>
       <div className="mx-auto mb-4 flex max-w-[210mm] flex-wrap items-center justify-end gap-3 print:hidden">

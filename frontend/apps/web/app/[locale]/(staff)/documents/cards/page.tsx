@@ -8,7 +8,7 @@ import { CardRowActions } from "@/components/documents/card-row-actions";
 import { PrintQueue } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { listDocuments } from "@/lib/server/certificates";
+import { cardPrintPayments, listDocuments } from "@/lib/server/certificates";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
@@ -44,6 +44,11 @@ export default async function IdCardsPage({ params, searchParams }: { params: Pr
     count(false, false),
   ]);
   const counts: Record<Tab, number> = { valid: valid.count ?? 0, print: print.count ?? 0, all: all.count ?? 0 };
+  // Print payment of the cards not printed yet (shown only while the ID card fee is on).
+  const pays = await cardPrintPayments(rows.filter((r) => r.status === "valid" && r.print_count === 0).map((r) => r.id));
+  const payNote = Object.fromEntries(
+    [...pays].filter(([, p]) => p.feeOn).map(([id, p]) => [id, { text: p.paid ? td("payPaid") : p.invoiceNumber ? td("payOpen", { number: p.invoiceNumber }) : td("payNone"), warn: !p.paid }]),
+  );
   const date = (v: string | null) => (v ? format.dateTime(new Date(v), { dateStyle: "medium" }) : "—");
 
   return (
@@ -71,7 +76,7 @@ export default async function IdCardsPage({ params, searchParams }: { params: Pr
         {rows.length === 0 ? (
           <EmptyState icon={<IdCard />} title={t("empty")} description={t("emptyBody")} />
         ) : tab === "print" ? (
-          <PrintQueue rows={rows} canPrint={viewer.can("certificates.print")} />
+          <PrintQueue rows={rows} canPrint={viewer.can("certificates.print")} notes={payNote} />
         ) : (
           <Table>
             <TableHeader>
@@ -102,6 +107,7 @@ export default async function IdCardsPage({ params, searchParams }: { params: Pr
                   <TableCell className="text-sm">
                     {td(`status.${d.status}`)}
                     {d.status === "valid" && <span className="ms-2 text-xs text-muted-foreground">{d.print_count > 0 ? td("printed") : td("notPrinted")}</span>}
+                    {payNote[d.id] && <div className={`text-xs ${payNote[d.id]!.warn ? "text-status-pending" : "text-status-approved"}`}>{payNote[d.id]!.text}</div>}
                   </TableCell>
                   <TableCell>
                     <CardRowActions

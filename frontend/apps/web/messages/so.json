@@ -2844,7 +2844,13 @@
     "cardBackShort": "Sawir si aad u hubiso inuu ansax yahay.",
     "cardView": "Eeg kaarka",
     "certificateView": "Eeg shahaadada",
-    "actions": "Ficillo"
+    "actions": "Ficillo",
+    "cardPayOpen": "Lacag ayaa loo baahan yahay: biilka daabacaadda {number} weli lama bixin. Khasnajigu ha qaado lacagta, kadib kaarka waa la daabici karaa.",
+    "cardPayNone": "Lacag ayaa loo baahan yahay: kaarkan weli biil daabacaad ma laha. Khasnajigu ha sameeyo (Khasnajiga → Daabacaadda kaarka) oo marka hore ha qaado lacagta.",
+    "batchUnpaid": "{count, plural, =1 {1 kaar aqoonsi ayaa sugaya} other {# kaar aqoonsi ayaa sugaya}} in biilkooda daabacaadda la bixiyo:",
+    "payPaid": "Daabacaadda waa la bixiyay",
+    "payOpen": "Biilka {number} lama bixin",
+    "payNone": "Biil lama samayn"
   },
   "verify": {
     "title": "Hubi shahaado",

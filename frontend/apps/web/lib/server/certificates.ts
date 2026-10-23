@@ -184,3 +184,26 @@ export const banadirOutlines = cache(async () => {
   const { data } = await supabase.rpc("banadir_map_outlines");
   return (data ?? []) as import("@/components/documents/banadir-map-svg").DistrictOutline[];
 });
+
+export interface CardPrintPayment {
+  /** The ID card print fee is switched on (with an amount). */
+  feeOn: boolean;
+  invoiceNumber: string | null;
+  paid: boolean;
+}
+
+/** ID cards' print payment, checked before printing (cards only; certificates aren't in the map). */
+export async function cardPrintPayments(ids: string[]): Promise<Map<string, CardPrintPayment>> {
+  if (ids.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("card_print_status", { p_ids: ids });
+  return new Map(
+    ((data ?? []) as { id: string; fee_on: boolean; invoice_number: string | null; paid: boolean }[]).map((r) => [
+      r.id,
+      { feeOn: r.fee_on, invoiceNumber: r.invoice_number, paid: r.paid },
+    ]),
+  );
+}
+
+/** Printing waits for payment: the fee is on and the card's print bill isn't paid. */
+export const awaitingCardPayment = (p: CardPrintPayment | undefined) => Boolean(p?.feeOn && !p.paid);

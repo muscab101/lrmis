@@ -2844,7 +2844,13 @@
     "cardBackShort": "Scan to check it is valid.",
     "cardView": "View card",
     "certificateView": "View certificate",
-    "actions": "Actions"
+    "actions": "Actions",
+    "cardPayOpen": "Payment needed: the print bill {number} isn't paid yet. The cashier takes the payment, then the card can be printed.",
+    "cardPayNone": "Payment needed: this card has no print bill yet. The cashier creates it (Cashier → ID card print) and takes the payment first.",
+    "batchUnpaid": "{count, plural, =1 {1 ID card waits} other {# ID cards wait}} for its print bill to be paid:",
+    "payPaid": "Print paid",
+    "payOpen": "Bill {number} unpaid",
+    "payNone": "Not billed"
   },
   "verify": {
     "title": "Verify a certificate",
