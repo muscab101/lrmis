@@ -3600,7 +3600,8 @@
       "closed_open": "Open",
       "empty": "No houses yet",
       "emptyBody": "Use Add land for each house in this neighbourhood; the count goes up by one each time."
-    }
+    },
+    "assignZone": "Assign zone"
   },
   "idCards": {
     "title": "ID cards",

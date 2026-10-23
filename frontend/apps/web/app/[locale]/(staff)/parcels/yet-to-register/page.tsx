@@ -88,12 +88,20 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
         </nav>
       </PageHeader>
       {canAssign && places && (
-        <Card className="mb-5">
+        <Card className="mb-5" id="assign">
           <CardHeader>
             <CardTitle className="text-base">{t("assign.title")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ZoneAssigner districts={districts} sections={places.sections} sectors={places.sectors} neighbourhoods={places.neighbourhoods} status={statusById} />
+            <ZoneAssigner
+              key={sp.assign ?? ""}
+              districts={districts}
+              sections={places.sections}
+              sectors={places.sectors}
+              neighbourhoods={places.neighbourhoods}
+              status={statusById}
+              initialNeighbourhood={sp.assign && /^[0-9a-f-]{36}$/i.test(sp.assign) ? sp.assign : null}
+            />
           </CardContent>
         </Card>
       )}
@@ -156,11 +164,18 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
                   <TableCell className="text-end text-sm tabular-nums">{n(r.registered)}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{r.has_boundary ? t("yes") : <span className="text-status-pending">{t("no")}</span>}</TableCell>
                   <TableCell className="text-end text-sm whitespace-nowrap">
-                    {r.partial + r.registered > 0 && (
-                      <Link href={`/parcels?${new URLSearchParams({ stage: r.partial > 0 ? "draft" : "registered", nbhd: r.id })}`} className="text-primary underline">
-                        {t("showLand")}
-                      </Link>
-                    )}
+                    <span className="inline-flex gap-3">
+                      {canAssign && !openZoneBy.has(r.id) && (
+                        <Link href={`/parcels/yet-to-register?${new URLSearchParams({ tab, ...(district ? { district } : {}), assign: r.id })}#assign`} className="text-primary underline">
+                          {t("assignZone")}
+                        </Link>
+                      )}
+                      {r.partial + r.registered > 0 && (
+                        <Link href={`/parcels?${new URLSearchParams({ stage: r.partial > 0 ? "draft" : "registered", nbhd: r.id })}`} className="text-primary underline">
+                          {t("showLand")}
+                        </Link>
+                      )}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}

@@ -24,20 +24,26 @@ interface Props {
   neighbourhoods: (ZonePlace & { capacity: number | null })[];
   /** Per neighbourhood: land waiting and registered, and whether a zone is already open there. */
   status: Record<string, { partial: number; registered: number; openZone: string | null }>;
+  /** Start with this neighbourhood chosen (Assign zone on a row below). */
+  initialNeighbourhood?: string | null;
 }
 
 /** District → section → sector → neighbourhood, then its capacity, then the surveyor who takes it. */
-export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, status }: Props) {
+export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, status, initialNeighbourhood = null }: Props) {
   const t = useTranslations("yetToRegister.assign");
   const locale = useLocale();
   const format = useFormatter();
   const vm = useValidationMessage();
   const router = useRouter();
   const name = (o: { name_so: string; name_en: string }) => (locale === "so" ? o.name_so : o.name_en);
-  const [district, setDistrict] = useState(districts.length === 1 ? districts[0]!.id : "");
-  const [section, setSection] = useState("");
-  const [sector, setSector] = useState("");
-  const [nbhd, setNbhd] = useState("");
+  // A neighbourhood picked from a row fills in its sector, section and district.
+  const start = neighbourhoods.find((n) => n.id === initialNeighbourhood);
+  const startSector = start ? sectors.find((k) => k.id === start.parent) : undefined;
+  const startSection = startSector ? sections.find((s) => s.id === startSector.parent) : undefined;
+  const [district, setDistrict] = useState(startSection?.parent ?? (districts.length === 1 ? districts[0]!.id : ""));
+  const [section, setSection] = useState(startSection?.id ?? "");
+  const [sector, setSector] = useState(startSector?.id ?? "");
+  const [nbhd, setNbhd] = useState(start?.id ?? "");
   const [surveyor, setSurveyor] = useState("");
   const [note, setNote] = useState("");
   const [surveyors, setSurveyors] = useState<{ user_id: string; full_name: string; open_zones: number; open_tasks: number }[]>([]);
