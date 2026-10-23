@@ -1,5 +1,6 @@
 import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -7,14 +8,16 @@ import { CopyCheck } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { listDuplicates } from "@/lib/server/collections";
+import { CorrectionsList } from "@/components/collections/corrections-list";
+import { VerifyTable } from "@/components/collections/verify-table";
+import { listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
 
 export async function generateMetadata() {
   const t = await getTranslations("collections");
   return { title: t("title") };
 }
 
-const TABS = ["duplicates"] as const;
+const TABS = ["verify", "corrections", "duplicates"] as const;
 type Tab = (typeof TABS)[number];
 
 /** ?from=&to= (ISO dates); by default the last 30 days. */
@@ -30,7 +33,7 @@ function range(sp: Record<string, string | undefined>) {
 export default async function CollectionsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "reconciliation.view");
+  const viewer = await requirePermission(locale, "reconciliation.view");
   const t = await getTranslations("collections");
   const tp = await getTranslations("payments");
   const format = await getFormatter();
@@ -59,7 +62,71 @@ export default async function CollectionsPage({ params, searchParams }: { params
   );
 
   let body: React.ReactNode = null;
-  if (tab === "duplicates") {
+  if (tab === "verify") {
+    // Status: pending by default; "all" shows every state.
+    const status: VerifyStatus | null = sp.status === "all" ? null : VERIFY_STATUSES.includes(sp.status as VerifyStatus) ? (sp.status as VerifyStatus) : "pending";
+    const all = await listQueue({ status, from, to });
+    const cashiers = [...new Map(all.filter((r) => r.cashier_id).map((r) => [r.cashier_id!, r.cashier ?? "—"])).entries()];
+    const cashier = cashiers.some(([id]) => id === sp.cashier) ? sp.cashier! : "";
+    const rows = cashier ? all.filter((r) => r.cashier_id === cashier) : all;
+    body = (
+      <>
+        <form className="flex flex-wrap items-end gap-3 p-3 text-sm">
+          <input type="hidden" name="tab" value="verify" />
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">{t("statusLabel")}</span>
+            <NativeSelect name="status" defaultValue={status ?? "all"} className="w-auto min-w-36">
+              {VERIFY_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`status.${s}`)}
+                </option>
+              ))}
+              <option value="all">{t("status.all")}</option>
+            </NativeSelect>
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">{t("cashier")}</span>
+            <NativeSelect name="cashier" defaultValue={cashier} className="w-auto min-w-40">
+              <option value="">{t("allCashiers")}</option>
+              {cashiers.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </NativeSelect>
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">{t("from")}</span>
+            <Input type="date" name="from" defaultValue={from} className="w-40" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">{t("to")}</span>
+            <Input type="date" name="to" defaultValue={to} className="w-40" />
+          </label>
+          <Button type="submit" size="sm" variant="outline">
+            {t("apply")}
+          </Button>
+        </form>
+        {rows.length === 0 ? (
+          <EmptyState icon={<CopyCheck />} title={t("verify.none")} description={t("verify.noneBody")} />
+        ) : (
+          <VerifyTable rows={rows} canVerify={viewer.can("reconciliation.update")} me={viewer.user.id} />
+        )}
+      </>
+    );
+  } else if (tab === "corrections") {
+    const rows = await listCorrections({ status: sp.all === "1" ? "any" : "pending" });
+    body = (
+      <>
+        <p className="border-b px-4 py-2 text-sm">
+          <Link href={`/collections?tab=corrections${sp.all === "1" ? "" : "&all=1"}`} className="text-primary hover:underline">
+            {sp.all === "1" ? t("corrections.showPending") : t("corrections.showAll")}
+          </Link>
+        </p>
+        <CorrectionsList rows={rows} canDecide={viewer.can("payments.approve")} me={viewer.user.id} />
+      </>
+    );
+  } else if (tab === "duplicates") {
     const rows = await listDuplicates(from, to);
     // Rows come grouped: one group per reference, or per payer + amount + day.
     const groups = [...new Map(rows.map((r) => [`${r.kind}|${r.key}`, rows.filter((x) => x.kind === r.kind && x.key === r.key)])).entries()];

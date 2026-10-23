@@ -2,11 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { CorrectionsList } from "@/components/collections/corrections-list";
 import { EvidencePanel } from "@/components/collections/evidence-panel";
+import { PaymentVerifyActions } from "@/components/collections/payment-verify-actions";
+import { VerifyStatusBadge } from "@/components/collections/verify-status";
 import { PaymentActions } from "@/components/payments/payment-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { paymentExtras } from "@/lib/server/collections";
+import { listCorrections, paymentExtras, paymentVerification } from "@/lib/server/collections";
 import { getPayment } from "@/lib/server/payments";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -21,8 +24,10 @@ export default async function PaymentPage({ params }: { params: Promise<{ locale
   const viewer = await requirePermission(locale, "payments.view");
   const t = await getTranslations("payments");
   const format = await getFormatter();
-  const [p, x] = await Promise.all([getPayment(id), paymentExtras(id)]);
-  if (!p || !x) notFound();
+  const [p, x, ver, corrections] = await Promise.all([getPayment(id), paymentExtras(id), paymentVerification(id), listCorrections({ status: "any", paymentId: id })]);
+  if (!p || !x || !ver) notFound();
+  const canVerify = viewer.can("reconciliation.update") && x.created_by !== viewer.user.id && p.status !== "reversed";
+  const canCorrect = p.status !== "reversed" && ((x.created_by === viewer.user.id && viewer.can("payments.create")) || viewer.can("reconciliation.update"));
   const tc = await getTranslations("collections");
   // Against what the payer owed when they paid: an overpayment leaves credit, an underpayment leaves a balance.
   const gap = x.expected_amount === null ? null : Math.round((Number(x.amount_base) - Number(x.expected_amount)) * 100) / 100;
@@ -108,6 +113,37 @@ export default async function PaymentPage({ params }: { params: Promise<{ locale
           </CardContent>
         </Card>
       </div>
+      <Card className="mt-5">
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-3 space-y-0">
+          <CardTitle className="flex items-center gap-2 text-base">
+            {tc("verification")} <VerifyStatusBadge status={ver.verify_status} />
+          </CardTitle>
+          <PaymentVerifyActions
+            paymentId={p.id}
+            status={ver.verify_status}
+            current={{ how: x.wallet ?? p.method, reference: p.reference ?? "", payerName: p.payer_name ?? "", payerPhone: p.payer_phone ?? "" }}
+            can={{ verify: canVerify, correct: canCorrect }}
+            correctionPending={corrections.some((c) => c.status === "pending")}
+          />
+        </CardHeader>
+        <CardContent className="space-y-1 text-sm">
+          {ver.verified_at && (
+            <p className="text-muted-foreground">
+              {tc(ver.verify_status === "disputed" ? "disputedBy" : "verifiedBy", {
+                by: ver.verified_by_name ?? "—",
+                at: format.dateTime(new Date(ver.verified_at), { dateStyle: "medium", timeStyle: "short" }),
+              })}
+            </p>
+          )}
+          {ver.dispute_reason && <p>{ver.dispute_reason}</p>}
+          {!ver.verified_at && <p className="text-muted-foreground">{tc("notChecked")}</p>}
+        </CardContent>
+        {corrections.length > 0 && (
+          <div className="border-t">
+            <CorrectionsList rows={corrections} canDecide={viewer.can("payments.approve")} me={viewer.user.id} showReceipt={false} />
+          </div>
+        )}
+      </Card>
       <Card className="mt-5">
         <CardHeader>
           <CardTitle className="text-base">{tc("evidence.title")}</CardTitle>

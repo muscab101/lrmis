@@ -227,7 +227,11 @@
       "possible_duplicate": "The same amount was just taken for this house.",
       "duplicate_reference": "This transaction reference was already used for another payment.",
       "wallet": "Choose the wallet: EVC Plus, eDahab or ZAAD.",
-      "reference_required": "Enter the transaction reference."
+      "reference_required": "Enter the transaction reference.",
+      "not_verifiable": "This payment was reversed or is already reconciled.",
+      "reconciled": "This payment is in an approved reconciliation and can't be changed.",
+      "correction_pending": "A correction for this payment is already waiting for approval.",
+      "no_change": "Change at least one thing."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -364,7 +368,8 @@
     "wallet": "Choose the wallet: EVC Plus, eDahab or ZAAD.",
     "reference_required": "Enter the transaction reference.",
     "duplicate_reference": "This transaction reference was already used for another payment.",
-    "evidence_type": "Use a photo (JPG, PNG, WEBP) or a PDF."
+    "evidence_type": "Use a photo (JPG, PNG, WEBP) or a PDF.",
+    "no_change": "Change at least one thing."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -3685,7 +3690,9 @@
     "overpaid": "Overpaid by {amount}",
     "underpaid": "Underpaid by {amount}",
     "tabs": {
-      "duplicates": "Duplicates"
+      "duplicates": "Duplicates",
+      "verify": "Verify",
+      "corrections": "Corrections"
     },
     "duplicates": {
       "none": "No likely duplicates",
@@ -3705,6 +3712,79 @@
       "uploading": "Uploading…",
       "add": "Add a file",
       "hint": "Photo or PDF of the receipt, the bank slip or the payer's SMS. Up to 10 MB."
+    },
+    "verification": "Verification",
+    "verifiedBy": "Checked by {by} on {at}",
+    "disputedBy": "Disputed by {by} on {at}",
+    "notChecked": "Not checked yet. A finance officer verifies it once the money is seen: the cash counted, or the line on the wallet or bank statement.",
+    "statusLabel": "Status",
+    "allCashiers": "All cashiers",
+    "online": "Online",
+    "over": "{amount} over",
+    "under": "{amount} short",
+    "status": {
+      "pending": "Pending",
+      "verified": "Verified",
+      "reconciled": "Reconciled",
+      "disputed": "Disputed",
+      "all": "All"
+    },
+    "verify": {
+      "picked": "{count, plural, =0 {Tick the payments whose money you've seen} =1 {1 payment ticked · {amount}} other {# payments ticked · {amount}}}",
+      "verifySelected": "Verify ticked",
+      "all": "Tick all",
+      "dispute": "Dispute",
+      "verify": "Verify",
+      "confirmTitle": "{count, plural, =1 {Verify 1 payment?} other {Verify # payments?}}",
+      "confirmBody": "Confirm you've seen this money ({amount}) in the cash count or on the wallet or bank statement.",
+      "oneTitle": "Verify this payment?",
+      "oneBody": "Confirm you've seen this money in the cash count or on the wallet or bank statement.",
+      "done": "Verified",
+      "note": "Note (optional)",
+      "noteDisputed": "What resolved the dispute",
+      "disputeTitle": "Dispute {receipt}",
+      "disputeBody": "Say what doesn't match. The payment stays Disputed until it's corrected or verified with a note.",
+      "disputed": "Marked as disputed",
+      "reason": "What doesn't match",
+      "none": "Nothing to check here",
+      "noneBody": "No payments with this status in the period."
+    },
+    "corrections": {
+      "pendingShort": "Correction waiting",
+      "none": "No correction requests.",
+      "status": {
+        "pending": "Waiting for approval",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "fields": {
+        "method": "Way of paying",
+        "wallet": "Wallet",
+        "reference": "Transaction reference",
+        "payer_name": "Payer",
+        "payer_phone": "Payer phone"
+      },
+      "reason": "Reason",
+      "asked": "Asked by {by} on {at}",
+      "decided": "decided by {by} on {at}",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve {number}?",
+      "rejectTitle": "Reject {number}?",
+      "approveBody": "The payment is changed as shown and goes back to Pending to be checked again. The original stays in the history.",
+      "rejectBody": "Say why; the payment stays as it is.",
+      "approved": "Correction applied",
+      "rejected": "Correction rejected",
+      "noteOptional": "Note (optional)",
+      "noteRequired": "Why it's rejected",
+      "ask": "Ask for a correction",
+      "askTitle": "Ask for a correction",
+      "askBody": "Change what was recorded wrongly. A Finance Manager approves it; the original stays in the history.",
+      "send": "Send for approval",
+      "sent": "Correction sent for approval",
+      "amountHint": "A wrong amount can't be corrected here: request a reversal and take the payment again.",
+      "showPending": "Show waiting only",
+      "showAll": "Show all, with decided ones"
     }
   }
 }

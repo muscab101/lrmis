@@ -227,7 +227,11 @@
       "possible_duplicate": "Isla qaddarkan ayaa hadda guriga laga qaaday.",
       "duplicate_reference": "Tixraacan lacag-bixin kale ayaa horay loogu isticmaalay.",
       "wallet": "Dooro boorsada: EVC Plus, eDahab ama ZAAD.",
-      "reference_required": "Geli tixraaca lacag-bixinta."
+      "reference_required": "Geli tixraaca lacag-bixinta.",
+      "not_verifiable": "Lacag-bixintan dib ayaa loo celiyay ama horay ayaa loo isku dheeliyay.",
+      "reconciled": "Lacag-bixintani waxay ku jirtaa isku-dheelitir la oggolaaday lamana beddeli karo.",
+      "correction_pending": "Saxitaan lacag-bixintan ah ayaa horay u sugaya oggolaansho.",
+      "no_change": "Beddel ugu yaraan hal shay."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -364,7 +368,8 @@
     "wallet": "Dooro boorsada: EVC Plus, eDahab ama ZAAD.",
     "reference_required": "Geli tixraaca lacag-bixinta.",
     "duplicate_reference": "Tixraacan lacag-bixin kale ayaa horay loogu isticmaalay.",
-    "evidence_type": "Isticmaal sawir (JPG, PNG, WEBP) ama PDF."
+    "evidence_type": "Isticmaal sawir (JPG, PNG, WEBP) ama PDF.",
+    "no_change": "Beddel ugu yaraan hal shay."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -3685,7 +3690,9 @@
     "overpaid": "Waxaa lagu dhaafiyay {amount}",
     "underpaid": "Waxaa ka dhimman {amount}",
     "tabs": {
-      "duplicates": "Labanlaabmay"
+      "duplicates": "Labanlaabmay",
+      "verify": "Hubi",
+      "corrections": "Saxitaanno"
     },
     "duplicates": {
       "none": "Ma jiraan wax u eg labanlaab",
@@ -3705,6 +3712,79 @@
       "uploading": "Waa la soo gelinayaa…",
       "add": "Ku dar fayl",
       "hint": "Sawir ama PDF rasiidka, warqadda bangiga ama SMS-ka bixiyaha. Ilaa 10 MB."
+    },
+    "verification": "Hubinta",
+    "verifiedBy": "Waxaa hubiyay {by} {at}",
+    "disputedBy": "Waxaa diiday {by} {at}",
+    "notChecked": "Weli lama hubin. Sarkaal maaliyadeed ayaa hubinaya marka lacagta la arko: caddaanka la tiriyay, ama safka warbixinta boorsada ama bangiga.",
+    "statusLabel": "Xaaladda",
+    "allCashiers": "Dhammaan khasnajiyada",
+    "online": "Online",
+    "over": "{amount} dheeri ah",
+    "under": "{amount} ka yar",
+    "status": {
+      "pending": "Sugaya",
+      "verified": "La hubiyay",
+      "reconciled": "La isku dheeliyay",
+      "disputed": "Lagu murmay",
+      "all": "Dhammaan"
+    },
+    "verify": {
+      "picked": "{count, plural, =0 {Calaamadee lacag-bixinnada aad lacagtooda aragtay} =1 {1 lacag-bixin ayaa la calaamadeeyay · {amount}} other {# lacag-bixin ayaa la calaamadeeyay · {amount}}}",
+      "verifySelected": "Hubi kuwa la calaamadeeyay",
+      "all": "Calaamadee dhammaan",
+      "dispute": "Ku murm",
+      "verify": "Hubi",
+      "confirmTitle": "{count, plural, =1 {Hubi 1 lacag-bixin?} other {Hubi # lacag-bixin?}}",
+      "confirmBody": "Xaqiiji inaad lacagtan ({amount}) ku aragtay tirinta caddaanka ama warbixinta boorsada ama bangiga.",
+      "oneTitle": "Hubi lacag-bixintan?",
+      "oneBody": "Xaqiiji inaad lacagtan ku aragtay tirinta caddaanka ama warbixinta boorsada ama bangiga.",
+      "done": "Waa la hubiyay",
+      "note": "Qoraal (ikhtiyaari)",
+      "noteDisputed": "Waxa xalliyay murankii",
+      "disputeTitle": "Ku murm {receipt}",
+      "disputeBody": "Sheeg waxa aan is-waafaqsanayn. Lacag-bixintu waxay ahaanaysaa Lagu murmay ilaa la saxo ama qoraal lagu hubiyo.",
+      "disputed": "Waxaa lagu calaamadeeyay murran",
+      "reason": "Waxa aan is-waafaqsanayn",
+      "none": "Halkan wax la hubiyo ma jiro",
+      "noneBody": "Muddadan ma jiraan lacag-bixinno xaaladdan leh."
+    },
+    "corrections": {
+      "pendingShort": "Saxitaan sugaya",
+      "none": "Codsiyo saxitaan ma jiraan.",
+      "status": {
+        "pending": "Sugaya oggolaansho",
+        "approved": "La oggolaaday",
+        "rejected": "La diiday"
+      },
+      "fields": {
+        "method": "Habka lacag-bixinta",
+        "wallet": "Boorsada",
+        "reference": "Tixraaca lacag-bixinta",
+        "payer_name": "Bixiyaha",
+        "payer_phone": "Taleefanka bixiyaha"
+      },
+      "reason": "Sababta",
+      "asked": "Waxaa codsaday {by} {at}",
+      "decided": "waxaa go'aamiyay {by} {at}",
+      "approve": "Oggolow",
+      "reject": "Diid",
+      "approveTitle": "Oggolow {number}?",
+      "rejectTitle": "Diid {number}?",
+      "approveBody": "Lacag-bixinta waa la beddelayaa sida la muujiyay waxayna dib ugu noqonaysaa Sugaya si mar kale loo hubiyo. Asalka wuxuu ku jirayaa taariikhda.",
+      "rejectBody": "Sheeg sababta; lacag-bixintu sideeda ayay ahaanaysaa.",
+      "approved": "Saxitaanka waa la dabaqay",
+      "rejected": "Saxitaanka waa la diiday",
+      "noteOptional": "Qoraal (ikhtiyaari)",
+      "noteRequired": "Sababta loo diiday",
+      "ask": "Codso saxitaan",
+      "askTitle": "Codso saxitaan",
+      "askBody": "Beddel waxa si khaldan loo diiwaangeliyay. Maareeyaha maaliyadda ayaa oggolaanaya; asalka wuxuu ku jirayaa taariikhda.",
+      "send": "U dir oggolaansho",
+      "sent": "Saxitaanka waxaa loo diray oggolaansho",
+      "amountHint": "Qaddar khaldan halkan laguma saxi karo: codso dib-u-celin oo mar kale qaado lacag-bixinta.",
+      "showPending": "Muuji kuwa sugaya oo keliya",
+      "showAll": "Muuji dhammaan, oo ay ku jiraan kuwa la go'aamiyay"
     }
   }
 }

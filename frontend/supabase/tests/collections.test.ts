@@ -105,3 +105,64 @@ describe("collections, stage 1: wallets, expected amount, duplicates, evidence",
     expect(n).toBe(2);
   });
 });
+
+describe("collections, stage 2: verify, dispute, corrections", () => {
+  const receipt = (ref: string) => scalar<string>(db, `select id from public.payments where reference = $1`, [ref]);
+  const row = (id: string) => scalar<Record<string, string>>(db, `select row_to_json(p) from public.payments p where id = $1`, [id]);
+
+  it("payments start Pending; a finance officer verifies, never the cashier who took it", async () => {
+    const pay = await receipt("evc1001");
+    expect((await row(pay)).verify_status).toBe("pending");
+    await expectError(asUser(db, cashier, (tx) => tx.query(`select public.payment_verify($1)`, [[pay]])), "PERMISSION_DENIED");
+    const n = await asUser(db, officer, (tx) => scalar<number>(tx, `select public.payment_verify($1)`, [[pay]]));
+    expect(n).toBe(1);
+    expect((await row(pay)).verify_status).toBe("verified");
+    const q = await asUser(db, officer, (tx) => tx.query<{ channel: string; evidence: string }>(`select * from public.collections_queue('verified', current_date, current_date)`));
+    expect(q.rows.map((r) => r.channel)).toEqual(["evc_plus"]);
+    expect(Number(q.rows[0]!.evidence)).toBe(2);
+  });
+
+  it("a dispute needs a reason; verifying a disputed payment needs a note", async () => {
+    const pay = await scalar<string>(db, `select id from public.payments where wallet = 'zaad'`);
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.payment_dispute($1, 'no')`, [pay])), "VALIDATION: reason");
+    await asUser(db, officer, (tx) => tx.query(`select public.payment_dispute($1, 'Not on the ZAAD statement')`, [pay]));
+    expect((await row(pay)).verify_status).toBe("disputed");
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.payment_verify($1)`, [[pay]])), "VALIDATION: note_required");
+  });
+
+  it("a correction needs a reason and a Finance Manager's approval; the original stays on record and the ledger follows", async () => {
+    const pay = await scalar<string>(db, `select id from public.payments where wallet = 'zaad'`);
+    await expectError(
+      asUser(db, cashier, (tx) => tx.query(`select public.payment_correction_request($1, $2, 'Wrong wallet')`, [pay, JSON.stringify({ wallet: "edahab" })])),
+      "PERMISSION_DENIED",
+    );
+    // The cashier who took it asks: it was eDahab, and the reference was mistyped.
+    const id = await asUser(db, cashier2, (tx) =>
+      scalar<string>(tx, `select public.payment_correction_request($1, $2, 'Payer used eDahab, not ZAAD')`, [pay, JSON.stringify({ wallet: "edahab", reference: "ED-77" })]),
+    );
+    await expectError(asUser(db, cashier2, (tx) => tx.query(`select public.payment_correction_request($1, $2, 'Again please')`, [pay, JSON.stringify({ payer_name: "X" })])), "CONFLICT: correction_pending");
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.payment_correction_decide($1, true)`, [id])), "PERMISSION_DENIED");
+    await asUser(db, manager, (tx) => tx.query(`select public.payment_correction_decide($1, true, 'Checked the eDahab SMS')`, [id]));
+    const p = await row(pay);
+    expect(p).toMatchObject({ wallet: "edahab", reference: "ED-77", provider: "edahab", verify_status: "pending" });
+    const c = await scalar<{ before: { wallet: string; reference: string }; status: string }>(db, `select row_to_json(c) from public.payment_corrections c where id = $1`, [id]);
+    expect(c.status).toBe("approved");
+    expect(c.before).toMatchObject({ wallet: "zaad", reference: "EVC1001" });
+
+    // Cash recorded as a bank transfer: moving it posts a balanced journal from cash to the bank clearing account.
+    const cash = await scalar<string>(db, `select id from public.payments where method = 'cash' order by received_at limit 1`);
+    const c2 = await asUser(db, officer, (tx) =>
+      scalar<string>(tx, `select public.payment_correction_request($1, $2, 'Paid by bank, cashier picked cash')`, [cash, JSON.stringify({ method: "bank_transfer", reference: "BK-555" })]),
+    );
+    await expectError(asUser(db, manager, (tx) => tx.query(`select public.payment_correction_decide($1, false, 'no')`, [c2])), "VALIDATION: note_required");
+    await asUser(db, manager, (tx) => tx.query(`select public.payment_correction_decide($1, true)`, [c2]));
+    const j = await scalar<{ dr: string; cr: string; accounts: string[] }>(
+      db,
+      `select json_build_object('dr', sum(l.debit), 'cr', sum(l.credit), 'accounts', array_agg(l.account order by l.debit desc))
+         from public.journal_lines l join public.journal_entries e on e.id = l.entry_id where e.source = 'payment_correction' and e.source_id = $1`,
+      [cash],
+    );
+    expect(Number(j.dr)).toBe(Number(j.cr));
+    expect(j.accounts).toEqual(["1130", "1100"]);
+  });
+});
