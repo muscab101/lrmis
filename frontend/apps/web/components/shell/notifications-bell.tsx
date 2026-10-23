@@ -5,12 +5,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSepar
 import { Bell } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 interface Notification {
   id: string;
   title_so: string;
   title_en: string;
+  body_so: string;
+  body_en: string;
   link: string | null;
   read_at: string | null;
   created_at: string;
@@ -27,7 +30,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("notifications")
-      .select("id, title_so, title_en, link, read_at, created_at")
+      .select("id, title_so, title_en, body_so, body_en, link, read_at, created_at")
       .order("created_at", { ascending: false })
       .limit(10);
     setItems((data as Notification[] | null) ?? []);
@@ -72,7 +75,15 @@ export function NotificationsBell({ userId }: { userId: string }) {
             <li key={n.id} className="flex gap-2 rounded-sm px-2 py-2 text-sm">
               <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.read_at ? "bg-transparent" : "bg-primary"}`} aria-hidden />
               <div className="min-w-0">
-                <p className="leading-snug">{locale === "so" ? n.title_so : n.title_en}</p>
+                {/* With a link (e.g. a new house to collect → Cashier) the notice opens it. */}
+                {n.link ? (
+                  <Link href={n.link} className="leading-snug hover:text-primary hover:underline">
+                    {locale === "so" ? n.title_so : n.title_en}
+                  </Link>
+                ) : (
+                  <p className="leading-snug">{locale === "so" ? n.title_so : n.title_en}</p>
+                )}
+                {(locale === "so" ? n.body_so : n.body_en) && <p className="text-xs text-muted-foreground">{locale === "so" ? n.body_so : n.body_en}</p>}
                 <p className="text-xs text-muted-foreground">{format.relativeTime(new Date(n.created_at))}</p>
               </div>
             </li>

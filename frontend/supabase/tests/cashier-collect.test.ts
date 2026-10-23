@@ -64,4 +64,13 @@ describe("cashier: to collect", () => {
     expect((await asUser(db, karaanCashier, (tx) => tx.query(`select * from public.cashier_to_collect()`))).rows).toHaveLength(0);
     await expect(asUser(db, surveyor, (tx) => tx.query(`select * from public.cashier_to_collect()`))).rejects.toThrow(/^PERMISSION_DENIED/);
   });
+
+  it("registering land notifies that district's cashiers (only them) and the house joins To collect", async () => {
+    const draft = await scalar<string>(db, `select id from public.parcels where house_no = '03'`);
+    await db.query(`update public.parcels set pun = 'BNHDN01203', account_no = 'HDN0000003', status = 'registered', registered_at = now() where id = $1`, [draft]);
+    const n = await db.query<{ user_id: string; title_en: string; body_en: string; link: string }>(`select user_id, title_en, body_en, link from public.notifications where kind = 'cashier.to_collect'`);
+    expect(n.rows).toEqual([{ user_id: cashier, title_en: "New house to collect from", body_en: "BNHDN01203 · House 03 · Taleh · $30.00 due", link: "/cashier" }]);
+    const rows = await asUser(db, cashier, (tx) => tx.query<{ pun: string }>(`select pun from public.cashier_to_collect()`));
+    expect(rows.rows.map((r) => r.pun).sort()).toEqual(["BNHDN01201", "BNHDN01203"]);
+  });
 });
