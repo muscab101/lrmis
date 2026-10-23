@@ -3192,7 +3192,11 @@
       "parcels": "Dhulalka",
       "owners": "Milkiilayaasha iyo dhulkooda",
       "locations": "Goobaha",
-      "paymentTypes": "Lacag-bixinta nooc ahaan"
+      "paymentTypes": "Ururinta nooc dakhli ahaan",
+      "collections": "Ururinta maalinlaha, toddobaadlaha iyo bishii",
+      "collectionsCashier": "Ururinta khasnaji ahaan",
+      "shortages": "Yaraanshaha iyo dheeraadka khasnajiyada",
+      "unreconciled": "Lacag-bixinno aan la isku dheelitirin"
     },
     "notes": {
       "revenue": "Lacagta la helay, bisha la helay, loona kala qaybiyay waxa ay bixisay. Lacagta aan la qoondeyn waa lacag aan weli biil lagu xirin.",
@@ -3208,7 +3212,11 @@
       "parcels": "Dhulalka sida ay maanta yihiin. Qayb ahaan waa dhul aan weli la diiwaangelin (qabyo, la sahamiyay ama la hubiyay, badanaa sawir ku-meel-gaar ah leh).",
       "owners": "Milkiilayaasha hadda, wada-milkiilayaasha iyo dhaxlayaasha, saf kasta hal milkiile iyo hal dhul. Taariikhuhu khuseyn maayaan.",
       "locations": "Degmooyinka, qaybaha, waaxyaha iyo xaafadaha, dhulalka mid walba ku jira iyo in xuduud la sawiray. Taariikhuhu khuseyn maayaan.",
-      "paymentTypes": "Inta lacag ah ee u timid nooc kasta oo khidmad ah, loo kala qaaday habka lacag-bixinta: caddaan, lacag mobile, wareejin bangi, Visa / Mastercard iyo lacag-bixinno kale. Guji nooc khidmad ama qaddar si aad u aragto lacag-bixinnadaas."
+      "paymentTypes": "Nooc kasta oo dakhli ah (nooca khidmadda), inta soo gashay Caddaan, EVC Plus, eDahab, ZAAD, Wareejin bangi, Visa / Mastercard iyo Kale, iyo wadarta guud. Guji nooc ama qaddar si aad u aragto lacag-bixinnadaas.",
+      "collections": "Wadarta ururinta = Caddaan + EVC Plus + eDahab + ZAAD + Wareejin bangi (+ Visa / Mastercard iyo Kale), maalin kasta, toddobaad kasta (Isniin ilaa Axad) ama bil kasta. Sida caadiga ah waxaa la tiriyaa kaliya lacag-bixinnada uu sarkaal maaliyadeed hubiyay.",
+      "collectionsCashier": "Waxa khasnaji kastaa ururiyay hab lacag-bixin ahaan, inta aan weli la hubin, inta maalmood ee la isku dheelitiray, iyo yaraanshaha iyo dheeraadka la helay.",
+      "shortages": "Maalin kasta oo khasnaji oo muddadan la isku dheelitiray: la diiwaangeliyay iyo dhab ahaan la helay, farqiga hab kasta (tiirka ±), yaraansho = la diiwaangeliyay − la helay, dheeraad = la helay − la diiwaangeliyay, iyo cidda diyaarisay iyo cidda oggolaatay.",
+      "unreconciled": "Lacag-bixinno aan weli ku jirin isku-dheelitir khasnaji oo la oggolaaday: sugaya, la hubiyay ama lagu murmay, kuwa ugu da'da weyn marka hore."
     },
     "buckets": {
       "not_due": "Waqtigii ma gaarin",
@@ -3335,7 +3343,8 @@
     "groups": {
       "money": "Lacagta",
       "land": "Dhulka",
-      "documents": "Dukumentiyada"
+      "documents": "Dukumentiyada",
+      "collections": "Ururinta iyo isku-dheelitirka"
     },
     "report": "Warbixin",
     "methods": {
@@ -3343,11 +3352,47 @@
       "mobile_money": "Lacag mobile",
       "bank_transfer": "Wareejin bangi",
       "card": "Visa / Mastercard",
-      "other": "Lacag-bixinno kale"
+      "other": "Lacag-bixinno kale",
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD"
     },
     "allMethods": "Dhammaan habka lacag-bixinta",
     "allFeeTypes": "Dhammaan noocyada khidmadda",
-    "unallocated": "Lacag aan la qoondeyn"
+    "unallocated": "Lacag aan la qoondeyn",
+    "period_": "Muddada",
+    "grandTotal": "Wadarta guud",
+    "unchecked": "Weli lama hubin",
+    "reconciledDays": "Maalmaha la isku dheelitiray",
+    "shortage": "Yaraansho",
+    "excess": "Dheeraad",
+    "online": "Online",
+    "recordedLabel": "La diiwaangeliyay",
+    "actualLabel": "Dhab ahaan la helay",
+    "differenceLabel": "Farqiga",
+    "preparedBy": "Waxaa diyaariyay",
+    "approvedBy": "Waxaa oggolaaday",
+    "reference": "Tixraac",
+    "ageDays": "Maalmo furan",
+    "disputeReason": "Muran",
+    "groupBy": "U kala qaybi",
+    "by": {
+      "day": "Maalin",
+      "week": "Toddobaad (Isn–Axd)",
+      "month": "Bil"
+    },
+    "basisLabel": "Tiri",
+    "basis": {
+      "verified": "Lacag-bixinnada la hubiyay oo keliya",
+      "all": "Wax kasta oo la diiwaangeliyay"
+    },
+    "verificationTitle": "Hubinta",
+    "approvalsLine": "{approved, plural, =1 {1 maalin khasnaji ayaa la oggolaaday} other {# maalmood oo khasnaji ayaa la oggolaaday}} · {waiting} sugaya",
+    "approvedByLine": "waxaa oggolaaday {names}",
+    "compareTitle": "Marka la barbardhigo muddadii hore ({from} – {to})",
+    "thisPeriod": "Muddadan",
+    "previousPeriod": "Muddadii hore",
+    "change": "Isbeddel"
   },
   "messages": {
     "title": "Fariimaha",

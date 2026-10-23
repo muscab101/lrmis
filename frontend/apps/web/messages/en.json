@@ -3192,7 +3192,11 @@
       "parcels": "Parcels",
       "owners": "Owners & parcels",
       "locations": "Locations",
-      "paymentTypes": "Payments by type"
+      "paymentTypes": "Collections by revenue category",
+      "collections": "Daily, weekly & monthly collections",
+      "collectionsCashier": "Collections by cashier",
+      "shortages": "Cashier shortages & excess",
+      "unreconciled": "Unreconciled transactions"
     },
     "notes": {
       "revenue": "Money received, by the month it was received, split by what it paid for. Unallocated credit is money not yet matched to a bill.",
@@ -3208,7 +3212,11 @@
       "parcels": "Parcels as they are today. Partial means land not yet registered (draft, surveyed or verified, often with a provisional shape).",
       "owners": "Current owners, co-owners and heirs, one row per owner and parcel. Dates don't apply.",
       "locations": "Districts, sections, sectors and neighbourhoods with the parcels in each and whether a boundary is drawn. Dates don't apply.",
-      "paymentTypes": "How much came in for each fee type, split by way of paying: cash, mobile money, bank transfer, Visa / Mastercard and other payments. Click a fee type or an amount to see those payments."
+      "paymentTypes": "For each revenue category (fee type), how much came in by Cash, EVC Plus, eDahab, ZAAD, Bank transfer, Visa / Mastercard and Other, with the grand total. Click a category or an amount to see those payments.",
+      "collections": "Total collections = Cash + EVC Plus + eDahab + ZAAD + Bank transfer (+ Visa / Mastercard and Other), per day, per week (Monday to Sunday) or per month. By default only payments a finance officer verified count.",
+      "collectionsCashier": "What each cashier collected by way of paying, how much is not yet verified, how many of their days are reconciled, and the shortages and excess found.",
+      "shortages": "Each cashier day reconciled in the period: recorded against actually received, the difference per way of paying (± column), shortage = recorded − received, excess = received − recorded, and who prepared and approved it.",
+      "unreconciled": "Payments not yet in an approved cashier reconciliation: pending, verified or disputed, oldest first."
     },
     "buckets": {
       "not_due": "Not due",
@@ -3335,7 +3343,8 @@
     "groups": {
       "money": "Money",
       "land": "Land",
-      "documents": "Documents"
+      "documents": "Documents",
+      "collections": "Collections & reconciliation"
     },
     "report": "Report",
     "methods": {
@@ -3343,11 +3352,47 @@
       "mobile_money": "Mobile money",
       "bank_transfer": "Bank transfer",
       "card": "Visa / Mastercard",
-      "other": "Other payments"
+      "other": "Other payments",
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD"
     },
     "allMethods": "All ways of paying",
     "allFeeTypes": "All fee types",
-    "unallocated": "Unallocated credit"
+    "unallocated": "Unallocated credit",
+    "period_": "Period",
+    "grandTotal": "Grand total",
+    "unchecked": "Not yet verified",
+    "reconciledDays": "Days reconciled",
+    "shortage": "Shortage",
+    "excess": "Excess",
+    "online": "Online",
+    "recordedLabel": "Recorded",
+    "actualLabel": "Actually received",
+    "differenceLabel": "Difference",
+    "preparedBy": "Prepared by",
+    "approvedBy": "Approved by",
+    "reference": "Reference",
+    "ageDays": "Days open",
+    "disputeReason": "Dispute",
+    "groupBy": "Group by",
+    "by": {
+      "day": "Day",
+      "week": "Week (Mon–Sun)",
+      "month": "Month"
+    },
+    "basisLabel": "Count",
+    "basis": {
+      "verified": "Verified payments only",
+      "all": "Everything recorded"
+    },
+    "verificationTitle": "Verification",
+    "approvalsLine": "{approved, plural, =1 {1 cashier day approved} other {# cashier days approved}} · {waiting} waiting",
+    "approvedByLine": "approved by {names}",
+    "compareTitle": "Against the previous period ({from} – {to})",
+    "thisPeriod": "This period",
+    "previousPeriod": "Previous period",
+    "change": "Change"
   },
   "messages": {
     "title": "Messages",

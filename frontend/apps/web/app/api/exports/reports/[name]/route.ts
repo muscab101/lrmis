@@ -4,7 +4,17 @@ import { routing } from "@/i18n/routing";
 import { getViewer } from "@/lib/server/auth";
 import { cellText, reportPdf, reportXlsx } from "@/lib/server/report-files";
 import { reportTable } from "@/lib/server/report-table";
-import { AREA_REPORTS, feeTypeCode, parcelKind, paymentMethod, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
+import {
+  AREA_REPORTS,
+  BASIS_REPORTS,
+  collectionBasis,
+  collectionBy,
+  collectionsCompare,
+  collectionsStatus,
+  FINANCE_REPORTS,
+  feeTypeCode,
+  parcelKind,
+  paymentMethod, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
 import { zonePlaces } from "@/lib/server/zones";
 import { createClient } from "@/lib/supabase/server";
@@ -40,13 +50,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const kind = parcelKind(sp.kind);
   const method = report === "payments" ? paymentMethod(sp.method) : null;
   const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
+  const by = collectionBy(sp.by);
+  const basis = collectionBasis(sp.basis);
   const format = sp.format === "pdf" || sp.format === "xlsx" ? sp.format : "csv";
   const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "") ? sp.lang! : routing.defaultLocale;
   const place = usesArea ? { section: area.section, sector: area.sector, neighbourhood: area.neighbourhood } : {};
-  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, ...place }, supabase)) as unknown[];
+  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, by, basis, ...place }, supabase)) as unknown[];
   const snapshot = SNAPSHOT_REPORTS.includes(report);
   const stamp = snapshot ? new Date().toISOString().slice(0, 10) : `${from}-${to}`;
-  const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}${method ? `-${method}` : ""}${fee ? `-${fee}` : ""}-${stamp}`;
+  const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}${method ? `-${method}` : ""}${fee ? `-${fee}` : ""}${report === "collections" ? `-${by}` : ""}-${stamp}`;
   const headers = (type: string, ext: string) => ({
     "content-type": type,
     "content-disposition": `attachment; filename="${file}.${ext}"`,
@@ -72,6 +84,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     neighbourhood: places.neighbourhoods.find((x) => x.id === area.neighbourhood),
   };
   const feeName = fee && fee !== "credit" ? await feeTypeName(supabase, fee, locale) : null;
+  /** Collections reports: how money was counted, the verification and approval facts, and the previous period. */
+  async function financeLines() {
+    if (!FINANCE_REPORTS.includes(report)) return [];
+    const tc = await getTranslations({ locale, namespace: "collections" });
+    const money = (n: number) => new Intl.NumberFormat(locale === "so" ? "so" : "en-US", { style: "currency", currency: "USD" }).format(n);
+    const args = { from, to, district, basis, ...place };
+    const [st, cmp] = await Promise.all([collectionsStatus(args, supabase), BASIS_REPORTS.includes(report) ? collectionsCompare(args, supabase) : Promise.resolve(null)]);
+    const out: string[] = [];
+    if (report === "collections") out.push(`${t("groupBy")}: ${t(`by.${by}`)}`);
+    if (BASIS_REPORTS.includes(report)) out.push(`${t("basisLabel")}: ${t(`basis.${basis}`)}`);
+    out.push(
+      `${t("verificationTitle")}: ` +
+        (["reconciled", "verified", "pending", "disputed"] as const).map((k) => `${tc(`status.${k}`)} ${money(Number(st[k].amount))} (${st[k].n})`).join(" · "),
+    );
+    out.push(t("approvalsLine", { approved: st.approved, waiting: st.waiting }) + (st.approvers ? ` · ${t("approvedByLine", { names: st.approvers })}` : ""));
+    if (cmp) {
+      const now = cmp.reduce((a, c) => a + c.current_amount, 0);
+      const before = cmp.reduce((a, c) => a + c.previous_amount, 0);
+      const pct = before ? ` (${now >= before ? "+" : ""}${(((now - before) / before) * 100).toFixed(1)} %)` : "";
+      out.push(`${t("compareTitle", { from: cmp[0]!.previous_from, to: cmp[0]!.previous_to })}: ${money(before)} → ${money(now)}${pct}`);
+      out.push(
+        cmp
+          .filter((c) => c.current_amount || c.previous_amount)
+          .map((c) => `${tc(`channels.${c.channel}`)} ${money(c.previous_amount)} → ${money(c.current_amount)}`)
+          .join(" · "),
+      );
+    }
+    return out;
+  }
   const lines = [
     snapshot ? t("asOf", { date: new Date().toISOString().slice(0, 10) }) : t("period", { from, to }),
     `${t("district")}: ${d ? nm({ name_so: d.name_so, name_en: d.name_en }) : t("allDistricts")}`,
@@ -81,6 +122,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ...(report === "parcels" ? [`${t("kind")}: ${t(`kinds.${kind}`)}`] : []),
     ...(method ? [`${t("method")}: ${t(`methods.${method}`)}`] : []),
     ...(fee ? [`${t("feeType")}: ${fee === "credit" ? t("unallocated") : (feeName ?? fee)}`] : []),
+    ...(await financeLines()),
     t("generated", { at: cellText(new Date().toISOString(), "datetime"), by: viewer?.profile.full_name ?? "" }),
     t("rowsCount", { count: table.rows.length }),
   ];

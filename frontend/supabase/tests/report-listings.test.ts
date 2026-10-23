@@ -77,10 +77,12 @@ describe("report listings", () => {
 
   it("payments by type: each fee type split by way of paying; the listing filters by method and fee type", async () => {
     const r = await asUser(db, exec, (tx) =>
-      tx.query<{ fee_type: string; payments: string; cash: string; mobile_money: string; card: string; other: string; total: string }>(`select * from public.report_payment_types(${range})`),
+      tx.query<{ fee_type: string; payments: string; cash: string; evc_plus: string; card: string; other: string; total: string }>(
+        `select * from public.report_payment_types(${range}, null, null, null, null, 'all')`,
+      ),
     );
     const tax = r.rows.find((x) => x.fee_type === "property_tax")!;
-    expect([tax.payments, tax.cash, tax.mobile_money, tax.card, tax.other, tax.total].map(Number)).toEqual([1, 40, 0, 0, 0, 40]);
+    expect([tax.payments, tax.cash, tax.evc_plus, tax.card, tax.other, tax.total].map(Number)).toEqual([1, 40, 0, 0, 0, 40]);
     const pay = (args: string, params: unknown[] = []) =>
       asUser(db, exec, (tx) => tx.query<{ fee_types_en: string }>(`select * from public.report_payments(${range}, null, null, null, null, ${args})`, params));
     const cash = await pay("'cash', 'property_tax'");

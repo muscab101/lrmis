@@ -225,3 +225,52 @@ describe("staff names", () => {
     await expectError(asUser(db, outsider, (tx) => tx.query(`select * from public.staff_names($1)`, [[cashier]])), "PERMISSION_DENIED");
   });
 });
+
+describe("collections, stage 4: reports", () => {
+  it("daily / weekly / monthly totals split by way of paying; verified-only by default", async () => {
+    const q = (args: string) => asUser(db, officer, (tx) => tx.query<Record<string, string>>(`select * from public.report_collections(current_date, current_date, ${args})`));
+    const all = (await q("'day', 'all'")).rows;
+    expect(all).toHaveLength(1);
+    const a = all[0]!;
+    const cols = ["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"].map((c) => Number(a[c]));
+    // Grand total = Cash + EVC Plus + eDahab + ZAAD + Bank (+ card + other).
+    expect(cols.reduce((s, n) => s + n, 0)).toBe(Number(a.total));
+    expect(Number(a.total)).toBe(125);
+    const verified = (await q("'week', 'verified'")).rows[0]!;
+    // cashier's 100 is reconciled; cashier2's eDahab 25 was verified by the statement.
+    expect(Number(verified.total)).toBe(125);
+    const month = (await q("'month', 'all'")).rows[0]!;
+    expect(new Date(month.period as unknown as string).getUTCDate()).toBe(1);
+    await expectError(q("'year', 'all'"), "VALIDATION: by");
+  });
+
+  it("compares with the period just before, and reports by cashier with shortage and excess", async () => {
+    const c = await asUser(db, officer, (tx) => tx.query<{ channel: string; current_amount: string; previous_amount: string }>(`select * from public.report_collections_compare(current_date, current_date, 'all')`));
+    expect(c.rows.map((r) => r.channel)).toEqual(["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"]);
+    expect(c.rows.reduce((s, r) => s + Number(r.previous_amount), 0)).toBe(0);
+    const by = await asUser(db, officer, (tx) => tx.query<{ cashier_id: string; total: string; shortage: string; excess: string; reconciled_days: string }>(`select * from public.report_collections_cashier(current_date, current_date, 'all')`));
+    const me = by.rows.find((r) => r.cashier_id === cashier)!;
+    expect([me.total, me.shortage, me.excess, me.reconciled_days].map(Number)).toEqual([100, 5, 2, 1]);
+  });
+
+  it("shortages, unreconciled payments and the verification/approval facts", async () => {
+    const s = await asUser(db, officer, (tx) => tx.query<{ cash: string; bank_transfer: string; shortage: string; status: string }>(`select * from public.report_cashier_shortages(current_date, current_date)`));
+    expect(s.rows).toHaveLength(1);
+    expect([s.rows[0]!.cash, s.rows[0]!.bank_transfer, s.rows[0]!.shortage].map(Number)).toEqual([-5, 2, 5]);
+    const u = await asUser(db, officer, (tx) => tx.query<{ verify_status: string }>(`select * from public.report_unreconciled(current_date, current_date)`));
+    expect(u.rows.map((r) => r.verify_status)).toEqual(["verified"]);
+    const st = await asUser(db, officer, (tx) => scalar<{ reconciled: { n: number }; approved: number; approvers: string }>(tx, `select public.report_collections_status(current_date, current_date)`));
+    expect(st.reconciled.n).toBe(3);
+    expect(st.approved).toBe(1);
+    expect(st.approvers).toBeTruthy();
+  });
+});
+
+describe("payments report by wallet", () => {
+  it("filters the Payments listing by EVC Plus, eDahab or ZAAD", async () => {
+    const q = (m: string) => asUser(db, officer, (tx) => tx.query(`select * from public.report_payments(current_date, current_date, null, null, null, null, $1)`, [m]));
+    expect((await q("edahab")).rows).toHaveLength(1);
+    expect((await q("evc_plus")).rows).toHaveLength(1);
+    expect((await q("mobile_money")).rows).toHaveLength(2);
+  });
+});

@@ -17,6 +17,16 @@ import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table
 import {
   accountTotals,
   AREA_REPORTS,
+  BASIS_REPORTS,
+  COLLECTION_BASIS,
+  COLLECTION_BY,
+  collectionBasis,
+  collectionBy,
+  type CollectionsCashierRow,
+  collectionsCompare,
+  type CollectionsRow,
+  collectionsStatus,
+  FINANCE_REPORTS,
   type BillingRow,
   DISTRICT_REPORTS,
   feeTypeCode,
@@ -42,6 +52,7 @@ import {
 } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
 import { listFeeTypes } from "@/lib/server/valuation";
+import { CHANNELS } from "@/lib/server/collections";
 import { zonePlaces } from "@/lib/server/zones";
 
 export async function generateMetadata() {
@@ -54,6 +65,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "reports.view");
   const t = await getTranslations("reports");
+  const tc = await getTranslations("collections");
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
@@ -72,6 +84,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const method = report === "payments" ? paymentMethod(sp.method) : null;
   const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
   const feeTypes = report === "payments" ? await listFeeTypes() : [];
+  // Collections reports: day / week / month, and verified payments only (default) or everything recorded.
+  const by = collectionBy(sp.by);
+  const basis = collectionBasis(sp.basis);
   const usesArea = AREA_REPORTS.includes(report);
   const rows = await runReport(report, {
     from,
@@ -80,6 +95,8 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     kind,
     method,
     feeType: fee,
+    by,
+    basis,
     ...(usesArea ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null } : {}),
   });
   const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
@@ -97,7 +114,13 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     ...(report === "parcels" ? { kind } : {}),
     ...(method ? { method } : {}),
     ...(fee ? { fee } : {}),
+    ...(report === "collections" ? { by } : {}),
+    ...(BASIS_REPORTS.includes(report) ? { basis } : {}),
   }).toString();
+  const areaArgs = { from, to, district: district || null, basis, section: section || null, sector: sector || null, neighbourhood: nbhd || null };
+  const [compare, status] = FINANCE_REPORTS.includes(report)
+    ? await Promise.all([BASIS_REPORTS.includes(report) ? collectionsCompare(areaArgs) : Promise.resolve(null), collectionsStatus(areaArgs)])
+    : [null, null];
   /** The same filters on another report, so moving between related reports keeps the place and the period. */
   const reportHref = (r: ReportName, over: Record<string, string> = {}) =>
     `/reports?${new URLSearchParams({
@@ -139,14 +162,18 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     const table = await reportTable(report, rows, lang, reportHref);
     const shown = table.rows.slice(0, PAGE_ROWS);
     let chart: React.ReactNode = null;
-    if (report === "paymentTypes") {
-      const r = rows as PaymentTypeRow[];
+    if (report === "paymentTypes" || report === "collections" || report === "collectionsCashier") {
+      const r = rows as (PaymentTypeRow | CollectionsRow | CollectionsCashierRow)[];
       chart = (
         <CardContent className="pt-5">
           <BarChart
-            label={t("names.paymentTypes")}
+            label={t(`names.${report}`)}
             format={usd0}
-            data={PAYMENT_METHODS.map((m) => ({ label: t(`methods.${m}`), value: r.reduce((sum, x) => sum + Number(x[m]), 0) }))}
+            data={
+              report === "collections"
+                ? (r as CollectionsRow[]).map((x, i) => ({ label: String(table.rows[i]?.[0] ?? x.period), value: Number(x.total) }))
+                : CHANNELS.map((c) => ({ label: tc(`channels.${c}`), value: r.reduce((sum, x) => sum + Number(x[c]), 0) }))
+            }
           />
         </CardContent>
       );
@@ -525,6 +552,30 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 </NativeSelect>
               </label>
             )}
+            {report === "collections" && (
+              <label className="grid gap-1">
+                <span className="text-xs text-muted-foreground">{t("groupBy")}</span>
+                <NativeSelect name="by" defaultValue={by} className="w-auto min-w-36">
+                  {COLLECTION_BY.map((b) => (
+                    <option key={b} value={b}>
+                      {t(`by.${b}`)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </label>
+            )}
+            {BASIS_REPORTS.includes(report) && (
+              <label className="grid gap-1">
+                <span className="text-xs text-muted-foreground">{t("basisLabel")}</span>
+                <NativeSelect name="basis" defaultValue={basis} className="w-auto min-w-44">
+                  {COLLECTION_BASIS.map((b) => (
+                    <option key={b} value={b}>
+                      {t(`basis.${b}`)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </label>
+            )}
             {report === "payments" && (
               <>
                 <label className="grid gap-1">
@@ -598,6 +649,57 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               </Link>
             ))}
           </div>
+          {status && (
+            <Card>
+              <CardContent className="grid gap-4 pt-5 lg:grid-cols-[1fr_1.2fr]">
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("verificationTitle")}</p>
+                  <ul className="grid grid-cols-2 gap-2">
+                    {(["reconciled", "verified", "pending", "disputed"] as const).map((k) => (
+                      <li key={k} className="rounded-md border px-3 py-2">
+                        <span className="block text-xs text-muted-foreground">{tc(`status.${k}`)}</span>
+                        <span className="font-medium tabular-nums">{usd(status[k].amount)}</span> <span className="text-xs text-muted-foreground">· {status[k].n}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground">
+                    {t("approvalsLine", { approved: status.approved, waiting: status.waiting })}
+                    {status.approvers ? ` · ${t("approvedByLine", { names: status.approvers })}` : ""}
+                  </p>
+                </div>
+                {compare && (
+                  <div className="text-sm">
+                    <p className="mb-2 font-medium">{t("compareTitle", { from: compare[0]!.previous_from, to: compare[0]!.previous_to })}</p>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead />
+                          <TableHead className="text-end">{t("thisPeriod")}</TableHead>
+                          <TableHead className="text-end">{t("previousPeriod")}</TableHead>
+                          <TableHead className="text-end">{t("change")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {[...compare.filter((c) => c.current_amount || c.previous_amount), { channel: "total", current_amount: compare.reduce((s, c) => s + c.current_amount, 0), previous_amount: compare.reduce((s, c) => s + c.previous_amount, 0) }].map((c) => {
+                          const change = c.previous_amount ? ((c.current_amount - c.previous_amount) / c.previous_amount) * 100 : null;
+                          return (
+                            <TableRow key={c.channel} className={c.channel === "total" ? "font-medium" : ""}>
+                              <TableCell>{c.channel === "total" ? t("grandTotal") : tc(`channels.${c.channel}`)}</TableCell>
+                              <TableCell className="text-end tabular-nums">{usd(c.current_amount)}</TableCell>
+                              <TableCell className="text-end tabular-nums">{usd(c.previous_amount)}</TableCell>
+                              <TableCell className={`text-end tabular-nums ${change === null ? "" : change < 0 ? "text-status-rejected" : "text-status-approved"}`}>
+                                {change === null ? "—" : `${change > 0 ? "+" : ""}${format.number(change, { maximumFractionDigits: 1 })} %`}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
           <Card className="overflow-hidden">{body}</Card>
           <p className="text-xs text-muted-foreground">{t(`notes.${report}`)}</p>
         </div>

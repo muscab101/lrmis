@@ -13,6 +13,10 @@ import type {
   ParcelRow,
   PaymentRow,
   PaymentTypeRow,
+  CollectionsRow,
+  CollectionsCashierRow,
+  ShortageRow,
+  UnreconciledRow,
   RegistrationRow,
   ReportName,
   RevenueRow,
@@ -39,6 +43,8 @@ export interface ReportTable {
   links: (string | null)[][];
 }
 
+const CHANNEL_COLUMNS = ["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"] as const;
+
 const num = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
 
 /**
@@ -58,6 +64,8 @@ export async function reportTable(
   /** A value label from an existing catalog section, or the raw value when there is none. */
   const label = (ns: string, v: string | null) => (v === null ? null : all.has(`${ns}.${v}`) ? all(`${ns}.${v}`) : v);
   const yesNo = (v: boolean | null) => (v === null ? null : v ? t("yes") : t("no"));
+  // Cash, EVC Plus, eDahab, ZAAD, Bank transfer, Visa / Mastercard, Other: the columns of every collections report.
+  const channelColumns: Column[] = CHANNEL_COLUMNS.map((c) => ({ label: all(`collections.channels.${c}`), kind: "money", sum: true }));
 
   let columns: Column[];
   let rows: Cell[][];
@@ -219,12 +227,12 @@ export async function reportTable(
       break;
     }
     case "paymentTypes": {
-      const methods = ["cash", "mobile_money", "bank_transfer", "card", "other"] as const;
+      const methods = CHANNEL_COLUMNS;
       columns = [
         { label: t("feeType"), kind: "text" },
         { label: t("payments"), kind: "int", sum: true },
-        ...methods.map((m) => ({ label: t(`methods.${m}`), kind: "money" as const, sum: true })),
-        { label: t("total"), kind: "money", sum: true },
+        ...channelColumns,
+        { label: t("grandTotal"), kind: "money", sum: true },
       ];
       rows = (data as PaymentTypeRow[]).map((r) => [pick(r as never, "fee_name"), num(r.payments), ...methods.map((m) => num(r[m])), num(r.total)]);
       // A fee type opens its payments; an amount opens the payments of that fee type made that way.
@@ -236,6 +244,109 @@ export async function reportTable(
             drill("payments", { fee: r.fee_type }),
           ])
         : [];
+      break;
+    }
+    case "collections": {
+      const fmt = (d: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(so ? "so" : "en-GB", { timeZone: "UTC", ...opts }).format(new Date(`${String(d).slice(0, 10)}T00:00:00Z`));
+      // Days by date, weeks by their Monday–Sunday range, months by name.
+      const periodLabel = (r: CollectionsRow) => {
+        const a = String(r.period).slice(0, 10);
+        const b = String(r.period_end).slice(0, 10);
+        if (a === b) return fmt(a, { day: "2-digit", month: "short", year: "numeric" });
+        if (a.slice(8) === "01" && (b.slice(0, 7) === a.slice(0, 7))) return fmt(a, { month: "long", year: "numeric" });
+        return `${fmt(a, { day: "2-digit", month: "short" })} – ${fmt(b, { day: "2-digit", month: "short", year: "numeric" })}`;
+      };
+      columns = [
+        { label: t("period_"), kind: "text" },
+        { label: t("payments"), kind: "int", sum: true },
+        ...channelColumns,
+        { label: t("grandTotal"), kind: "money", sum: true },
+      ];
+      rows = (data as CollectionsRow[]).map((r) => [periodLabel(r), num(r.payments), ...CHANNEL_COLUMNS.map((c) => num(r[c])), num(r.total)]);
+      break;
+    }
+    case "collectionsCashier": {
+      columns = [
+        { label: t("cashier"), kind: "text" },
+        { label: t("payments"), kind: "int", sum: true },
+        ...channelColumns,
+        { label: t("grandTotal"), kind: "money", sum: true },
+        { label: t("unchecked"), kind: "money", sum: true },
+        { label: t("reconciledDays"), kind: "text" },
+        { label: t("shortage"), kind: "money", sum: true },
+        { label: t("excess"), kind: "money", sum: true },
+      ];
+      rows = (data as CollectionsCashierRow[]).map((r) => [
+        r.cashier_id ? r.cashier : t("online"),
+        num(r.payments),
+        ...CHANNEL_COLUMNS.map((c) => num(r[c])),
+        num(r.total),
+        num(r.unchecked),
+        r.cashier_id ? `${r.reconciled_days} / ${r.days}` : "—",
+        num(r.shortage),
+        num(r.excess),
+      ]);
+      links = drill ? (data as CollectionsCashierRow[]).map((r) => [r.cashier_id ? `/collections?tab=verify&status=all&cashier=${r.cashier_id}` : null]) : [];
+      break;
+    }
+    case "shortages": {
+      columns = [
+        { label: t("date"), kind: "date" },
+        { label: t("cashier"), kind: "text" },
+        { label: t("number"), kind: "mono" },
+        { label: t("recordedLabel"), kind: "money", sum: true },
+        { label: t("actualLabel"), kind: "money", sum: true },
+        ...CHANNEL_COLUMNS.map((c) => ({ label: `${all(`collections.channels.${c}`)} ±`, kind: "money" as const, sum: true })),
+        { label: t("differenceLabel"), kind: "money", sum: true },
+        { label: t("shortage"), kind: "money", sum: true },
+        { label: t("excess"), kind: "money", sum: true },
+        { label: t("status"), kind: "text" },
+        { label: t("preparedBy"), kind: "text" },
+        { label: t("approvedBy"), kind: "text" },
+      ];
+      rows = (data as ShortageRow[]).map((r) => [
+        String(r.business_date).slice(0, 10),
+        r.cashier,
+        r.number,
+        num(r.recorded),
+        num(r.actual),
+        ...CHANNEL_COLUMNS.map((c) => num(r[c])),
+        num(r.difference),
+        num(r.shortage),
+        num(r.excess),
+        label("collections.recon.status", r.status),
+        r.prepared_by,
+        r.approved_by,
+      ]);
+      links = (data as ShortageRow[]).map((r) => [null, null, `/collections/reconcile?cashier=${r.cashier_id}&date=${String(r.business_date).slice(0, 10)}`]);
+      break;
+    }
+    case "unreconciled": {
+      columns = [
+        { label: t("receipt"), kind: "mono" },
+        { label: t("date"), kind: "datetime" },
+        { label: t("cashier"), kind: "text" },
+        { label: t("method"), kind: "text" },
+        { label: t("reference"), kind: "mono" },
+        { label: t("pun"), kind: "mono" },
+        { label: t("amount"), kind: "money", sum: true },
+        { label: t("status"), kind: "text" },
+        { label: t("ageDays"), kind: "int" },
+        { label: t("disputeReason"), kind: "text" },
+      ];
+      rows = (data as UnreconciledRow[]).map((r) => [
+        r.receipt_no,
+        r.received_at,
+        r.cashier === "Online" ? t("online") : r.cashier,
+        label("collections.channels", r.channel),
+        r.reference,
+        r.pun,
+        num(r.amount),
+        label("collections.status", r.verify_status),
+        num(r.age_days),
+        r.dispute_reason,
+      ]);
+      links = (data as UnreconciledRow[]).map((r) => [to("payments", r.payment_id), null, null, null, null, to("parcels", r.parcel_id)]);
       break;
     }
     case "certificates": {
