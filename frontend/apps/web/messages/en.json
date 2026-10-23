@@ -3293,7 +3293,8 @@
       "money": "Money",
       "land": "Land",
       "documents": "Documents"
-    }
+    },
+    "report": "Report"
   },
   "messages": {
     "title": "Messages",

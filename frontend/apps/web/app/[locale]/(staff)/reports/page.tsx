@@ -10,6 +10,7 @@ import { AreaFilter } from "@/components/reports/area-filter";
 import { AssistantPanel } from "@/components/reports/assistant-panel";
 import { BarChart } from "@/components/reports/bar-chart";
 import { GroupedBars } from "@/components/reports/charts";
+import { ReportPicker } from "@/components/reports/report-picker";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table";
@@ -451,24 +452,14 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")}>
-        <nav className="flex gap-8 overflow-x-auto text-sm">
-          {REPORT_GROUPS.map((g) => (
-            <div key={g.key} className="shrink-0">
-              <p className="mb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{t(`groups.${g.key}`)}</p>
-              <div className="flex gap-4">
-                {g.reports.map((r) => (
-                  <Link
-                    key={r}
-                    href={reportHref(r)}
-                    className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${report === r ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {t(`names.${r}`)}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
+        <ReportPicker
+          label={t("report")}
+          current={report}
+          groups={REPORT_GROUPS.map((g) => ({
+            label: t(`groups.${g.key}`),
+            reports: g.reports.map((r) => ({ value: r, label: t(`names.${r}`), href: reportHref(r) })),
+          }))}
+        />
       </PageHeader>
       <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-3">
