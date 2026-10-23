@@ -1,6 +1,7 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { banadirOutlines, type DocumentDetail, watermarkLine } from "@/lib/server/certificates";
+import { partyPhotoUrl } from "@/lib/server/party-photo";
 import { BanadirMapSvg } from "./banadir-map-svg";
 
 /**
@@ -16,10 +17,12 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
   const lang = await getLocale();
   const s = doc.snapshot;
   const h = s.holder;
-  const [qr, outlines, mark] = await Promise.all([
+  const [qr, outlines, mark, photo] = await Promise.all([
     QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } }),
     banadirOutlines(),
     watermarkLine(doc, lang),
+    // The holder's current photo, so one added after issue still prints.
+    partyPhotoUrl(h?.party_id),
   ]);
   const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : null);
   const initials = (h?.full_name ?? "?")
@@ -58,7 +61,14 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
           <p className="text-end text-[5pt] leading-tight font-semibold text-[#1f45b8] uppercase">{t("cardKind")}</p>
         </header>
         <div className="relative flex flex-1 gap-[2.5mm] px-[3mm] pt-[2mm]">
-          <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center rounded-[1.2mm] border border-[#1f45b8]/30 bg-white/60 text-[13pt] font-semibold text-[#1f45b8]">{initials}</div>
+          <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center overflow-hidden rounded-[1.2mm] border border-[#1f45b8]/30 bg-white/60 text-[13pt] font-semibold text-[#1f45b8]">
+            {photo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- print, signed private-storage URL
+              <img src={photo} alt="" className="size-full object-cover" />
+            ) : (
+              initials
+            )}
+          </div>
           <dl className="grid min-w-0 flex-1 grid-cols-[auto_1fr] content-start gap-x-[1.5mm] gap-y-[0.35mm] text-[5.6pt] leading-[1.3]">
             <dt className="opacity-60">{t("name")}</dt>
             <dd className="truncate text-[7.2pt] leading-[1.1] font-semibold">{h?.full_name ?? "—"}</dd>

@@ -5,6 +5,8 @@ import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { DocumentActions } from "@/components/documents/document-actions";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
+import { PartyPhoto } from "@/components/owners/party-photo";
+import { partyPhotoUrl } from "@/lib/server/party-photo";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { documentChanges, getDocument } from "@/lib/server/certificates";
@@ -27,6 +29,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
   const pending = d.reprint_requests.find((r) => r.status === "pending") ?? null;
   const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
   const lang = await getLocale();
+  const holder = d.type === "id_card" ? (d.snapshot.holder ?? null) : null;
+  const photo = holder ? await partyPhotoUrl(holder.party_id) : null;
   const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${lang}/verify/${d.verify_code}`;
   return (
     <div className="mx-auto max-w-4xl">
@@ -73,6 +77,21 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
           </div>
         </div>
       </div>
+      {holder && (
+        <Card className="mb-5">
+          <CardHeader>
+            <CardTitle>{t("holderPhoto")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PartyPhoto
+              partyId={holder.party_id}
+              url={photo}
+              name={holder.full_name}
+              canEdit={d.status === "valid" && (viewer.can("owners.update") || viewer.can("certificates.print"))}
+            />
+          </CardContent>
+        </Card>
+      )}
       <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <CardContent className="pt-5">

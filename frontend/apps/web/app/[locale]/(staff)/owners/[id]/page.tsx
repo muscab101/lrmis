@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 import { StatusBadge } from "@dhulka/ui/badge";
 import { OwnerRowActions } from "@/components/owners/owner-row-actions";
+import { PartyPhoto } from "@/components/owners/party-photo";
+import { partyPhotoUrl } from "@/lib/server/party-photo";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -41,6 +43,7 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
   ]);
   const party = data as unknown as PartyRow | null;
   if (!party) notFound();
+  const photo = await partyPhotoUrl(party.id);
   const apps = ((links.data ?? []) as unknown as { role: string; share_pct: number | null; application: { id: string; number: string; type: string; status: ApplicationStatus; created_at: string } | null }[]).filter(
     (l) => l.application,
   );
@@ -96,7 +99,13 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
           <CardHeader>
             <CardTitle>{t("details")}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-5">
+            <PartyPhoto
+              partyId={party.id}
+              url={photo}
+              name={party.full_name}
+              canEdit={viewer.can("owners.update") || viewer.can("certificates.print")}
+            />
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 text-sm">
               {rows
                 .filter(([, v]) => v !== null && v !== undefined && v !== "")

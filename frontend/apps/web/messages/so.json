@@ -353,7 +353,9 @@
     "neighbourhood": "Dooro xaafad, ama biinka ku dhig mid gudaheed.",
     "surveyor": "Dooro sahamiye ka shaqeeya degmadan.",
     "target": "Geli imisa guri (1 ama ka badan).",
-    "birth_date": "Geli taariikh dhalasho u dhaxaysa 1900 iyo maanta."
+    "birth_date": "Geli taariikh dhalasho u dhaxaysa 1900 iyo maanta.",
+    "photo_too_big": "Sawirku wuu ka weyn yahay 5 MB.",
+    "portrait_type": "Isticmaal sawir JPG, PNG ama WEBP ah."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1588,7 +1590,17 @@
     "registeredDone": "Masuulka waxaa loo gudbiyey diiwaanka",
     "districtColumn": "Degmo",
     "createdNext": "Masuulka waa la keydiyey. Hadda ku dar dhulkiisa.",
-    "saveAndAddParcel": "Keydi oo ku dar dhul"
+    "saveAndAddParcel": "Keydi oo ku dar dhul",
+    "photo": {
+      "alt": "Sawirka {name}",
+      "onCard": "Sawirkan wuxuu ku daabacmayaa kaarka aqoonsiga milkiilaha.",
+      "none": "Weli sawir ma jiro. Ku dar si uu ugu daabacmo kaarka aqoonsiga.",
+      "upload": "Soo geli sawir",
+      "change": "Beddel sawirka",
+      "uploading": "Waa la soo gelinayaa…",
+      "saved": "Sawirka waa la kaydiyay",
+      "hint": "Sawir baasaboor oo kale ah, wejiga kamaradda u jeeda. JPG, PNG ama WEBP, ilaa 5 MB."
+    }
   },
   "track": {
     "title": "Raadraac codsi",
@@ -2859,7 +2871,8 @@
     "batchUnpaid": "{count, plural, =1 {1 kaar aqoonsi ayaa sugaya} other {# kaar aqoonsi ayaa sugaya}} in biilkooda daabacaadda la bixiyo:",
     "payPaid": "Daabacaadda waa la bixiyay",
     "payOpen": "Biilka {number} lama bixin",
-    "payNone": "Biil lama samayn"
+    "payNone": "Biil lama samayn",
+    "holderPhoto": "Sawirka haystaha"
   },
   "verify": {
     "title": "Hubi shahaado",

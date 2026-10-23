@@ -353,7 +353,9 @@
     "neighbourhood": "Choose a neighbourhood, or drop the pin inside one.",
     "surveyor": "Choose a surveyor who works in this district.",
     "target": "Enter how many houses (1 or more).",
-    "birth_date": "Enter a date of birth between 1900 and today."
+    "birth_date": "Enter a date of birth between 1900 and today.",
+    "photo_too_big": "The photo is larger than 5 MB.",
+    "portrait_type": "Use a JPG, PNG or WEBP photo."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1588,7 +1590,17 @@
     "registeredDone": "Owner moved to registered",
     "districtColumn": "District",
     "createdNext": "Owner saved. Now add their land parcel.",
-    "saveAndAddParcel": "Save and add land parcel"
+    "saveAndAddParcel": "Save and add land parcel",
+    "photo": {
+      "alt": "Photo of {name}",
+      "onCard": "This photo prints on the owner's ID card.",
+      "none": "No photo yet. Add one so it prints on the ID card.",
+      "upload": "Upload photo",
+      "change": "Change photo",
+      "uploading": "Uploading…",
+      "saved": "Photo saved",
+      "hint": "Passport-style, face to the camera. JPG, PNG or WEBP, up to 5 MB."
+    }
   },
   "track": {
     "title": "Track an application",
@@ -2859,7 +2871,8 @@
     "batchUnpaid": "{count, plural, =1 {1 ID card waits} other {# ID cards wait}} for its print bill to be paid:",
     "payPaid": "Print paid",
     "payOpen": "Bill {number} unpaid",
-    "payNone": "Not billed"
+    "payNone": "Not billed",
+    "holderPhoto": "Holder's photo"
   },
   "verify": {
     "title": "Verify a certificate",
