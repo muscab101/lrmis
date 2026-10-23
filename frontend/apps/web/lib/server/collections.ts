@@ -240,3 +240,23 @@ export async function dayReconciliations(cashierId: string, date: string) {
     })) as Reconciliation[],
   };
 }
+
+export interface CollectionsDashboard {
+  today: { all: number; verified: number; n: number };
+  week: { all: number; verified: number; n: number };
+  month: { all: number; verified: number; n: number };
+  channels: Partial<Record<Channel, number>>;
+  status: Partial<Record<VerifyStatus, { n: number; amount: number }>>;
+  shortage: number;
+  excess: number;
+  recon_waiting: number;
+  corrections_waiting: number;
+  week_from: string;
+  month_from: string;
+  as_of: string;
+}
+
+export async function collectionsDashboard() {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc("collections_dashboard", {}), "collections dashboard") as CollectionsDashboard;
+}

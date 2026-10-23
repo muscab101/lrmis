@@ -3741,7 +3741,8 @@
       "duplicates": "Duplicates",
       "verify": "Verify",
       "corrections": "Corrections",
-      "reconcile": "Reconcile"
+      "reconcile": "Reconcile",
+      "dashboard": "Dashboard"
     },
     "duplicates": {
       "none": "No likely duplicates",
@@ -3893,6 +3894,28 @@
       "notYet": "Not reconciled yet",
       "notYetBody": "A finance officer reconciles this day; then a Finance Manager approves it.",
       "ownDay": "These are your own collections; another finance officer reconciles them."
+    },
+    "dash": {
+      "today": "Collected today",
+      "week": "This week (from Monday)",
+      "month": "This month",
+      "payments": "{count, plural, =1 {1 payment} other {# payments}}",
+      "verifiedPart": "{amount} verified",
+      "byChannel": "This month by way of paying",
+      "grandTotal": "Grand total",
+      "checking": "Checking (this month)",
+      "checkingLine": "{pending} waiting to be checked, {disputed} disputed.",
+      "goVerify": "Verify payments",
+      "reconciliation": "Reconciliation (this month)",
+      "reconWaiting": "Days waiting approval",
+      "correctionsWaiting": "Corrections waiting",
+      "goReconcile": "Reconcile cashier days",
+      "goCorrections": "Review corrections",
+      "trend": "Daily collections this month",
+      "cashiers": "Cashiers this month",
+      "unchecked": "Not yet verified",
+      "daysReconciled": "Days reconciled",
+      "noCashiers": "No cashier collections this month yet."
     }
   }
 }

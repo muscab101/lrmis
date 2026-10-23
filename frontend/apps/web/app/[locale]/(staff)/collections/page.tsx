@@ -10,15 +10,17 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { CorrectionsList } from "@/components/collections/corrections-list";
+import { CollectionsDashboardView } from "@/components/collections/dashboard";
 import { VerifyTable } from "@/components/collections/verify-table";
-import { listCashierDays, listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
+import { collectionsDashboard, listCashierDays, listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
+import { type CollectionsCashierRow, type CollectionsRow, runReport } from "@/lib/server/reports";
 
 export async function generateMetadata() {
   const t = await getTranslations("collections");
   return { title: t("title") };
 }
 
-const TABS = ["verify", "reconcile", "corrections", "duplicates"] as const;
+const TABS = ["dashboard", "verify", "reconcile", "corrections", "duplicates"] as const;
 type Tab = (typeof TABS)[number];
 
 /** ?from=&to= (ISO dates); by default the last 30 days. */
@@ -63,7 +65,14 @@ export default async function CollectionsPage({ params, searchParams }: { params
   );
 
   let body: React.ReactNode = null;
-  if (tab === "verify") {
+  let dashboard: React.ReactNode = null;
+  if (tab === "dashboard") {
+    const d = await collectionsDashboard();
+    // This month by cashier and by day, counting everything recorded (the checked part shows beside it).
+    const month = { from: d.month_from, to: d.as_of, basis: "all" as const };
+    const [cashiers, days] = await Promise.all([runReport("collectionsCashier", month), runReport("collections", { ...month, by: "day" })]);
+    dashboard = <CollectionsDashboardView d={d} cashiers={cashiers as CollectionsCashierRow[]} days={days as CollectionsRow[]} />;
+  } else if (tab === "verify") {
     // Status: pending by default; "all" shows every state.
     const status: VerifyStatus | null = sp.status === "all" ? null : VERIFY_STATUSES.includes(sp.status as VerifyStatus) ? (sp.status as VerifyStatus) : "pending";
     const all = await listQueue({ status, from, to });
@@ -248,7 +257,7 @@ export default async function CollectionsPage({ params, searchParams }: { params
           ))}
         </nav>
       </PageHeader>
-      <Card className="overflow-hidden">{body}</Card>
+      {dashboard ?? <Card className="overflow-hidden">{body}</Card>}
     </>
   );
 }

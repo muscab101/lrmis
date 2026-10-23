@@ -274,3 +274,22 @@ describe("payments report by wallet", () => {
     expect((await q("mobile_money")).rows).toHaveLength(2);
   });
 });
+
+describe("collections, stage 5: dashboard", () => {
+  it("today, week and month, per way of paying, statuses, shortages and what waits", async () => {
+    const d = await asUser(db, officer, (tx) =>
+      scalar<{ today: { all: number; n: number }; week: { all: number }; month: { all: number; verified: number }; channels: Record<string, number>; status: Record<string, { n: number }>; shortage: number; excess: number; recon_waiting: number }>(
+        tx,
+        `select public.collections_dashboard()`,
+      ),
+    );
+    expect(Number(d.today.all)).toBe(125);
+    expect(Number(d.week.all)).toBe(125);
+    expect(Number(d.month.verified)).toBe(125);
+    expect(Object.values(d.channels).reduce((s, n) => s + Number(n), 0)).toBe(125);
+    expect(d.status.reconciled!.n).toBe(3);
+    expect([Number(d.shortage), Number(d.excess)]).toEqual([5, 2]);
+    expect(d.recon_waiting).toBe(0);
+    await expectError(asUser(db, cashier, (tx) => tx.query(`select public.collections_dashboard()`)), "PERMISSION_DENIED");
+  });
+});

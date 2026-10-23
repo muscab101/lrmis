@@ -3741,7 +3741,8 @@
       "duplicates": "Labanlaabmay",
       "verify": "Hubi",
       "corrections": "Saxitaanno",
-      "reconcile": "Isku-dheelitir"
+      "reconcile": "Isku-dheelitir",
+      "dashboard": "Guudmar"
     },
     "duplicates": {
       "none": "Ma jiraan wax u eg labanlaab",
@@ -3893,6 +3894,28 @@
       "notYet": "Weli lama isku dheelitirin",
       "notYetBody": "Sarkaal maaliyadeed ayaa maalintan isku dheelitiraya; kadib Maareeyaha maaliyadda ayaa oggolaanaya.",
       "ownDay": "Kuwani waa ururintaada; sarkaal maaliyadeed oo kale ayaa isku dheelitiraya."
+    },
+    "dash": {
+      "today": "Maanta la ururiyay",
+      "week": "Toddobaadkan (laga bilaabo Isniinta)",
+      "month": "Bishan",
+      "payments": "{count, plural, =1 {1 lacag-bixin} other {# lacag-bixin}}",
+      "verifiedPart": "{amount} la hubiyay",
+      "byChannel": "Bishan hab lacag-bixin ahaan",
+      "grandTotal": "Wadarta guud",
+      "checking": "Hubinta (bishan)",
+      "checkingLine": "{pending} sugaya in la hubiyo, {disputed} lagu murmay.",
+      "goVerify": "Hubi lacag-bixinnada",
+      "reconciliation": "Isku-dheelitirka (bishan)",
+      "reconWaiting": "Maalmo sugaya oggolaansho",
+      "correctionsWaiting": "Saxitaanno sugaya",
+      "goReconcile": "Isku dheeli maalmaha khasnajiyada",
+      "goCorrections": "Eeg saxitaannada",
+      "trend": "Ururinta maalinlaha ah ee bishan",
+      "cashiers": "Khasnajiyada bishan",
+      "unchecked": "Weli lama hubin",
+      "daysReconciled": "Maalmaha la isku dheelitiray",
+      "noCashiers": "Bishan weli ururin khasnaji ma jirto."
     }
   }
 }
