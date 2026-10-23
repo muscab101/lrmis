@@ -12,7 +12,9 @@ const TOLERANCE_S = 300;
 
 export const stripe: PaymentProvider = {
   code: "stripe",
-  configured: () => !!(key() && webhookSecret()),
+  // The secret key is enough to take card payments: a payment is also confirmed when the payer returns
+  // from Checkout (stripeSessionEvent). The webhook secret adds the webhook, the main path once live.
+  configured: () => !!key(),
 
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
     const form = new URLSearchParams({
@@ -76,3 +78,27 @@ export const stripe: PaymentProvider = {
     };
   },
 };
+
+/**
+ * Ask Stripe for a Checkout Session (our own authenticated call, so the answer is authentic): a paid
+ * session becomes a "succeeded" event, so the payment is recorded even when no webhook can reach us
+ * (local development). Null while it isn't paid yet.
+ */
+export async function stripeSessionEvent(sessionId: string): Promise<ProviderEvent | null> {
+  if (!key() || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return null;
+  const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
+    headers: { authorization: `Bearer ${key()}` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) return null;
+  const s = (await res.json()) as { id: string; amount_total?: number; currency?: string; payment_status?: string; metadata?: { intent_id?: string } };
+  if (s.payment_status !== "paid") return null;
+  return {
+    eventId: `return-${s.id}`,
+    status: "succeeded",
+    providerRef: s.id,
+    intentId: s.metadata?.intent_id,
+    amount: (s.amount_total ?? 0) / 100,
+    currency: (s.currency ?? "usd").toUpperCase(),
+  };
+}

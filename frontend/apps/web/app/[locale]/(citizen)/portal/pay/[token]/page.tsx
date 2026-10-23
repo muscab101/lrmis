@@ -3,7 +3,8 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { PayForm } from "@/app/[locale]/(public)/pay/[token]/pay-form";
 import { Link } from "@/i18n/navigation";
-import { availableOnlineProviders } from "@/lib/server/providers";
+import { log } from "@/lib/server/log";
+import { availableOnlineProviders, confirmReturnedIntent } from "@/lib/server/providers";
 import { createClient } from "@/lib/supabase/server";
 
 interface Pub {
@@ -22,6 +23,8 @@ interface Pub {
 export default async function PortalPayPage({ params, searchParams }: { params: Promise<{ locale: string; token: string }>; searchParams: Promise<{ intent?: string }> }) {
   const { locale, token } = await params;
   const { intent } = await searchParams;
+  // Back from Stripe Checkout: record the payment now if it went through (the webhook may not reach us).
+  if (intent) await confirmReturnedIntent(intent).catch((err) => log("warn", "pay.confirm_return_failed", { intent, error: String(err) }));
   setRequestLocale(locale);
   const t = await getTranslations("pay");
   const tb = await getTranslations("portalBills");
