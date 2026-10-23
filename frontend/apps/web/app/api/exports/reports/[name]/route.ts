@@ -4,10 +4,15 @@ import { routing } from "@/i18n/routing";
 import { getViewer } from "@/lib/server/auth";
 import { cellText, reportPdf, reportXlsx } from "@/lib/server/report-files";
 import { reportTable } from "@/lib/server/report-table";
-import { AREA_REPORTS, parcelKind, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
+import { AREA_REPORTS, feeTypeCode, parcelKind, paymentMethod, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
 import { zonePlaces } from "@/lib/server/zones";
 import { createClient } from "@/lib/supabase/server";
+
+async function feeTypeName(supabase: Awaited<ReturnType<typeof createClient>>, code: string, locale: string) {
+  const { data } = await supabase.from("fee_types").select("name_so, name_en").eq("code", code).maybeSingle();
+  return data ? (locale === "so" ? data.name_so : data.name_en) : null;
+}
 
 function csvCell(value: unknown): string {
   const s = value === null || value === undefined ? "" : String(value);
@@ -33,13 +38,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const district = area.district;
   const usesArea = AREA_REPORTS.includes(report);
   const kind = parcelKind(sp.kind);
+  const method = report === "payments" ? paymentMethod(sp.method) : null;
+  const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
   const format = sp.format === "pdf" || sp.format === "xlsx" ? sp.format : "csv";
   const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "") ? sp.lang! : routing.defaultLocale;
   const place = usesArea ? { section: area.section, sector: area.sector, neighbourhood: area.neighbourhood } : {};
-  const rows = (await runReport(report, { from, to, district, kind, ...place }, supabase)) as unknown[];
+  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, ...place }, supabase)) as unknown[];
   const snapshot = SNAPSHOT_REPORTS.includes(report);
   const stamp = snapshot ? new Date().toISOString().slice(0, 10) : `${from}-${to}`;
-  const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}-${stamp}`;
+  const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}${method ? `-${method}` : ""}${fee ? `-${fee}` : ""}-${stamp}`;
   const headers = (type: string, ext: string) => ({
     "content-type": type,
     "content-disposition": `attachment; filename="${file}.${ext}"`,
@@ -64,6 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     sector: places.sectors.find((x) => x.id === area.sector),
     neighbourhood: places.neighbourhoods.find((x) => x.id === area.neighbourhood),
   };
+  const feeName = fee && fee !== "credit" ? await feeTypeName(supabase, fee, locale) : null;
   const lines = [
     snapshot ? t("asOf", { date: new Date().toISOString().slice(0, 10) }) : t("period", { from, to }),
     `${t("district")}: ${d ? nm({ name_so: d.name_so, name_en: d.name_en }) : t("allDistricts")}`,
@@ -71,6 +79,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ...(found?.sector ? [`${t("sector")}: ${nm(found.sector)}`] : []),
     ...(found?.neighbourhood ? [`${t("neighbourhood")}: ${nm(found.neighbourhood)}`] : []),
     ...(report === "parcels" ? [`${t("kind")}: ${t(`kinds.${kind}`)}`] : []),
+    ...(method ? [`${t("method")}: ${t(`methods.${method}`)}`] : []),
+    ...(fee ? [`${t("feeType")}: ${fee === "credit" ? t("unallocated") : (feeName ?? fee)}`] : []),
     t("generated", { at: cellText(new Date().toISOString(), "datetime"), by: viewer?.profile.full_name ?? "" }),
     t("rowsCount", { count: table.rows.length }),
   ];

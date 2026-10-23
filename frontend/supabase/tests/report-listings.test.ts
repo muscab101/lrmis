@@ -75,6 +75,22 @@ describe("report listings", () => {
     expect(Number(pay.rows[0]!.amount)).toBe(40);
   });
 
+  it("payments by type: each fee type split by way of paying; the listing filters by method and fee type", async () => {
+    const r = await asUser(db, exec, (tx) =>
+      tx.query<{ fee_type: string; payments: string; cash: string; mobile_money: string; card: string; other: string; total: string }>(`select * from public.report_payment_types(${range})`),
+    );
+    const tax = r.rows.find((x) => x.fee_type === "property_tax")!;
+    expect([tax.payments, tax.cash, tax.mobile_money, tax.card, tax.other, tax.total].map(Number)).toEqual([1, 40, 0, 0, 0, 40]);
+    const pay = (args: string, params: unknown[] = []) =>
+      asUser(db, exec, (tx) => tx.query<{ fee_types_en: string }>(`select * from public.report_payments(${range}, null, null, null, null, ${args})`, params));
+    const cash = await pay("'cash', 'property_tax'");
+    expect(cash.rows).toHaveLength(1);
+    expect(cash.rows[0]!.fee_types_en).toMatch(/tax/i);
+    expect((await pay("'card', null")).rows).toHaveLength(0);
+    expect((await pay("null, 'id_card_print'")).rows).toHaveLength(0);
+    await expect(pay("'bitcoin', null")).rejects.toThrow(/^VALIDATION: method/);
+  });
+
   it("parcels: registered, partial and all, with owners and grade", async () => {
     const q = (kind: string) => asUser(db, exec, (tx) => tx.query<{ pun: string | null; owners: string | null; grade_en: string | null; provisional: boolean }>(`select * from public.report_parcels(null, $1)`, [kind]));
     expect((await q("all")).rows).toHaveLength(2);

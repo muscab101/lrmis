@@ -28,6 +28,7 @@ export const REPORTS = [
   "billing",
   "invoices",
   "payments",
+  "paymentTypes",
   "certificates",
   "parcels",
   "owners",
@@ -48,8 +49,24 @@ export interface ReportArgs {
   section?: string | null;
   sector?: string | null;
   neighbourhood?: string | null;
+  /** Payments only: way of paying and fee type code. */
+  method?: PaymentMethodFilter | null;
+  feeType?: string | null;
   /** Parcels only: all, registered or partial (not yet registered). */
   kind?: ParcelKind;
+}
+
+/** Ways of paying the reports split by; "other" is anything else (cheque). Card is Visa / Mastercard. */
+export const PAYMENT_METHODS = ["cash", "mobile_money", "bank_transfer", "card", "other"] as const;
+export type PaymentMethodFilter = (typeof PAYMENT_METHODS)[number];
+
+export function paymentMethod(v: string | undefined): PaymentMethodFilter | null {
+  return (PAYMENT_METHODS as readonly string[]).includes(v ?? "") ? (v as PaymentMethodFilter) : null;
+}
+
+/** A fee type code from ?fee= (letters, digits and underscores). */
+export function feeTypeCode(v: string | undefined) {
+  return v && /^[a-z0-9_]{1,40}$/.test(v) ? v : null;
 }
 
 export const PARCEL_KINDS = ["all", "registered", "partial"] as const;
@@ -67,6 +84,7 @@ export const DISTRICT_REPORTS: readonly ReportName[] = [
   "registrations",
   "invoices",
   "payments",
+  "paymentTypes",
   "certificates",
   "parcels",
   "owners",
@@ -77,17 +95,18 @@ export const AREA_REPORTS: readonly ReportName[] = DISTRICT_REPORTS.filter((r) =
 
 /** Reports grouped by what they are about, in the order the page shows them. */
 export const REPORT_GROUPS: { key: "money" | "land" | "documents"; reports: ReportName[] }[] = [
-  { key: "money", reports: ["revenue", "billing", "invoices", "payments", "arrears", "collection", "income", "cashiers"] },
+  { key: "money", reports: ["revenue", "billing", "invoices", "payments", "paymentTypes", "arrears", "collection", "income", "cashiers"] },
   { key: "land", reports: ["parcels", "owners", "locations", "registrations"] },
   { key: "documents", reports: ["certificates"] },
 ];
 
 /** Reports about the same things, offered as next steps from each report (filters carry over). */
 export const RELATED_REPORTS: Record<ReportName, ReportName[]> = {
-  revenue: ["payments", "billing", "income"],
+  revenue: ["paymentTypes", "payments", "billing", "income"],
   billing: ["invoices", "collection", "arrears"],
   invoices: ["payments", "billing", "arrears"],
-  payments: ["invoices", "revenue", "cashiers"],
+  payments: ["paymentTypes", "invoices", "revenue", "cashiers"],
+  paymentTypes: ["payments", "revenue", "cashiers"],
   arrears: ["invoices", "collection"],
   collection: ["billing", "invoices", "arrears"],
   income: ["revenue", "payments"],
@@ -129,7 +148,12 @@ export async function runReport(name: ReportName, args: ReportArgs, client?: Sup
     case "invoices":
       return unwrap(await supabase.rpc("report_invoices", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as InvoiceRow[];
     case "payments":
-      return unwrap(await supabase.rpc("report_payments", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as PaymentRow[];
+      return unwrap(
+        await supabase.rpc("report_payments", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_method: args.method ?? null, p_fee_type: args.feeType ?? null }),
+        "report",
+      ) as PaymentRow[];
+    case "paymentTypes":
+      return unwrap(await supabase.rpc("report_payment_types", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as PaymentTypeRow[];
     case "certificates":
       return unwrap(await supabase.rpc("report_certificates", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as CertificateRow[];
     case "parcels":
@@ -148,7 +172,8 @@ export interface RegistrationRow { month: string; submitted: number; registered:
 export interface IncomeRow { month: string; income: number; expenses: number; cash_in: number; cash_out: number; net: number }
 export interface BillingRow { month: string; district_id: string; district_so: string; district_en: string; fee_type: string; fee_name_so: string; fee_name_en: string; invoices: number; billed: number; collected: number; credited: number; outstanding: number }
 export interface InvoiceRow { invoice_id: string; parcel_id: string | null; number: string; pun: string | null; district_so: string; district_en: string; fee_name_so: string; fee_name_en: string; period: string | null; issue_date: string; due_date: string; total: number; paid: number; balance: number; status: string }
-export interface PaymentRow { payment_id: string; parcel_id: string | null; receipt_no: string; received_at: string; pun: string | null; invoices: string | null; method: string; cashier: string | null; point_of_sale: string | null; payer: string | null; amount: number; status: string }
+export interface PaymentRow { payment_id: string; parcel_id: string | null; receipt_no: string; received_at: string; pun: string | null; invoices: string | null; fee_types_so: string | null; fee_types_en: string | null; method: string; cashier: string | null; point_of_sale: string | null; payer: string | null; amount: number; status: string }
+export interface PaymentTypeRow { fee_type: string; fee_name_so: string; fee_name_en: string; payments: number; cash: number; mobile_money: number; bank_transfer: number; card: number; other: number; total: number }
 export interface CertificateRow { document_id: string; parcel_id: string | null; serial: string; type: string; pun: string | null; owner: string | null; district_so: string | null; district_en: string | null; issued_at: string; issued_by: string | null; status: string }
 export interface ParcelRow { parcel_id: string; pun: string | null; district_so: string; district_en: string; neighbourhood_so: string | null; neighbourhood_en: string | null; house_no: string | null; area_m2: number | null; land_use: string | null; grade_so: string | null; grade_en: string | null; status: string; provisional: boolean; owners: string | null; registered_at: string | null; created_at: string }
 export interface LocationRow { level: "district" | "section" | "sector" | "neighbourhood"; code: string; name_so: string; name_en: string; district_so: string; district_en: string; parcels: number; registered: number; partial: number; has_boundary: boolean }

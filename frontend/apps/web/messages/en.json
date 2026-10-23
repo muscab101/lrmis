@@ -3150,7 +3150,8 @@
       "certificates": "Certificates",
       "parcels": "Parcels",
       "owners": "Owners & parcels",
-      "locations": "Locations"
+      "locations": "Locations",
+      "paymentTypes": "Payments by type"
     },
     "notes": {
       "revenue": "Money received, by the month it was received, split by what it paid for. Unallocated credit is money not yet matched to a bill.",
@@ -3165,7 +3166,8 @@
       "certificates": "Certificates and ID cards issued in the period.",
       "parcels": "Parcels as they are today. Partial means land not yet registered (draft, surveyed or verified, often with a provisional shape).",
       "owners": "Current owners, co-owners and heirs, one row per owner and parcel. Dates don't apply.",
-      "locations": "Districts, sections, sectors and neighbourhoods with the parcels in each and whether a boundary is drawn. Dates don't apply."
+      "locations": "Districts, sections, sectors and neighbourhoods with the parcels in each and whether a boundary is drawn. Dates don't apply.",
+      "paymentTypes": "How much came in for each fee type, split by way of paying: cash, mobile money, bank transfer, Visa / Mastercard and other payments. Click a fee type or an amount to see those payments."
     },
     "buckets": {
       "not_due": "Not due",
@@ -3294,7 +3296,17 @@
       "land": "Land",
       "documents": "Documents"
     },
-    "report": "Report"
+    "report": "Report",
+    "methods": {
+      "cash": "Cash",
+      "mobile_money": "Mobile money",
+      "bank_transfer": "Bank transfer",
+      "card": "Visa / Mastercard",
+      "other": "Other payments"
+    },
+    "allMethods": "All ways of paying",
+    "allFeeTypes": "All fee types",
+    "unallocated": "Unallocated credit"
   },
   "messages": {
     "title": "Messages",

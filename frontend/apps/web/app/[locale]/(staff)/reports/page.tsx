@@ -19,7 +19,11 @@ import {
   AREA_REPORTS,
   type BillingRow,
   DISTRICT_REPORTS,
+  feeTypeCode,
   PARCEL_KINDS,
+  PAYMENT_METHODS,
+  paymentMethod,
+  type PaymentTypeRow,
   parcelKind,
   RELATED_REPORTS,
   REPORT_GROUPS,
@@ -37,6 +41,7 @@ import {
   type RevenueRow,
 } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
+import { listFeeTypes } from "@/lib/server/valuation";
 import { zonePlaces } from "@/lib/server/zones";
 
 export async function generateMetadata() {
@@ -63,12 +68,18 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const sector = places.sectors.find((x) => x.id === a.sector && x.parent === section)?.id ?? "";
   const nbhd = places.neighbourhoods.find((x) => x.id === a.neighbourhood && x.parent === sector)?.id ?? "";
   const kind = parcelKind(sp.kind);
+  // Payments: by way of paying and by fee type.
+  const method = report === "payments" ? paymentMethod(sp.method) : null;
+  const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
+  const feeTypes = report === "payments" ? await listFeeTypes() : [];
   const usesArea = AREA_REPORTS.includes(report);
   const rows = await runReport(report, {
     from,
     to,
     district: district || null,
     kind,
+    method,
+    feeType: fee,
     ...(usesArea ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null } : {}),
   });
   const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
@@ -84,6 +95,8 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     ...(usesArea && sector ? { sector } : {}),
     ...(usesArea && nbhd ? { nbhd } : {}),
     ...(report === "parcels" ? { kind } : {}),
+    ...(method ? { method } : {}),
+    ...(fee ? { fee } : {}),
   }).toString();
   /** The same filters on another report, so moving between related reports keeps the place and the period. */
   const reportHref = (r: ReportName, over: Record<string, string> = {}) =>
@@ -123,9 +136,21 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   if (rows.length === 0) body = <EmptyState icon={<BarChart3 />} title={t("empty")} description={t("emptyBody")} />;
   else if (!["revenue", "income", "arrears", "collection", "registrations", "cashiers"].includes(report)) {
     // The listing reports draw straight from the same table the PDF and Excel files use.
-    const table = await reportTable(report, rows, lang);
+    const table = await reportTable(report, rows, lang, reportHref);
     const shown = table.rows.slice(0, PAGE_ROWS);
     let chart: React.ReactNode = null;
+    if (report === "paymentTypes") {
+      const r = rows as PaymentTypeRow[];
+      chart = (
+        <CardContent className="pt-5">
+          <BarChart
+            label={t("names.paymentTypes")}
+            format={usd0}
+            data={PAYMENT_METHODS.map((m) => ({ label: t(`methods.${m}`), value: r.reduce((sum, x) => sum + Number(x[m]), 0) }))}
+          />
+        </CardContent>
+      );
+    }
     if (report === "billing") {
       const r = rows as BillingRow[];
       const months = [...new Set(r.map((x) => x.month))];
@@ -499,6 +524,33 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   ))}
                 </NativeSelect>
               </label>
+            )}
+            {report === "payments" && (
+              <>
+                <label className="grid gap-1">
+                  <span className="text-xs text-muted-foreground">{t("method")}</span>
+                  <NativeSelect name="method" defaultValue={method ?? ""} className="w-auto min-w-44">
+                    <option value="">{t("allMethods")}</option>
+                    {PAYMENT_METHODS.map((m) => (
+                      <option key={m} value={m}>
+                        {t(`methods.${m}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-xs text-muted-foreground">{t("feeType")}</span>
+                  <NativeSelect name="fee" defaultValue={fee ?? ""} className="w-auto min-w-44">
+                    <option value="">{t("allFeeTypes")}</option>
+                    {feeTypes.map((f) => (
+                      <option key={f.code} value={f.code}>
+                        {lang === "so" ? f.name_so : f.name_en}
+                      </option>
+                    ))}
+                    <option value="credit">{t("unallocated")}</option>
+                  </NativeSelect>
+                </label>
+              </>
             )}
             {report === "parcels" && (
               <label className="grid gap-1">

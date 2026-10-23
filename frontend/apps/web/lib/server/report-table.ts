@@ -12,6 +12,7 @@ import type {
   OwnerRow,
   ParcelRow,
   PaymentRow,
+  PaymentTypeRow,
   RegistrationRow,
   ReportName,
   RevenueRow,
@@ -40,7 +41,16 @@ export interface ReportTable {
 
 const num = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
 
-export async function reportTable(name: ReportName, data: unknown[], locale: string): Promise<ReportTable> {
+/**
+ * `drill` builds a link to another report with the page's filters plus some of its own; the page passes it so
+ * summary rows open the matching list (the export files don't need it).
+ */
+export async function reportTable(
+  name: ReportName,
+  data: unknown[],
+  locale: string,
+  drill?: (report: ReportName, over: Record<string, string>) => string,
+): Promise<ReportTable> {
   const t = await getTranslations({ locale, namespace: "reports" });
   const all = await getTranslations({ locale });
   const so = locale === "so";
@@ -186,6 +196,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         { label: t("date"), kind: "datetime" },
         { label: t("pun"), kind: "mono" },
         { label: t("invoice"), kind: "mono" },
+        { label: t("feeType"), kind: "text" },
         { label: t("method"), kind: "text" },
         { label: t("cashier"), kind: "text" },
         { label: t("pos"), kind: "text" },
@@ -197,6 +208,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         r.received_at,
         r.pun,
         r.invoices,
+        pick(r as never, "fee_types"),
         label("payments.methods", r.method),
         r.cashier,
         r.point_of_sale,
@@ -204,6 +216,26 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         label("payments.status", r.status),
       ]);
       links = (data as PaymentRow[]).map((r) => [to("payments", r.payment_id), null, to("parcels", r.parcel_id)]);
+      break;
+    }
+    case "paymentTypes": {
+      const methods = ["cash", "mobile_money", "bank_transfer", "card", "other"] as const;
+      columns = [
+        { label: t("feeType"), kind: "text" },
+        { label: t("payments"), kind: "int", sum: true },
+        ...methods.map((m) => ({ label: t(`methods.${m}`), kind: "money" as const, sum: true })),
+        { label: t("total"), kind: "money", sum: true },
+      ];
+      rows = (data as PaymentTypeRow[]).map((r) => [pick(r as never, "fee_name"), num(r.payments), ...methods.map((m) => num(r[m])), num(r.total)]);
+      // A fee type opens its payments; an amount opens the payments of that fee type made that way.
+      links = drill
+        ? (data as PaymentTypeRow[]).map((r) => [
+            drill("payments", { fee: r.fee_type }),
+            null,
+            ...methods.map((m) => (Number(r[m]) ? drill("payments", { fee: r.fee_type, method: m }) : null)),
+            drill("payments", { fee: r.fee_type }),
+          ])
+        : [];
       break;
     }
     case "certificates": {

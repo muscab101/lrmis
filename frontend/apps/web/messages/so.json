@@ -3150,7 +3150,8 @@
       "certificates": "Shahaadooyinka",
       "parcels": "Dhulalka",
       "owners": "Milkiilayaasha iyo dhulkooda",
-      "locations": "Goobaha"
+      "locations": "Goobaha",
+      "paymentTypes": "Lacag-bixinta nooc ahaan"
     },
     "notes": {
       "revenue": "Lacagta la helay, bisha la helay, loona kala qaybiyay waxa ay bixisay. Lacagta aan la qoondeyn waa lacag aan weli biil lagu xirin.",
@@ -3165,7 +3166,8 @@
       "certificates": "Shahaadooyinka iyo kaararka aqoonsiga ee la bixiyay muddadan.",
       "parcels": "Dhulalka sida ay maanta yihiin. Qayb ahaan waa dhul aan weli la diiwaangelin (qabyo, la sahamiyay ama la hubiyay, badanaa sawir ku-meel-gaar ah leh).",
       "owners": "Milkiilayaasha hadda, wada-milkiilayaasha iyo dhaxlayaasha, saf kasta hal milkiile iyo hal dhul. Taariikhuhu khuseyn maayaan.",
-      "locations": "Degmooyinka, qaybaha, waaxyaha iyo xaafadaha, dhulalka mid walba ku jira iyo in xuduud la sawiray. Taariikhuhu khuseyn maayaan."
+      "locations": "Degmooyinka, qaybaha, waaxyaha iyo xaafadaha, dhulalka mid walba ku jira iyo in xuduud la sawiray. Taariikhuhu khuseyn maayaan.",
+      "paymentTypes": "Inta lacag ah ee u timid nooc kasta oo khidmad ah, loo kala qaaday habka lacag-bixinta: caddaan, lacag mobile, wareejin bangi, Visa / Mastercard iyo lacag-bixinno kale. Guji nooc khidmad ama qaddar si aad u aragto lacag-bixinnadaas."
     },
     "buckets": {
       "not_due": "Waqtigii ma gaarin",
@@ -3294,7 +3296,17 @@
       "land": "Dhulka",
       "documents": "Dukumentiyada"
     },
-    "report": "Warbixin"
+    "report": "Warbixin",
+    "methods": {
+      "cash": "Lacag caddaan",
+      "mobile_money": "Lacag mobile",
+      "bank_transfer": "Wareejin bangi",
+      "card": "Visa / Mastercard",
+      "other": "Lacag-bixinno kale"
+    },
+    "allMethods": "Dhammaan habka lacag-bixinta",
+    "allFeeTypes": "Dhammaan noocyada khidmadda",
+    "unallocated": "Lacag aan la qoondeyn"
   },
   "messages": {
     "title": "Fariimaha",
