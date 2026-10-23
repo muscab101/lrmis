@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { DocumentActions } from "@/components/documents/document-actions";
+import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { documentChanges, getDocument } from "@/lib/server/certificates";
@@ -24,6 +26,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
   const changes = d.status === "valid" ? await documentChanges(d.id) : [];
   const pending = d.reprint_requests.find((r) => r.status === "pending") ?? null;
   const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
+  const lang = await getLocale();
+  const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${lang}/verify/${d.verify_code}`;
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
@@ -58,6 +62,17 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
           {d.cancel_reason}
         </Alert>
       )}
+      {/* The document as it prints (screen copy marked PREVIEW; the official copy is printed from Print). */}
+      <div className="mb-5 overflow-x-auto rounded-lg border bg-neutral-100 p-4 dark:bg-neutral-900">
+        <div className="relative mx-auto w-fit">
+          {d.type === "certificate" ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}
+          <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden">
+            <span className={`-rotate-30 font-bold tracking-widest whitespace-nowrap text-red-600/15 select-none ${d.type === "certificate" ? "text-[64px]" : "text-[28px]"}`}>
+              {t("previewWatermark")}
+            </span>
+          </div>
+        </div>
+      </div>
       <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <CardContent className="pt-5">
