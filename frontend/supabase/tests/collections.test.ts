@@ -166,3 +166,62 @@ describe("collections, stage 2: verify, dispute, corrections", () => {
     expect(j.accounts).toEqual(["1130", "1100"]);
   });
 });
+
+describe("collections, stage 3: reconcile a cashier's day", () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  it("shows recorded money per way of paying, with a suggested actual", async () => {
+    const days = await asUser(db, officer, (tx) => tx.query<{ cashier_id: string; recorded: string; status: string | null }>(`select * from public.cashier_days(current_date, current_date)`));
+    expect(days.rows.map((d) => d.cashier_id).sort()).toEqual([cashier, cashier2].sort());
+    const s = await asUser(db, officer, (tx) => tx.query<{ channel: string; payments: string; recorded: string }>(`select * from public.cashier_day_summary($1, current_date)`, [cashier]));
+    const by = Object.fromEntries(s.rows.map((r) => [r.channel, Number(r.recorded)]));
+    // cashier: EVC 40, then cash 30 (later corrected to bank transfer) and cash 30.
+    expect(by).toMatchObject({ cash: 30, evc_plus: 40, bank_transfer: 30, zaad: 0 });
+  });
+
+  it("works out shortage and excess per way of paying; a difference needs a note; the cashier can't reconcile their own day", async () => {
+    await expectError(asUser(db, cashier, (tx) => tx.query(`select public.cashier_recon_submit($1, current_date, '{}')`, [cashier])), "PERMISSION_DENIED");
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.cashier_recon_submit($1, current_date, $2)`, [cashier, JSON.stringify({ cash: 30 })])), "VALIDATION: actual_missing");
+    const actual = JSON.stringify({ cash: 25, evc_plus: 40, bank_transfer: 32 });
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.cashier_recon_submit($1, current_date, $2)`, [cashier, actual])), "VALIDATION: note_required");
+    const id = await asUser(db, officer, (tx) => scalar<string>(tx, `select public.cashier_recon_submit($1, current_date, $2, 'Drawer $5 short; bank shows $2 extra')`, [cashier, actual]));
+    const lines = await db.query<{ channel: string; recorded: string; actual: string; difference: string; shortage: string; excess: string }>(
+      `select channel, recorded, actual, difference, shortage, excess from public.cashier_reconciliation_lines where reconciliation_id = $1 order by channel`,
+      [id],
+    );
+    const by = Object.fromEntries(lines.rows.map((l) => [l.channel, [l.recorded, l.actual, l.difference, l.shortage, l.excess].map(Number)]));
+    expect(by).toEqual({ bank_transfer: [30, 32, 2, 0, 2], cash: [30, 25, -5, 5, 0], evc_plus: [40, 40, 0, 0, 0] });
+    const head = await scalar<{ recorded: string; actual: string; difference: string }>(db, `select row_to_json(r) from public.cashier_reconciliations r where id = $1`, [id]);
+    expect([head.recorded, head.actual, head.difference].map(Number)).toEqual([100, 97, -3]);
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.cashier_recon_submit($1, current_date, $2, 'again')`, [cashier, actual])), "CONFLICT: already_reconciled");
+  });
+
+  it("a Finance Manager approves: the day's payments become Reconciled, except disputed ones; they can't be corrected after", async () => {
+    const id = await scalar<string>(db, `select id from public.cashier_reconciliations where cashier_id = $1`, [cashier]);
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.cashier_recon_decide($1, true)`, [id])), "PERMISSION_DENIED");
+    await asUser(db, manager, (tx) => tx.query(`select public.cashier_recon_decide($1, true, 'Shortage recovered from the cashier')`, [id]));
+    const st = await db.query<{ verify_status: string }>(`select verify_status from public.payments where created_by = $1`, [cashier]);
+    expect(st.rows.every((r) => r.verify_status === "reconciled")).toBe(true);
+    const pay = await scalar<string>(db, `select id from public.payments where created_by = $1 limit 1`, [cashier]);
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.payment_correction_request($1, '{"payer_name":"X"}', 'Spelling of the name')`, [pay])), "CONFLICT: reconciled");
+    expect(today).toMatch(/^\d{4}/);
+  });
+
+  it("a statement upload matches desk wallet payments by their reference and verifies them", async () => {
+    // cashier2's eDahab payment (reference ED-77 after the correction) is pending again.
+    const r = await asUser(db, officer, (tx) =>
+      scalar<{ summary: Record<string, number> }>(tx, `select public.reconciliation_run('edahab', current_date, current_date, $1)`, [JSON.stringify([{ provider_ref: "ed-77", amount: 25 }, { provider_ref: "ED-99", amount: 5 }])]),
+    );
+    expect(r.summary).toMatchObject({ matched: 1, missing_in_system: 1 });
+    expect(await scalar<string>(db, `select verify_status from public.payments where reference = 'ED-77'`)).toBe("verified");
+  });
+});
+
+describe("staff names", () => {
+  it("finance staff see the names on collection records; others can't", async () => {
+    const r = await asUser(db, officer, (tx) => tx.query<{ full_name: string }>(`select * from public.staff_names($1)`, [[cashier, manager]]));
+    expect(r.rows).toHaveLength(2);
+    const outsider = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [hodan]);
+    await expectError(asUser(db, outsider, (tx) => tx.query(`select * from public.staff_names($1)`, [[cashier]])), "PERMISSION_DENIED");
+  });
+});

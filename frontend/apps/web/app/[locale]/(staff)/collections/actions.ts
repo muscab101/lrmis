@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 
 const done = <T>(v: T) => {
-  revalidatePath("/[locale]/collections", "page");
+  revalidatePath("/[locale]/collections", "layout");
   revalidatePath("/[locale]/payments/[id]", "page");
   return v;
 };
@@ -72,6 +72,33 @@ export const decideCorrectionAction = defineAction(
   async ({ id, approve, note }, ctx) => {
     try {
       unwrap(await ctx.supabase.rpc("payment_correction_decide", { p_id: id, p_approve: approve, p_note: note || null }), "decide correction");
+      return done(null);
+    } catch (err) {
+      field(err, { note_required: "note" });
+    }
+  },
+);
+
+const channelAmounts = z.partialRecord(z.enum(["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"]), z.coerce.number().min(0, "validation.amount").max(100_000_000));
+
+export const submitReconAction = defineAction(
+  "collections.recon_submit",
+  z.object({ cashierId: z.uuid(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), actual: channelAmounts, note: z.string().trim().max(1000).default("") }),
+  async (v, ctx) => {
+    try {
+      return done(unwrap(await ctx.supabase.rpc("cashier_recon_submit", { p_cashier: v.cashierId, p_date: v.date, p_actual: v.actual, p_note: v.note || null }), "reconcile") as string);
+    } catch (err) {
+      field(err, { note_required: "note", actual_missing: "actual" });
+    }
+  },
+);
+
+export const decideReconAction = defineAction(
+  "collections.recon_decide",
+  z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().trim().max(1000).default("") }),
+  async ({ id, approve, note }, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("cashier_recon_decide", { p_id: id, p_approve: approve, p_note: note || null }), "decide reconciliation");
       return done(null);
     } catch (err) {
       field(err, { note_required: "note" });

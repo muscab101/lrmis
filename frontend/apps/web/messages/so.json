@@ -231,7 +231,9 @@
       "not_verifiable": "Lacag-bixintan dib ayaa loo celiyay ama horay ayaa loo isku dheeliyay.",
       "reconciled": "Lacag-bixintani waxay ku jirtaa isku-dheelitir la oggolaaday lamana beddeli karo.",
       "correction_pending": "Saxitaan lacag-bixintan ah ayaa horay u sugaya oggolaansho.",
-      "no_change": "Beddel ugu yaraan hal shay."
+      "no_change": "Beddel ugu yaraan hal shay.",
+      "already_reconciled": "Maalintan khasnajigu horay ayaa loo isku dheelitiray ama waxay sugaysaa oggolaansho.",
+      "actual_missing": "Geli waxa la helay hab kasta oo lacag-bixin ah oo khasnajigu diiwaangeliyay."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -369,7 +371,8 @@
     "reference_required": "Geli tixraaca lacag-bixinta.",
     "duplicate_reference": "Tixraacan lacag-bixin kale ayaa horay loogu isticmaalay.",
     "evidence_type": "Isticmaal sawir (JPG, PNG, WEBP) ama PDF.",
-    "no_change": "Beddel ugu yaraan hal shay."
+    "no_change": "Beddel ugu yaraan hal shay.",
+    "actual_missing": "Geli waxa la helay hab kasta oo lacag-bixin ah oo khasnajigu diiwaangeliyay."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -3692,7 +3695,8 @@
     "tabs": {
       "duplicates": "Labanlaabmay",
       "verify": "Hubi",
-      "corrections": "Saxitaanno"
+      "corrections": "Saxitaanno",
+      "reconcile": "Isku-dheelitir"
     },
     "duplicates": {
       "none": "Ma jiraan wax u eg labanlaab",
@@ -3785,6 +3789,65 @@
       "amountHint": "Qaddar khaldan halkan laguma saxi karo: codso dib-u-celin oo mar kale qaado lacag-bixinta.",
       "showPending": "Muuji kuwa sugaya oo keliya",
       "showAll": "Muuji dhammaan, oo ay ku jiraan kuwa la go'aamiyay"
+    },
+    "channels": {
+      "cash": "Caddaan",
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD",
+      "bank_transfer": "Wareejin bangi",
+      "card": "Visa / Mastercard",
+      "other": "Kale"
+    },
+    "recon": {
+      "title": "Isku-dheelitirka khasnajiga",
+      "back": "Dhammaan maalmaha khasnajiyada",
+      "date": "Maalinta",
+      "payments": "Lacag-bixinno",
+      "recorded": "La diiwaangeliyay",
+      "actual": "Dhab ahaan la helay",
+      "difference": "Farqiga",
+      "shortage": "Yaraansho",
+      "excess": "Dheeraad",
+      "total": "Wadarta",
+      "channel": "Habka lacag-bixinta",
+      "checked": "La hubiyay",
+      "checkedLine": "{verified} la hubiyay · {pending} sugaya · {disputed} lagu murmay",
+      "status": {
+        "none": "Lama isku dheelitirin",
+        "submitted": "Sugaya oggolaansho",
+        "approved": "La oggolaaday",
+        "rejected": "La diiday"
+      },
+      "open": "Fur",
+      "reconcile": "Isku dheeli",
+      "waiting": "{count, plural, =1 {1 maalin khasnaji ayaa sugaya oggolaanshaha Maareeyaha maaliyadda.} other {# maalmood oo khasnaji ayaa sugaya oggolaanshaha Maareeyaha maaliyadda.}}",
+      "noDays": "Muddadan ururin khasnaji ma jirto",
+      "noDaysBody": "Maalmuhu halkan ayay ka muuqdaan marka khasnaji lacag qaado.",
+      "unchecked": "{pending} sugaya, {disputed} lagu murmay",
+      "enterTitle": "Waxa dhab ahaan soo galay",
+      "suggestedHint": "Adiga ayaa laguu buuxiyay: caddaanka waxaa laga qaaday tirinta xiritaanka shaqooyinka maalinta, intii kalena lacag-bixinnada horay loo hubiyay. Beddel tiro kasta oo aan la mid ahayn waxa caddaanka, boorsooyinka iyo warbixinta bangigu muujinayaan.",
+      "note": "Qoraal (ikhtiyaari)",
+      "noteRequired": "Sharax farqiyada",
+      "fillAll": "Geli waxa la helay hab kasta oo lacag-bixin ah oo khasnajigu diiwaangeliyay.",
+      "submit": "U dir oggolaansho",
+      "submitted": "Isku-dheelitirka waxaa loo diray oggolaansho",
+      "preparedBy": "Waxaa diyaariyay",
+      "approvedBy": "Waxaa oggolaaday",
+      "rejectedBy": "Waxaa diiday",
+      "approve": "Oggolow",
+      "reject": "Diid",
+      "approveTitle": "Oggolow {number}?",
+      "rejectTitle": "Diid {number}?",
+      "approveBody": "Lacag-bixinnada maalintu waxay noqonayaan La isku dheeliyay, lamana sixi karo mar dambe. Kuwa lagu murmay sidooda ayay ahaanayaan.",
+      "rejectBody": "Sheeg waxa khaldan; sarkaalka maaliyaddu mar kale ayuu diyaarin karaa.",
+      "approved": "Isku-dheelitirka waa la oggolaaday",
+      "rejected": "Isku-dheelitirka waa la diiday",
+      "decisionOptional": "Qoraal (ikhtiyaari)",
+      "decisionRequired": "Waxa khaldan",
+      "notYet": "Weli lama isku dheelitirin",
+      "notYetBody": "Sarkaal maaliyadeed ayaa maalintan isku dheelitiraya; kadib Maareeyaha maaliyadda ayaa oggolaanaya.",
+      "ownDay": "Kuwani waa ururintaada; sarkaal maaliyadeed oo kale ayaa isku dheelitiraya."
     }
   }
 }

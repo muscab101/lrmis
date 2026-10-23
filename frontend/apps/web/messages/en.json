@@ -231,7 +231,9 @@
       "not_verifiable": "This payment was reversed or is already reconciled.",
       "reconciled": "This payment is in an approved reconciliation and can't be changed.",
       "correction_pending": "A correction for this payment is already waiting for approval.",
-      "no_change": "Change at least one thing."
+      "no_change": "Change at least one thing.",
+      "already_reconciled": "This cashier's day is already reconciled or waiting for approval.",
+      "actual_missing": "Enter what was received for every way of paying the cashier recorded."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -369,7 +371,8 @@
     "reference_required": "Enter the transaction reference.",
     "duplicate_reference": "This transaction reference was already used for another payment.",
     "evidence_type": "Use a photo (JPG, PNG, WEBP) or a PDF.",
-    "no_change": "Change at least one thing."
+    "no_change": "Change at least one thing.",
+    "actual_missing": "Enter what was received for every way of paying the cashier recorded."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -3692,7 +3695,8 @@
     "tabs": {
       "duplicates": "Duplicates",
       "verify": "Verify",
-      "corrections": "Corrections"
+      "corrections": "Corrections",
+      "reconcile": "Reconcile"
     },
     "duplicates": {
       "none": "No likely duplicates",
@@ -3785,6 +3789,65 @@
       "amountHint": "A wrong amount can't be corrected here: request a reversal and take the payment again.",
       "showPending": "Show waiting only",
       "showAll": "Show all, with decided ones"
+    },
+    "channels": {
+      "cash": "Cash",
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD",
+      "bank_transfer": "Bank transfer",
+      "card": "Visa / Mastercard",
+      "other": "Other"
+    },
+    "recon": {
+      "title": "Cashier reconciliation",
+      "back": "All cashier days",
+      "date": "Day",
+      "payments": "Payments",
+      "recorded": "Recorded",
+      "actual": "Actually received",
+      "difference": "Difference",
+      "shortage": "Shortage",
+      "excess": "Excess",
+      "total": "Total",
+      "channel": "Way of paying",
+      "checked": "Checked",
+      "checkedLine": "{verified} checked · {pending} pending · {disputed} disputed",
+      "status": {
+        "none": "Not reconciled",
+        "submitted": "Waiting for approval",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "open": "Open",
+      "reconcile": "Reconcile",
+      "waiting": "{count, plural, =1 {1 cashier day is waiting for a Finance Manager's approval.} other {# cashier days are waiting for a Finance Manager's approval.}}",
+      "noDays": "No cashier collections in this period",
+      "noDaysBody": "Days appear here once a cashier takes payments.",
+      "unchecked": "{pending} pending, {disputed} disputed",
+      "enterTitle": "What actually came in",
+      "suggestedHint": "Filled in for you: cash from the count at the close of the day's shifts, the rest from payments already verified. Change any figure to what the cash, wallet and bank statements really show.",
+      "note": "Note (optional)",
+      "noteRequired": "Explain the differences",
+      "fillAll": "Enter what was received for every way of paying the cashier recorded.",
+      "submit": "Submit for approval",
+      "submitted": "Reconciliation submitted for approval",
+      "preparedBy": "Prepared by",
+      "approvedBy": "Approved by",
+      "rejectedBy": "Rejected by",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve {number}?",
+      "rejectTitle": "Reject {number}?",
+      "approveBody": "The day's payments become Reconciled and can no longer be corrected. Disputed payments stay disputed.",
+      "rejectBody": "Say what is wrong; the finance officer can prepare it again.",
+      "approved": "Reconciliation approved",
+      "rejected": "Reconciliation rejected",
+      "decisionOptional": "Note (optional)",
+      "decisionRequired": "What is wrong",
+      "notYet": "Not reconciled yet",
+      "notYetBody": "A finance officer reconciles this day; then a Finance Manager approves it.",
+      "ownDay": "These are your own collections; another finance officer reconciles them."
     }
   }
 }

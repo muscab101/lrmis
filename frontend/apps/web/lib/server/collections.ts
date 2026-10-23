@@ -47,7 +47,8 @@ export async function profileNames(ids: (string | null | undefined)[]) {
   const list = [...new Set(ids.filter(Boolean))] as string[];
   if (!list.length) return {} as Record<string, string>;
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("user_id, full_name").in("user_id", list);
+  // Finance staff can't read other users' profiles; this returns names only.
+  const { data } = await supabase.rpc("staff_names", { p_ids: list });
   return Object.fromEntries(((data ?? []) as { user_id: string; full_name: string }[]).map((p) => [p.user_id, p.full_name]));
 }
 
@@ -149,4 +150,93 @@ export async function listCorrections(opts: { status: "pending" | "any"; payment
     requested_by_name: r.requested_by ? (names[r.requested_by] ?? null) : null,
     decided_by_name: r.decided_by ? (names[r.decided_by] ?? null) : null,
   })) as CorrectionRow[];
+}
+
+export interface CashierDay {
+  cashier_id: string;
+  cashier: string | null;
+  business_date: string;
+  district_id: string | null;
+  payments: number;
+  recorded: number;
+  pending: number;
+  verified: number;
+  disputed: number;
+  reconciliation_id: string | null;
+  number: string | null;
+  status: "submitted" | "approved" | "rejected" | null;
+  actual: number | null;
+  difference: number | null;
+}
+
+export async function listCashierDays(from: string, to: string) {
+  const supabase = await createClient();
+  const rows = unwrap(await supabase.rpc("cashier_days", { p_from: from, p_to: to }), "cashier days") as CashierDay[];
+  const n = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  return rows.map((r) => ({ ...r, payments: Number(r.payments), recorded: Number(r.recorded), pending: Number(r.pending), verified: Number(r.verified), disputed: Number(r.disputed), actual: n(r.actual), difference: n(r.difference) }));
+}
+
+export interface DayChannel {
+  channel: Channel;
+  payments: number;
+  recorded: number;
+  suggested: number;
+  pending: number;
+  disputed: number;
+}
+
+export async function cashierDaySummary(cashierId: string, date: string) {
+  const supabase = await createClient();
+  const rows = unwrap(await supabase.rpc("cashier_day_summary", { p_cashier: cashierId, p_date: date }), "day summary") as DayChannel[];
+  return rows.map((r) => ({ ...r, payments: Number(r.payments), recorded: Number(r.recorded), suggested: Number(r.suggested), pending: Number(r.pending), disputed: Number(r.disputed) }));
+}
+
+export interface Reconciliation {
+  id: string;
+  number: string;
+  cashier_id: string;
+  business_date: string;
+  status: "submitted" | "approved" | "rejected";
+  recorded: number;
+  actual: number;
+  difference: number;
+  note: string | null;
+  prepared_by: string | null;
+  prepared_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  lines: { channel: Channel; payments: number; recorded: number; actual: number; difference: number; shortage: number; excess: number }[];
+  prepared_by_name: string | null;
+  decided_by_name: string | null;
+}
+
+/** A cashier day's reconciliations, newest first (rejected ones stay for the record). */
+export async function dayReconciliations(cashierId: string, date: string) {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase
+      .from("cashier_reconciliations")
+      .select("id, number, cashier_id, business_date, status, recorded, actual, difference, note, prepared_by, prepared_at, decided_by, decided_at, decision_note, lines:cashier_reconciliation_lines(channel, payments, recorded, actual, difference, shortage, excess)")
+      .eq("cashier_id", cashierId)
+      .eq("business_date", date)
+      .order("prepared_at", { ascending: false }),
+    "reconciliations",
+  ) as unknown as Omit<Reconciliation, "prepared_by_name" | "decided_by_name">[];
+  const names = await profileNames([cashierId, ...rows.flatMap((r) => [r.prepared_by, r.decided_by])]);
+  const order = (c: string) => (CHANNELS as readonly string[]).indexOf(c);
+  return {
+    cashierName: names[cashierId] ?? null,
+    items: rows.map((r) => ({
+      ...r,
+      recorded: Number(r.recorded),
+      actual: Number(r.actual),
+      difference: Number(r.difference),
+      lines: r.lines
+        .map((l) => ({ ...l, recorded: Number(l.recorded), actual: Number(l.actual), difference: Number(l.difference), shortage: Number(l.shortage), excess: Number(l.excess) }))
+        .sort((a, b) => order(a.channel) - order(b.channel)),
+      prepared_by_name: r.prepared_by ? (names[r.prepared_by] ?? null) : null,
+      decided_by_name: r.decided_by ? (names[r.decided_by] ?? null) : null,
+    })) as Reconciliation[],
+  };
 }

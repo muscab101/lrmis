@@ -2,6 +2,7 @@ import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
+import { StatusBadge } from "@dhulka/ui/badge";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { CopyCheck } from "lucide-react";
@@ -10,14 +11,14 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { CorrectionsList } from "@/components/collections/corrections-list";
 import { VerifyTable } from "@/components/collections/verify-table";
-import { listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
+import { listCashierDays, listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
 
 export async function generateMetadata() {
   const t = await getTranslations("collections");
   return { title: t("title") };
 }
 
-const TABS = ["verify", "corrections", "duplicates"] as const;
+const TABS = ["verify", "reconcile", "corrections", "duplicates"] as const;
 type Tab = (typeof TABS)[number];
 
 /** ?from=&to= (ISO dates); by default the last 30 days. */
@@ -111,6 +112,63 @@ export default async function CollectionsPage({ params, searchParams }: { params
           <EmptyState icon={<CopyCheck />} title={t("verify.none")} description={t("verify.noneBody")} />
         ) : (
           <VerifyTable rows={rows} canVerify={viewer.can("reconciliation.update")} me={viewer.user.id} />
+        )}
+      </>
+    );
+  } else if (tab === "reconcile") {
+    const days = await listCashierDays(from, to);
+    const pendingApproval = days.filter((d) => d.status === "submitted").length;
+    body = (
+      <>
+        {periodForm}
+        {pendingApproval > 0 && <p className="border-t px-4 py-2 text-sm text-status-pending">{t("recon.waiting", { count: pendingApproval })}</p>}
+        {days.length === 0 ? (
+          <EmptyState icon={<CopyCheck />} title={t("recon.noDays")} description={t("recon.noDaysBody")} />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("recon.date")}</TableHead>
+                <TableHead>{t("cashier")}</TableHead>
+                <TableHead className="text-end">{t("recon.payments")}</TableHead>
+                <TableHead className="text-end">{t("recon.recorded")}</TableHead>
+                <TableHead>{t("recon.checked")}</TableHead>
+                <TableHead>{t("statusLabel")}</TableHead>
+                <TableHead className="text-end">{t("recon.difference")}</TableHead>
+                <TableHead className="w-28" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {days.map((d) => {
+                const href = `/collections/reconcile?cashier=${d.cashier_id}&date=${d.business_date}`;
+                const st = d.status === "rejected" ? null : d.status;
+                return (
+                  <TableRow key={`${d.cashier_id}-${d.business_date}`}>
+                    <TableCell className="text-sm whitespace-nowrap">{format.dateTime(new Date(`${d.business_date}T00:00:00`), { dateStyle: "medium" })}</TableCell>
+                    <TableCell className="text-sm">{d.cashier ?? "—"}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{d.payments}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{usd(d.recorded)}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{t("recon.checkedLine", { verified: d.verified, pending: d.pending, disputed: d.disputed })}</TableCell>
+                    <TableCell>
+                      {st ? (
+                        <StatusBadge tone={st === "approved" ? "approved" : "pending"}>{t(`recon.status.${st}`)}</StatusBadge>
+                      ) : (
+                        <StatusBadge tone="draft">{t("recon.status.none")}</StatusBadge>
+                      )}
+                    </TableCell>
+                    <TableCell className={`text-end text-sm tabular-nums ${st && d.difference ? (d.difference < 0 ? "text-status-rejected" : "text-status-pending") : ""}`}>
+                      {st && d.difference !== null ? usd(d.difference) : "—"}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <Link href={href} className="text-sm text-primary hover:underline">
+                        {st ? t("recon.open") : t("recon.reconcile")}
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
       </>
     );
