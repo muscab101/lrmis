@@ -220,7 +220,9 @@
       "already_started": "Dhulkan diiwaangelintiisa horay ayaa loo bilaabay.",
       "zone_open": "Xaafaddan horay ayaa loogu xilsaaray sahamiye. Marka hore xir aaggaas.",
       "zone": "Aaggaas lama helin.",
-      "site_not_found": "Sahamiyuhu dhul kama helin goobtan. Mar kale hubi goobta ka hor diiwaangelinta."
+      "site_not_found": "Sahamiyuhu dhul kama helin goobtan. Mar kale hubi goobta ka hor diiwaangelinta.",
+      "card_fee_unpaid": "Biilka daabacaadda kaarkan weli lama bixin. Khasnajigu marka hore ha qaado lacagta.",
+      "card_fee_not_set": "Marka hore ku dhig khidmadda daabacaadda kaarka Qiimeynta → Noocyada khidmadaha."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -2568,6 +2570,21 @@
       "house": "Guriga {no}",
       "cash": "Caddaan",
       "card": "Kaar (Stripe)"
+    },
+    "cardPrint": {
+      "title": "Daabacaadda kaarka aqoonsiga",
+      "subtitle": "Marka macmiilku kaarkiisa codsado: hel, samee biilka daabacaadda, kadib ka qaado lacagta Lacagta la ururinayo. Kaarku wuxuu daabacmaa marka biilka la bixiyo.",
+      "placeholder": "PUN ama taxanaha kaarka",
+      "find": "Raadi",
+      "none": "Kaar aqoonsi oo ansax ah lama helin PUN-kaas ama taxanahaas.",
+      "feeOff": "Khidmadda daabacaadda kaarka waa damisan tahay. Ku dhig qiimaheeda Qiimeynta → Noocyada khidmadaha oo shid.",
+      "printed": "Horay ayaa loo daabacay",
+      "paid": "Biilka waa la bixiyay · diyaar u ah daabacaad",
+      "billOpen": "Biilka {number} waa furan yahay",
+      "noBill": "Weli biil ma jiro",
+      "createBill": "Samee biil",
+      "billed": "Biilka {number} waa la sameeyay. Lacagtiisa ka qaado Lacagta la ururinayo.",
+      "billExists": "Biilka {number} horay ayuu u furnaa."
     }
   },
   "accounting": {

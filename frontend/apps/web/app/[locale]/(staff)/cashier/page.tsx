@@ -3,6 +3,7 @@ import { Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { OpenShift, TakePayment } from "@/components/payments/cashier-desk";
+import { CardPrintBill } from "@/components/payments/card-print-bill";
 import { ToCollect } from "@/components/payments/to-collect";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -70,6 +71,7 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
         </div>
       )}
       <ToCollect houses={houses} shiftOpen={!!shift} cardEnabled={getProvider("stripe")?.configured() ?? false} />
+      <CardPrintBill />
     </>
   );
 }

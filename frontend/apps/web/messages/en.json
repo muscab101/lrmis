@@ -220,7 +220,9 @@
       "already_started": "Registration has already been started for this land.",
       "zone_open": "This neighbourhood is already assigned to a surveyor. Close that zone first.",
       "zone": "That zone wasn't found.",
-      "site_not_found": "A surveyor found no land at this place. Check the site again before registering."
+      "site_not_found": "A surveyor found no land at this place. Check the site again before registering.",
+      "card_fee_unpaid": "This ID card's print bill isn't paid yet. The cashier takes the payment first.",
+      "card_fee_not_set": "Set the ID card print fee in Valuation → Fee types first."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -2568,6 +2570,21 @@
       "house": "House {no}",
       "cash": "Cash",
       "card": "Card (Stripe)"
+    },
+    "cardPrint": {
+      "title": "ID card print",
+      "subtitle": "When a customer asks for their card: find it, create the print bill, then take payment for it in To collect. The card prints once the bill is paid.",
+      "placeholder": "PUN or card serial",
+      "find": "Find",
+      "none": "No valid ID card for that PUN or serial.",
+      "feeOff": "The ID card print fee is switched off. Set its amount in Valuation → Fee types and switch it on.",
+      "printed": "Already printed",
+      "paid": "Bill paid · ready to print",
+      "billOpen": "Bill {number} open",
+      "noBill": "No bill yet",
+      "createBill": "Create bill",
+      "billed": "Bill {number} created. Take payment for it in To collect.",
+      "billExists": "Bill {number} is already open."
     }
   },
   "accounting": {

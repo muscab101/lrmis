@@ -1,6 +1,6 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import { banadirOutlines, type DocumentDetail } from "@/lib/server/certificates";
+import { banadirOutlines, type DocumentDetail, watermarkLine } from "@/lib/server/certificates";
 import { BanadirMapSvg } from "./banadir-map-svg";
 
 /**
@@ -16,9 +16,10 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
   const lang = await getLocale();
   const s = doc.snapshot;
   const h = s.holder;
-  const [qr, outlines] = await Promise.all([
+  const [qr, outlines, mark] = await Promise.all([
     QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } }),
     banadirOutlines(),
+    watermarkLine(doc, lang),
   ]);
   const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : null);
   const initials = (h?.full_name ?? "?")
@@ -28,13 +29,26 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
     .join("");
   const date = (v: string | null | undefined) => (v ? format.dateTime(new Date(v), { day: "2-digit", month: "short", year: "numeric" }) : "—");
   const id = h?.id_number ? `${h.id_type ? `${to(`id_${h.id_type}`)} ` : ""}${h.id_number}` : null;
-  const place = [s.house_no && t("cardHouse", { no: s.house_no }), name(s.neighbourhood), name(s.district)].filter(Boolean).join(" · ");
+  // Place: the neighbourhood and the house number.
+  const place = [name(s.neighbourhood), s.house_no && t("cardHouse", { no: s.house_no })].filter(Boolean).join(" · ");
 
   return (
     <div className="flex flex-col items-center gap-6 print:gap-[6mm]">
       {/* Front */}
-      <section className="relative flex h-[54mm] w-[85.6mm] flex-col overflow-hidden rounded-[3mm] bg-gradient-to-br from-[#0b2a8f] via-[#1f45b8] to-[#3d6ee0] text-white shadow-md print:shadow-none">
-        <header className="flex items-center gap-[2mm] bg-white px-[3mm] py-[1.6mm] text-[#0b1a3a]">
+      <section className="relative flex h-[54mm] w-[85.6mm] flex-col overflow-hidden rounded-[3mm] bg-[linear-gradient(115deg,#fdf0ff_0%,#e3f4ff_24%,#eefcdc_48%,#fff4d6_70%,#fde6f3_100%)] text-[#0b1a3a] shadow-md print:shadow-none">
+        {/* Holographic sheen and the certificate's security watermark (owner, phone, house, bill, place) behind the text. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[conic-gradient(from_210deg_at_72%_28%,#ff9ad5,#9ad8ff,#b4f5b0,#ffe39a,#d9a8ff,#ff9ad5)] opacity-30 mix-blend-multiply" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.55)_0_1.2mm,rgba(255,255,255,0)_1.2mm_3mm)] opacity-40" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+          <div className="absolute top-1/2 left-1/2 flex w-[260%] -translate-x-1/2 -translate-y-1/2 -rotate-30 flex-col gap-[2.2mm]">
+            {Array.from({ length: 22 }, (_, i) => (
+              <p key={i} className={`text-[4.2pt] leading-none font-semibold tracking-[0.06em] whitespace-pre text-[#1f45b8]/[0.14] uppercase ${i % 2 ? "-ms-[18mm]" : ""}`}>
+                {Array.from({ length: 4 }, () => mark).join("   ✦   ")}
+              </p>
+            ))}
+          </div>
+        </div>
+        <header className="relative flex items-center gap-[2mm] bg-white/85 px-[3mm] py-[1.6mm] text-[#0b1a3a]">
           {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
           <img src="/brand/banadir-emblem-256.png" alt="" className="size-[8.5mm] object-contain" />
           <div className="min-w-0 flex-1 leading-[1.15]">
@@ -43,32 +57,32 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
           </div>
           <p className="text-end text-[5pt] leading-tight font-semibold text-[#1f45b8] uppercase">{t("cardKind")}</p>
         </header>
-        <div className="flex flex-1 gap-[2.5mm] px-[3mm] pt-[2mm]">
-          <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center rounded-[1.2mm] border border-white/40 bg-white/15 text-[13pt] font-semibold">{initials}</div>
+        <div className="relative flex flex-1 gap-[2.5mm] px-[3mm] pt-[2mm]">
+          <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center rounded-[1.2mm] border border-[#1f45b8]/30 bg-white/60 text-[13pt] font-semibold text-[#1f45b8]">{initials}</div>
           <dl className="grid min-w-0 flex-1 grid-cols-[auto_1fr] content-start gap-x-[1.5mm] gap-y-[0.35mm] text-[5.6pt] leading-[1.3]">
-            <dt className="opacity-70">{t("name")}</dt>
+            <dt className="opacity-60">{t("name")}</dt>
             <dd className="truncate text-[7.2pt] leading-[1.1] font-semibold">{h?.full_name ?? "—"}</dd>
             {h?.mother_name && (
               <>
-                <dt className="opacity-70">{t("motherName")}</dt>
+                <dt className="opacity-60">{t("motherName")}</dt>
                 <dd className="truncate">{h.mother_name}</dd>
               </>
             )}
             {id && (
               <>
-                <dt className="opacity-70">{t("cardId")}</dt>
+                <dt className="opacity-60">{t("cardId")}</dt>
                 <dd className="truncate font-mono">{id}</dd>
               </>
             )}
-            <dt className="opacity-70">PUN</dt>
+            <dt className="opacity-60">PUN</dt>
             <dd className="truncate font-mono font-semibold">{s.pun}</dd>
-            <dt className="opacity-70">{t("cardPlace")}</dt>
+            <dt className="opacity-60">{t("cardPlace")}</dt>
             <dd className="truncate">{place || "—"}</dd>
-            <dt className="opacity-70">{t("issuedOn")}</dt>
+            <dt className="opacity-60">{t("issuedOn")}</dt>
             <dd>{date(doc.issued_at)}</dd>
           </dl>
         </div>
-        <footer className="flex items-center justify-between bg-black/15 px-[3mm] py-[0.9mm] text-[5.2pt]">
+        <footer className="relative flex items-center justify-between bg-white/70 px-[3mm] py-[0.9mm] text-[5.2pt] text-[#0b1a3a]">
           <span className="font-mono">{doc.serial}</span>
           <span>
             {t("validUntil")} {date(doc.expires_at)}
