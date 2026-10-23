@@ -315,3 +315,30 @@ describe("reports by point of sale, and the caller's scope", () => {
     expect(m.all).toBe(true);
   });
 });
+
+describe("desk users only see their own desk", () => {
+  it("a user tied to a desk gets only that desk's payments, whatever filter they send", async () => {
+    const hdn1 = await scalar<string>(db, `select id from public.points_of_sale where code = 'HDN1'`);
+    const hdn2 = await scalar<string>(db, `select id from public.points_of_sale where code = 'HDN2'`);
+    const deskUser = await createStaff(db, admin, "desk.registrar@gmail.com", ["registrar"], [hodan]);
+    await db.query(`update public.profiles set point_of_sale_id = $1 where user_id = $2`, [hdn2, deskUser]);
+    const total = async (pos: string | null) => {
+      const r = await asUser(db, deskUser, (tx) => tx.query<{ total: string }>(`select * from public.report_collections(current_date, current_date, 'day', 'all', null, null, null, null, $1)`, [pos]));
+      return r.rows.reduce((s, x) => s + Number(x.total), 0);
+    };
+    expect(await total(null)).toBe(0);
+    expect(await total(hdn1)).toBe(0);
+    const pay = await asUser(db, deskUser, (tx) => tx.query(`select * from public.report_payments(current_date, current_date)`));
+    expect(pay.rows).toHaveLength(0);
+    const s = await asUser(db, deskUser, (tx) => scalar<{ locked: boolean; pos: { id: string } }>(tx, `select public.my_scope()`));
+    expect(s.locked).toBe(true);
+    expect(s.pos.id).toBe(hdn2);
+    // Back at HDN1, the same user sees HDN1's takings.
+    await db.query(`update public.profiles set point_of_sale_id = $1 where user_id = $2`, [hdn1, deskUser]);
+    expect(await total(null)).toBe(125);
+  });
+
+  it("cashiers can open Yet to register", async () => {
+    expect(await asUser(db, cashier, (tx) => scalar<boolean>(tx, `select public.has_permission('parcels.view')`))).toBe(true);
+  });
+});

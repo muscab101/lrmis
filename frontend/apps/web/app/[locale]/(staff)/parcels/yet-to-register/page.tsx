@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { MapPinOff, MapPinPlus } from "lucide-react";
+import { MapPinOff } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -34,7 +34,9 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "zones";
+  // Survey zones are for survey staff; everyone else starts on the neighbourhoods still waiting.
+  const seesZones = viewer.can("surveys.view");
+  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") && (sp.tab !== "zones" || seesZones) ? (sp.tab as Tab) : seesZones ? "zones" : "waiting";
   const supabase = await createClient();
   const [all, { data: mine }] = await Promise.all([listDistricts(), supabase.rpc("user_district_ids")]);
   const allowed = new Set((mine as string[] | null) ?? []);
@@ -43,7 +45,7 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
   const canAssign = viewer.can("surveys.approve");
   const [status, zones, places] = await Promise.all([
     neighbourhoodStatus(district || null),
-    listZones(!canAssign, sp.closed === "1" ? "any" : "open"),
+    seesZones ? listZones(!canAssign, sp.closed === "1" ? "any" : "open") : Promise.resolve([]),
     canAssign ? zonePlaces(districts.map((d) => d.id)) : Promise.resolve(null),
   ]);
   const shownZones = district ? zones.filter((z) => z.district_id === district) : zones;
@@ -53,7 +55,6 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
   const notStarted = status.filter((r) => r.registered === 0);
   const rows = tab === "not_started" ? notStarted : waiting;
   const counts: Record<Tab, number> = { zones: shownZones.filter((z) => z.status === "open").length, waiting: waiting.length, not_started: notStarted.length };
-  const canAddLand = viewer.can("surveys.create") || viewer.can("applications.create");
   const name = (o: { name_so: string; name_en: string }) => (lang === "so" ? o.name_so : o.name_en);
   const href = (k: Tab) => `/parcels/yet-to-register?${new URLSearchParams({ tab: k, ...(district ? { district } : {}) })}`;
   const n = (v: number) => format.number(v);
@@ -63,19 +64,9 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
       <PageHeader
         title={t("title")}
         description={t(`body_${tab}`)}
-        actions={
-          canAddLand && (
-            <Button asChild>
-              <Link href="/parcels/new">
-                <MapPinPlus aria-hidden />
-                {t("addLand")}
-              </Link>
-            </Button>
-          )
-        }
       >
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("title")}>
-          {TABS.map((k) => (
+          {TABS.filter((k) => k !== "zones" || seesZones).map((k) => (
             <Link
               key={k}
               href={href(k)}
@@ -135,7 +126,7 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
           </div>
         )}
         {tab === "zones" ? (
-          <ZoneTable rows={shownZones} me={viewer.user.id} canManage={canAssign} canAddLand={canAddLand} />
+          <ZoneTable rows={shownZones} me={viewer.user.id} canManage={canAssign} canAddLand={false} />
         ) : rows.length === 0 ? (
           <EmptyState icon={<MapPinOff />} title={t(`empty_${tab}`)} description={t(`emptyBody_${tab}`)} />
         ) : (

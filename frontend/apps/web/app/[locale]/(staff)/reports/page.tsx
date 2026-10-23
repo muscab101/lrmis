@@ -90,7 +90,19 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   // Point of sale: a user assigned to a desk sees that desk's takings by default; "all" shows every desk.
   const usesPos = POS_REPORTS.includes(report);
   const [scope, desks] = usesPos ? await Promise.all([myScope(), myPointsOfSale()]) : [null, []];
-  const pos = !usesPos ? "" : sp.pos === "all" ? "" : desks.some((p) => p.id === sp.pos) ? sp.pos! : sp.pos === undefined && scope?.pos && desks.some((p) => p.id === scope.pos!.id) ? scope.pos.id : "";
+  // A desk user only ever sees their own desk (the database enforces it too).
+  const locked = Boolean(scope?.locked && scope.pos);
+  const pos = !usesPos
+    ? ""
+    : locked
+      ? scope!.pos!.id
+      : sp.pos === "all"
+        ? ""
+        : desks.some((p) => p.id === sp.pos)
+          ? sp.pos!
+          : sp.pos === undefined && scope?.pos && desks.some((p) => p.id === scope.pos!.id)
+            ? scope.pos.id
+            : "";
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
   const usesArea = AREA_REPORTS.includes(report);
@@ -564,7 +576,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("pos")}</span>
                 <NativeSelect name="pos" defaultValue={pos || "all"} className="w-auto min-w-44">
-                  <option value="all">{t("allPos")}</option>
+                  {!locked && <option value="all">{t("allPos")}</option>}
                   {desks.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.code} · {p.name}
