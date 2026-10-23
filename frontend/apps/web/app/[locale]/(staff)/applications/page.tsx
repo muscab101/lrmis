@@ -1,9 +1,8 @@
 import { applicationsQuerySchema } from "@dhulka/core/schemas";
-import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ClipboardList, Plus } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { ApplicationRowActions } from "@/components/applications/application-row-actions";
@@ -46,16 +45,6 @@ export default async function ApplicationsPage({ params, searchParams }: { param
       <PageHeader
         title={t("title")}
         description={t("subtitle")}
-        actions={
-          viewer.can("applications.create") && (
-            <Button asChild>
-              <Link href="/applications/new">
-                <Plus aria-hidden />
-                {t("new")}
-              </Link>
-            </Button>
-          )
-        }
       >
         <nav className="flex gap-5 overflow-x-auto text-sm" aria-label={t("statusLabel")}>
           {TABS.map((tab) => (
