@@ -218,7 +218,8 @@
       "document": "That document wasn't found.",
       "already_started": "Registration has already been started for this land.",
       "zone_open": "This neighbourhood is already assigned to a surveyor. Close that zone first.",
-      "zone": "That zone wasn't found."
+      "zone": "That zone wasn't found.",
+      "site_not_found": "A surveyor found no land at this place. Check the site again before registering."
     },
     "blockers": {
       "dispute": "open dispute",

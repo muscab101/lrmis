@@ -157,7 +157,7 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
                   <TableCell className="hidden text-sm md:table-cell">{r.has_boundary ? t("yes") : <span className="text-status-pending">{t("no")}</span>}</TableCell>
                   <TableCell className="text-end text-sm whitespace-nowrap">
                     {r.partial + r.registered > 0 && (
-                      <Link href={`/parcels?${new URLSearchParams({ stage: r.partial > 0 ? "draft" : "all", nbhd: r.id })}`} className="text-primary underline">
+                      <Link href={`/parcels?${new URLSearchParams({ stage: r.partial > 0 ? "draft" : "registered", nbhd: r.id })}`} className="text-primary underline">
                         {t("showLand")}
                       </Link>
                     )}

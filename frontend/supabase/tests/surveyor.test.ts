@@ -119,22 +119,26 @@ describe("site check (! → ✓)", () => {
   });
 });
 
-describe("move to Parcels right after the ✓ site check", () => {
+describe("register (the site check is optional)", () => {
   let registrar: string;
   beforeAll(async () => {
     const boss = await scalar<string>(db, `select ur.user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
     registrar = await createStaff(db, boss, "registrar@gmail.com", ["registrar"], [hodan]);
   });
 
-  it("needs the ✓ first, and the register right", async () => {
-    // `app` is in survey (fee waived) from the tests above, with no site check yet.
-    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "CONFLICT: site_not_confirmed");
-    await asUser(db, clerk, (tx) => tx.query(`select public.application_request_site_check($1, $2)`, [app, surveyor]));
-    await asUser(db, surveyor, (tx) => tx.query(`select public.application_confirm_site($1, true, 'Plot and walls seen')`, [app]));
+  it("needs the register right; only a check that found no land stops it", async () => {
+    // `app` is in survey (fee waived) from the tests above, with no site check.
     await expectError(asUser(db, clerk, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "PERMISSION_DENIED");
+    await db.query(`update public.applications set site_check_status = 'not_found' where id = $1`, [app]);
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.application_register_confirmed($1)`, [app])), "CONFLICT: site_not_found");
+    await db.query(`update public.applications set site_check_status = null where id = $1`, [app]);
+    // Before registering, the owner is still in partial registration.
+    expect(
+      await scalar<string | null>(db, `select pa.registered_at from public.application_parties ap join public.parties pa on pa.id = ap.party_id where ap.application_id = $1 and ap.role = 'owner' limit 1`, [app]),
+    ).toBeNull();
   });
 
-  it("registers: PUN, account number, owners, application approved, open survey cancelled", async () => {
+  it("registers without a site check: PUN, account number, owners (now registered too), application approved, open survey cancelled", async () => {
     const r = await asUser(db, registrar, (tx) =>
       scalar<{ pun: string; account_no: string; parcel_id: string; provisional_boundary: boolean }>(tx, `select public.application_register_confirmed($1, 'residential', 'Confirmed on site')`, [app]),
     );

@@ -19,7 +19,8 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const STAGES = ["draft", "registered", "all"] as const;
+/** Two tabs: partial registration and registered (an old "all" link opens partial registration). */
+const STAGES = ["draft", "registered"] as const;
 
 export default async function OwnersPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
@@ -28,7 +29,8 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
   const t = await getTranslations("owners");
   const format = await getFormatter();
   const lang = await getLocale();
-  const q = partiesQuerySchema.parse(await searchParams);
+  const parsed = partiesQuerySchema.parse(await searchParams);
+  const q = parsed.stage === "all" ? { ...parsed, stage: "draft" as const } : parsed;
   const supabase = await createClient();
   const count = (registered: boolean) => {
     const req = supabase.from("parties").select("id", { count: "exact", head: true }).is("deleted_at", null);

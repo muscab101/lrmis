@@ -218,7 +218,8 @@
       "document": "Dukumentigaas lama helin.",
       "already_started": "Dhulkan diiwaangelintiisa horay ayaa loo bilaabay.",
       "zone_open": "Xaafaddan horay ayaa loogu xilsaaray sahamiye. Marka hore xir aaggaas.",
-      "zone": "Aaggaas lama helin."
+      "zone": "Aaggaas lama helin.",
+      "site_not_found": "Sahamiyuhu dhul kama helin goobtan. Mar kale hubi goobta ka hor diiwaangelinta."
     },
     "blockers": {
       "dispute": "muran furan",

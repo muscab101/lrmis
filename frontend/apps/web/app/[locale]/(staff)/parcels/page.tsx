@@ -11,7 +11,7 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { applicationsByNumber, PARCEL_STAGES, type ParcelStage, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
+import { applicationsByNumber, PARCEL_TABS, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -27,7 +27,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const lang = await getLocale();
   const sp = await searchParams;
   const q = (sp.q ?? "").slice(0, 80);
-  const stage: ParcelStage = (PARCEL_STAGES as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as ParcelStage) : "all";
+  const stage: (typeof PARCEL_TABS)[number] = (PARCEL_TABS as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
   // Partial parcels are worked through their application, with the same keys as the Applications list.
@@ -50,7 +50,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
     <>
       <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
-          {PARCEL_STAGES.map((k) => (
+          {PARCEL_TABS.map((k) => (
             <Link
               key={k}
               href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}

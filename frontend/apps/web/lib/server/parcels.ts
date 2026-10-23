@@ -29,6 +29,8 @@ export interface ParcelListRow {
 }
 
 export const PARCEL_STAGES = ["draft", "registered", "all"] as const;
+/** The tabs on Parcels: partial registration and registered ("all" is only used inside, e.g. a zone's houses). */
+export const PARCEL_TABS = ["draft", "registered"] as const;
 export type ParcelStage = (typeof PARCEL_STAGES)[number];
 /** Not registered yet: partial registration, still worked on through its application. */
 const PARTIAL = "(draft,surveyed,verified)";

@@ -111,4 +111,13 @@ describe("field land", () => {
     expect([by("013").partial, by("013").registered].map(Number)).toEqual([0, 0]);
     expect((await asUser(db, otherSurveyor, (tx) => tx.query(`select * from public.neighbourhood_registration_status()`))).rows).toHaveLength(0);
   });
+
+  it("owners follow their land: not registered on draft land, registered when the land is", async () => {
+    const out = await asUser(db, surveyor, (tx) =>
+      scalar<{ parcel_id: string; party_id: string }>(tx, `select public.field_land_create($1)`, [land({ house_no: "21", owner_name: "Maryan Cabdi", owner_phone: "+252615550199" })]),
+    );
+    expect(await scalar<string | null>(db, `select registered_at from public.parties where id = $1`, [out.party_id])).toBeNull();
+    await db.query(`update public.parcels set pun = 'BNHDN01299', account_no = 'HDN0000099', status = 'registered', registered_at = now() where id = $1`, [out.parcel_id]);
+    expect(await scalar<string | null>(db, `select registered_at from public.parties where id = $1`, [out.party_id])).not.toBeNull();
+  });
 });

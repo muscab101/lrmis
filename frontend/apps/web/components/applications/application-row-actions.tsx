@@ -55,7 +55,8 @@ export function ApplicationRowActions({ application: a, me, can }: { application
     (LAND_USES as readonly string[]).includes(a.land_use ?? "") ? (a.land_use as (typeof LAND_USES)[number]) : "residential",
   );
   const [regNote, setRegNote] = useState("");
-  const showRegister = can.register && a.site_check_status === "confirmed" && !CLOSED.includes(a.status);
+  // The site check is optional; only "no land found" stops registration.
+  const showRegister = can.register && a.site_check_status !== "not_found" && !CLOSED.includes(a.status);
   // Why it can't be moved yet (the database checks the same; this just says so up front).
   const registerBlocker = !showRegister
     ? null
