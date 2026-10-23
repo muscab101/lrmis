@@ -4,15 +4,33 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
+import { Tooltip } from "@dhulka/ui/form-controls";
+import { Ban, CheckCircle2, Eye, FileOutput, RefreshCw, Send } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { approveRunAction, cancelRunAction, generateRunAction, refreshRunAction, submitRunAction } from "@/app/[locale]/(staff)/billing/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { Link } from "@/i18n/navigation";
 import type { RunStatus } from "@/lib/server/billing";
 
 type Step = "refresh" | "submit" | "approve" | "generate" | "cancel";
 
-export function RunActions({ id, status, can, isCreator }: { id: string; status: RunStatus; can: { create: boolean; approve: boolean; cancel: boolean }; isCreator: boolean }) {
+const ICONS = { refresh: RefreshCw, submit: Send, approve: CheckCircle2, generate: FileOutput, cancel: Ban } as const;
+
+/** A billing run's next steps. `compact`: icon buttons for a list row, with View first. */
+export function RunActions({
+  id,
+  status,
+  can,
+  isCreator,
+  compact = false,
+}: {
+  id: string;
+  status: RunStatus;
+  can: { create: boolean; approve: boolean; cancel: boolean };
+  isCreator: boolean;
+  compact?: boolean;
+}) {
   const t = useTranslations("billing");
   const format = useFormatter();
   const [step, setStep] = useState<Step | null>(null);
@@ -23,17 +41,39 @@ export function RunActions({ id, status, can, isCreator }: { id: string; status:
   if (status === "submitted" && can.approve && !isCreator) steps.push("approve");
   if ((status === "approved" || status === "generating") && can.approve) steps.push("generate");
   if (["draft", "submitted", "approved"].includes(status) && (isCreator ? can.create : can.cancel)) steps.push("cancel");
-  if (steps.length === 0) return null;
+  if (steps.length === 0 && !compact) return null;
   const run = { refresh: refreshRunAction, submit: submitRunAction, approve: approveRunAction, generate: generateRunAction };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {steps.map((s) => (
-        <Button key={s} size="sm" variant={s === "cancel" ? "destructive" : s === "refresh" ? "outline" : "default"} onClick={() => setStep(s)}>
-          {t(`steps.${s}`)}
-        </Button>
-      ))}
-      {status === "submitted" && isCreator && can.approve && <span className="self-center text-xs text-muted-foreground">{t("needsSomeoneElse")}</span>}
+    <div className={compact ? "flex justify-end gap-0.5" : "flex flex-wrap gap-2"}>
+      {compact ? (
+        <>
+          <Tooltip content={t("viewRun")}>
+            <Button asChild variant="ghost" size="icon-sm" className="text-primary">
+              <Link href={`/billing/runs/${id}`} aria-label={t("viewRun")}>
+                <Eye aria-hidden />
+              </Link>
+            </Button>
+          </Tooltip>
+          {steps.map((s) => {
+            const Icon = ICONS[s];
+            return (
+              <Tooltip key={s} content={t(`steps.${s}`)}>
+                <Button variant="ghost" size="icon-sm" className={s === "cancel" ? "text-danger" : undefined} aria-label={t(`steps.${s}`)} onClick={() => setStep(s)}>
+                  <Icon aria-hidden />
+                </Button>
+              </Tooltip>
+            );
+          })}
+        </>
+      ) : (
+        steps.map((s) => (
+          <Button key={s} size="sm" variant={s === "cancel" ? "destructive" : s === "refresh" ? "outline" : "default"} onClick={() => setStep(s)}>
+            {t(`steps.${s}`)}
+          </Button>
+        ))
+      )}
+      {!compact && status === "submitted" && isCreator && can.approve && <span className="self-center text-xs text-muted-foreground">{t("needsSomeoneElse")}</span>}
       <FormDialog
         open={step !== null}
         onOpenChange={(o) => {

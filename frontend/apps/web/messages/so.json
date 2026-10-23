@@ -897,7 +897,9 @@
       "result": "Natiijo",
       "device": "Qalab",
       "ok": "Guul",
-      "failed": "Fashil"
+      "failed": "Fashil",
+      "actions": "Ficillo",
+      "viewUser": "Eeg isticmaalahan"
     },
     "settings": {
       "title": "Dejinta",
@@ -1023,7 +1025,10 @@
     "filterAction": "Ficil, tusaale user.",
     "filterTable": "Shax",
     "filterRecord": "Aqoonsiga diiwaanka",
-    "apply": "Codso"
+    "apply": "Codso",
+    "actions": "Ficillo",
+    "openRecord": "Fur diiwaanka",
+    "recordHistory": "Isbeddel kasta oo diiwaankan ku dhacay"
   },
   "permissions": {
     "caption": "Shaxda ogolaanshaha",
@@ -2371,7 +2376,8 @@
     "viewInvoice": "Eeg biilka",
     "printInvoice": "Daabac biilka",
     "actions": "Ficillo",
-    "takePayment": "Ka qaado lacagta khasnajiga"
+    "takePayment": "Ka qaado lacagta khasnajiga",
+    "viewRun": "Eeg wareegga biilasha"
   },
   "pay": {
     "title": "Bixi biilkaaga",

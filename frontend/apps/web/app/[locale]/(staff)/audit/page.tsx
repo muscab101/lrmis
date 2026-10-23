@@ -1,15 +1,30 @@
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ScrollText } from "lucide-react";
+import { ExternalLink, History, ScrollText } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { z } from "zod";
 import { Pager } from "@/components/admin/pager";
+import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AuditFilters } from "./audit-filters";
 
 const PAGE = 50;
+
+/** Where an audited record lives in the app (tables without their own page have no Open). */
+const RECORD_PAGE: Record<string, string> = {
+  parcels: "/parcels/",
+  applications: "/applications/",
+  invoices: "/invoices/",
+  payments: "/payments/",
+  parties: "/owners/",
+  issued_documents: "/documents/",
+  transfers: "/transfers/",
+  billing_runs: "/billing/runs/",
+  profiles: "/admin/users/",
+};
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   action: z.string().max(60).default(""),
@@ -69,6 +84,7 @@ export default async function AuditPage({ params, searchParams }: { params: Prom
                 <TableHead>{t("action")}</TableHead>
                 <TableHead>{t("record")}</TableHead>
                 <TableHead>{t("changes")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -99,6 +115,25 @@ export default async function AuditPage({ params, searchParams }: { params: Prom
                         </div>
                         {r.request_id && <p className="mt-1 text-[11px] text-muted-foreground">request {r.request_id}</p>}
                       </details>
+                    </TableCell>
+                    <TableCell>
+                      {/* Open the record itself, or see every change to it. */}
+                      {r.record_id && (
+                        <div className="flex justify-end gap-0.5">
+                          {r.table_name && RECORD_PAGE[r.table_name] && (
+                            <Button variant="ghost" size="icon-sm" className="text-primary" asChild>
+                              <Link href={`${RECORD_PAGE[r.table_name]}${r.record_id}`} aria-label={t("openRecord")} title={t("openRecord")}>
+                                <ExternalLink aria-hidden />
+                              </Link>
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon-sm" asChild>
+                            <Link href={`/audit?${new URLSearchParams({ record: r.record_id })}`} aria-label={t("recordHistory")} title={t("recordHistory")}>
+                              <History aria-hidden />
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

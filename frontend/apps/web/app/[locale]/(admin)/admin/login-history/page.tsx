@@ -1,8 +1,9 @@
 import { StatusBadge } from "@dhulka/ui/badge";
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { History } from "lucide-react";
+import { History, UserRound } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { z } from "zod";
 import { Pager } from "@/components/admin/pager";
@@ -59,6 +60,7 @@ export default async function LoginHistoryPage({ params, searchParams }: { param
                 <TableHead>{t("result")}</TableHead>
                 <TableHead>IP</TableHead>
                 <TableHead className="hidden xl:table-cell">{t("device")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -74,6 +76,17 @@ export default async function LoginHistoryPage({ params, searchParams }: { param
                     <Mono className="text-xs">{e.ip ?? "—"}</Mono>
                   </TableCell>
                   <TableCell className="hidden max-w-xs truncate text-xs text-muted-foreground xl:table-cell">{e.user_agent}</TableCell>
+                  <TableCell>
+                    {e.email && (
+                      <div className="flex justify-end">
+                        <Button variant="ghost" size="icon-sm" className="text-primary" asChild>
+                          <Link href={`/admin/users?${new URLSearchParams({ q: e.email })}`} aria-label={t("viewUser")} title={t("viewUser")}>
+                            <UserRound aria-hidden />
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -897,7 +897,9 @@
       "result": "Result",
       "device": "Device",
       "ok": "Success",
-      "failed": "Failed"
+      "failed": "Failed",
+      "actions": "Actions",
+      "viewUser": "View this user"
     },
     "settings": {
       "title": "Settings",
@@ -1023,7 +1025,10 @@
     "filterAction": "Action, e.g. user.",
     "filterTable": "Table",
     "filterRecord": "Record id",
-    "apply": "Apply"
+    "apply": "Apply",
+    "actions": "Actions",
+    "openRecord": "Open the record",
+    "recordHistory": "Every change to this record"
   },
   "permissions": {
     "caption": "Permission matrix",
@@ -2371,7 +2376,8 @@
     "viewInvoice": "View invoice",
     "printInvoice": "Print invoice",
     "actions": "Actions",
-    "takePayment": "Take payment at the cashier"
+    "takePayment": "Take payment at the cashier",
+    "viewRun": "View run"
   },
   "pay": {
     "title": "Pay your invoice",

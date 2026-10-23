@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { FileStack } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NewRunButton } from "@/components/billing/new-run-button";
+import { RunActions } from "@/components/billing/run-actions";
 import { RunStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -48,6 +49,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ lo
                 <TableHead className="text-end">{t("invoices")}</TableHead>
                 <TableHead className="text-end">{t("total")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -65,6 +67,15 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ lo
                   <TableCell className="text-end text-sm tabular-nums">{usd(r.status === "issued" ? r.total : (r.preview.total ?? 0))}</TableCell>
                   <TableCell>
                     <RunStatusBadge status={r.status} />
+                  </TableCell>
+                  <TableCell>
+                    <RunActions
+                      compact
+                      id={r.id}
+                      status={r.status}
+                      isCreator={r.created_by === viewer.user.id}
+                      can={{ create: viewer.can("billing.create"), approve: viewer.can("billing.approve"), cancel: viewer.can("billing.cancel") }}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
