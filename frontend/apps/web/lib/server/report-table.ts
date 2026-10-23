@@ -34,6 +34,8 @@ export interface ReportTable {
   rows: Cell[][];
   /** Totals row (null where a column has no total), or null when the report has none. */
   totals: Cell[] | null;
+  /** Per row and column, the page a cell opens (the invoice, the parcel, ...), or null. Only the page uses these. */
+  links: (string | null)[][];
 }
 
 const num = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
@@ -49,6 +51,8 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
 
   let columns: Column[];
   let rows: Cell[][];
+  let links: (string | null)[][] = [];
+  const to = (base: string, id: string | null | undefined) => (id ? `/${base}/${id}` : null);
   switch (name) {
     case "revenue": {
       columns = [
@@ -173,6 +177,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         num(r.balance),
         label("billing.invoiceStatus", r.status),
       ]);
+      links = (data as InvoiceRow[]).map((r) => [to("invoices", r.invoice_id), to("parcels", r.parcel_id)]);
       break;
     }
     case "payments": {
@@ -198,6 +203,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         num(r.amount),
         label("payments.status", r.status),
       ]);
+      links = (data as PaymentRow[]).map((r) => [to("payments", r.payment_id), null, to("parcels", r.parcel_id)]);
       break;
     }
     case "certificates": {
@@ -221,6 +227,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         r.issued_by,
         label("documents.status", r.status),
       ]);
+      links = (data as CertificateRow[]).map((r) => [to("documents", r.document_id), null, to("parcels", r.parcel_id)]);
       break;
     }
     case "parcels": {
@@ -246,6 +253,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         r.status === "registered" ? label("stage.parcelStatus", r.status) : `${label("stage.parcelStatus", r.status)} · ${t("partialShort")}`,
         r.owners,
       ]);
+      links = (data as ParcelRow[]).map((r) => [to("parcels", r.parcel_id)]);
       break;
     }
     case "locations": {
@@ -296,6 +304,7 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
         num(r.area_m2),
         label("stage.parcelStatus", r.status),
       ]);
+      links = (data as OwnerRow[]).map((r) => [to("owners", r.party_id), null, null, null, null, to("parcels", r.parcel_id)]);
       break;
     }
   }
@@ -305,5 +314,5 @@ export async function reportTable(name: ReportName, data: unknown[], locale: str
     hasSum && rows.length > 0
       ? columns.map((c, i) => (c.sum ? Math.round(rows.reduce((s, r) => s + (Number(r[i]) || 0), 0) * 100) / 100 : i === 0 ? t("total") : null))
       : null;
-  return { title: t(`names.${name}`), columns, rows, totals };
+  return { title: t(`names.${name}`), columns, rows, totals, links };
 }

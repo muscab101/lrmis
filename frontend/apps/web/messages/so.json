@@ -3282,7 +3282,18 @@
     "period": "Muddada: {from} ilaa {to}",
     "generated": "Waxaa la sameeyay {at}, {by}",
     "rowsCount": "{count, plural, =1 {1 saf} other {# saf}}",
-    "showing": "Waxaa la muujiyay {shown} ee ugu horreeya {count} saf. Soo deji faylka si aad dhammaan u hesho."
+    "showing": "Waxaa la muujiyay {shown} ee ugu horreeya {count} saf. Soo deji faylka si aad dhammaan u hesho.",
+    "section": "Qayb",
+    "sector": "Waax",
+    "allSections": "Dhammaan qaybaha",
+    "allSectors": "Dhammaan waaxyaha",
+    "allNeighbourhoods": "Dhammaan xaafadaha",
+    "related": "Warbixinno la xiriira:",
+    "groups": {
+      "money": "Lacagta",
+      "land": "Dhulka",
+      "documents": "Dukumentiyada"
+    }
   },
   "messages": {
     "title": "Fariimaha",

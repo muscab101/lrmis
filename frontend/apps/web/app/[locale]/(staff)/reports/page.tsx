@@ -6,6 +6,7 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { BarChart3, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { AreaFilter } from "@/components/reports/area-filter";
 import { AssistantPanel } from "@/components/reports/assistant-panel";
 import { BarChart } from "@/components/reports/bar-chart";
 import { GroupedBars } from "@/components/reports/charts";
@@ -14,11 +15,15 @@ import { requirePermission } from "@/lib/server/auth";
 import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table";
 import {
   accountTotals,
+  AREA_REPORTS,
   type BillingRow,
   DISTRICT_REPORTS,
   PARCEL_KINDS,
   parcelKind,
+  RELATED_REPORTS,
+  REPORT_GROUPS,
   REPORTS,
+  reportArea,
   SNAPSHOT_REPORTS,
   reportRange,
   type IncomeRow,
@@ -31,6 +36,7 @@ import {
   type RevenueRow,
 } from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
+import { zonePlaces } from "@/lib/server/zones";
 
 export async function generateMetadata() {
   const t = await getTranslations("reports");
@@ -48,9 +54,22 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const report = (REPORTS as readonly string[]).includes(sp.r ?? "") ? (sp.r as ReportName) : "revenue";
   const { from, to } = reportRange(sp);
   const districts = await listDistricts();
-  const district = districts.some((d) => d.id === sp.district) ? sp.district! : "";
+  const places = await zonePlaces(districts.map((d) => d.id));
+  // Each level must sit inside the one above it; anything else is dropped.
+  const a = reportArea(sp);
+  const district = districts.length === 1 ? districts[0]!.id : districts.some((d) => d.id === a.district) ? a.district! : "";
+  const section = places.sections.find((x) => x.id === a.section && x.parent === district)?.id ?? "";
+  const sector = places.sectors.find((x) => x.id === a.sector && x.parent === section)?.id ?? "";
+  const nbhd = places.neighbourhoods.find((x) => x.id === a.neighbourhood && x.parent === sector)?.id ?? "";
   const kind = parcelKind(sp.kind);
-  const rows = await runReport(report, { from, to, district: district || null, kind });
+  const usesArea = AREA_REPORTS.includes(report);
+  const rows = await runReport(report, {
+    from,
+    to,
+    district: district || null,
+    kind,
+    ...(usesArea ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null } : {}),
+  });
   const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
   const usd0 = (n: number) => format.number(n, { style: "currency", currency: "USD", notation: "compact" });
   const name = (r: { district_so: string; district_en: string }) => (lang === "so" ? r.district_so : r.district_en);
@@ -60,8 +79,29 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     lang,
     ...(usesRange ? { from, to } : {}),
     ...(usesDistrict && district ? { district } : {}),
+    ...(usesArea && section ? { section } : {}),
+    ...(usesArea && sector ? { sector } : {}),
+    ...(usesArea && nbhd ? { nbhd } : {}),
     ...(report === "parcels" ? { kind } : {}),
   }).toString();
+  /** The same filters on another report, so moving between related reports keeps the place and the period. */
+  const reportHref = (r: ReportName, over: Record<string, string> = {}) =>
+    `/reports?${new URLSearchParams({
+      r,
+      from,
+      to,
+      ...(district ? { district } : {}),
+      ...(section ? { section } : {}),
+      ...(sector ? { sector } : {}),
+      ...(nbhd ? { nbhd } : {}),
+      ...over,
+    }).toString()}`;
+  /** A district row opens that district's bills for the same period. */
+  const districtBills = (id: string, label: string) => (
+    <Link href={reportHref("invoices", { district: id, section: "", sector: "", nbhd: "" })} className="underline-offset-2 hover:underline">
+      {label}
+    </Link>
+  );
   const cell = (v: Cell, k: CellKind) =>
     v === null || v === ""
       ? "—"
@@ -122,9 +162,16 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <TableRow key={i}>
                 {r.map((v, j) => {
                   const k = table.columns[j]!.kind;
+                  const href = table.links[i]?.[j];
                   return (
                     <TableCell key={j} className={`text-sm ${right(k) ? "text-end tabular-nums" : ""} ${k === "mono" ? "font-mono text-xs whitespace-nowrap" : ""}`}>
-                      {cell(v, k)}
+                      {href && v !== null && v !== "" ? (
+                        <Link href={href} className="text-primary underline-offset-2 hover:underline">
+                          {cell(v, k)}
+                        </Link>
+                      ) : (
+                        cell(v, k)
+                      )}
                     </TableCell>
                   );
                 })}
@@ -299,7 +346,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           <TableBody>
             {r.map((x) => (
               <TableRow key={x.district_id}>
-                <TableCell className="text-sm">{name(x)}</TableCell>
+                <TableCell className="text-sm">{districtBills(x.district_id, name(x))}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{x.invoices}</TableCell>
                 {cols.map((c) => (
                   <TableCell key={c} className={`text-end text-sm tabular-nums ${c === "total" ? "font-medium" : ""}`}>
@@ -330,7 +377,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
         <TableBody>
           {r.map((x) => (
             <TableRow key={x.district_id}>
-              <TableCell className="text-sm">{name(x)}</TableCell>
+              <TableCell className="text-sm">{districtBills(x.district_id, name(x))}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{x.invoices}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{usd(x.billed)}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{usd(x.collected)}</TableCell>
@@ -404,15 +451,22 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")}>
-        <nav className="flex gap-5 overflow-x-auto text-sm">
-          {REPORTS.map((r) => (
-            <Link
-              key={r}
-              href={`/reports?r=${r}&from=${from}&to=${to}${district ? `&district=${district}` : ""}`}
-              className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${report === r ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-            >
-              {t(`names.${r}`)}
-            </Link>
+        <nav className="flex gap-8 overflow-x-auto text-sm">
+          {REPORT_GROUPS.map((g) => (
+            <div key={g.key} className="shrink-0">
+              <p className="mb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{t(`groups.${g.key}`)}</p>
+              <div className="flex gap-4">
+                {g.reports.map((r) => (
+                  <Link
+                    key={r}
+                    href={reportHref(r)}
+                    className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${report === r ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {t(`names.${r}`)}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </PageHeader>
@@ -432,7 +486,17 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 </label>
               </>
             )}
-            {usesDistrict && districts.length > 1 && (
+            {usesArea && (
+              <AreaFilter
+                key={`${district}/${section}/${sector}/${nbhd}`}
+                districts={districts}
+                sections={places.sections}
+                sectors={places.sectors}
+                neighbourhoods={places.neighbourhoods}
+                initial={{ district, section, sector, nbhd }}
+              />
+            )}
+            {usesDistrict && !usesArea && districts.length > 1 && (
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("district")}</span>
                 <NativeSelect name="district" defaultValue={district} className="w-auto min-w-44">
@@ -483,6 +547,14 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               </div>
             )}
           </form>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">{t("related")}</span>
+            {RELATED_REPORTS[report].map((r) => (
+              <Link key={r} href={reportHref(r)} className="rounded-full border px-2.5 py-0.5 hover:bg-muted">
+                {t(`names.${r}`)}
+              </Link>
+            ))}
+          </div>
           <Card className="overflow-hidden">{body}</Card>
           <p className="text-xs text-muted-foreground">{t(`notes.${report}`)}</p>
         </div>

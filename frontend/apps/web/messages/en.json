@@ -3282,7 +3282,18 @@
     "period": "Period: {from} to {to}",
     "generated": "Generated {at} by {by}",
     "rowsCount": "{count, plural, =1 {1 row} other {# rows}}",
-    "showing": "Showing the first {shown} of {count} rows. Download the file for all of them."
+    "showing": "Showing the first {shown} of {count} rows. Download the file for all of them.",
+    "section": "Section",
+    "sector": "Sector",
+    "allSections": "All sections",
+    "allSectors": "All sectors",
+    "allNeighbourhoods": "All neighbourhoods",
+    "related": "Related reports:",
+    "groups": {
+      "money": "Money",
+      "land": "Land",
+      "documents": "Documents"
+    }
   },
   "messages": {
     "title": "Messages",

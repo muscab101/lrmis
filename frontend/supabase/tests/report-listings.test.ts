@@ -8,6 +8,7 @@ let registrar: string;
 let agent: string;
 let hodan: string;
 let karaan: string;
+let area: { section: string; sector: string; nbhd: string; otherSection: string };
 
 beforeAll(async () => {
   db = await createDb();
@@ -22,6 +23,8 @@ beforeAll(async () => {
      values ($1,'012','Taleex','Taleh', extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson($2), 4326))) returning id`,
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
+  const otherSection = await scalar<string>(db, `insert into public.sections (district_id, code, name_so, name_en) values ($1,'S2','S2','S2') returning id`, [hodan]);
+  area = { section, sector, nbhd, otherSection };
   const admin = await bootstrapSuperAdmin(db);
   exec = await createStaff(db, admin, "exec@gmail.com", ["executive"], "all");
   registrar = await createStaff(db, admin, "reg@gmail.com", ["registrar"], [karaan]);
@@ -111,5 +114,23 @@ describe("report listings", () => {
     const locs = await asUser(db, registrar, (tx) => tx.query<{ code: string }>(`select * from public.report_locations()`));
     expect(locs.rows.map((x) => x.code)).toEqual(["KRN"]);
     await expect(asUser(db, agent, (tx) => tx.query(`select * from public.report_owners()`))).rejects.toThrow(/^PERMISSION_DENIED/);
+  });
+
+  it("narrows by section, sector and neighbourhood, and returns the ids rows link to", async () => {
+    const inv = (args: string, params: unknown[]) =>
+      asUser(db, exec, (tx) => tx.query<{ invoice_id: string; parcel_id: string; pun: string }>(`select * from public.report_invoices(${range}, null, ${args})`, params));
+    const inArea = await inv("$1, $2, $3", [area.section, area.sector, area.nbhd]);
+    expect(inArea.rows).toHaveLength(1);
+    expect(inArea.rows[0]!.invoice_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(inArea.rows[0]!.parcel_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect((await inv("$1, null, null", [area.otherSection])).rows).toHaveLength(0);
+    const parcels = await asUser(db, exec, (tx) => tx.query(`select * from public.report_parcels(null, 'all', $1)`, [area.otherSection]));
+    expect(parcels.rows).toHaveLength(0);
+    const billing = await asUser(db, exec, (tx) => tx.query(`select * from public.report_billing(${range}, null, null, null, $1)`, [area.nbhd]));
+    expect(billing.rows).toHaveLength(1);
+    const locs = await asUser(db, exec, (tx) => tx.query<{ level: string }>(`select * from public.report_locations(null, $1)`, [area.section]));
+    expect(locs.rows.map((r) => r.level)).toEqual(["section", "sector", "neighbourhood"]);
+    const owners = await asUser(db, exec, (tx) => tx.query<{ party_id: string }>(`select * from public.report_owners(null, null, $1)`, [area.sector]));
+    expect(owners.rows).toHaveLength(1);
   });
 });
