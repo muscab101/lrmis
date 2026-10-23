@@ -3698,7 +3698,8 @@
       "closed": "Aagga waa la xiray.",
       "showClosed": "Sidoo kale muuji aagagga dhammaaday",
       "hideClosed": "Muuji aagagga furan oo keliya",
-      "open": "Fur"
+      "open": "Fur",
+      "addOwner": "Ku dar milkiile"
     },
     "zone": {
       "title": "Aagga sahanka",

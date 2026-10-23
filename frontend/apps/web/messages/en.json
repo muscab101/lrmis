@@ -3698,7 +3698,8 @@
       "closed": "Zone closed.",
       "showClosed": "Show finished zones too",
       "hideClosed": "Show open zones only",
-      "open": "Open"
+      "open": "Open",
+      "addOwner": "Add owner"
     },
     "zone": {
       "title": "Survey zone",

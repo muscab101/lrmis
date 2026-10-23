@@ -3,7 +3,7 @@
 import { Button } from "@dhulka/ui/button";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { CheckCheck, MapPinPlus, Route, X } from "lucide-react";
+import { CheckCheck, MapPinPlus, Route, UserPlus, X } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { closeZoneAction } from "@/app/[locale]/(staff)/parcels/yet-to-register/actions";
@@ -12,7 +12,20 @@ import { Link } from "@/i18n/navigation";
 import type { ZoneRow } from "@/lib/server/zones";
 
 /** Assigned zones with their progress (houses recorded since assignment out of the target). */
-export function ZoneTable({ rows, me, canManage, canAddLand }: { rows: ZoneRow[]; me: string; canManage: boolean; canAddLand: boolean }) {
+export function ZoneTable({
+  rows,
+  me,
+  canManage,
+  canAddLand,
+  canAddOwner = false,
+}: {
+  rows: ZoneRow[];
+  me: string;
+  canManage: boolean;
+  canAddLand: boolean;
+  /** The zone's surveyor enters an owner (full owner form), then their land in the zone. */
+  canAddOwner?: boolean;
+}) {
   const t = useTranslations("yetToRegister.zones");
   const locale = useLocale();
   const format = useFormatter();
@@ -68,6 +81,14 @@ export function ZoneTable({ rows, me, canManage, canAddLand }: { rows: ZoneRow[]
                         <Link href={`/parcels/new?${new URLSearchParams({ nbhd: z.neighbourhood_id, zone: z.id })}`}>
                           <MapPinPlus aria-hidden />
                           {t("addLand")}
+                        </Link>
+                      </Button>
+                    )}
+                    {z.status === "open" && mine && canAddOwner && (
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/owners/new?${new URLSearchParams({ zone: z.id, nbhd: z.neighbourhood_id })}`}>
+                          <UserPlus aria-hidden />
+                          {t("addOwner")}
                         </Link>
                       </Button>
                     )}
