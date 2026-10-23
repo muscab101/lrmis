@@ -2825,7 +2825,9 @@
     "cardId": "ID",
     "cardMapTitle": "Banadir Region",
     "cardBackShort": "Scan to check it is valid.",
-    "cardView": "View card"
+    "cardView": "View card",
+    "certificateView": "View certificate",
+    "actions": "Actions"
   },
   "verify": {
     "title": "Verify a certificate",

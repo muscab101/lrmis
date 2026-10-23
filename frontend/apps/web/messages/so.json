@@ -2825,7 +2825,9 @@
     "cardId": "Aqoonsi",
     "cardMapTitle": "Gobolka Banaadir",
     "cardBackShort": "Sawir si aad u hubiso inuu ansax yahay.",
-    "cardView": "Eeg kaarka"
+    "cardView": "Eeg kaarka",
+    "certificateView": "Eeg shahaadada",
+    "actions": "Ficillo"
   },
   "verify": {
     "title": "Hubi shahaado",

@@ -13,14 +13,27 @@ import { Link, useRouter } from "@/i18n/navigation";
 
 type Dialog = "reprint" | "direct" | "cancel";
 
-/** An ID card's keys on the ID cards list: view, print, ask for a reprint, reprint now (super admin), cancel. */
-export function CardRowActions({ id, serial, status, can }: { id: string; serial: string; status: string; can: { reprint: boolean; direct: boolean; cancel: boolean } }) {
+/** A document's keys on the ID cards and Certificates lists: view, print, ask for a reprint, reprint now (super admin), cancel. */
+export function CardRowActions({
+  id,
+  serial,
+  status,
+  can,
+  kind = "id_card",
+}: {
+  id: string;
+  serial: string;
+  status: string;
+  can: { reprint: boolean; direct: boolean; cancel: boolean };
+  kind?: "id_card" | "certificate";
+}) {
   const t = useTranslations("documents");
   const router = useRouter();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [reason, setReason] = useState("");
   const valid = status === "valid";
   const key = (label: string, node: React.ReactElement) => <Tooltip content={label}>{node}</Tooltip>;
+  const viewLabel = kind === "certificate" ? t("certificateView") : t("cardView");
   const copy: Record<Dialog, { title: string; body: string; confirm: string; success: string }> = {
     reprint: { title: t("requestReprint"), body: t("reprintBody"), confirm: t("submitRequest"), success: t("reprintRequested") },
     direct: { title: t("directTitle"), body: t("directBody"), confirm: t("directConfirm"), success: t("directDone") },
@@ -29,9 +42,9 @@ export function CardRowActions({ id, serial, status, can }: { id: string; serial
   return (
     <div className="flex justify-end gap-0.5">
       {key(
-        t("cardView"),
+        viewLabel,
         <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
-          <Link href={`/documents/${id}`} aria-label={t("cardView")}>
+          <Link href={`/documents/${id}`} aria-label={viewLabel}>
             <Eye aria-hidden />
           </Link>
         </Button>,

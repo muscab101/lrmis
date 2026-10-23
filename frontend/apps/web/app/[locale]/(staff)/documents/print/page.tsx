@@ -4,6 +4,7 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { BadgeCheck } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { CardRowActions } from "@/components/documents/card-row-actions";
 import { IssueQueue, PrintQueue, ReprintQueue } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -72,11 +73,10 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
             <TableHeader>
               <TableRow>
                 <TableHead>{t("serial")}</TableHead>
-                <TableHead>{t("type")}</TableHead>
                 <TableHead>PUN</TableHead>
-                <TableHead>{t("holder")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
-                <TableHead className="text-end">{t("issuedOn")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("issuedOn")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -87,16 +87,27 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
                       <Mono>{d.serial}</Mono>
                     </Link>
                   </TableCell>
-                  <TableCell className="text-sm">{t(`types.${d.type}`)}</TableCell>
                   <TableCell>
                     <Mono>{d.parcel?.pun}</Mono>
                   </TableCell>
-                  <TableCell className="text-sm">{d.party?.full_name ?? "—"}</TableCell>
                   <TableCell className="text-sm">
                     {t(`status.${d.status}`)}
                     {d.status === "valid" && <span className="ms-2 text-xs text-muted-foreground">{d.print_count > 0 ? t("printed") : t("notPrinted")}</span>}
                   </TableCell>
-                  <TableCell className="text-end text-xs text-muted-foreground">{format.dateTime(new Date(d.issued_at), { dateStyle: "medium" })}</TableCell>
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">{format.dateTime(new Date(d.issued_at), { dateStyle: "medium" })}</TableCell>
+                  <TableCell>
+                    <CardRowActions
+                      kind="certificate"
+                      id={d.id}
+                      serial={d.serial}
+                      status={d.status}
+                      can={{
+                        reprint: viewer.can("certificates.reprint"),
+                        direct: viewer.isSuperAdmin,
+                        cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id,
+                      }}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
