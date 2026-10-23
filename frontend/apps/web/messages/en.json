@@ -1101,7 +1101,10 @@
       "users_reset_password": "Reset password",
       "users_force_signout": "Force sign-out",
       "roles_manage": "Manage",
-      "parcels_lock": "Lock / unlock"
+      "parcels_lock": "Lock / unlock",
+      "parcels_yet_to_register": "Yet to register",
+      "certificates_id_cards": "ID cards",
+      "reports_assistant": "Assistant"
     }
   },
   "design": {

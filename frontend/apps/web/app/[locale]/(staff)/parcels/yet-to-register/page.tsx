@@ -29,7 +29,7 @@ type Tab = (typeof TABS)[number];
 export default async function YetToRegisterPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "parcels.view");
+  const viewer = await requirePermission(locale, "parcels.yet_to_register");
   const t = await getTranslations("yetToRegister");
   const format = await getFormatter();
   const lang = await getLocale();

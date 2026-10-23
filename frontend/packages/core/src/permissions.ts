@@ -57,6 +57,9 @@ export const SPECIAL_PERMISSIONS = [
   "roles.manage",
   "applications.capture_location",
   "parcels.lock",
+  "parcels.yet_to_register",
+  "certificates.id_cards",
+  "reports.assistant",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

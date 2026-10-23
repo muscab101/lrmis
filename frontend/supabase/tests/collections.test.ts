@@ -338,7 +338,16 @@ describe("desk users only see their own desk", () => {
     expect(await total(null)).toBe(125);
   });
 
-  it("cashiers can open Yet to register", async () => {
-    expect(await asUser(db, cashier, (tx) => scalar<boolean>(tx, `select public.has_permission('parcels.view')`))).toBe(true);
+  it("cashiers can open Yet to register (its own permission), not the Parcels list", async () => {
+    expect(await asUser(db, cashier, (tx) => scalar<boolean>(tx, `select public.has_permission('parcels.yet_to_register')`))).toBe(true);
+    expect(await asUser(db, cashier, (tx) => scalar<boolean>(tx, `select public.has_permission('parcels.view')`))).toBe(false);
+    const r = await asUser(db, cashier, (tx) => tx.query(`select * from public.neighbourhood_registration_status()`));
+    expect(r.rows.length).toBeGreaterThan(0);
+  });
+
+  it("roles that could open those pages keep them through the new permissions", async () => {
+    expect(await asUser(db, officer, (tx) => scalar<boolean>(tx, `select public.has_permission('reports.assistant')`))).toBe(true);
+    // Roles that couldn't open the reports don't get the assistant.
+    expect(await asUser(db, cashier, (tx) => scalar<boolean>(tx, `select public.has_permission('reports.assistant')`))).toBe(false);
   });
 });

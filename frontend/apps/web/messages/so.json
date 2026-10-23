@@ -1101,7 +1101,10 @@
       "users_reset_password": "Dib u deji furaha",
       "users_force_signout": "Ka saar meel kasta",
       "roles_manage": "Maamul",
-      "parcels_lock": "Xir / fur"
+      "parcels_lock": "Xir / fur",
+      "parcels_yet_to_register": "Weli lama diiwaangelin",
+      "certificates_id_cards": "Kaarka aqoonsiga",
+      "reports_assistant": "Kaaliyaha"
     }
   },
   "design": {

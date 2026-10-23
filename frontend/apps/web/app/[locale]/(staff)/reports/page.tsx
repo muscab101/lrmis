@@ -736,7 +736,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           <Card className="overflow-hidden">{body}</Card>
           <p className="text-xs text-muted-foreground">{t(`notes.${report}`)}</p>
         </div>
-        <AssistantPanel />
+        {viewer.can("reports.assistant") && <AssistantPanel />}
       </div>
     </>
   );

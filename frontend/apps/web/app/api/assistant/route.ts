@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
-  const { data: ok } = await supabase.rpc("has_permission", { p_key: "reports.view" });
+  const { data: ok } = await supabase.rpc("has_permission", { p_key: "reports.assistant" });
   if (!ok) return NextResponse.json({ code: "PERMISSION_DENIED" }, { status: 403 });
   if (!assistantConfigured()) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
   const parsed = body.safeParse(await request.json().catch(() => null));

@@ -23,7 +23,7 @@ type Tab = (typeof TABS)[number];
 export default async function IdCardsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "certificates.view");
+  const viewer = await requirePermission(locale, "certificates.id_cards");
   const t = await getTranslations("idCards");
   const td = await getTranslations("documents");
   const format = await getFormatter();
