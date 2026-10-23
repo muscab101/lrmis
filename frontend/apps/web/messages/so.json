@@ -2556,7 +2556,18 @@
     "discountApplied": "Dhimista bixinta hore waa la dabaqay: {amount}.",
     "thisShift": "Wareeggan",
     "cashInDrawer": "Lacagta khaanadda: {amount}",
-    "notYetRegistered": "weli lama diiwaangelin"
+    "notYetRegistered": "weli lama diiwaangelin",
+    "collect": {
+      "title": "Lacagta la ururinayo",
+      "subtitle": "Guryaha la diiwaangeliyey ee degmadaada oo weli lacag lagu leeyahay. Halkan ka qaado lacag caddaan ah, ama lacag kaar ah oo Stripe ah.",
+      "openShiftFirst": "Fur shaqadaada kor si aad lacag caddaan ah u qaadato. Lacagta kaarka waxay Stripe ka furaysaa tab cusub.",
+      "summary": "{houses, plural, =1 {1 guri} other {# guri}} · {amount} la bixinayo",
+      "empty": "Wax la ururiyo ma jiraan",
+      "emptyBody": "Guri kasta oo la diiwaangeliyey ee degmadaada wuu bixiyay.",
+      "house": "Guriga {no}",
+      "cash": "Caddaan",
+      "card": "Kaar (Stripe)"
+    }
   },
   "accounting": {
     "title": "Xisaabaadka",

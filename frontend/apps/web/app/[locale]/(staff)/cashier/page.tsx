@@ -3,9 +3,12 @@ import { Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { OpenShift, TakePayment } from "@/components/payments/cashier-desk";
+import { ToCollect } from "@/components/payments/to-collect";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { housesToCollect } from "@/lib/server/collect";
 import { listPayments, listPointsOfSale, myOpenShift } from "@/lib/server/payments";
+import { getProvider } from "@/lib/server/providers";
 
 export async function generateMetadata() {
   const t = await getTranslations("payments");
@@ -19,6 +22,9 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
   const t = await getTranslations("payments");
   const format = await getFormatter();
   const shift = await myOpenShift();
+  const find = ((await searchParams).find ?? "").slice(0, 40);
+  // Every registered house in the district that still owes: the cashier collects from this list.
+  const houses = await housesToCollect();
   const [points, taken] = await Promise.all([shift ? [] : listPointsOfSale(), shift ? listPayments({ shiftId: shift.id, status: "any" }) : []]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const cash = taken.filter((p) => p.method === "cash" && p.status !== "reversed").reduce((s, p) => s + Number(p.amount_base), 0);
@@ -29,7 +35,8 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
         <OpenShift points={points} />
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-          <TakePayment shift={shift} initialFind={((await searchParams).find ?? "").slice(0, 40)} />
+          {/* Keyed by ?find so a Cash link from To collect loads that bill even on the same page. */}
+          <TakePayment key={find} shift={shift} initialFind={find} />
           <Card className="h-fit overflow-hidden">
             <div className="flex items-center justify-between border-b p-4 text-sm">
               <span className="font-medium">{t("thisShift")}</span>
@@ -62,6 +69,7 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
           </Card>
         </div>
       )}
+      <ToCollect houses={houses} shiftOpen={!!shift} cardEnabled={getProvider("stripe")?.configured() ?? false} />
     </>
   );
 }
