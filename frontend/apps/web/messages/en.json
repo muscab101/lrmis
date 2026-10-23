@@ -80,7 +80,8 @@
       "health": "System health",
       "assistant": "AI assistant",
       "yetToRegister": "Yet to register",
-      "idCards": "ID cards"
+      "idCards": "ID cards",
+      "collections": "Collections"
     }
   },
   "status": {
@@ -222,7 +223,11 @@
       "zone": "That zone wasn't found.",
       "site_not_found": "A surveyor found no land at this place. Check the site again before registering.",
       "card_fee_unpaid": "This ID card's print bill isn't paid yet. The cashier takes the payment first.",
-      "card_fee_not_set": "Set the ID card print fee in Valuation → Fee types first."
+      "card_fee_not_set": "Set the ID card print fee in Valuation → Fee types first.",
+      "possible_duplicate": "The same amount was just taken for this house.",
+      "duplicate_reference": "This transaction reference was already used for another payment.",
+      "wallet": "Choose the wallet: EVC Plus, eDahab or ZAAD.",
+      "reference_required": "Enter the transaction reference."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -355,7 +360,11 @@
     "target": "Enter how many houses (1 or more).",
     "birth_date": "Enter a date of birth between 1900 and today.",
     "photo_too_big": "The photo is larger than 5 MB.",
-    "portrait_type": "Use a JPG, PNG or WEBP photo."
+    "portrait_type": "Use a JPG, PNG or WEBP photo.",
+    "wallet": "Choose the wallet: EVC Plus, eDahab or ZAAD.",
+    "reference_required": "Enter the transaction reference.",
+    "duplicate_reference": "This transaction reference was already used for another payment.",
+    "evidence_type": "Use a photo (JPG, PNG, WEBP) or a PDF."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -2606,7 +2615,18 @@
       "billExists": "Bill {number} is already open."
     },
     "viewPayment": "View payment",
-    "actions": "Actions"
+    "actions": "Actions",
+    "wallets": {
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD"
+    },
+    "transactionRef": "Transaction reference",
+    "transactionRefHint": "The ID on the payer's SMS or the bank slip.",
+    "possibleDuplicate": "This looks like a payment you just took",
+    "possibleDuplicateBody": "The same amount was taken for this house in the last 10 minutes. Take it again only if the payer really paid twice.",
+    "takeAgain": "Yes, take it again",
+    "dontTake": "Don't take it"
   },
   "accounting": {
     "title": "Accounting",
@@ -3651,5 +3671,40 @@
     "body_all": "Every card, cancelled and replaced ones too.",
     "empty": "No ID cards here",
     "emptyBody": "A card is issued for each owner when a parcel gets its certificate."
+  },
+  "collections": {
+    "title": "Collections",
+    "subtitle": "Check, correct and reconcile what district cashiers collected: cash, EVC Plus, eDahab, ZAAD and bank transfers.",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "cashier": "Cashier",
+    "expected": "Owed when paid",
+    "againstExpected": "Against what was owed",
+    "exact": "Paid exactly",
+    "overpaid": "Overpaid by {amount}",
+    "underpaid": "Underpaid by {amount}",
+    "tabs": {
+      "duplicates": "Duplicates"
+    },
+    "duplicates": {
+      "none": "No likely duplicates",
+      "noneBody": "No transaction reference is used twice, and no house paid the same amount twice in a day, in this period.",
+      "why": "Why it's flagged",
+      "kinds": {
+        "same_reference": "Same transaction reference",
+        "same_amount": "Same house, same amount, same day"
+      }
+    },
+    "evidence": {
+      "title": "Evidence",
+      "none": "No receipt, statement or SMS kept with this payment yet.",
+      "saved": "Evidence saved",
+      "note": "Note (optional)",
+      "notePlaceholder": "e.g. EVC SMS, bank slip page 2",
+      "uploading": "Uploading…",
+      "add": "Add a file",
+      "hint": "Photo or PDF of the receipt, the bank slip or the payer's SMS. Up to 10 MB."
+    }
   }
 }

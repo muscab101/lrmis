@@ -18,6 +18,9 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import type { ShiftRow } from "@/lib/server/payments";
 
+const WALLET_HOWS = ["evc_plus", "edahab", "zaad"] as const;
+type How = "cash" | "cheque" | "bank_transfer" | (typeof WALLET_HOWS)[number];
+
 type Found = Awaited<ReturnType<typeof findParcelAction>> extends { ok: true; data: infer D } | { ok: false } ? D : never;
 
 export function OpenShift({ points }: { points: { id: string; code: string; name: string }[] }) {
@@ -78,7 +81,10 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
   const [found, setFound] = useState<Found | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const [busy, setBusy] = useState(false);
-  const [v, setV] = useState({ invoiceId: "", amount: "", currency: "USD" as "USD" | "SOS", method: "cash" as "cash" | "cheque" | "bank_transfer", payerName: "", payerPhone: "", reference: "" });
+  // How they paid: cash, a wallet (EVC Plus, eDahab, ZAAD — mobile money), a bank transfer or a cheque.
+  const [v, setV] = useState({ invoiceId: "", amount: "", currency: "USD" as "USD" | "SOS", how: "cash" as How, payerName: "", payerPhone: "", reference: "" });
+  const [askDuplicate, setAskDuplicate] = useState(false);
+  const needsRef = v.how !== "cash" && v.how !== "cheque";
   const [receipt, setReceipt] = useState<{ id: string; no: string; leftover: number; discount: number } | null>(null);
   const [closing, setClosing] = useState(false);
   const [counted, setCounted] = useState("");
@@ -111,13 +117,31 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function pay() {
+  async function pay(confirmDuplicate = false) {
     if (!found) return;
     setBusy(true);
     setError(null);
-    const res = await takePaymentAction({ ...v, shiftId: shift.id, parcelId: found.parcel.id, invoiceId: v.invoiceId || null });
+    setAskDuplicate(false);
+    const wallet = (WALLET_HOWS as readonly string[]).includes(v.how) ? (v.how as (typeof WALLET_HOWS)[number]) : null;
+    const res = await takePaymentAction({
+      invoiceId: v.invoiceId || null,
+      amount: v.amount,
+      currency: v.currency,
+      method: wallet ? "mobile_money" : (v.how as "cash" | "cheque" | "bank_transfer"),
+      wallet,
+      payerName: v.payerName,
+      payerPhone: v.payerPhone,
+      reference: v.reference,
+      confirmDuplicate,
+      shiftId: shift.id,
+      parcelId: found.parcel.id,
+    });
     setBusy(false);
-    if (!res.ok) return setError(res.error);
+    if (!res.ok) {
+      // The same amount was just taken for this house: ask before taking it twice.
+      if (res.error.code === "CONFLICT" && res.error.values?.detail === "possible_duplicate") return setAskDuplicate(true);
+      return setError(res.error);
+    }
     setReceipt({ id: res.data!.payment_id, no: res.data!.receipt_no, leftover: Number(res.data!.leftover), discount: Number(res.data!.discount) });
     setFound(null);
     setPun("");
@@ -203,11 +227,16 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
                     <option value="SOS">SOS</option>
                   </NativeSelect>
                 </Field>
-                <Field id="method" label={t("method")}>
-                  <NativeSelect value={v.method} onChange={(e) => setV({ ...v, method: e.target.value as typeof v.method })}>
+                <Field id="method" label={t("method")} error={fe("wallet")}>
+                  <NativeSelect value={v.how} onChange={(e) => setV({ ...v, how: e.target.value as How })}>
                     <option value="cash">{t("methods.cash")}</option>
-                    <option value="cheque">{t("methods.cheque")}</option>
+                    {WALLET_HOWS.map((w) => (
+                      <option key={w} value={w}>
+                        {t(`wallets.${w}`)}
+                      </option>
+                    ))}
                     <option value="bank_transfer">{t("methods.bank_transfer")}</option>
+                    <option value="cheque">{t("methods.cheque")}</option>
                   </NativeSelect>
                 </Field>
                 {found.invoices.length > 1 && (
@@ -228,10 +257,23 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
                 <Field id="phone" label={t("payerPhone")}>
                   <Input inputMode="tel" value={v.payerPhone} onChange={(e) => setV({ ...v, payerPhone: e.target.value })} />
                 </Field>
-                <Field id="ref" label={t("referenceOptional")}>
-                  <Input value={v.reference} onChange={(e) => setV({ ...v, reference: e.target.value })} />
+                <Field id="ref" label={needsRef ? t("transactionRef") : t("referenceOptional")} hint={needsRef ? t("transactionRefHint") : undefined} error={fe("reference")} required={needsRef}>
+                  <Input value={v.reference} onChange={(e) => setV({ ...v, reference: e.target.value })} className="font-mono" autoComplete="off" />
                 </Field>
               </div>
+              {askDuplicate && (
+                <Alert tone="warning" title={t("possibleDuplicate")}>
+                  {t("possibleDuplicateBody")}
+                  <span className="mt-2 flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => void pay(true)}>
+                      {t("takeAgain")}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setAskDuplicate(false)}>
+                      {t("dontTake")}
+                    </Button>
+                  </span>
+                </Alert>
+              )}
               <div className="flex justify-end">
                 <Button loading={busy} onClick={() => void pay()}>
                   {t("takePayment")}

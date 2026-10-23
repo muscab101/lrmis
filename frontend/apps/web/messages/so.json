@@ -80,7 +80,8 @@
       "health": "Caafimaadka nidaamka",
       "assistant": "Kaaliyaha AI",
       "yetToRegister": "Weli lama diiwaangelin",
-      "idCards": "Kaararka aqoonsiga"
+      "idCards": "Kaararka aqoonsiga",
+      "collections": "Ururinta lacagta"
     }
   },
   "status": {
@@ -222,7 +223,11 @@
       "zone": "Aaggaas lama helin.",
       "site_not_found": "Sahamiyuhu dhul kama helin goobtan. Mar kale hubi goobta ka hor diiwaangelinta.",
       "card_fee_unpaid": "Biilka daabacaadda kaarkan weli lama bixin. Khasnajigu marka hore ha qaado lacagta.",
-      "card_fee_not_set": "Marka hore ku dhig khidmadda daabacaadda kaarka Qiimeynta → Noocyada khidmadaha."
+      "card_fee_not_set": "Marka hore ku dhig khidmadda daabacaadda kaarka Qiimeynta → Noocyada khidmadaha.",
+      "possible_duplicate": "Isla qaddarkan ayaa hadda guriga laga qaaday.",
+      "duplicate_reference": "Tixraacan lacag-bixin kale ayaa horay loogu isticmaalay.",
+      "wallet": "Dooro boorsada: EVC Plus, eDahab ama ZAAD.",
+      "reference_required": "Geli tixraaca lacag-bixinta."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -355,7 +360,11 @@
     "target": "Geli imisa guri (1 ama ka badan).",
     "birth_date": "Geli taariikh dhalasho u dhaxaysa 1900 iyo maanta.",
     "photo_too_big": "Sawirku wuu ka weyn yahay 5 MB.",
-    "portrait_type": "Isticmaal sawir JPG, PNG ama WEBP ah."
+    "portrait_type": "Isticmaal sawir JPG, PNG ama WEBP ah.",
+    "wallet": "Dooro boorsada: EVC Plus, eDahab ama ZAAD.",
+    "reference_required": "Geli tixraaca lacag-bixinta.",
+    "duplicate_reference": "Tixraacan lacag-bixin kale ayaa horay loogu isticmaalay.",
+    "evidence_type": "Isticmaal sawir (JPG, PNG, WEBP) ama PDF."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -2606,7 +2615,18 @@
       "billExists": "Biilka {number} horay ayuu u furnaa."
     },
     "viewPayment": "Eeg lacag-bixinta",
-    "actions": "Ficillo"
+    "actions": "Ficillo",
+    "wallets": {
+      "evc_plus": "EVC Plus",
+      "edahab": "eDahab",
+      "zaad": "ZAAD"
+    },
+    "transactionRef": "Tixraaca lacag-bixinta",
+    "transactionRefHint": "Lambarka ku qoran SMS-ka bixiyaha ama warqadda bangiga.",
+    "possibleDuplicate": "Tani waxay u egtahay lacag aad hadda qaadday",
+    "possibleDuplicateBody": "Isla qaddarkan ayaa guriga laga qaaday 10-kii daqiiqo ee la soo dhaafay. Mar kale qaado kaliya haddii bixiyuhu dhab ahaan laba jeer bixiyay.",
+    "takeAgain": "Haa, mar kale qaado",
+    "dontTake": "Ha qaadin"
   },
   "accounting": {
     "title": "Xisaabaadka",
@@ -3651,5 +3671,40 @@
     "body_all": "Kaar kasta, kuwa la joojiyay iyo kuwa la beddelay sidoo kale.",
     "empty": "Halkan kaar aqoonsi ma jiro",
     "emptyBody": "Kaar ayaa milkiile kasta loo bixiyaa marka dhulku helo shahaadadiisa."
+  },
+  "collections": {
+    "title": "Ururinta lacagta",
+    "subtitle": "Hubi, sax oo isku-dheeli lacagta ay khasnajiyada degmadu ururiyeen: caddaan, EVC Plus, eDahab, ZAAD iyo wareejinta bangiga.",
+    "from": "Laga bilaabo",
+    "to": "Ilaa",
+    "apply": "Codso",
+    "cashier": "Khasnaji",
+    "expected": "Lagu lahaa markii la bixiyay",
+    "againstExpected": "Marka la barbardhigo deynta",
+    "exact": "Si sax ah ayaa loo bixiyay",
+    "overpaid": "Waxaa lagu dhaafiyay {amount}",
+    "underpaid": "Waxaa ka dhimman {amount}",
+    "tabs": {
+      "duplicates": "Labanlaabmay"
+    },
+    "duplicates": {
+      "none": "Ma jiraan wax u eg labanlaab",
+      "noneBody": "Muddadan tixraac lacag-bixin laba jeer lama isticmaalin, gurina maalin keliya laba jeer isla qaddar ma bixin.",
+      "why": "Sababta loo calaamadeeyay",
+      "kinds": {
+        "same_reference": "Isla tixraaca lacag-bixinta",
+        "same_amount": "Isla guriga, isla qaddarka, isla maalinta"
+      }
+    },
+    "evidence": {
+      "title": "Caddeyn",
+      "none": "Weli rasiid, warbixin bangi ama SMS lama raacin lacag-bixintan.",
+      "saved": "Caddeynta waa la kaydiyay",
+      "note": "Qoraal (ikhtiyaari)",
+      "notePlaceholder": "tusaale SMS-ka EVC, bogga 2aad ee warqadda bangiga",
+      "uploading": "Waa la soo gelinayaa…",
+      "add": "Ku dar fayl",
+      "hint": "Sawir ama PDF rasiidka, warqadda bangiga ama SMS-ka bixiyaha. Ilaa 10 MB."
+    }
   }
 }

@@ -70,6 +70,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "billing", href: "/billing/runs", icon: FileStack, permission: "billing.view" },
       { key: "invoices", href: "/invoices", icon: Receipt, permission: "invoices.view" },
       { key: "payments", href: "/payments", icon: Banknote, permission: "payments.view" },
+      { key: "collections", href: "/collections", icon: ShieldCheck, permission: "reconciliation.view" },
       { key: "cashier", href: "/cashier", icon: Wallet, permission: "cashier.view" },
       { key: "accounting", href: "/accounting", icon: Landmark, permission: "accounting.view" },
     ],

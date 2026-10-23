@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
+import { EVIDENCE_BUCKET } from "@/lib/server/collections";
+import { log } from "@/lib/server/log";
 import { parcelForCashier } from "@/lib/server/payments";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
 const money = z.coerce.number().positive("validation.amount").max(100_000_000, "validation.amount");
@@ -40,10 +43,13 @@ export const takePaymentAction = defineAction(
     invoiceId: z.uuid().nullable(),
     amount: money,
     currency: z.enum(["USD", "SOS"]),
-    method: z.enum(["cash", "cheque", "bank_transfer"]),
+    method: z.enum(["cash", "cheque", "bank_transfer", "mobile_money"]),
+    wallet: z.enum(["evc_plus", "edahab", "zaad"]).nullable().default(null),
     payerName: z.string().max(120).default(""),
     payerPhone: z.string().max(20).default(""),
-    reference: z.string().max(80).default(""),
+    reference: z.string().trim().max(80).default(""),
+    /** The same amount was just taken for this parcel; the cashier confirmed it is a second payment. */
+    confirmDuplicate: z.boolean().default(false),
   }),
   async (v, ctx) => {
     try {
@@ -57,16 +63,18 @@ export const takePaymentAction = defineAction(
               amount: v.amount,
               currency: v.currency,
               method: v.method,
+              wallet: v.method === "mobile_money" ? v.wallet : null,
               payer_name: v.payerName,
               payer_phone: v.payerPhone,
               reference: v.reference,
+              confirm_duplicate: v.confirmDuplicate,
             },
           }),
           "take payment",
         ) as { payment_id: string; receipt_no: string; allocated: number; discount: number; leftover: number },
       );
     } catch (err) {
-      field(err, { amount: "amount", no_fx_rate: "currency" });
+      field(err, { amount: "amount", no_fx_rate: "currency", wallet: "wallet", reference_required: "reference", duplicate_reference: "reference" });
     }
   },
 );
@@ -184,3 +192,29 @@ export const manualJournalAction = defineAction(
     }
   },
 );
+
+// ---- Evidence ----
+const EVIDENCE_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+
+/** Keep a receipt photo, statement page or SMS screenshot with a payment. */
+export async function uploadEvidenceAction(form: FormData) {
+  const handler = defineAction("payments.evidence", z.object({ paymentId: z.uuid(), note: z.string().trim().max(300).default("") }), async ({ paymentId, note }, ctx) => {
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) throw new AppFailure("VALIDATION", undefined, { file: ["validation.required"] });
+    if (file.size > 10 * 1024 * 1024) throw new AppFailure("VALIDATION", undefined, { file: ["validation.file_too_big"] });
+    if (!EVIDENCE_TYPES.includes(file.type)) throw new AppFailure("VALIDATION", undefined, { file: ["validation.evidence_type"] });
+    const path = `${paymentId}/${crypto.randomUUID()}.${file.type.split("/")[1]}`;
+    const admin = await createAdminClient();
+    const up = await admin.storage.from(EVIDENCE_BUCKET).upload(path, file, { contentType: file.type });
+    if (up.error) throw new Error(`evidence upload: ${up.error.message}`);
+    const res = await ctx.supabase.rpc("payment_add_evidence", { p_payment: paymentId, p_path: path, p_name: file.name, p_type: file.type, p_note: note });
+    if (res.error) {
+      const rm = await admin.storage.from(EVIDENCE_BUCKET).remove([path]);
+      if (rm.error) log("error", "payments.evidence_cleanup_failed", { requestId: ctx.requestId, path });
+      unwrap(res, "add evidence");
+    }
+    revalidatePath("/[locale]/payments/[id]", "page");
+    return null;
+  });
+  return handler({ paymentId: String(form.get("paymentId") ?? ""), note: String(form.get("note") ?? "") });
+}

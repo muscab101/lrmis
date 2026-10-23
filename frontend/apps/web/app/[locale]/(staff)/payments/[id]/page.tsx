@@ -2,9 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { EvidencePanel } from "@/components/collections/evidence-panel";
 import { PaymentActions } from "@/components/payments/payment-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { paymentExtras } from "@/lib/server/collections";
 import { getPayment } from "@/lib/server/payments";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -19,13 +21,25 @@ export default async function PaymentPage({ params }: { params: Promise<{ locale
   const viewer = await requirePermission(locale, "payments.view");
   const t = await getTranslations("payments");
   const format = await getFormatter();
-  const p = await getPayment(id);
-  if (!p) notFound();
+  const [p, x] = await Promise.all([getPayment(id), paymentExtras(id)]);
+  if (!p || !x) notFound();
+  const tc = await getTranslations("collections");
+  // Against what the payer owed when they paid: an overpayment leaves credit, an underpayment leaves a balance.
+  const gap = x.expected_amount === null ? null : Math.round((Number(x.amount_base) - Number(x.expected_amount)) * 100) / 100;
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const facts: [string, React.ReactNode][] = [
     [t("received"), format.dateTime(new Date(p.received_at), { dateStyle: "long", timeStyle: "short" })],
-    [t("method"), `${t(`methods.${p.method}`)}${p.provider ? ` · ${p.provider}` : ""}`],
+    [t("method"), x.wallet ? `${t("methods.mobile_money")} · ${t.has(`wallets.${x.wallet}`) ? t(`wallets.${x.wallet}`) : x.wallet}` : `${t(`methods.${p.method}`)}${p.provider ? ` · ${p.provider}` : ""}`],
     [t("amount"), p.currency === "USD" ? usd(p.amount) : `${format.number(Number(p.amount))} ${p.currency} @ ${Number(p.fx_rate)} = ${usd(p.amount_base)}`],
+    ...(x.expected_amount !== null
+      ? ([
+          [tc("expected"), usd(x.expected_amount)],
+          [
+            tc("againstExpected"),
+            gap === 0 ? tc("exact") : gap! > 0 ? <span key="g" className="text-status-pending">{tc("overpaid", { amount: usd(gap!) })}</span> : <span key="g" className="text-status-rejected">{tc("underpaid", { amount: usd(-gap!) })}</span>,
+          ],
+        ] as [string, React.ReactNode][])
+      : []),
     [t("pun"), p.parcel ? <Link key="p" href={`/parcels/${p.parcel.id}`} className="underline"><Mono>{p.parcel.pun}</Mono></Link> : "—"],
     [t("payerName"), [p.payer_name, p.payer_phone].filter(Boolean).join(" · ") || "—"],
     [t("reference"), p.reference ?? p.provider_ref ?? "—"],
@@ -94,6 +108,18 @@ export default async function PaymentPage({ params }: { params: Promise<{ locale
           </CardContent>
         </Card>
       </div>
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle className="text-base">{tc("evidence.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EvidencePanel
+            paymentId={p.id}
+            files={x.evidence}
+            canAdd={(x.created_by === viewer.user.id && viewer.can("payments.create")) || viewer.can("reconciliation.update") || viewer.can("payments.approve")}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
