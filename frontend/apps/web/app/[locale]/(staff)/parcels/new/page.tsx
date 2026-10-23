@@ -3,7 +3,7 @@ import { PageHeader } from "@dhulka/ui/misc";
 import { forbidden } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FieldLandForm } from "@/components/parcels/field-land-form";
-import { requirePermission } from "@/lib/server/auth";
+import { requireStaff } from "@/lib/server/auth";
 import { listPropertyTypes } from "@/lib/server/property-types";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
@@ -14,11 +14,12 @@ export async function generateMetadata() {
 }
 
 /** Surveyors (and admins) add land found in the field; it lands in Parcels → Partial registration. */
-export default async function AddFieldLandPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ nbhd?: string; zone?: string }> }) {
+export default async function AddFieldLandPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ nbhd?: string; zone?: string; owner?: string }> }) {
   const { locale } = await params;
-  const { nbhd, zone } = await searchParams;
+  const { nbhd, zone, owner } = await searchParams;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "parcels.view");
+  // Surveyors add land without seeing the whole Parcels list.
+  const viewer = await requireStaff(locale);
   if (!viewer.can("surveys.create") && !viewer.can("applications.create")) forbidden();
   const t = await getTranslations("parcels.fieldLand");
   const supabase = await createClient();
@@ -30,6 +31,10 @@ export default async function AddFieldLandPage({ params, searchParams }: { param
         | { id: string; district_id: string; code: string; name_so: string; name_en: string }
         | null)
     : null;
+  // From Add owner in a survey zone: the land is for that owner.
+  const ownerRow = owner && /^[0-9a-f-]{36}$/i.test(owner)
+    ? ((await supabase.from("parties").select("id, full_name, phone").eq("id", owner).maybeSingle()).data as { id: string; full_name: string; phone: string | null } | null)
+    : null;
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader title={t("title")} description={t("subtitle")} />
@@ -37,6 +42,7 @@ export default async function AddFieldLandPage({ params, searchParams }: { param
         <CardContent className="pt-5">
           <FieldLandForm districts={all.filter((d) => allowed.has(d.id))} grades={grades} start={start && allowed.has(start.district_id) ? start : null}
             returnTo={zone && /^[0-9a-f-]{36}$/i.test(zone) ? `/surveys/zones/${zone}` : undefined}
+            owner={ownerRow}
           />
         </CardContent>
       </Card>

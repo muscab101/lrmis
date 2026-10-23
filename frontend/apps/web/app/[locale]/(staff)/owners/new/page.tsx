@@ -5,8 +5,12 @@ import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
 import { NewOwnerForm } from "./new-owner-form";
 
-export default async function NewOwnerPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function NewOwnerPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ zone?: string; nbhd?: string }> }) {
   const { locale } = await params;
+  const { zone, nbhd } = await searchParams;
+  const uuid = /^[0-9a-f-]{36}$/i;
+  // From a survey zone: after saving, straight on to Add land in that zone for this owner.
+  const fromZone = zone && nbhd && uuid.test(zone) && uuid.test(nbhd) ? { zone, nbhd } : null;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "owners.create");
   const t = await getTranslations("owners");
@@ -16,7 +20,7 @@ export default async function NewOwnerPage({ params }: { params: Promise<{ local
       <PageHeader title={t("new")} description={t("newSubtitle")} />
       <Card>
         <CardContent>
-          <NewOwnerForm districts={districts} canApply={viewer.can("applications.create")} />
+          <NewOwnerForm districts={districts} canApply={viewer.can("applications.create")} fromZone={fromZone} />
         </CardContent>
       </Card>
     </div>

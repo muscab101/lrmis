@@ -1620,7 +1620,9 @@
       "uploading": "Uploading…",
       "saved": "Photo saved",
       "hint": "Passport-style, face to the camera. JPG, PNG or WEBP, up to 5 MB."
-    }
+    },
+    "saveAndAddLand": "Save and add their land",
+    "createdNextLand": "Owner saved. Now add their land in this zone."
   },
   "track": {
     "title": "Track an application",

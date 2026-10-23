@@ -56,9 +56,9 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                 </Link>
               </Button>
             )}
-            {open && viewer.can("owners.create") && (
+            {open && (mine || viewer.can("surveys.approve")) && viewer.can("owners.create") && (
               <Button asChild variant="outline">
-                <Link href="/owners/new">
+                <Link href={`/owners/new?${new URLSearchParams({ zone: zone.id, nbhd: zone.neighbourhood_id })}`}>
                   <UserPlus aria-hidden />
                   {t("addOwner")}
                 </Link>
@@ -111,9 +111,13 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                 <TableRow key={p.id}>
                   <TableCell className="text-sm font-medium">{p.house_no ?? "—"}</TableCell>
                   <TableCell>
-                    <Link href={`/parcels/${p.id}`} className="hover:text-primary">
+                    {viewer.can("parcels.view") ? (
+                      <Link href={`/parcels/${p.id}`} className="hover:text-primary">
+                        <Mono>{p.pun ?? p.application_number ?? tp("noPun")}</Mono>
+                      </Link>
+                    ) : (
                       <Mono>{p.pun ?? p.application_number ?? tp("noPun")}</Mono>
-                    </Link>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell>

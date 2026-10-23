@@ -120,4 +120,23 @@ describe("field land", () => {
     await db.query(`update public.parcels set pun = 'BNHDN01299', account_no = 'HDN0000099', status = 'registered', registered_at = now() where id = $1`, [out.parcel_id]);
     expect(await scalar<string | null>(db, `select registered_at from public.parties where id = $1`, [out.party_id])).not.toBeNull();
   });
+
+  it("a surveyor in their zone adds land for an owner entered with the full owner form, and sees the zone's houses", async () => {
+    const zoneSurveyor = await createStaff(db, await scalar<string>(db, `select user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`), "zone.surveyor@gmail.com", ["surveyor"], [hodan]);
+    await db.query(`insert into public.survey_zones (neighbourhood_id, district_id, surveyor_id, target) values ($1, $2, $3, 50)`, [nbhd, hodan, zoneSurveyor]);
+    // As on the live system: surveyors don't have parcels.view.
+    await db.query(`delete from public.role_permissions where permission_key = 'parcels.view' and role_id = (select id from public.roles where key = 'surveyor')`);
+    // Houses others recorded in the zone's neighbourhood are visible to the zone's surveyor.
+    const seen = await asUser(db, zoneSurveyor, (tx) => scalar<number>(tx, `select count(*)::int from public.parcels where neighbourhood_id = $1`, [nbhd]));
+    expect(seen).toBeGreaterThan(0);
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone, district_id, id_type, id_number) values ('Cabdi Nuur Xasan', '+252615550777', $1, 'passport', 'P-777') returning id`, [hodan]);
+    const out = await asUser(db, zoneSurveyor, (tx) =>
+      scalar<{ parcel_id: string; party_id: string }>(tx, `select public.field_land_create($1)`, [land({ house_no: "31", owner_name: null, owner_phone: null, owner_id: owner })]),
+    );
+    expect(out.party_id).toBe(owner);
+    expect(await scalar<string>(db, `select party_id from public.parcel_owners where parcel_id = $1`, [out.parcel_id])).toBe(owner);
+    // A surveyor without a zone there sees only the land they recorded themselves.
+    const mine = await asUser(db, surveyor, (tx) => scalar<number>(tx, `select count(*)::int from public.parcels where id = $1`, [out.parcel_id]));
+    expect(mine).toBe(0);
+  });
 });

@@ -72,10 +72,12 @@ export const addFieldLandAction = defineAction(
     houseNo: text(40),
     propertyType: text(40),
     landUse: text(40),
-    ownerName: z.string().trim().min(3, "validation.owner_name").max(200, "validation.too_long"),
+    /** An owner already entered with the full owner form (from a survey zone); else a new one from the name and phone. */
+    ownerId: z.uuid().nullable().default(null),
+    ownerName: z.string().trim().max(200, "validation.too_long").default(""),
     ownerPhone: optionalPhone,
     note: text(400),
-  }),
+  }).refine((v) => v.ownerId !== null || v.ownerName.length >= 3, { path: ["ownerName"], message: "validation.owner_name" }),
   async (v, ctx) => {
     try {
       const out = unwrap(
@@ -91,6 +93,7 @@ export const addFieldLandAction = defineAction(
             house_no: v.houseNo,
             property_type: v.propertyType,
             land_use: v.landUse,
+            owner_id: v.ownerId,
             owner_name: v.ownerName,
             owner_phone: v.ownerPhone,
             note: v.note,

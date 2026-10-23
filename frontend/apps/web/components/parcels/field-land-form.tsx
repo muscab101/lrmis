@@ -26,10 +26,12 @@ interface Props {
   start?: { id: string; district_id: string; code: string; name_so: string; name_en: string } | null;
   /** Where to go after saving (the survey zone it came from); else Parcels → Partial registration. */
   returnTo?: string;
+  /** The owner just entered with the full owner form: the land is theirs. */
+  owner?: { id: string; full_name: string; phone: string | null } | null;
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, start = null, returnTo }: Props) {
+export function FieldLandForm({ districts, grades, start = null, returnTo, owner = null }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -102,8 +104,9 @@ export function FieldLandForm({ districts, grades, start = null, returnTo }: Pro
       houseNo: f.houseNo,
       propertyType: f.grade,
       landUse: f.landUse,
-      ownerName: f.ownerName,
-      ownerPhone: f.ownerPhone,
+      ownerId: owner?.id ?? null,
+      ownerName: owner ? "" : f.ownerName,
+      ownerPhone: owner ? "" : f.ownerPhone,
       note: f.note,
     });
     setSaving(false);
@@ -194,14 +197,21 @@ export function FieldLandForm({ districts, grades, start = null, returnTo }: Pro
         </Field>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="ownerName" label={t("ownerName")} error={fe("ownerName")} required>
-          <Input value={f.ownerName} onChange={set("ownerName")} autoComplete="off" />
-        </Field>
-        <Field id="ownerPhone" label={t("ownerPhone")} hint={t("ownerPhoneHint")} error={fe("ownerPhone")}>
-          <Input type="tel" value={f.ownerPhone} onChange={set("ownerPhone")} placeholder="+252 61 123 4567" autoComplete="off" />
-        </Field>
-      </div>
+      {owner ? (
+        <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+          <span className="text-muted-foreground">{t("ownerName")}:</span> <span className="font-medium">{owner.full_name}</span>
+          {owner.phone && <span className="ms-2 font-mono text-xs text-muted-foreground">{owner.phone}</span>}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="ownerName" label={t("ownerName")} error={fe("ownerName")} required>
+            <Input value={f.ownerName} onChange={set("ownerName")} autoComplete="off" />
+          </Field>
+          <Field id="ownerPhone" label={t("ownerPhone")} hint={t("ownerPhoneHint")} error={fe("ownerPhone")}>
+            <Input type="tel" value={f.ownerPhone} onChange={set("ownerPhone")} placeholder="+252 61 123 4567" autoComplete="off" />
+          </Field>
+        </div>
+      )}
 
       <Field id="note" label={t("note")} error={fe("note")}>
         <Textarea rows={2} value={f.note} onChange={set("note")} />

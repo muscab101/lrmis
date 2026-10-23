@@ -1620,7 +1620,9 @@
       "uploading": "Waa la soo gelinayaa…",
       "saved": "Sawirka waa la kaydiyay",
       "hint": "Sawir baasaboor oo kale ah, wejiga kamaradda u jeeda. JPG, PNG ama WEBP, ilaa 5 MB."
-    }
+    },
+    "saveAndAddLand": "Kaydi oo ku dar dhulkiisa",
+    "createdNextLand": "Milkiilaha waa la kaydiyay. Hadda ku dar dhulkiisa aaggan."
   },
   "track": {
     "title": "Raadraac codsi",
