@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { log } from "@/lib/server/log";
@@ -29,7 +30,7 @@ export const startPaymentAction = defineAction(
   async (v, ctx) => {
     const provider = getProvider(v.provider);
     if (!provider || !provider.configured()) throw new AppFailure("VALIDATION", undefined, { provider: ["validation.provider"] });
-    let intent: { intent_id: string; amount: number; currency: string; invoice_number: string; pun: string };
+    let intent: { intent_id: string; amount: number; currency: string; invoice_number: string; pun: string | null };
     try {
       intent = unwrap(
         await ctx.supabase.rpc("payment_intent_create", { p_invoice: null, p_token: v.token, p_provider: v.provider, p_phone: v.phone || null }),
@@ -39,7 +40,9 @@ export const startPaymentAction = defineAction(
       if (err instanceof AppFailure && err.values?.detail === "phone") throw new AppFailure("VALIDATION", undefined, { phone: ["validation.phone_so"] });
       throw err;
     }
-    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    // Back to the site the payer started from; during development that may be another localhost port.
+    const origin = (await headers()).get("origin");
+    const site = origin && /^http:\/\/localhost:\d+$/.test(origin) ? origin : (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000");
     const result = await provider.createCheckout({
       intentId: intent.intent_id,
       invoiceNumber: intent.invoice_number,

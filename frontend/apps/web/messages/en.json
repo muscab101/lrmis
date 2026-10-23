@@ -2374,7 +2374,7 @@
     "amountDue": "Amount due",
     "due": "Due {date}",
     "howToPay": "How to pay",
-    "howToPayBody": "Pay by EVC Plus, Zaad, Sahal or eDahab with your PUN {pun} as the reference, or at any district cashier. Online payment opens here soon.",
+    "howToPayBody": "Pay here by card, or by EVC Plus, Zaad, Sahal or eDahab with {pun} as the reference, or at any district cashier.",
     "notFound": "Invoice not found",
     "notFoundBody": "The link may be mistyped, or the invoice was cancelled. Check the code on your paper invoice.",
     "paidInFull": "This invoice is paid in full. Thank you.",

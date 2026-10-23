@@ -14,7 +14,8 @@ export interface ProviderEvent {
 export interface CheckoutInput {
   intentId: string;
   invoiceNumber: string;
-  pun: string;
+  /** Null while the land has no PUN yet. */
+  pun: string | null;
   amount: number;
   currency: string;
   phone?: string;

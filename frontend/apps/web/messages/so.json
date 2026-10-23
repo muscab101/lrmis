@@ -2374,7 +2374,7 @@
     "amountDue": "Lacagta la bixinayo",
     "due": "Waqtiga {date}",
     "howToPay": "Sida loo bixiyo",
-    "howToPayBody": "Ku bixi EVC Plus, Zaad, Sahal ama eDahab adoo tixraac ka dhigaya PUN-kaaga {pun}, ama khasnajiga degmo kasta. Bixinta onlaynka ah dhowaan halkan ayay ka furmaysaa.",
+    "howToPayBody": "Halkan ku bixi kaar, ama EVC Plus, Zaad, Sahal ama eDahab adoo tixraac ahaan u isticmaalaya {pun}, ama khasnajiga degmo kasta.",
     "notFound": "Biilka lama helin",
     "notFoundBody": "Xiriirka waxaa laga yaabaa in si khalad ah loo qoray, ama biilka waa la joojiyay. Hubi koodhka biilkaaga warqadda ah.",
     "paidInFull": "Biilkan si buuxda ayaa loo bixiyay. Mahadsanid.",

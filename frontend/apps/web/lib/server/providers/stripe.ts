@@ -22,7 +22,8 @@ export const stripe: PaymentProvider = {
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": input.currency.toLowerCase(),
       "line_items[0][price_data][unit_amount]": String(Math.round(input.amount * 100)),
-      "line_items[0][price_data][product_data][name]": `${input.invoiceNumber} · ${input.pun}`,
+      // Land not registered yet has no PUN: show the invoice number alone.
+      "line_items[0][price_data][product_data][name]": input.pun ? `${input.invoiceNumber} · ${input.pun}` : input.invoiceNumber,
       client_reference_id: input.intentId,
       "metadata[intent_id]": input.intentId,
       "payment_intent_data[metadata][intent_id]": input.intentId,
