@@ -77,8 +77,10 @@ export const addFieldLandAction = defineAction(
     ownerName: z.string().trim().max(200, "validation.too_long").default(""),
     ownerPhone: optionalPhone,
     note: text(400),
-  }).refine((v) => v.ownerId !== null || v.ownerName.length >= 3, { path: ["ownerName"], message: "validation.owner_name" }),
+  }),
   async (v, ctx) => {
+    // Without an owner from the owner form, a name is needed.
+    if (v.ownerId === null && v.ownerName.length < 3) throw new AppFailure("VALIDATION", undefined, { ownerName: ["validation.owner_name"] });
     try {
       const out = unwrap(
         await ctx.supabase.rpc("field_land_create", {
