@@ -1,7 +1,8 @@
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft, Banknote, Eye, MapPinned } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -17,7 +18,8 @@ const FILTERS = ["submitted", "draft", "approved", "rejected", "cancelled", "any
 export default async function TransfersPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "transfers.view");
+  const viewer = await requirePermission(locale, "transfers.view");
+  const canCollect = viewer.can("cashier.view");
   const t = await getTranslations("legal");
   const format = await getFormatter();
   const sp = await searchParams;
@@ -51,6 +53,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
                 <TableHead>{t("to")}</TableHead>
                 <TableHead>{t("duty")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,6 +84,30 @@ export default async function TransfersPage({ params, searchParams }: { params: 
                     )}
                   </TableCell>
                   <TableCell className="text-sm">{t(`status.${r.status}`)}</TableCell>
+                  <TableCell>
+                    {/* View the transfer (approve, reject and the rest are there), its parcel, and take the duty. */}
+                    <div className="flex justify-end gap-0.5">
+                      <Button variant="ghost" size="icon-sm" className="text-primary" asChild>
+                        <Link href={`/transfers/${r.id}`} aria-label={t("viewTransfer")} title={t("viewTransfer")}>
+                          <Eye aria-hidden />
+                        </Link>
+                      </Button>
+                      {r.parcel && (
+                        <Button variant="ghost" size="icon-sm" asChild>
+                          <Link href={`/parcels/${r.parcel.id}`} aria-label={t("viewParcel")} title={t("viewParcel")}>
+                            <MapPinned aria-hidden />
+                          </Link>
+                        </Button>
+                      )}
+                      {canCollect && r.duty_invoice && Number(r.duty_invoice.balance) > 0 && (
+                        <Button variant="ghost" size="icon-sm" className="text-status-approved" asChild>
+                          <Link href={`/cashier?find=${encodeURIComponent(r.duty_invoice.number)}`} aria-label={t("takeDuty")} title={t("takeDuty")}>
+                            <Banknote aria-hidden />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

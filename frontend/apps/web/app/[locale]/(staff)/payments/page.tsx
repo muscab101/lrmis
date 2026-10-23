@@ -6,6 +6,7 @@ import { Banknote } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { BankPaymentButton, ProviderToggles, ReconcileButton, ReversalQueue, ShiftApprovals, UnmatchedList } from "@/components/payments/queues";
 import { Link } from "@/i18n/navigation";
+import { PaymentActions } from "@/components/payments/payment-actions";
 import { requirePermission } from "@/lib/server/auth";
 import { listPayments, listProviders, listReconBatches, listReversals, listShifts, paymentsCounts, reconLines } from "@/lib/server/payments";
 import { getProvider } from "@/lib/server/providers";
@@ -128,6 +129,7 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
                 <TableHead className="text-end">{t("amount")}</TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
                 <TableHead className="text-end">{t("received")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -148,6 +150,15 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
                   <TableCell className="text-end text-sm tabular-nums">{usd(p.amount_base)}</TableCell>
                   <TableCell className="text-sm">{t(`status.${p.status}`)}</TableCell>
                   <TableCell className="text-end text-xs text-muted-foreground">{format.dateTime(new Date(p.received_at), { dateStyle: "medium", timeStyle: "short" })}</TableCell>
+                  <TableCell>
+                    <PaymentActions
+                      compact
+                      id={p.id}
+                      status={p.status}
+                      unallocated={Number(p.unallocated)}
+                      can={{ reverse: viewer.can("payments.refund"), applyCredit: viewer.can("payments.create") }}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

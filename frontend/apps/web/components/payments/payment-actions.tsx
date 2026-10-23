@@ -3,35 +3,89 @@
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { Textarea } from "@dhulka/ui/input";
-import { Printer } from "lucide-react";
+import { Tooltip } from "@dhulka/ui/form-controls";
+import { Coins, Eye, Printer, Undo2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { applyCreditAction, requestReversalAction } from "@/app/[locale]/(staff)/payments/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link } from "@/i18n/navigation";
 
-export function PaymentActions({ id, status, unallocated, can }: { id: string; status: string; unallocated: number; can: { reverse: boolean; applyCredit: boolean } }) {
+/** A payment's keys. `compact`: icon buttons for a list row (View, Print receipt, Apply credit, Request reversal). */
+export function PaymentActions({
+  id,
+  status,
+  unallocated,
+  can,
+  compact = false,
+}: {
+  id: string;
+  status: string;
+  unallocated: number;
+  can: { reverse: boolean; applyCredit: boolean };
+  compact?: boolean;
+}) {
   const t = useTranslations("payments");
   const format = useFormatter();
   const [dialog, setDialog] = useState<null | "reverse" | "credit">(null);
   const [reason, setReason] = useState("");
+  const showCredit = status === "completed" && unallocated > 0 && can.applyCredit;
+  const showReverse = status !== "reversed" && can.reverse;
+  const key = (label: string, node: React.ReactElement) => <Tooltip content={label}>{node}</Tooltip>;
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="outline" asChild>
-        <Link href={`/payments/${id}/receipt`} target="_blank">
-          <Printer aria-hidden />
-          {t("printReceipt")}
-        </Link>
-      </Button>
-      {status === "completed" && unallocated > 0 && can.applyCredit && (
-        <Button size="sm" variant="outline" onClick={() => setDialog("credit")}>
-          {t("applyCredit")}
-        </Button>
-      )}
-      {status !== "reversed" && can.reverse && (
-        <Button size="sm" variant="destructive" onClick={() => setDialog("reverse")}>
-          {t("requestReversal")}
-        </Button>
+    <div className={compact ? "flex justify-end gap-0.5" : "flex flex-wrap gap-2"}>
+      {compact ? (
+        <>
+          {key(
+            t("viewPayment"),
+            <Button asChild variant="ghost" size="icon-sm" className="text-primary">
+              <Link href={`/payments/${id}`} aria-label={t("viewPayment")}>
+                <Eye aria-hidden />
+              </Link>
+            </Button>,
+          )}
+          {key(
+            t("printReceipt"),
+            <Button asChild variant="ghost" size="icon-sm">
+              <Link href={`/payments/${id}/receipt`} target="_blank" aria-label={t("printReceipt")}>
+                <Printer aria-hidden />
+              </Link>
+            </Button>,
+          )}
+          {showCredit &&
+            key(
+              t("applyCredit"),
+              <Button variant="ghost" size="icon-sm" aria-label={t("applyCredit")} onClick={() => setDialog("credit")}>
+                <Coins aria-hidden />
+              </Button>,
+            )}
+          {showReverse &&
+            key(
+              t("requestReversal"),
+              <Button variant="ghost" size="icon-sm" className="text-danger" aria-label={t("requestReversal")} onClick={() => setDialog("reverse")}>
+                <Undo2 aria-hidden />
+              </Button>,
+            )}
+        </>
+      ) : (
+        <>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/payments/${id}/receipt`} target="_blank">
+              <Printer aria-hidden />
+              {t("printReceipt")}
+            </Link>
+          </Button>
+          {showCredit && (
+            <Button size="sm" variant="outline" onClick={() => setDialog("credit")}>
+              {t("applyCredit")}
+            </Button>
+          )}
+          {showReverse && (
+            <Button size="sm" variant="destructive" onClick={() => setDialog("reverse")}>
+              {t("requestReversal")}
+            </Button>
+          )}
+        </>
       )}
       <FormDialog
         open={dialog === "credit"}

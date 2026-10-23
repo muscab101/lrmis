@@ -2370,7 +2370,8 @@
     "qrLabel": "Koodhka QR ee biilka onlaynka",
     "viewInvoice": "Eeg biilka",
     "printInvoice": "Daabac biilka",
-    "actions": "Ficillo"
+    "actions": "Ficillo",
+    "takePayment": "Ka qaado lacagta khasnajiga"
   },
   "pay": {
     "title": "Bixi biilkaaga",
@@ -2585,7 +2586,9 @@
       "createBill": "Samee biil",
       "billed": "Biilka {number} waa la sameeyay. Lacagtiisa ka qaado Lacagta la ururinayo.",
       "billExists": "Biilka {number} horay ayuu u furnaa."
-    }
+    },
+    "viewPayment": "Eeg lacag-bixinta",
+    "actions": "Ficillo"
   },
   "accounting": {
     "title": "Xisaabaadka",
@@ -3119,7 +3122,11 @@
       "govt_file_no": "Lambarka faylka",
       "ownership": "Lahaanshaha",
       "developed": "La dhisay"
-    }
+    },
+    "actions": "Ficillo",
+    "viewParcel": "Eeg dhulka",
+    "viewTransfer": "Eeg wareejinta",
+    "takeDuty": "Ka qaado canshuurta khasnajiga"
   },
   "reports": {
     "title": "Warbixinada",

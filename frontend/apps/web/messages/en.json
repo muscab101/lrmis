@@ -2370,7 +2370,8 @@
     "qrLabel": "QR code to the online invoice",
     "viewInvoice": "View invoice",
     "printInvoice": "Print invoice",
-    "actions": "Actions"
+    "actions": "Actions",
+    "takePayment": "Take payment at the cashier"
   },
   "pay": {
     "title": "Pay your invoice",
@@ -2585,7 +2586,9 @@
       "createBill": "Create bill",
       "billed": "Bill {number} created. Take payment for it in To collect.",
       "billExists": "Bill {number} is already open."
-    }
+    },
+    "viewPayment": "View payment",
+    "actions": "Actions"
   },
   "accounting": {
     "title": "Accounting",
@@ -3119,7 +3122,11 @@
       "govt_file_no": "File no.",
       "ownership": "Ownership",
       "developed": "Developed"
-    }
+    },
+    "actions": "Actions",
+    "viewParcel": "View parcel",
+    "viewTransfer": "View transfer",
+    "takeDuty": "Take the duty payment at the cashier"
   },
   "reports": {
     "title": "Reports",

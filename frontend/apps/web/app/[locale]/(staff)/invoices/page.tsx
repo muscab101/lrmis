@@ -3,7 +3,7 @@ import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Eye, Printer, Receipt } from "lucide-react";
+import { Banknote, Eye, Printer, Receipt } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { CreditNoteQueue, PlanQueue } from "@/components/billing/queues";
@@ -24,6 +24,7 @@ export default async function InvoicesPage({ params, searchParams }: { params: P
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "invoices.view");
+  const canCollect = viewer.can("cashier.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
@@ -110,6 +111,13 @@ export default async function InvoicesPage({ params, searchParams }: { params: P
                           <Printer aria-hidden />
                         </Link>
                       </Button>
+                      {canCollect && Number(i.balance) > 0 && (i.status === "issued" || i.status === "partially_paid") && (
+                        <Button variant="ghost" size="icon-sm" className="text-status-approved" asChild>
+                          <Link href={`/cashier?find=${encodeURIComponent(i.number)}`} aria-label={t("takePayment")} title={t("takePayment")}>
+                            <Banknote aria-hidden />
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
