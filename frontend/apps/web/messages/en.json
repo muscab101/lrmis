@@ -2645,14 +2645,22 @@
     "notYetRegistered": "not registered yet",
     "collect": {
       "title": "To collect",
-      "subtitle": "Registered houses in your district that still owe. Take cash here, or a card payment through Stripe.",
+      "subtitle": "Registered houses in your desk's district that still owe. Take cash here, or a card payment through Stripe.",
       "openShiftFirst": "Open your shift above to take cash. Card payments open Stripe in a new tab.",
       "summary": "{houses, plural, =1 {1 house} other {# houses}} · {amount} due",
       "empty": "Nothing to collect",
       "emptyBody": "Every registered house in your district has paid.",
       "house": "House {no}",
       "cash": "Cash",
-      "card": "Card (Stripe)"
+      "card": "Card (Stripe)",
+      "colPun": "PUN",
+      "colPlace": "House · Neighbourhood",
+      "colOwner": "Owner",
+      "colBill": "Bill",
+      "colInvoice": "Invoice",
+      "colAmount": "Amount",
+      "colActions": "Take payment",
+      "houseTotal": "{amount} in all"
     },
     "cardPrint": {
       "title": "ID card print",

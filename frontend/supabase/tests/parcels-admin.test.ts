@@ -184,3 +184,19 @@ describe("paid land is announced", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and kind = 'parcel.paid'`, [registrar])).toBeGreaterThan(0);
   });
 });
+
+describe("To collect follows the cashier's desk", () => {
+  it("a cashier who can see two districts only gets the district of the desk where their shift is open", async () => {
+    const sa = await scalar<string>(db, `select user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    const region = await scalar<string>(db, `select region_id from public.districts where id = $1`, [hodan]);
+    const other = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'KRN','Kaaraan','Kaaraan') returning id`, [region]);
+    const twoDistricts = await createStaff(db, sa, "cashier.two@gmail.com", ["cashier"], [hodan, other]);
+    const otherDesk = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('KRN1', 'Kaaraan office', $1, 'KRN1') returning id`, [other]);
+    const before = await asUser(db, twoDistricts, (tx) => tx.query(`select * from public.cashier_to_collect()`));
+    expect(before.rows.length).toBeGreaterThan(0);
+    await asUser(db, twoDistricts, (tx) => tx.query(`select public.shift_open($1, 0)`, [otherDesk]));
+    const after = await asUser(db, twoDistricts, (tx) => tx.query<{ district_id: string }>(`select * from public.cashier_to_collect()`));
+    expect(after.rows.every((r) => r.district_id === other)).toBe(true);
+    expect(after.rows.length).toBe(0);
+  });
+});

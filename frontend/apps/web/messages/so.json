@@ -2645,14 +2645,22 @@
     "notYetRegistered": "weli lama diiwaangelin",
     "collect": {
       "title": "Lacagta la ururinayo",
-      "subtitle": "Guryaha la diiwaangeliyey ee degmadaada oo weli lacag lagu leeyahay. Halkan ka qaado lacag caddaan ah, ama lacag kaar ah oo Stripe ah.",
+      "subtitle": "Guryaha la diiwaangeliyay ee degmada miiskaaga ee weli lacag lagu leeyahay. Halkan ka qaado caddaan, ama kaar ku bixi Stripe.",
       "openShiftFirst": "Fur shaqadaada kor si aad lacag caddaan ah u qaadato. Lacagta kaarka waxay Stripe ka furaysaa tab cusub.",
       "summary": "{houses, plural, =1 {1 guri} other {# guri}} · {amount} la bixinayo",
       "empty": "Wax la ururiyo ma jiraan",
       "emptyBody": "Guri kasta oo la diiwaangeliyey ee degmadaada wuu bixiyay.",
       "house": "Guriga {no}",
       "cash": "Caddaan",
-      "card": "Kaar (Stripe)"
+      "card": "Kaar (Stripe)",
+      "colPun": "PUN",
+      "colPlace": "Guri · Xaafad",
+      "colOwner": "Milkiile",
+      "colBill": "Biil",
+      "colInvoice": "Qaansheeg",
+      "colAmount": "Qaddar",
+      "colActions": "Qaado lacagta",
+      "houseTotal": "{amount} wadar ahaan"
     },
     "cardPrint": {
       "title": "Daabacaadda kaarka aqoonsiga",
