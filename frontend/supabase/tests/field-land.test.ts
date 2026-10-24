@@ -101,7 +101,9 @@ describe("field land", () => {
   it("yet to register: counts waiting and registered land per neighbourhood, in the caller's districts", async () => {
     const sector = await scalar<string>(db, `select sector_id from public.neighbourhoods where id = $1`, [nbhd]);
     await db.query(`insert into public.neighbourhoods (sector_id, code, name_so, name_en) values ($1,'013','Bacaad','Bacaad')`, [sector]);
-    const rows = await asUser(db, surveyor, (tx) =>
+    // Yet to register is the registrar's page (surveyors work from Surveys → Zones).
+    const registrar = await createStaff(db, await scalar<string>(db, `select user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`), "registrar.ytr@gmail.com", ["registrar"], [hodan]);
+    const rows = await asUser(db, registrar, (tx) =>
       tx.query<{ code: string; partial: string; open_applications: string; registered: string; has_boundary: boolean }>(`select * from public.neighbourhood_registration_status()`),
     );
     const by = (c: string) => rows.rows.find((r) => r.code === c)!;
@@ -109,7 +111,7 @@ describe("field land", () => {
     expect([by("012").partial, by("012").open_applications, by("012").registered].map(Number)).toEqual([1, 1, 0]);
     expect(by("012").has_boundary).toBe(true);
     expect([by("013").partial, by("013").registered].map(Number)).toEqual([0, 0]);
-    expect((await asUser(db, otherSurveyor, (tx) => tx.query(`select * from public.neighbourhood_registration_status()`))).rows).toHaveLength(0);
+    await expect(asUser(db, otherSurveyor, (tx) => tx.query(`select * from public.neighbourhood_registration_status()`))).rejects.toThrow(/^PERMISSION_DENIED/);
   });
 
   it("owners follow their land: not registered on draft land, registered when the land is", async () => {
