@@ -93,7 +93,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="hidden xl:table-cell">{t("dateCreated")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("dateCreated")}</TableHead>
                 <TableHead>{t("pun")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
                 <TableHead className="hidden xl:table-cell">{t("govtReceipt")}</TableHead>
@@ -110,7 +110,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                 const district = lang === "so" ? p.district : p.district_en;
                 return (
                 <TableRow key={p.id}>
-                  <TableCell className="hidden text-sm whitespace-nowrap tabular-nums xl:table-cell">
+                  <TableCell className="hidden text-sm whitespace-nowrap tabular-nums md:table-cell">
                     {format.dateTime(new Date(p.created_at), { dateStyle: "medium" })}
                     <div className="text-muted-foreground text-xs">{format.dateTime(new Date(p.created_at), { timeStyle: "short" })}</div>
                   </TableCell>
@@ -126,16 +126,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   </TableCell>
                   {showInvoices && (
                     <TableCell className="hidden text-sm md:table-cell">
-                      {p.invoice ? (
-                        <>
-                          <Mono className="text-xs">{p.invoice}</Mono>
-                          <div className={`text-xs tabular-nums ${Number(p.balance) > 0 ? "text-status-rejected" : "text-muted-foreground"}`}>
-                            {Number(p.balance) > 0 ? t("owing", { amount: usd(p.balance) }) : t("paidUp")}
-                          </div>
-                        </>
-                      ) : (
-                        "—"
-                      )}
+                      {p.invoice ? <Mono className="text-xs whitespace-nowrap">{p.invoice}</Mono> : "—"}
                     </TableCell>
                   )}
                   <TableCell className="hidden text-sm xl:table-cell">{p.govt_receipt_no ? <Mono className="text-xs">{p.govt_receipt_no}</Mono> : "—"}</TableCell>
