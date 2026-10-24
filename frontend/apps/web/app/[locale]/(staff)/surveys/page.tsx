@@ -7,7 +7,8 @@ import { Compass, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { querySiteChecks, querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
+import { queryParcelSiteChecks, querySiteChecks, querySurveys, surveyStatusCounts, type SurveyStatus } from "@/lib/server/surveys";
+import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { SiteCheckActions } from "@/components/applications/site-check";
 import { ZoneTable } from "@/components/parcels/zone-table";
 import { listZones } from "@/lib/server/zones";
@@ -24,22 +25,24 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "surveys.view");
   const t = await getTranslations("surveys");
+  const tp = await getTranslations("parcels");
   const format = await getFormatter();
   const lang = await getLocale();
   const nm = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en || o.name_so) : "");
   const sp = await searchParams;
   const status = (TABS as readonly string[]).includes(sp.status ?? "") ? (sp.status as (typeof TABS)[number]) : "open";
   const mine = sp.mine === "1" || !viewer.can("surveys.approve");
-  const [rows, counts, checks, zones] = await Promise.all([
+  const [rows, counts, checks, landChecks, zones] = await Promise.all([
     status === "site_checks" || status === "zones" ? Promise.resolve([]) : querySurveys({ status: status as SurveyStatus | "open" | "any", mine }),
     surveyStatusCounts(),
     querySiteChecks(mine),
+    queryParcelSiteChecks(mine),
     listZones(mine),
   ]);
   const siteCan = { request: false, checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
   const count = (tab: (typeof TABS)[number]) =>
     tab === "site_checks"
-      ? checks.length
+      ? checks.length + landChecks.length
       : tab === "zones"
       ? zones.length
       : tab === "open"
@@ -74,7 +77,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
         </Card>
       ) : status === "site_checks" ? (
         <Card className="overflow-hidden">
-          {checks.length === 0 ? (
+          {checks.length + landChecks.length === 0 ? (
             <EmptyState icon={<Compass />} title={t("noSiteChecks")} description={t("noSiteChecksBody")} />
           ) : (
             <Table>
@@ -89,6 +92,35 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {landChecks.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="text-status-pending font-bold" aria-hidden>
+                          ?
+                        </span>
+                        <Mono>{c.pun ?? (c.house_no ? `${tp("houseNoShort")} ${c.house_no}` : tp("noPun"))}</Mono>
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(c.site_check_requested_at), { dateStyle: "medium" })}</TableCell>
+                    <TableCell className="hidden text-sm sm:table-cell">
+                      {nm(c.district)}
+                      {c.neighbourhood && <span className="text-muted-foreground"> · {nm(c.neighbourhood)}</span>}
+                    </TableCell>
+                    <TableCell className="hidden text-sm md:table-cell">—</TableCell>
+                    <TableCell className="text-muted-foreground hidden max-w-60 truncate text-sm xl:table-cell">{c.site_check_note ?? "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <SiteCheckButtons
+                          parcelId={c.id}
+                          size="sm"
+                          canRequest={false}
+                          canAnswer={(c.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve")}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
                 {checks.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell>

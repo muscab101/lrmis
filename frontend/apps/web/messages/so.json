@@ -233,7 +233,12 @@
       "correction_pending": "Saxitaan lacag-bixintan ah ayaa horay u sugaya oggolaansho.",
       "no_change": "Beddel ugu yaraan hal shay.",
       "already_reconciled": "Maalintan khasnajigu horay ayaa loo isku dheelitiray ama waxay sugaysaa oggolaansho.",
-      "actual_missing": "Geli waxa la helay hab kasta oo lacag-bixin ah oo khasnajigu diiwaangeliyay."
+      "actual_missing": "Geli waxa la helay hab kasta oo lacag-bixin ah oo khasnajigu diiwaangeliyay.",
+      "site_check_pending": "Sahamiye ayaa horay u hubinaya gurigan.",
+      "no_site_check": "Cidna ma codsan in gurigan la hubiyo.",
+      "locked": "Dhulkan waa xiran yahay.",
+      "note_required": "Ku dar qoraal.",
+      "no_location": "Dhulkan weli xaafad ma laha."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -1104,7 +1109,9 @@
       "parcels_lock": "Xir / fur",
       "parcels_yet_to_register": "Weli lama diiwaangelin",
       "certificates_id_cards": "Kaarka aqoonsiga",
-      "reports_assistant": "Kaaliyaha"
+      "reports_assistant": "Kaaliyaha",
+      "parcels_registered": "Arag dhulka la diiwaangeliyay",
+      "parcels_delete_registered": "Tirtir dhulka la diiwaangeliyay"
     }
   },
   "design": {
@@ -2040,7 +2047,33 @@
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",
-    "clearNeighbourhood": "Muuji xaafad kasta"
+    "clearNeighbourhood": "Muuji xaafad kasta",
+    "addHouse": "Ku dar guri",
+    "deleteTitle": "Tirtir {pun}?",
+    "deleteBodyPartial": "Dhulkan aan dhammaystirnayn waa laga saarayaa liisaska. Wuxuu ku jirayaa taariikhda iyo sababtaada.",
+    "deleteBodyRegistered": "Dhulkan la diiwaangeliyay waa laga saarayaa diiwaanka: biilashiisa aan la bixin waa la joojinayaa, shahaadadiisana waa la laalayaa. Dhul lacag laga bixiyay lama tirtiri karo. Wuxuu ku jirayaa taariikhda iyo sababtaada.",
+    "deleted": "Dhulka waa la tirtiray",
+    "deleteReason": "Sababta loo tirtirayo",
+    "siteCheck": {
+      "request": "Hubi inuu jiro",
+      "requestTitle": "Hubi in gurigan jiro?",
+      "requestBody": "Sahamiye degmada ka tirsan (kan ugu shaqo yar) ayaa loo dirayaa si uu u xaqiijiyo in gurigu dhab ahaan jiro. Haddii aan la helin, lama diiwaangelin karo.",
+      "requested": "Sahamiye ayaa loo diray",
+      "noteOptional": "Qoraal (ikhtiyaari)",
+      "noteRequired": "Maxaad heshay?",
+      "exists": "Wuu jiraa",
+      "notFound": "Lama helin",
+      "existsTitle": "Gurigu wuu jiraa?",
+      "existsBody": "Xaqiiji inaad gurigii goobta ku aragtay.",
+      "notFoundTitle": "Gurigii lama helin?",
+      "notFoundBody": "Sheeg waxaad heshay. Lama diiwaangelin karo ilaa mar kale la hubiyo oo la helo.",
+      "answered": "Jawaabta waa la kaydiyay",
+      "status_pending": "Sahamiye ayaa hubinaya in gurigan jiro",
+      "status_confirmed": "La hubiyay: gurigu wuu jiraa",
+      "status_not_found": "La hubiyay: gurigii lama helin",
+      "since": "la weydiiyay {date}",
+      "on": "laga jawaabay {date}"
+    }
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

@@ -60,6 +60,8 @@ export const SPECIAL_PERMISSIONS = [
   "parcels.yet_to_register",
   "certificates.id_cards",
   "reports.assistant",
+  "parcels.registered",
+  "parcels.delete_registered",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

@@ -128,3 +128,34 @@ export const registerParcelAction = defineAction("parcels.register", z.object({ 
   revalidatePath("/[locale]/cashier", "page");
   return out;
 });
+
+/** Delete land (kept in the history with its reason): partial land, or registered land for admins. */
+export const deleteParcelAction = defineAction("parcels.delete", z.object({ id: z.uuid(), reason }), async ({ id, reason: why }, ctx) => {
+  unwrap(await ctx.supabase.rpc("parcel_delete", { p_id: id, p_reason: why }), "delete parcel");
+  refresh();
+  return null;
+});
+
+/** Check if it exists: send a district surveyor to confirm the house is there. */
+export const requestParcelCheckAction = defineAction(
+  "parcels.site_check",
+  z.object({ id: z.uuid(), note: z.string().trim().max(500).default("") }),
+  async ({ id, note }, ctx) => {
+    unwrap(await ctx.supabase.rpc("parcel_request_site_check", { p_id: id, p_note: note || null }), "request site check");
+    refresh();
+    revalidatePath("/[locale]/surveys", "layout");
+    return null;
+  },
+);
+
+/** The surveyor's answer: the house exists, or it wasn't found (with a note). */
+export const confirmParcelSiteAction = defineAction(
+  "parcels.site_confirm",
+  z.object({ id: z.uuid(), exists: z.boolean(), note: z.string().trim().max(500).default("") }),
+  async ({ id, exists, note }, ctx) => {
+    unwrap(await ctx.supabase.rpc("parcel_confirm_site", { p_id: id, p_exists: exists, p_note: note || null }), "confirm site");
+    refresh();
+    revalidatePath("/[locale]/surveys", "layout");
+    return null;
+  },
+);

@@ -1,12 +1,12 @@
+import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Lock, MapPinned } from "lucide-react";
+import { Lock, MapPinned, MapPinPlus } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
-import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_TABS, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
@@ -25,21 +25,38 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const lang = await getLocale();
   const sp = await searchParams;
   const q = (sp.q ?? "").slice(0, 80);
-  const stage: (typeof PARCEL_TABS)[number] = (PARCEL_TABS as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
+  // Registered land shows only for roles allowed to see it (Admin → Roles: "See registered land").
+  const seesRegistered = viewer.can("parcels.registered");
+  const tabs = PARCEL_TABS.filter((k) => k !== "registered" || seesRegistered);
+  const stage: (typeof PARCEL_TABS)[number] = (tabs as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
   const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
-  const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
-  // Land is added from a survey zone (Surveys → Zones); here the registrar registers it.
-  const canRegister = viewer.can("parcels.approve");
+  const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock"), register: viewer.can("parcels.approve") };
+  // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
+  const canDelete = (status: string) => (partial(status) ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"));
+  const canAddHouse = viewer.can("surveys.create") || viewer.can("applications.create");
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
+      <PageHeader
+        title={t("title")}
+        description={t(`stageBody_${stage}`)}
+        actions={
+          canAddHouse && (
+            <Button asChild>
+              <Link href="/parcels/new">
+                <MapPinPlus aria-hidden />
+                {t("addHouse")}
+              </Link>
+            </Button>
+          )
+        }
+      >
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
-          {PARCEL_TABS.map((k) => (
+          {tabs.map((k) => (
             <Link
               key={k}
               href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
@@ -99,9 +116,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
                       <Mono>{p.pun ?? t("noPun")}</Mono>
                     </Link>
-                    {partial(p.status) && canRegister && !p.locked_at && (
-                      <RegisterParcelButton parcelId={p.id} label={[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />
-                    )}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
                       {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
@@ -132,7 +146,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     <ParcelStatusBadge status={p.status} />
                   </TableCell>
                   <TableCell>
-                    <ParcelRowActions parcel={p} can={can} />
+                    <ParcelRowActions parcel={p} can={{ ...can, delete: canDelete(p.status) }} />
                   </TableCell>
                 </TableRow>
                 );

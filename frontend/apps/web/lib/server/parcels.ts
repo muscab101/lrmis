@@ -72,6 +72,12 @@ export interface ParcelDetail {
   geom: GeoJSON.Polygon;
   application_id: string | null;
   application: { id: string; number: string } | null;
+  /** Check if it exists: pending while a surveyor goes; confirmed or not_found once answered. */
+  site_check_status: "pending" | "confirmed" | "not_found" | null;
+  site_check_surveyor: string | null;
+  site_check_requested_at: string | null;
+  site_check_done_at: string | null;
+  site_check_note: string | null;
   district: { code: string; name_so: string; name_en: string } | null;
   neighbourhood: { code: string; name_so: string; name_en: string } | null;
   parcel_owners: { id: string; role: string; share_pct: number | null; valid_from: string; valid_to: string | null; party: PartyRow }[];
@@ -85,6 +91,7 @@ export async function getParcel(id: string) {
     .from("parcels")
     .select(
       `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
+       site_check_status, site_check_surveyor, site_check_requested_at, site_check_done_at, site_check_note,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),

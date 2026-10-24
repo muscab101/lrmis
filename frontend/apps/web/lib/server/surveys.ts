@@ -176,3 +176,30 @@ export async function surveyStatusCounts(): Promise<Partial<Record<SurveyStatus,
   const { data } = await supabase.rpc("survey_status_counts");
   return Object.fromEntries(((data ?? []) as { status: SurveyStatus; total: number }[]).map((r) => [r.status, Number(r.total)]));
 }
+
+/** Check if it exists, for land (not applications): waiting on a surveyor — mine, or all in my districts for supervisors. */
+export interface ParcelSiteCheckRow {
+  id: string;
+  pun: string | null;
+  house_no: string | null;
+  site_check_surveyor: string | null;
+  site_check_requested_at: string;
+  site_check_note: string | null;
+  district: { name_so: string; name_en: string } | null;
+  neighbourhood: { name_so: string; name_en: string } | null;
+}
+
+export async function queryParcelSiteChecks(mine: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let req = supabase
+    .from("parcels")
+    .select("id, pun, house_no, site_check_surveyor, site_check_requested_at, site_check_note, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en)")
+    .eq("site_check_status", "pending")
+    .is("deleted_at", null);
+  if (mine) req = req.eq("site_check_surveyor", user?.id ?? "");
+  const res = await req.order("site_check_requested_at", { ascending: true }).limit(100);
+  return unwrap(res, "parcel site checks") as unknown as ParcelSiteCheckRow[];
+}

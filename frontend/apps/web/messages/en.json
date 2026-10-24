@@ -233,7 +233,12 @@
       "correction_pending": "A correction for this payment is already waiting for approval.",
       "no_change": "Change at least one thing.",
       "already_reconciled": "This cashier's day is already reconciled or waiting for approval.",
-      "actual_missing": "Enter what was received for every way of paying the cashier recorded."
+      "actual_missing": "Enter what was received for every way of paying the cashier recorded.",
+      "site_check_pending": "A surveyor is already checking this house.",
+      "no_site_check": "Nobody asked to check this house.",
+      "locked": "This land is locked.",
+      "note_required": "Add a note.",
+      "no_location": "This land has no neighbourhood yet."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -1104,7 +1109,9 @@
       "parcels_lock": "Lock / unlock",
       "parcels_yet_to_register": "Yet to register",
       "certificates_id_cards": "ID cards",
-      "reports_assistant": "Assistant"
+      "reports_assistant": "Assistant",
+      "parcels_registered": "See registered land",
+      "parcels_delete_registered": "Delete registered land"
     }
   },
   "design": {
@@ -2040,7 +2047,33 @@
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",
-    "clearNeighbourhood": "Show every neighbourhood"
+    "clearNeighbourhood": "Show every neighbourhood",
+    "addHouse": "Add house",
+    "deleteTitle": "Delete {pun}?",
+    "deleteBodyPartial": "This partial land is removed from the lists. It stays in the history with your reason.",
+    "deleteBodyRegistered": "This registered land is removed from the register: its unpaid bills are cancelled and its certificate withdrawn. Land with money paid can't be deleted. It stays in the history with your reason.",
+    "deleted": "Land deleted",
+    "deleteReason": "Why it's deleted",
+    "siteCheck": {
+      "request": "Check if it exists",
+      "requestTitle": "Check if this house exists?",
+      "requestBody": "A surveyor of the district (the least busy) is sent to confirm the house is really there. If it isn't found, it can't be registered.",
+      "requested": "A surveyor has been sent",
+      "noteOptional": "Note (optional)",
+      "noteRequired": "What did you find?",
+      "exists": "It exists",
+      "notFound": "Not found",
+      "existsTitle": "The house exists?",
+      "existsBody": "Confirm you saw the house on site.",
+      "notFoundTitle": "The house wasn't found?",
+      "notFoundBody": "Say what you found. It can't be registered until it's checked again and found.",
+      "answered": "Answer saved",
+      "status_pending": "A surveyor is checking that this house exists",
+      "status_confirmed": "Checked: the house exists",
+      "status_not_found": "Checked: the house was not found",
+      "since": "asked on {date}",
+      "on": "answered on {date}"
+    }
   },
   "notices": {
     "eyebrow": "Public notice",

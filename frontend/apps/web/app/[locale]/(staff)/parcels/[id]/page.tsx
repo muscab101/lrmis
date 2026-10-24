@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { GeometryPreview } from "@/components/map/geometry-preview";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
-import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
+import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getParcel } from "@/lib/server/parcels";
@@ -20,7 +20,10 @@ import { parcelLegal } from "@/lib/server/legal";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const p = await getParcel(id);
-  return { title: p?.pun ?? "404" };
+  if (!p) return { title: "404" };
+  // Partial land has no PUN yet: name it by its house number.
+  const t = await getTranslations("parcels");
+  return { title: p.pun ?? (p.house_no ? `${t("houseNoShort")} ${p.house_no}` : t("noPun")) };
 }
 
 export default async function ParcelPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -34,6 +37,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const lang = await getLocale();
   const [p, propertyTypes] = await Promise.all([getParcel(id), listPropertyTypes()]);
   if (!p) notFound();
+  const partial = p.status === "draft" || p.status === "surveyed" || p.status === "verified";
   const showValuation = viewer.can("valuation.view");
   const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
   const showLegal = viewer.can("transfers.view") || viewer.can("disputes.view") || viewer.can("permits.view");
@@ -67,13 +71,39 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {["draft", "surveyed", "verified"].includes(p.status) && viewer.can("parcels.approve") && !p.locked_at && (
-              <RegisterParcelButton parcelId={p.id} label={p.house_no ?? ""} size="default" />
-            )}
-            <ParcelRowActions parcel={p} onDetail can={{ update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") }} />
+            <SiteCheckButtons
+              parcelId={p.id}
+              canRequest={p.site_check_status !== "pending" && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
+              canAnswer={p.site_check_status === "pending" && ((p.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve"))}
+            />
+            <ParcelRowActions
+              parcel={p}
+              onDetail
+              can={{
+                update: viewer.can("parcels.update"),
+                lock: viewer.can("parcels.lock"),
+                register: viewer.can("parcels.approve"),
+                delete: partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"),
+              }}
+            />
           </div>
         }
       />
+      {p.site_check_status && (
+        <Alert
+          tone={p.site_check_status === "confirmed" ? "success" : p.site_check_status === "not_found" ? "danger" : "info"}
+          className="mb-5"
+          title={t(`siteCheck.status_${p.site_check_status}`)}
+        >
+          {[
+            p.site_check_note,
+            p.site_check_status === "pending" && p.site_check_requested_at && t("siteCheck.since", { date: format.dateTime(new Date(p.site_check_requested_at), { dateStyle: "medium" }) }),
+            p.site_check_done_at && t("siteCheck.on", { date: format.dateTime(new Date(p.site_check_done_at), { dateStyle: "medium" }) }),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Alert>
+      )}
       {p.locked_at && (
         <Alert tone="warning" className="mb-5" title={t("lockedTitle", { date: format.dateTime(new Date(p.locked_at), { dateStyle: "medium" }) })}>
           {p.lock_reason}
