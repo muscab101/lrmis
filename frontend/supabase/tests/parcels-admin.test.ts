@@ -155,3 +155,32 @@ describe("owners: who sees and deletes registered owners", () => {
     expect(await sees()).toBe(0);
   });
 });
+
+describe("registered land that owes money goes to the district's cashier; paying it approves the land", () => {
+  it("cashier sees it in To collect, takes the money, and the certificate is issued automatically", async () => {
+    const sa = await scalar<string>(db, `select user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`);
+    const cashier = await createStaff(db, sa, "cashier.collect@gmail.com", ["cashier"], [hodan]);
+    const part = await parcel(false);
+    await db.query(`update public.property_grades set amount = 1 where code = (select code from public.property_grades order by sort limit 1)`);
+    await db.query(`update public.parcels set property_type = (select code from public.property_grades order by sort limit 1) where id = $1`, [part]);
+    const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [part]));
+    const owed = Number(await scalar<string>(db, `select sum(balance) from public.invoices where parcel_id = $1 and status in ('issued','partially_paid')`, [part]));
+    expect(owed).toBeGreaterThan(0);
+    // Told, and listed for the cashier of that district.
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and body_en like $2`, [cashier, `%${r.pun}%`])).toBeGreaterThan(0);
+    const list = await asUser(db, cashier, (tx) => tx.query<{ parcel_id: string }>(`select parcel_id from public.cashier_to_collect()`));
+    expect(list.rows.map((x) => x.parcel_id)).toContain(part);
+    // The cashier takes the whole amount.
+    const pos = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDNC', 'Hodan cash', $1, 'HDNC') returning id`, [hodan]);
+    const shift = await asUser(db, cashier, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
+    await asUser(db, cashier, (tx) => tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: part, amount: owed, currency: "USD", method: "cash" })]));
+    expect(await scalar<number>(db, `select count(*)::int from public.invoices where parcel_id = $1 and status in ('issued','partially_paid')`, [part])).toBe(0);
+    expect(await scalar<number>(db, `select count(*)::int from public.issued_documents where parcel_id = $1 and type = 'certificate' and status = 'valid'`, [part])).toBe(1);
+  });
+});
+
+describe("paid land is announced", () => {
+  it("the registrar who registered it is told it's paid", async () => {
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and kind = 'parcel.paid'`, [registrar])).toBeGreaterThan(0);
+  });
+});

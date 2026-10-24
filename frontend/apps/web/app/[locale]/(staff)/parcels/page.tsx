@@ -1,3 +1,4 @@
+import { StatusBadge } from "@dhulka/ui/badge";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
@@ -129,6 +130,14 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />
+                    {/* Registered land: paid in full (approved, certificate issued) or what it still owes. */}
+                    {!partial(p.status) && p.invoice && (
+                      <div className="mt-1">
+                        <StatusBadge tone={Number(p.balance) > 0 ? "pending" : "approved"}>
+                          {Number(p.balance) > 0 ? t("owing", { amount: usd(p.balance) }) : t("paidLabel")}
+                        </StatusBadge>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <ParcelRowActions parcel={p} can={{ ...can, delete: canDelete(p.status) }} />

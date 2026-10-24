@@ -2077,7 +2077,8 @@
       "status_not_found": "Checked: the house was not found",
       "since": "asked on {date}",
       "on": "answered on {date}"
-    }
+    },
+    "paidLabel": "Paid"
   },
   "notices": {
     "eyebrow": "Public notice",

@@ -2077,7 +2077,8 @@
       "status_not_found": "La hubiyay: gurigii lama helin",
       "since": "la weydiiyay {date}",
       "on": "laga jawaabay {date}"
-    }
+    },
+    "paidLabel": "La bixiyay"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

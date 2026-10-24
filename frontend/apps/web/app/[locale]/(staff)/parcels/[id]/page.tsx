@@ -1,3 +1,4 @@
+import { StatusBadge } from "@dhulka/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
@@ -8,6 +9,7 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { createClient } from "@/lib/supabase/server";
 import { getParcel } from "@/lib/server/parcels";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import { getParcelValuation, listGrades } from "@/lib/server/valuation";
@@ -38,6 +40,13 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const [p, propertyTypes] = await Promise.all([getParcel(id), listPropertyTypes()]);
   if (!p) notFound();
   const partial = p.status === "draft" || p.status === "surveyed" || p.status === "verified";
+  // Registered land with bills: paid in full, or what's still owed.
+  const owed = await (async () => {
+    if (partial || !viewer.can("invoices.view")) return null;
+    const { data } = await (await createClient()).from("invoices").select("balance, status").eq("parcel_id", p.id).neq("status", "cancelled");
+    const rows = (data ?? []) as { balance: number; status: string }[];
+    return rows.length ? rows.reduce((s, i) => s + Number(i.balance), 0) : null;
+  })();
   const showValuation = viewer.can("valuation.view");
   const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
   const showLegal = viewer.can("transfers.view") || viewer.can("disputes.view") || viewer.can("permits.view");
@@ -67,6 +76,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           <span className="flex flex-wrap items-center gap-3">
             <Mono>{p.pun ?? t("noPun")}</Mono>
             <ParcelStatusBadge status={p.status} />
+            {owed !== null && (
+              <StatusBadge tone={owed > 0 ? "pending" : "approved"}>
+                {owed > 0 ? t("owing", { amount: format.number(owed, { style: "currency", currency: "USD" }) }) : t("paidLabel")}
+              </StatusBadge>
+            )}
           </span>
         }
         actions={
