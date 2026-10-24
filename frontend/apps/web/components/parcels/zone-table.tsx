@@ -3,33 +3,16 @@
 import { Button } from "@dhulka/ui/button";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { CheckCheck, MapPinPlus, Route, UserPlus, X } from "lucide-react";
+import { Route } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
-import { closeZoneAction } from "@/app/[locale]/(staff)/parcels/yet-to-register/actions";
-import { FormDialog } from "@/components/forms/form-dialog";
 import { Link } from "@/i18n/navigation";
 import type { ZoneRow } from "@/lib/server/zones";
 
-/** Assigned zones with their progress (houses recorded since assignment out of the target). */
-export function ZoneTable({
-  rows,
-  me,
-  canManage,
-  canAddLand,
-  canAddOwner = false,
-}: {
-  rows: ZoneRow[];
-  me: string;
-  canManage: boolean;
-  canAddLand: boolean;
-  /** The zone's surveyor enters an owner (full owner form), then their land in the zone. */
-  canAddOwner?: boolean;
-}) {
+/** Assigned zones with their progress (houses recorded since assignment out of the target). Work happens on the zone's page (Open). */
+export function ZoneTable({ rows, me }: { rows: ZoneRow[]; me: string }) {
   const t = useTranslations("yetToRegister.zones");
   const locale = useLocale();
   const format = useFormatter();
-  const [target, setTarget] = useState<{ id: string; status: "done" | "cancelled"; name: string } | null>(null);
   const name = (o: { name_so: string; name_en: string }) => (locale === "so" ? o.name_so : o.name_en);
   if (rows.length === 0) return <EmptyState icon={<Route />} title={t("empty")} description={t("emptyBody")} />;
   return (
@@ -75,54 +58,15 @@ export function ZoneTable({
                   {z.assigned_by && <div>{z.assigned_by}</div>}
                 </TableCell>
                 <TableCell className="text-end">
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    {z.status === "open" && mine && canAddLand && (
-                      <Button size="sm" asChild>
-                        <Link href={`/parcels/new?${new URLSearchParams({ nbhd: z.neighbourhood_id, zone: z.id })}`}>
-                          <MapPinPlus aria-hidden />
-                          {t("addLand")}
-                        </Link>
-                      </Button>
-                    )}
-                    {z.status === "open" && mine && canAddOwner && (
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/owners/new?${new URLSearchParams({ zone: z.id, nbhd: z.neighbourhood_id })}`}>
-                          <UserPlus aria-hidden />
-                          {t("addOwner")}
-                        </Link>
-                      </Button>
-                    )}
-                    <Button size="sm" variant="ghost" asChild>
-                      <Link href={`/surveys/zones/${z.id}`}>{t("open")}</Link>
-                    </Button>
-                    {z.status === "open" && (mine || canManage) && (
-                      <Button size="sm" variant="outline" onClick={() => setTarget({ id: z.id, status: "done", name: name(z) })}>
-                        <CheckCheck aria-hidden />
-                        {t("done")}
-                      </Button>
-                    )}
-                    {z.status === "open" && canManage && (
-                      <Button size="sm" variant="ghost" onClick={() => setTarget({ id: z.id, status: "cancelled", name: name(z) })} aria-label={t("cancel")}>
-                        <X aria-hidden />
-                      </Button>
-                    )}
-                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/surveys/zones/${z.id}`}>{t("open")}</Link>
+                  </Button>
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
-      <FormDialog
-        open={target !== null}
-        onOpenChange={(o) => !o && setTarget(null)}
-        title={target?.status === "cancelled" ? t("cancelTitle", { name: target?.name ?? "" }) : t("doneTitle", { name: target?.name ?? "" })}
-        description={target?.status === "cancelled" ? t("cancelBody") : t("doneBody")}
-        confirmLabel={target?.status === "cancelled" ? t("cancel") : t("done")}
-        destructive={target?.status === "cancelled"}
-        successMessage={t("closed")}
-        submit={() => closeZoneAction({ id: target!.id, status: target!.status })}
-      />
     </>
   );
 }

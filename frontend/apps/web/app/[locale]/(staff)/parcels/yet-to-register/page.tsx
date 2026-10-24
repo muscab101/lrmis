@@ -126,7 +126,7 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
           </div>
         )}
         {tab === "zones" ? (
-          <ZoneTable rows={shownZones} me={viewer.user.id} canManage={canAssign} canAddLand={false} />
+          <ZoneTable rows={shownZones} me={viewer.user.id} />
         ) : rows.length === 0 ? (
           <EmptyState icon={<MapPinOff />} title={t(`empty_${tab}`)} description={t(`emptyBody_${tab}`)} />
         ) : (

@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
+import { ZoneCloseButtons } from "@/components/parcels/zone-close-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { searchParcels } from "@/lib/server/parcels";
@@ -64,6 +65,7 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                 </Link>
               </Button>
             )}
+            {open && <ZoneCloseButtons id={zone.id} name={name} canDone={mine || viewer.can("surveys.approve")} canCancel={viewer.can("surveys.approve")} />}
           </div>
         }
       />

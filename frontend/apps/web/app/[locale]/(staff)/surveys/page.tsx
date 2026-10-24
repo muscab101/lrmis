@@ -70,13 +70,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
       </PageHeader>
       {status === "zones" ? (
         <Card className="overflow-hidden">
-          <ZoneTable
-            rows={zones}
-            me={viewer.user.id}
-            canManage={viewer.can("surveys.approve")}
-            canAddLand={viewer.can("surveys.create") || viewer.can("applications.create")}
-            canAddOwner={viewer.can("owners.create")}
-          />
+          <ZoneTable rows={zones} me={viewer.user.id} />
         </Card>
       ) : status === "site_checks" ? (
         <Card className="overflow-hidden">
