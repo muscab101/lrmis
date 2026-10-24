@@ -56,24 +56,24 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
           ))}
         </nav>
       </PageHeader>
+      {stage === "registered" && (
+        <div className="bg-muted mb-3 flex w-fit gap-0.5 rounded-md p-0.5 text-sm" role="group" aria-label={t("paySplit")}>
+          {REGISTERED_SPLITS.map((k) => (
+            <Link
+              key={k}
+              href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
+              aria-current={split === k ? "page" : undefined}
+              className={`rounded px-2.5 py-1 whitespace-nowrap ${split === k ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t(`split_${k}`)} <span className="text-muted-foreground tabular-nums">{k === "all" ? counts.registered : counts[k]}</span>
+            </Link>
+          ))}
+        </div>
+      )}
       <Card className="overflow-hidden">
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
           <input type="hidden" name="stage" value={stage} />
           {stage === "registered" && split !== "all" && <input type="hidden" name="pay" value={split} />}
-          {stage === "registered" && (
-            <div className="bg-muted flex gap-0.5 rounded-md p-0.5 text-sm" role="group" aria-label={t("paySplit")}>
-              {REGISTERED_SPLITS.map((k) => (
-                <Link
-                  key={k}
-                  href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
-                  aria-current={split === k ? "page" : undefined}
-                  className={`rounded px-2.5 py-1 whitespace-nowrap ${split === k ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {t(`split_${k}`)} <span className="text-muted-foreground tabular-nums">{k === "all" ? counts.registered : counts[k]}</span>
-                </Link>
-              ))}
-            </div>
-          )}
           {nbhdId && <input type="hidden" name="nbhd" value={nbhdId} />}
           {nbhdId && (
             <Link href={`/parcels?stage=${stage}`} className="text-muted-foreground text-xs underline">
