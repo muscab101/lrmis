@@ -109,3 +109,20 @@ describe("check if it exists", () => {
     expect(r.pun).toMatch(/^BN/);
   });
 });
+
+describe("registering land that was started through an old application", () => {
+  it("works: owners come back from the application, the PUN is given, the application closes", async () => {
+    const part = await parcel(false);
+    const cashier = await createStaff(db, await scalar<string>(db, `select user_id from public.user_roles ur join public.roles r on r.id = ur.role_id where r.key = 'super_admin' limit 1`), "cashier@gmail.com", ["cashier"], [hodan]);
+    // The old flow moved the owners onto an application.
+    await asUser(db, surveyor, (tx) => tx.query(`select public.field_land_start_registration($1)`, [part]));
+    const app = await scalar<string>(db, `select application_id from public.parcels where id = $1`, [part]);
+    await db.query(`update public.property_grades set amount = 1 where code = (select code from public.property_grades order by sort limit 1)`);
+    await db.query(`update public.parcels set property_type = (select code from public.property_grades order by sort limit 1) where id = $1`, [part]);
+    const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [part]));
+    expect(r.pun).toMatch(/^BN/);
+    expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("approved");
+    expect(await scalar<number>(db, `select count(*)::int from public.parcel_owners where parcel_id = $1 and valid_to is null`, [part])).toBe(1);
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and title_en like $2`, [cashier, `%${r.pun}%`])).toBeGreaterThan(0);
+  });
+});
