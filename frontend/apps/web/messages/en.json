@@ -2078,7 +2078,11 @@
       "since": "asked on {date}",
       "on": "answered on {date}"
     },
-    "paidLabel": "Paid"
+    "paidLabel": "Paid",
+    "stage_paid": "Paid",
+    "stage_owing": "Not paid",
+    "stageBody_paid": "Registered houses that have paid their bills (nothing owed).",
+    "stageBody_owing": "Registered houses that still owe money on their bills."
   },
   "notices": {
     "eyebrow": "Public notice",

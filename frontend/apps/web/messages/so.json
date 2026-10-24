@@ -2078,7 +2078,11 @@
       "since": "la weydiiyay {date}",
       "on": "laga jawaabay {date}"
     },
-    "paidLabel": "La bixiyay"
+    "paidLabel": "La bixiyay",
+    "stage_paid": "La bixiyay",
+    "stage_owing": "Aan la bixin",
+    "stageBody_paid": "Guryaha la diiwaangeliyay ee bixiyay biilashooda (wax lagu lahayn).",
+    "stageBody_owing": "Guryaha la diiwaangeliyay ee weli lacag biilashooda lagu leeyahay."
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

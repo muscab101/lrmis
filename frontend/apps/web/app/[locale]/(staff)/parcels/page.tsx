@@ -27,7 +27,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const q = (sp.q ?? "").slice(0, 80);
   // Registered land shows only for roles allowed to see it (Admin → Roles: "See registered land").
   const seesRegistered = viewer.can("parcels.registered");
-  const tabs = PARCEL_TABS.filter((k) => k !== "registered" || seesRegistered);
+  const tabs = PARCEL_TABS.filter((k) => k === "draft" || seesRegistered);
   const stage: (typeof PARCEL_TABS)[number] = (tabs as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);

@@ -28,9 +28,12 @@ export interface ParcelListRow {
   plot_no: string | null;
 }
 
-export const PARCEL_STAGES = ["draft", "registered", "all"] as const;
-/** The tabs on Parcels: partial registration and registered ("all" is only used inside, e.g. a zone's houses). */
-export const PARCEL_TABS = ["draft", "registered"] as const;
+export const PARCEL_STAGES = ["draft", "registered", "paid", "owing", "all"] as const;
+/**
+ * The tabs on Parcels: partial registration, registered, and registered land split by its bills — paid (nothing
+ * owed) and not paid ("all" is only used inside, e.g. a zone's houses).
+ */
+export const PARCEL_TABS = ["draft", "registered", "paid", "owing"] as const;
 export type ParcelStage = (typeof PARCEL_STAGES)[number];
 /** Not registered yet: partial registration, still worked on through its application. */
 const PARTIAL = "(draft,surveyed,verified)";
@@ -44,7 +47,9 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
     req = req.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
   }
   if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
-  if (stage === "registered") req = req.not("status", "in", PARTIAL);
+  if (stage === "registered" || stage === "paid" || stage === "owing") req = req.not("status", "in", PARTIAL);
+  if (stage === "paid") req = req.lte("balance", 0);
+  if (stage === "owing") req = req.gt("balance", 0);
   const res = await req.limit(100);
   return unwrap(res, "parcels") as ParcelListRow[];
 }
@@ -109,8 +114,15 @@ export async function getParcel(id: string) {
 export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> {
   const supabase = await createClient();
   const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).neq("status", "archived");
-  const [draft, registered] = await Promise.all([base().in("status", ["draft", "surveyed", "verified"]), base().not("status", "in", PARTIAL)]);
-  return { draft: draft.count ?? 0, registered: registered.count ?? 0, all: (draft.count ?? 0) + (registered.count ?? 0) };
+  // Registered land owing: from its open bills (RLS keeps both to the viewer's districts and registered-land access).
+  const [draft, registered, owingRows] = await Promise.all([
+    base().in("status", ["draft", "surveyed", "verified"]),
+    base().not("status", "in", PARTIAL),
+    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).gt("balance", 0).select("id"),
+  ]);
+  const owing = ((owingRows.data ?? []) as unknown[]).length;
+  const reg = registered.count ?? 0;
+  return { draft: draft.count ?? 0, registered: reg, paid: Math.max(reg - owing, 0), owing, all: (draft.count ?? 0) + reg };
 }
 
 export interface NeighbourhoodStatusRow {
