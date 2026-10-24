@@ -30,7 +30,9 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
   const format = await getFormatter();
   const lang = await getLocale();
   const parsed = partiesQuerySchema.parse(await searchParams);
-  const q = parsed.stage === "all" ? { ...parsed, stage: "draft" as const } : parsed;
+  // Registered owners show only for roles allowed to see them (Admin → Roles: "See registered owners").
+  const seesRegistered = viewer.can("owners.registered");
+  const q = parsed.stage === "all" || (parsed.stage === "registered" && !seesRegistered) ? { ...parsed, stage: "draft" as const } : parsed;
   const supabase = await createClient();
   const count = (registered: boolean) => {
     const req = supabase.from("parties").select("id", { count: "exact", head: true }).is("deleted_at", null);
@@ -47,6 +49,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
     update: viewer.can("owners.update"),
     remove: viewer.can("owners.delete"),
     register: viewer.can("owners.approve"),
+    removeRegistered: viewer.can("owners.delete_registered"),
   };
   const stageHref = (stage: string, extra: Record<string, string> = {}) =>
     `/owners?${new URLSearchParams({ stage, ...(q.kind ? { kind: q.kind } : {}), ...extra })}`;
@@ -58,7 +61,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
         description={t(`stageBody_${q.stage}`)}
       >
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
-          {STAGES.map((k) => (
+          {STAGES.filter((k) => k !== "registered" || seesRegistered).map((k) => (
             <Link
               key={k}
               href={stageHref(k)}

@@ -126,3 +126,32 @@ describe("registering land that was started through an old application", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.notifications where user_id = $1 and title_en like $2`, [cashier, `%${r.pun}%`])).toBeGreaterThan(0);
   });
 });
+
+describe("owners: who sees and deletes registered owners", () => {
+  it("partial owners: registrars delete them once their land is gone; registered owners: admins only, with a reason", async () => {
+    const part = await parcel(false);
+    const partOwner = await scalar<string>(db, `select party_id from public.parcel_owners where parcel_id = $1`, [part]);
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [partOwner])), "HAS_RECORDS");
+    await asUser(db, registrar, (tx) => tx.query(`select public.parcel_delete($1, 'Recorded twice')`, [part]));
+    await asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [partOwner]));
+
+    const reg = await parcel(true);
+    const regOwner = await scalar<string>(db, `select party_id from public.parcel_owners where parcel_id = $1`, [reg]);
+    await db.query(`update public.parties set registered_at = now() where id = $1`, [regOwner]);
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'Wrong house entirely')`, [reg]));
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1, 'Duplicate person')`, [regOwner])), "PERMISSION_DENIED");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.party_delete($1)`, [regOwner])), "VALIDATION: reason");
+    await asUser(db, admin, (tx) => tx.query(`select public.party_delete($1, 'Duplicate person')`, [regOwner]));
+    expect(await scalar<string>(db, `select delete_reason from public.parties where id = $1`, [regOwner])).toBe("Duplicate person");
+  });
+
+  it("an admin switches 'See registered owners' off for a role: registered owners disappear for it", async () => {
+    const reg = await parcel(true);
+    const owner = await scalar<string>(db, `select party_id from public.parcel_owners where parcel_id = $1`, [reg]);
+    await db.query(`update public.parties set registered_at = now() where id = $1`, [owner]);
+    const sees = () => asUser(db, registrar, (tx) => scalar<number>(tx, `select count(*)::int from public.parties where id = $1`, [owner]));
+    expect(await sees()).toBe(1);
+    await db.query(`delete from public.role_permissions where permission_key = 'owners.registered' and role_id = (select id from public.roles where key = 'registrar')`);
+    expect(await sees()).toBe(0);
+  });
+});

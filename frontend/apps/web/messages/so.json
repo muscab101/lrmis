@@ -350,7 +350,7 @@
     "outside_neighbourhood": "Xuduuddu way ka baxsan tahay xaafadda dhulka.",
     "owner_identity_required": "Ku dar dukumenti aqoonsi ama lambar telefoon ka hor intaadan diiwaangelin masuulkan.",
     "owner_registered": "Masuuliyiinta la diiwaangeliyey lama tirtiri karo.",
-    "owner_in_use": "Masuulkan wuxuu ku qoran yahay codsi, sidaa darteed lama tirtiri karo.",
+    "owner_in_use": "Milkiilahan weli dhul ayuu haystaa ama codsi furan ayuu ku jiraa, sidaas darteed lama tirtiri karo. Marka hore tirtir ama wareeji dhulka.",
     "no_surveyor_in_district": "Weli sahamiye kama shaqeeyo degmadan. Sahamiye sii degmadan Maamulka → Isticmaalayaasha.",
     "site_note_required": "Sheeg sababta dhulka aan loo helin (ugu yaraan 5 xaraf).",
     "register_site_not_confirmed": "Dhulka weli goobta lagama xaqiijin (✓).",
@@ -1111,7 +1111,9 @@
       "certificates_id_cards": "Kaarka aqoonsiga",
       "reports_assistant": "Kaaliyaha",
       "parcels_registered": "Arag dhulka la diiwaangeliyay",
-      "parcels_delete_registered": "Tirtir dhulka la diiwaangeliyay"
+      "parcels_delete_registered": "Tirtir dhulka la diiwaangeliyay",
+      "owners_registered": "Arag milkiilayaasha la diiwaangeliyay",
+      "owners_delete_registered": "Tirtir milkiilayaasha la diiwaangeliyay"
     }
   },
   "design": {
@@ -1610,7 +1612,7 @@
     "actionDelete": "Tirtir",
     "actionRegister": "U gudbi diiwaanka",
     "deleteTitle": "Ma tirtirtaa {name}?",
-    "deleteBody": "Tani waxay tirtiraysaa masuulka qabyada ah. Waxay ku jiri doontaa diiwaanka hubinta. Masuuliyiinta la diiwaangeliyey ama codsi ku jira lama tirtiri karo.",
+    "deleteBody": "Tani waxay tirtiraysaa milkiilaha aan dhammaystirnayn. Wuxuu ku jirayaa taariikhda. Milkiile weli dhul haysta lama tirtiri karo.",
     "deleted": "Masuulka waa la tirtiray",
     "registerTitle": "Ma u gudbisaa {name} diiwaanka?",
     "registerBody": "Marka hore hubi magaca, aqoonsiga iyo telefoonka. Marka la diiwaangeliyo, masuulku wuxuu noqonayaa diiwaan rasmi ah lamana tirtiri karo.",
@@ -1629,7 +1631,9 @@
       "hint": "Sawir baasaboor oo kale ah, wejiga kamaradda u jeeda. JPG, PNG ama WEBP, ilaa 5 MB."
     },
     "saveAndAddLand": "Kaydi oo ku dar dhulkiisa",
-    "createdNextLand": "Milkiilaha waa la kaydiyay. Hadda ku dar dhulkiisa aaggan."
+    "createdNextLand": "Milkiilaha waa la kaydiyay. Hadda ku dar dhulkiisa aaggan.",
+    "deleteBodyRegistered": "Milkiilahan la diiwaangeliyay waa laga saarayaa diiwaanka. Wuxuu ku jirayaa taariikhda iyo sababtaada. Milkiile weli dhul haysta lama tirtiri karo: marka hore tirtir ama wareeji dhulka.",
+    "deleteReason": "Sababta loo tirtirayo"
   },
   "track": {
     "title": "Raadraac codsi",

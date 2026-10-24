@@ -2,7 +2,9 @@
 
 import { Button } from "@dhulka/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
+import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
+import { Textarea } from "@dhulka/ui/input";
 import { Ellipsis, Info, Pencil, SquareCheckBig, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -14,19 +16,24 @@ import type { PartyRow } from "@/lib/server/applications";
 
 export interface OwnerAbilities {
   update: boolean;
+  /** Delete partial owners (owners.delete). */
   remove: boolean;
   register: boolean;
+  /** Delete registered owners (owners.delete_registered — admins). */
+  removeRegistered?: boolean;
 }
 
 type Districts = { id: string; name_so: string; name_en: string }[];
 
-/** Row keys: view, edit, delete (drafts) and move to the register. New owners and land are added from Surveys. */
+/** Row keys: view, edit, delete and move to the register. Registered owners are deleted only by admins. New owners and land are added from Surveys. */
 export function OwnerRowActions({ party, districts, can, onDetail = false }: { party: PartyRow; districts: Districts; can: OwnerAbilities; onDetail?: boolean }) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const router = useRouter();
   const [dialog, setDialog] = useState<"edit" | "delete" | "register" | null>(null);
   const draft = !party.registered_at;
+  const canDelete = draft ? can.remove : !!can.removeRegistered;
+  const [reason, setReason] = useState("");
 
   const icon = (label: string, node: React.ReactElement) => <Tooltip content={label}>{node}</Tooltip>;
 
@@ -59,7 +66,7 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
                 {t("actionRegister")}
               </DropdownMenuItem>
             )}
-            {draft && can.remove && (
+            {canDelete && (
               <DropdownMenuItem destructive onSelect={() => setDialog("delete")}>
                 <Trash2 aria-hidden />
                 {t("actionDelete")}
@@ -81,8 +88,7 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
           </Button>,
         )}
       {can.update && (onDetail ? <EditOwner party={party} districts={districts} /> : <EditOwner party={party} districts={districts} iconOnly className="hidden sm:inline-flex" />)}
-      {draft &&
-        can.remove &&
+      {canDelete &&
         icon(
           t("actionDelete"),
           <Button variant="ghost" size="icon-sm" className={`text-danger ${keys}`} aria-label={t("actionDelete")} onClick={() => setDialog("delete")}>
@@ -102,14 +108,23 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
         open={dialog === "delete"}
         onOpenChange={(o) => !o && setDialog(null)}
         title={t("deleteTitle", { name: party.full_name })}
-        description={t("deleteBody")}
+        description={draft ? t("deleteBody") : t("deleteBodyRegistered")}
         confirmLabel={t("actionDelete")}
         destructive
-        submit={() => deleteOwnerAction({ id: party.id })}
+        submit={() => deleteOwnerAction({ id: party.id, reason })}
         successMessage={t("deleted")}
         onDone={() => onDetail && router.push("/owners")}
       >
-        {(fe) => fe("owner") && <p className="text-danger text-sm">{fe("owner")}</p>}
+        {(fe) => (
+          <>
+            {!draft && (
+              <Field id={`owner-delete-${party.id}`} label={t("deleteReason")} error={fe("reason")} required>
+                <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} />
+              </Field>
+            )}
+            {fe("owner") && <p className="text-danger text-sm">{fe("owner")}</p>}
+          </>
+        )}
       </FormDialog>
       <FormDialog
         open={dialog === "register"}

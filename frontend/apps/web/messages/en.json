@@ -350,7 +350,7 @@
     "outside_neighbourhood": "The boundary is outside the parcel's neighbourhood.",
     "owner_identity_required": "Add an ID document or a phone number before registering this owner.",
     "owner_registered": "Registered owners can't be deleted.",
-    "owner_in_use": "This owner is named on an application, so it can't be deleted.",
+    "owner_in_use": "This owner still holds land or is on an open application, so it can't be deleted. Delete or transfer the land first.",
     "no_surveyor_in_district": "No surveyor works in this district yet. Give a surveyor this district in Admin → Users.",
     "site_note_required": "Say why the land couldn't be found (at least 5 characters).",
     "register_site_not_confirmed": "The land hasn't been confirmed on site (✓) yet.",
@@ -1111,7 +1111,9 @@
       "certificates_id_cards": "ID cards",
       "reports_assistant": "Assistant",
       "parcels_registered": "See registered land",
-      "parcels_delete_registered": "Delete registered land"
+      "parcels_delete_registered": "Delete registered land",
+      "owners_registered": "See registered owners",
+      "owners_delete_registered": "Delete registered owners"
     }
   },
   "design": {
@@ -1610,7 +1612,7 @@
     "actionDelete": "Delete",
     "actionRegister": "Move to registered",
     "deleteTitle": "Delete {name}?",
-    "deleteBody": "This removes the draft owner. It stays in the audit log. Registered owners and owners on an application can't be deleted.",
+    "deleteBody": "This removes the partial owner. It stays in the history. An owner who still holds land can't be deleted.",
     "deleted": "Owner deleted",
     "registerTitle": "Move {name} to registered?",
     "registerBody": "Check the name, ID and phone first. Once registered, the owner is part of the official record and can't be deleted.",
@@ -1629,7 +1631,9 @@
       "hint": "Passport-style, face to the camera. JPG, PNG or WEBP, up to 5 MB."
     },
     "saveAndAddLand": "Save and add their land",
-    "createdNextLand": "Owner saved. Now add their land in this zone."
+    "createdNextLand": "Owner saved. Now add their land in this zone.",
+    "deleteBodyRegistered": "This registered owner is removed from the register. It stays in the history with your reason. An owner who still holds land can't be deleted: delete or transfer the land first.",
+    "deleteReason": "Why it's deleted"
   },
   "track": {
     "title": "Track an application",

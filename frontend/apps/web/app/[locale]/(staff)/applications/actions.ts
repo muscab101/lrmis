@@ -287,6 +287,7 @@ function ownerErrors(err: unknown): never {
     if (err.code === "VALIDATION" && detail === "identity_required") throw new AppFailure("VALIDATION", undefined, { owner: ["validation.owner_identity_required"] });
     if (err.code === "CONFLICT" && detail === "registered") throw new AppFailure("CONFLICT", undefined, { owner: ["validation.owner_registered"] });
     if (err.code === "HAS_RECORDS") throw new AppFailure("HAS_RECORDS", undefined, { owner: ["validation.owner_in_use"] });
+    if (err.code === "VALIDATION" && detail === "reason") throw new AppFailure("VALIDATION", undefined, { reason: ["validation.reason"] });
   }
   throw err;
 }
@@ -303,9 +304,9 @@ export const registerOwnerAction = defineAction("owners.register", z.object({ id
 });
 
 /** Delete a draft owner. */
-export const deleteOwnerAction = defineAction("owners.delete", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+export const deleteOwnerAction = defineAction("owners.delete", z.object({ id: z.uuid(), reason: z.string().trim().max(500).default("") }), async ({ id, reason }, ctx) => {
   try {
-    unwrap(await ctx.supabase.rpc("party_delete", { p_id: id }), "delete owner");
+    unwrap(await ctx.supabase.rpc("party_delete", { p_id: id, p_reason: reason || null }), "delete owner");
   } catch (err) {
     ownerErrors(err);
   }

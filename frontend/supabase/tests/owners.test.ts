@@ -49,7 +49,7 @@ describe("owner registration (draft → registered)", () => {
     await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_register($1)`, [id])), "VALIDATION");
   });
 
-  it("only drafts can be deleted, and only in your districts", async () => {
+  it("registrars delete drafts in their districts; registered owners are left to admins", async () => {
     const id = await draft(clerk, { full_name: "Typo Entry" });
     await expectError(asUser(db, otherRegistrar, (tx) => tx.query(`select public.party_delete($1)`, [id])), "(DISTRICT_OUT_OF_SCOPE|NOT_FOUND)");
     await asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [id]));
@@ -58,7 +58,7 @@ describe("owner registration (draft → registered)", () => {
 
     const reg = await draft(clerk, { full_name: "Kept Owner", phone: "+252618000002" });
     await asUser(db, registrar, (tx) => tx.query(`select public.party_register($1)`, [reg]));
-    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [reg])), "CONFLICT");
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [reg])), "PERMISSION_DENIED");
   });
 
   it("an owner named on an application can't be deleted", async () => {
