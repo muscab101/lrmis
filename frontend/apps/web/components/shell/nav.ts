@@ -55,10 +55,10 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "land",
     items: [
-      { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
-      { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
       { key: "yetToRegister", href: "/parcels/yet-to-register", icon: MapPinOff, permission: "parcels.yet_to_register" },
       { key: "surveys", href: "/surveys", icon: Ruler, permission: "surveys.view" },
+      { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
+      { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
     ],
   },
   {
