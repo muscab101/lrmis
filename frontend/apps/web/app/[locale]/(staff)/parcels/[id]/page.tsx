@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { GeometryPreview } from "@/components/map/geometry-preview";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
+import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getParcel } from "@/lib/server/parcels";
@@ -52,16 +53,6 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [t("govtReceipt"), p.govt_receipt_no ? <Mono key="gr">{p.govt_receipt_no}</Mono> : "—"],
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],
-    [
-      t("sourceApplication"),
-      p.application ? (
-        <Link key="app" href={`/applications/${p.application.id}`} className="underline">
-          <Mono>{p.application.number}</Mono>
-        </Link>
-      ) : (
-        "—"
-      ),
-    ],
   ];
 
   return (
@@ -74,7 +65,14 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             <ParcelStatusBadge status={p.status} />
           </span>
         }
-        actions={<ParcelRowActions parcel={p} onDetail can={{ update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") }} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {["draft", "surveyed", "verified"].includes(p.status) && viewer.can("parcels.approve") && !p.locked_at && (
+              <RegisterParcelButton parcelId={p.id} label={p.house_no ?? ""} size="default" />
+            )}
+            <ParcelRowActions parcel={p} onDetail can={{ update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") }} />
+          </div>
+        }
       />
       {p.locked_at && (
         <Alert tone="warning" className="mb-5" title={t("lockedTitle", { date: format.dateTime(new Date(p.locked_at), { dateStyle: "medium" }) })}>

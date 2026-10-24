@@ -6,7 +6,7 @@ import { Home, MapPinPlus, UserPlus } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
-import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
+import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
 import { ZoneCloseButtons } from "@/components/parcels/zone-close-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -115,10 +115,10 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                   <TableCell>
                     {viewer.can("parcels.view") ? (
                       <Link href={`/parcels/${p.id}`} className="hover:text-primary">
-                        <Mono>{p.pun ?? p.application_number ?? tp("noPun")}</Mono>
+                        <Mono>{p.pun ?? tp("noPun")}</Mono>
                       </Link>
                     ) : (
-                      <Mono>{p.pun ?? p.application_number ?? tp("noPun")}</Mono>
+                      <Mono>{p.pun ?? tp("noPun")}</Mono>
                     )}
                   </TableCell>
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
@@ -127,12 +127,8 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden text-xs md:table-cell">{format.dateTime(new Date(p.created_at), { dateStyle: "medium" })}</TableCell>
                   <TableCell className="text-end">
-                    {!p.application_number && p.status === "draft" && viewer.can("applications.create") ? (
-                      <StartRegistrationButton parcelId={p.id} label={[name, p.house_no && `${tp("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />
-                    ) : p.application_number && p.status !== "registered" ? (
-                      <Link href={`/applications?${new URLSearchParams({ q: p.application_number, status: "any" })}`} className="text-primary text-xs underline">
-                        {tp("openApplication", { number: p.application_number })}
-                      </Link>
+                    {["draft", "surveyed", "verified"].includes(p.status) && viewer.can("parcels.approve") ? (
+                      <RegisterParcelButton parcelId={p.id} label={[name, p.house_no && `${tp("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />
                     ) : null}
                   </TableCell>
                 </TableRow>

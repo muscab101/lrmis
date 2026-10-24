@@ -1,5 +1,4 @@
 import { StatusBadge } from "@dhulka/ui/badge";
-import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Mono } from "@dhulka/ui/misc";
 import { ClipboardList, FileText, Users } from "lucide-react";
@@ -76,9 +75,6 @@ export async function SurveyFileCards({
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {can.editLand && <SurveyDetailsEdit surveyId={surveyId} details={file} propertyTypes={propertyTypes} />}
-            <Button asChild size="sm" variant="outline">
-              <Link href={`/applications/${file.id}`}>{t("actionApplication")}</Link>
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -163,9 +159,6 @@ export async function SurveyFileCards({
               ))}
             </ul>
           )}
-          <Link href={`/applications/${file.id}?tab=documents`} className="text-primary mt-3 inline-block text-xs hover:underline">
-            {t("caseOpenDocuments")}
-          </Link>
         </CardContent>
       </Card>
     </section>

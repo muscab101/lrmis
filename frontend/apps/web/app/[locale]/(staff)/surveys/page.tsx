@@ -3,7 +3,7 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Button } from "@dhulka/ui/button";
 import { Tooltip } from "@dhulka/ui/form-controls";
-import { ClipboardList, Compass, MapPinned } from "lucide-react";
+import { Compass, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -92,12 +92,12 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                 {checks.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell>
-                      <Link href={`/applications/${c.id}`} className="hover:text-primary inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1.5">
                         <span className="text-status-pending font-bold" aria-hidden>
                           ?
                         </span>
                         <Mono>{c.number}</Mono>
-                      </Link>
+                      </span>
                       {c.plot_no && <div className="text-muted-foreground text-xs">{c.plot_no}</div>}
                     </TableCell>
                     <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(c.site_check_requested_at), { dateStyle: "medium" })}</TableCell>
@@ -110,13 +110,6 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                     <TableCell>
                       <div className="flex justify-end gap-0.5">
                         <SiteCheckActions application={{ ...c, site_check_status: "pending" }} me={viewer.user.id} can={siteCan} />
-                        <Tooltip content={t("actionApplication")}>
-                          <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
-                            <Link href={`/applications/${c.id}`} aria-label={t("actionApplication")}>
-                              <ClipboardList aria-hidden />
-                            </Link>
-                          </Button>
-                        </Tooltip>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -167,15 +160,6 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                           </Link>
                         </Button>
                       </Tooltip>
-                      {s.application && (
-                        <Tooltip content={t("actionApplication")}>
-                          <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
-                            <Link href={`/applications/${s.application.id}`} aria-label={t("actionApplication")}>
-                              <ClipboardList aria-hidden />
-                            </Link>
-                          </Button>
-                        </Tooltip>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -32,7 +32,7 @@ beforeAll(async () => {
   parcel = await scalar<string>(
     db,
     `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, geom, status, registered_at, house_no)
-     values ('BNHDN01201', 'HDN0000001', $1, $2, 'residential', 400, extensions.st_setsrid(extensions.st_geomfromgeojson($3), 4326), 'registered', now(), '01') returning id`,
+     values ('BNHDN01299', 'HDN0009999', $1, $2, 'residential', 400, extensions.st_setsrid(extensions.st_geomfromgeojson($3), 4326), 'registered', now(), '01') returning id`,
     [hodan, nbhd, JSON.stringify(square(45.3, 2.04, 0.0001))],
   );
   const party = await scalar<string>(db, `insert into public.parties (full_name, phone, district_id) values ('Cali Xasan', '+252615550101', $1) returning id`, [hodan]);
@@ -95,5 +95,30 @@ describe("every role works on its own", () => {
     expect(
       await scalar<boolean>(db, `select 'parcels.yet_to_register' = any (default_permissions) from public.roles where key = 'citizen'`),
     ).toBe(false);
+  });
+});
+
+describe("register land straight from the parcel (no Applications page)", () => {
+  it("the registrar registers field land: PUN, tax bill and service charge, owners registered; only once", async () => {
+    await db.query(`update public.property_grades set amount = 2 where code = (select code from public.property_grades order by sort limit 1)`);
+    const grade = await scalar<string>(db, `select code from public.property_grades order by sort limit 1`);
+    await db.query(`update public.fee_types set active = true, amount = 12 where code = 'service_charge'`);
+    const land = await asUser(db, u.surveyor!, (tx) =>
+      scalar<{ parcel_id: string; party_id: string }>(tx, `select public.field_land_create($1)`, [
+        JSON.stringify({ district_id: hodan, neighbourhood_id: nbhd, pin_lon: 45.301, pin_lat: 2.041, plot_width_m: 10, plot_length_m: 5, house_no: "15", property_type: grade, owner_name: "Maryan Cabdi", owner_phone: "+252615550222" }),
+      ]),
+    );
+    await expect(asUser(db, u.surveyor!, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]))).rejects.toThrow(/^PERMISSION_DENIED/);
+    const r = await asUser(db, u.registrar!, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [land.parcel_id]));
+    expect(r.pun).toMatch(/^BN/);
+    const p = await scalar<{ status: string; pun: string }>(db, `select row_to_json(p) from public.parcels p where id = $1`, [land.parcel_id]);
+    expect(p).toMatchObject({ status: "registered", pun: r.pun });
+    const bills = await db.query<{ code: string; total: string }>(
+      `select f.code, i.total from public.invoices i join public.fee_types f on f.id = i.fee_type_id where i.parcel_id = $1 order by f.code`,
+      [land.parcel_id],
+    );
+    expect(bills.rows.map((b) => [b.code, Number(b.total)])).toEqual([["property_bill", 100], ["service_charge", 12]]);
+    expect(await scalar<string | null>(db, `select registered_at from public.parties where id = $1`, [land.party_id])).not.toBeNull();
+    await expect(asUser(db, u.registrar!, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]))).rejects.toThrow(/^CONFLICT: status/);
   });
 });

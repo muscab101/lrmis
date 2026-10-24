@@ -2032,7 +2032,11 @@
       "start": "Bilow diiwaangelinta",
       "startTitle": "Ma bilaabaysaa diiwaangelinta?",
       "startBody": "Tani waxay abuuraysaa codsi {land} iyo milkiilihiisa, si aad u biileyso, u sahamiso, u hubiso oo u diiwaangeliso.",
-      "started": "Codsiga waa la abuuray."
+      "started": "Codsiga waa la abuuray.",
+      "register": "Diiwaangeli",
+      "registerTitle": "Diiwaangeli dhulkan?",
+      "registerBody": "{land} wuxuu helayaa PUN iyo lambar xisaab, waxaa loo samaynayaa biilka canshuurta iyo khidmadda adeegga, milkiilayaashiisana waa la diiwaangelinayaa. Khasnajiyada waa la ogeysiinayaa; shahaadadu waxay imanaysaa marka biilasha la bixiyo.",
+      "registered": "Dhulka waa la diiwaangeliyay"
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",

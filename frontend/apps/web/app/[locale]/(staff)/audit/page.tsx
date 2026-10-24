@@ -16,7 +16,6 @@ const PAGE = 50;
 /** Where an audited record lives in the app (tables without their own page have no Open). */
 const RECORD_PAGE: Record<string, string> = {
   parcels: "/parcels/",
-  applications: "/applications/",
   invoices: "/invoices/",
   payments: "/payments/",
   parties: "/owners/",

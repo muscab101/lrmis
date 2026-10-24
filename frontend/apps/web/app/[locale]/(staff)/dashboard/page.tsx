@@ -119,7 +119,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                       format={(n) => String(n)}
                       data={Object.entries(kpis.applications.by_status)
                         .sort((a, b) => b[1] - a[1])
-                        .map(([s2, n]) => ({ label: ta.has(`status.${s2}`) ? ta(`status.${s2}`) : s2, value: n, href: `/${locale}/applications?status=${s2}` }))}
+                        .map(([s2, n]) => ({ label: ta.has(`status.${s2}`) ? ta(`status.${s2}`) : s2, value: n }))}
                     />
                   </div>
                 )}

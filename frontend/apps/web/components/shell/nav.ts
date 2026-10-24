@@ -5,7 +5,6 @@ import {
   Banknote,
   BarChart3,
   Building2,
-  ClipboardList,
   FileStack,
   Gavel,
   History,
@@ -56,7 +55,6 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "land",
     items: [
-      { key: "applications", href: "/applications", icon: ClipboardList, permission: "applications.view" },
       { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
       { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
       { key: "yetToRegister", href: "/parcels/yet-to-register", icon: MapPinOff, permission: "parcels.yet_to_register" },

@@ -2032,7 +2032,11 @@
       "start": "Start registration",
       "startTitle": "Start registration?",
       "startBody": "This creates an application for {land} with its owner, so you can bill, survey, verify and register it.",
-      "started": "Application created."
+      "started": "Application created.",
+      "register": "Register",
+      "registerTitle": "Register this land?",
+      "registerBody": "{land} gets its PUN and account number, its tax bill and service charge are raised, and its owners are registered. The cashiers are told; the certificate comes once the bills are paid.",
+      "registered": "Land registered"
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",

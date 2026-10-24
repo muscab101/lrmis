@@ -120,10 +120,11 @@ export const addFieldLandAction = defineAction(
   },
 );
 
-/** Field land → a draft application (channel "field") for the bill, survey, verification and registration. */
-export const startRegistrationAction = defineAction("parcels.start_registration", z.object({ parcelId: z.uuid() }), async ({ parcelId }, ctx) => {
-  const out = unwrap(await ctx.supabase.rpc("field_land_start_registration", { p_parcel: parcelId }), "start registration") as { id: string; number: string };
+/** Register partial land straight from the parcel: PUN, bills, owners. */
+export const registerParcelAction = defineAction("parcels.register", z.object({ parcelId: z.uuid() }), async ({ parcelId }, ctx) => {
+  const out = unwrap(await ctx.supabase.rpc("parcel_register", { p_parcel: parcelId }), "register parcel") as { pun: string; parcel_id: string };
   refresh();
-  revalidatePath("/[locale]/applications", "layout");
+  revalidatePath("/[locale]/surveys", "layout");
+  revalidatePath("/[locale]/cashier", "page");
   return out;
 });

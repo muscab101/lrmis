@@ -28,7 +28,7 @@ import {
 } from "@/app/[locale]/(staff)/surveys/actions";
 import { FormError } from "@/components/forms/form-error";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import type { SurveyDetail } from "@/lib/server/surveys";
 
@@ -522,14 +522,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
             <p className="text-xs text-muted-foreground">
               {t(`methods.${method}`)}
               {accuracy != null && ` · ${t("accuracy", { m: accuracy })}`}
-              {app && (
-                <>
-                  {" · "}
-                  <Link className="underline" href={`/applications/${app.id}`}>
-                    {app.number}
-                  </Link>
-                </>
-              )}
+              {app && ` · ${app.number}`}
             </p>
             {m.selfIntersects && (
               <Alert tone="danger" title={t("selfIntersects")}>

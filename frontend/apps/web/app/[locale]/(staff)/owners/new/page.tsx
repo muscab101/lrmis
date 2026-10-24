@@ -12,7 +12,7 @@ export default async function NewOwnerPage({ params, searchParams }: { params: P
   // From a survey zone: after saving, straight on to Add land in that zone for this owner.
   const fromZone = zone && nbhd && uuid.test(zone) && uuid.test(nbhd) ? { zone, nbhd } : null;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "owners.create");
+  await requirePermission(locale, "owners.create");
   const t = await getTranslations("owners");
   const districts = await listDistricts();
   return (
@@ -20,7 +20,7 @@ export default async function NewOwnerPage({ params, searchParams }: { params: P
       <PageHeader title={t("new")} description={t("newSubtitle")} />
       <Card>
         <CardContent>
-          <NewOwnerForm districts={districts} canApply={viewer.can("applications.create")} fromZone={fromZone} />
+          <NewOwnerForm districts={districts} fromZone={fromZone} />
         </CardContent>
       </Card>
     </div>

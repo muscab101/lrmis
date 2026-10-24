@@ -4,14 +4,12 @@ import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Lock, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { ApplicationRowActions } from "@/components/applications/application-row-actions";
-import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
-import { StartRegistrationButton } from "@/components/parcels/start-registration-button";
+import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { applicationsByNumber, PARCEL_TABS, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
+import { PARCEL_TABS, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -30,19 +28,10 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const stage: (typeof PARCEL_TABS)[number] = (PARCEL_TABS as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
   const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
-  // Partial parcels are worked through their application, with the same keys as the Applications list.
   const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
-  const apps = await applicationsByNumber(rows.filter((r) => partial(r.status) && r.application_number).map((r) => r.application_number!));
-  const appCan = {
-    update: viewer.can("applications.update"),
-    cancel: viewer.can("applications.cancel"),
-    checkAny: viewer.can("surveys.approve"),
-    checkOwn: viewer.can("surveys.update"),
-    register: viewer.can("parcels.approve"),
-  };
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
-  // Land is added from a survey zone (Surveys → Zones); here it can start its registration.
-  const canStart = viewer.can("applications.create");
+  // Land is added from a survey zone (Surveys → Zones); here the registrar registers it.
+  const canRegister = viewer.can("parcels.approve");
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
@@ -108,13 +97,10 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell>
                     <Link href={`/parcels/${p.id}`} className="hover:text-primary inline-flex items-center gap-1.5">
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
-                      <Mono>{p.pun ?? p.application_number ?? t("noPun")}</Mono>
+                      <Mono>{p.pun ?? t("noPun")}</Mono>
                     </Link>
-                    {!p.application_number && p.status === "draft" && (
-                      <>
-                        <span className="text-muted-foreground block text-xs">{t("fieldLand.badge")}</span>
-                        {canStart && <StartRegistrationButton parcelId={p.id} label={[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />}
-                      </>
+                    {partial(p.status) && canRegister && !p.locked_at && (
+                      <RegisterParcelButton parcelId={p.id} label={[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />
                     )}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
@@ -144,18 +130,9 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />
-                    {partial(p.status) && p.application_number && apps.get(p.application_number) && (
-                      <div className="mt-1">
-                        <ApplicationStatusBadge status={apps.get(p.application_number)!.status} />
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell>
-                    {partial(p.status) && p.application_number && apps.get(p.application_number) ? (
-                      <ApplicationRowActions application={apps.get(p.application_number)!} me={viewer.user.id} can={appCan} />
-                    ) : (
-                      <ParcelRowActions parcel={p} can={can} />
-                    )}
+                    <ParcelRowActions parcel={p} can={can} />
                   </TableCell>
                 </TableRow>
                 );

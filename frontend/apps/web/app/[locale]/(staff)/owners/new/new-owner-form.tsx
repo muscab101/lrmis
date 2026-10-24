@@ -7,11 +7,9 @@ import { useRouter } from "@/i18n/navigation";
 
 export function NewOwnerForm({
   districts,
-  canApply,
   fromZone = null,
 }: {
   districts: { id: string; name_so: string; name_en: string }[];
-  canApply: boolean;
   /** Opened from a survey zone: next is that zone's Add land for this owner. */
   fromZone?: { zone: string; nbhd: string } | null;
 }) {
@@ -22,19 +20,14 @@ export function NewOwnerForm({
       party={null}
       districts={districts}
       onCancel={() => router.back()}
-      submitLabel={fromZone ? t("saveAndAddLand") : canApply ? t("saveAndAddParcel") : undefined}
+      submitLabel={fromZone ? t("saveAndAddLand") : undefined}
       onSaved={(id) => {
         if (fromZone) {
           toast.success(t("createdNextLand"));
           return router.push(`/parcels/new?${new URLSearchParams({ nbhd: fromZone.nbhd, zone: fromZone.zone, owner: id })}`);
         }
-        if (!canApply) {
-          toast.success(t("created"));
-          return router.push("/owners?stage=draft");
-        }
-        toast.success(t("createdNext"));
-        // Straight on to the owner's land parcel (step 1 of the application).
-        router.push(`/applications/new?owner=${id}`);
+        toast.success(t("created"));
+        router.push(`/owners/${id}`);
       }}
     />
   );

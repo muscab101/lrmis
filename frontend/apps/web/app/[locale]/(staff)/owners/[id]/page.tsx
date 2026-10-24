@@ -5,7 +5,6 @@ import { BadgeCheck, ClipboardList } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
-import { Link } from "@/i18n/navigation";
 import { PARTY_COLUMNS, type PartyRow } from "@/lib/server/applications";
 import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
@@ -137,9 +136,7 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
                 {apps.map((l) => (
                   <TableRow key={l.application!.id}>
                     <TableCell>
-                      <Link href={`/applications/${l.application!.id}`} className="hover:text-primary">
-                        <Mono>{l.application!.number}</Mono>
-                      </Link>
+                      <Mono>{l.application!.number}</Mono>
                     </TableCell>
                     <TableCell className="text-sm">
                       {ta(`roles.${l.role}`)}
