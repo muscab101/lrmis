@@ -3228,7 +3228,10 @@
     "actions": "Actions",
     "viewParcel": "View parcel",
     "viewTransfer": "View transfer",
-    "takeDuty": "Take the duty payment at the cashier"
+    "takeDuty": "Take the duty payment at the cashier",
+    "findParcel": "Parcel (PUN) — transfer, subdivide, merge, change of use, correct, permit, dispute, lien or court order",
+    "find": "Find",
+    "parcelNotFound": "No registered parcel {pun} in your districts."
   },
   "reports": {
     "title": "Reports",

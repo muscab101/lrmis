@@ -1,12 +1,16 @@
 import { Button } from "@dhulka/ui/button";
-import { Card } from "@dhulka/ui/card";
+import { Card, CardContent } from "@dhulka/ui/card";
+import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { ArrowRightLeft, Banknote, Eye, MapPinned } from "lucide-react";
+import { ArrowRightLeft, Banknote, Eye, MapPinned, Search } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { legalCounts, listTransfers, type RequestStatus } from "@/lib/server/legal";
+import { ParcelLegalCard } from "@/components/legal/parcel-legal";
+import { legalCounts, listTransfers, parcelLegal, type RequestStatus } from "@/lib/server/legal";
+import { getParcel } from "@/lib/server/parcels";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
   const t = await getTranslations("legal");
@@ -27,10 +31,56 @@ export default async function TransfersPage({ params, searchParams }: { params: 
   const [rows, counts] = await Promise.all([listTransfers(filter), legalCounts()]);
   const badge: Partial<Record<string, number>> = { submitted: counts.transfers_waiting, draft: counts.transfers_draft };
   const names = (o: { full_name: string }[]) => o.map((x) => x.full_name).join(", ") || "—";
+  // Legal work on one parcel (transfer, subdivide, merge, change of use, correction, permit, dispute, lien, court
+  // order): find it by its PUN (dashes from an old printout are ignored).
+  const pun = (sp.pun ?? "").trim().toUpperCase().replace(/-/g, "").slice(0, 30);
+  const found = pun
+    ? ((await (await createClient()).from("parcels").select("id").eq("pun", pun).is("deleted_at", null).maybeSingle()).data as { id: string } | null)
+    : null;
+  const parcel = found ? await getParcel(found.id) : null;
+  const legal = parcel ? await parcelLegal(parcel.id) : null;
 
   return (
     <>
       <PageHeader title={t("transfersTitle")} description={t("transfersSubtitle")} />
+      <Card className="mb-5">
+        <CardContent className="pt-5">
+          <form className="flex flex-wrap items-end gap-2" role="search">
+            <label className="grid min-w-60 flex-1 gap-1 text-sm">
+              <span className="text-muted-foreground text-xs">{t("findParcel")}</span>
+              <Input name="pun" defaultValue={pun} placeholder="BN010101" className="font-mono" autoComplete="off" />
+            </label>
+            <Button type="submit" variant="outline">
+              <Search aria-hidden />
+              {t("find")}
+            </Button>
+          </form>
+          {pun && !parcel && <p className="text-muted-foreground mt-3 text-sm">{t("parcelNotFound", { pun })}</p>}
+        </CardContent>
+      </Card>
+      {parcel && legal && (
+        <div className="mb-5">
+          <p className="mb-2 text-sm">
+            <Link href={`/parcels/${parcel.id}`} className="hover:text-primary">
+              <Mono className="font-medium">{parcel.pun}</Mono>
+            </Link>
+            <span className="text-muted-foreground"> · {parcel.parcel_owners.filter((o) => !o.valid_to).map((o) => o.party.full_name).join(", ") || "—"}</span>
+          </p>
+          <ParcelLegalCard
+            parcel={{ id: parcel.id, pun: parcel.pun!, ownership: parcel.ownership, land_use: parcel.land_use, status: parcel.status, plot_no: parcel.plot_no, deed_no: parcel.deed_no, govt_file_no: parcel.govt_file_no, developed: parcel.developed }}
+            data={legal}
+            me={viewer.user.id}
+            can={{
+              transfer: viewer.can("transfers.create"),
+              legal: viewer.can("disputes.create"),
+              legalApprove: viewer.can("disputes.approve"),
+              change: viewer.can("parcels.update"),
+              permit: viewer.can("permits.create"),
+              lease: viewer.can("parcels.approve"),
+            }}
+          />
+        </div>
+      )}
       <Card className="overflow-hidden">
         <nav className="flex flex-wrap gap-1.5 border-b p-3 text-sm">
           {FILTERS.map((f) => (

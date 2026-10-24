@@ -3228,7 +3228,10 @@
     "actions": "Ficillo",
     "viewParcel": "Eeg dhulka",
     "viewTransfer": "Eeg wareejinta",
-    "takeDuty": "Ka qaado canshuurta khasnajiga"
+    "takeDuty": "Ka qaado canshuurta khasnajiga",
+    "findParcel": "Dhul (PUN) — wareejin, qaybin, isku darid, beddelka isticmaalka, sixid, ogolaansho, muran, rahan ama amar maxkamadeed",
+    "find": "Raadi",
+    "parcelNotFound": "Ma jiro dhul diiwaangashan {pun} oo degmooyinkaaga ku jira."
   },
   "reports": {
     "title": "Warbixinada",
