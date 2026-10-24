@@ -1,9 +1,8 @@
-import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Lock, MapPinned, MapPinPlus } from "lucide-react";
+import { Lock, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
@@ -35,26 +34,12 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock"), register: viewer.can("parcels.approve") };
   // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
   const canDelete = (status: string) => (partial(status) ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"));
-  const canAddHouse = viewer.can("surveys.create") || viewer.can("applications.create");
   const showInvoices = viewer.can("invoices.view");
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader
-        title={t("title")}
-        description={t(`stageBody_${stage}`)}
-        actions={
-          canAddHouse && (
-            <Button asChild>
-              <Link href="/parcels/new">
-                <MapPinPlus aria-hidden />
-                {t("addHouse")}
-              </Link>
-            </Button>
-          )
-        }
-      >
+      <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {tabs.map((k) => (
             <Link
