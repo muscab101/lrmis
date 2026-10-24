@@ -29,11 +29,10 @@ export interface ParcelListRow {
 }
 
 export const PARCEL_STAGES = ["draft", "registered", "paid", "owing", "all"] as const;
-/**
- * The tabs on Parcels: partial registration, registered, and registered land split by its bills — paid (nothing
- * owed) and not paid ("all" is only used inside, e.g. a zone's houses).
- */
-export const PARCEL_TABS = ["draft", "registered", "paid", "owing"] as const;
+/** The tabs on Parcels: partial registration and registered ("all" is only used inside, e.g. a zone's houses). */
+export const PARCEL_TABS = ["draft", "registered"] as const;
+/** Inside Registered: all, paid (nothing owed) and not paid. */
+export const REGISTERED_SPLITS = ["all", "paid", "owing"] as const;
 export type ParcelStage = (typeof PARCEL_STAGES)[number];
 /** Not registered yet: partial registration, still worked on through its application. */
 const PARTIAL = "(draft,surveyed,verified)";

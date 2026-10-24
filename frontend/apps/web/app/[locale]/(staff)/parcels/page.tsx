@@ -9,7 +9,7 @@ import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { PARCEL_TABS, parcelStageCounts, searchParcels } from "@/lib/server/parcels";
+import { PARCEL_TABS, parcelStageCounts, REGISTERED_SPLITS, searchParcels } from "@/lib/server/parcels";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -30,7 +30,9 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const tabs = PARCEL_TABS.filter((k) => k === "draft" || seesRegistered);
   const stage: (typeof PARCEL_TABS)[number] = (tabs as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
-  const [rows, counts] = await Promise.all([searchParcels(q, stage, nbhdId), parcelStageCounts()]);
+  // Inside Registered: all, paid or not paid.
+  const split: (typeof REGISTERED_SPLITS)[number] = stage === "registered" && (REGISTERED_SPLITS as readonly string[]).includes(sp.pay ?? "") ? (sp.pay as (typeof REGISTERED_SPLITS)[number]) : "all";
+  const [rows, counts] = await Promise.all([searchParcels(q, stage === "registered" && split !== "all" ? split : stage, nbhdId), parcelStageCounts()]);
   const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock"), register: viewer.can("parcels.approve") };
   // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
@@ -57,6 +59,21 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
       <Card className="overflow-hidden">
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
           <input type="hidden" name="stage" value={stage} />
+          {stage === "registered" && split !== "all" && <input type="hidden" name="pay" value={split} />}
+          {stage === "registered" && (
+            <div className="bg-muted flex gap-0.5 rounded-md p-0.5 text-sm" role="group" aria-label={t("paySplit")}>
+              {REGISTERED_SPLITS.map((k) => (
+                <Link
+                  key={k}
+                  href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
+                  aria-current={split === k ? "page" : undefined}
+                  className={`rounded px-2.5 py-1 whitespace-nowrap ${split === k ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {t(`split_${k}`)} <span className="text-muted-foreground tabular-nums">{k === "all" ? counts.registered : counts[k]}</span>
+                </Link>
+              ))}
+            </div>
+          )}
           {nbhdId && <input type="hidden" name="nbhd" value={nbhdId} />}
           {nbhdId && (
             <Link href={`/parcels?stage=${stage}`} className="text-muted-foreground text-xs underline">

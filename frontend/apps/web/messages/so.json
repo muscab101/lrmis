@@ -2079,10 +2079,10 @@
       "on": "laga jawaabay {date}"
     },
     "paidLabel": "La bixiyay",
-    "stage_paid": "La bixiyay",
-    "stage_owing": "Aan la bixin",
-    "stageBody_paid": "Guryaha la diiwaangeliyay ee bixiyay biilashooda (wax lagu lahayn).",
-    "stageBody_owing": "Guryaha la diiwaangeliyay ee weli lacag biilashooda lagu leeyahay."
+    "split_all": "Dhammaan",
+    "split_paid": "La bixiyay",
+    "split_owing": "Aan la bixin",
+    "paySplit": "Biilasha"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
