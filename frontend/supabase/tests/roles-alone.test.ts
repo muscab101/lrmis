@@ -122,3 +122,10 @@ describe("register land straight from the parcel (no Applications page)", () => 
     await expect(asUser(db, u.registrar!, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]))).rejects.toThrow(/^CONFLICT: status/);
   });
 });
+
+describe("citizens", () => {
+  it("don't apply online any more", async () => {
+    expect(await scalar<boolean>(db, `select 'applications.create' = any (default_permissions) from public.roles where key = 'citizen'`)).toBe(false);
+    expect(await scalar<number>(db, `select count(*)::int from public.role_permissions rp join public.roles r on r.id = rp.role_id where r.key = 'citizen' and rp.permission_key like 'applications.%'`)).toBe(0);
+  });
+});

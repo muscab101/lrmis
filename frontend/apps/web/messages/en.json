@@ -3624,7 +3624,9 @@
       "verified": "Checks passed",
       "fee_paid": "Fee paid",
       "fee_waived": "Fee waived"
-    }
+    },
+    "noHouses": "No land in your name yet",
+    "noHousesBody": "When land you own is recorded by the district, it shows here with its bills and certificate."
   },
   "yetToRegister": {
     "title": "Yet to register",

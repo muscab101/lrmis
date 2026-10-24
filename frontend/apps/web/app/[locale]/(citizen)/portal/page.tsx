@@ -1,22 +1,19 @@
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
-import { ClipboardList, Home, Plus } from "lucide-react";
+import { Home } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { Link } from "@/i18n/navigation";
-import { citizenApplications } from "@/lib/server/portal-track";
 import { citizenOverview } from "@/lib/server/portal";
 
 export default async function PortalHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("portal");
-  const ta = await getTranslations("applications");
   const ts = await getTranslations("stage");
   const format = await getFormatter();
   const lang = await getLocale();
-  const [rows, me] = await Promise.all([citizenApplications(), citizenOverview()]);
+  const me = await citizenOverview();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const owed = me.parcels.reduce((s, p) => s + Number(p.balance), 0);
   const name = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en) : "");
@@ -26,14 +23,6 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
       <PageHeader
         title={t("myProperties")}
         description={me.parcels.length ? t("summary", { count: me.parcels.length, owed: usd(owed) }) : t("myPropertiesBody")}
-        actions={
-          <Button asChild>
-            <Link href="/portal/applications/new">
-              <Plus aria-hidden />
-              {t("applyCta")}
-            </Link>
-          </Button>
-        }
       />
 
       <section className="mb-8">
@@ -83,43 +72,7 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
         )}
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">{t("myApplications")}</h2>
-          <Card className="overflow-hidden">
-            {rows.length === 0 ? (
-              <EmptyState
-                icon={<ClipboardList />}
-                title={t("emptyTitle")}
-                description={t("emptyBody")}
-                action={
-                  <Button asChild>
-                    <Link href="/portal/applications/new">{t("applyCta")}</Link>
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="divide-y">
-                {rows.map((a) => (
-                  <li key={a.id}>
-                    <Link href={`/portal/applications/${a.id}`} className="flex flex-wrap items-center gap-3 p-4 hover:bg-surface/70">
-                      <div className="min-w-0 flex-1">
-                        <Mono>{a.number}</Mono>
-                        <div className="text-sm text-muted-foreground">
-                          {ta(`types.${a.type}`)} · {name(a.district)}
-                          {a.pun ? ` · ${a.pun}` : ""}
-                        </div>
-                      </div>
-                      <ApplicationStatusBadge status={a.status as "draft"} />
-                      <span className="text-xs text-muted-foreground">{format.relativeTime(new Date(a.submitted_at ?? a.created_at))}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </section>
-        <aside className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t("receipts")}</CardTitle>
@@ -170,7 +123,6 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
               <p>{t("byPhoneWhatsapp")}</p>
             </CardContent>
           </Card>
-        </aside>
       </div>
     </>
   );

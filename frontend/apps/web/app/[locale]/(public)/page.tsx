@@ -68,8 +68,8 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
           </p>
           <div className="flex items-center justify-end gap-1 [&_button]:text-current [&_button:hover]:bg-black/5">
             <LocaleSwitch />
-            <Link href="/track" className="rounded-md bg-white px-3 py-2 text-[13px] font-medium whitespace-nowrap text-[#0b2a8f] shadow-sm ring-1 ring-black/5 transition-colors hover:bg-white/90 group-data-[solid]/header:ring-[#0b2a8f]/20 sm:px-3.5 sm:text-sm">
-              {t("trackCta")}
+            <Link href="/citizen/login" className="rounded-md bg-white px-3 py-2 text-[13px] font-medium whitespace-nowrap text-[#0b2a8f] shadow-sm ring-1 ring-black/5 transition-colors hover:bg-white/90 group-data-[solid]/header:ring-[#0b2a8f]/20 sm:px-3.5 sm:text-sm">
+              {t("citizenCta")}
             </Link>
           </div>
         </div>
@@ -164,10 +164,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
             </Link>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/track" className="rounded-md bg-[#e6f04a] px-5 py-3 text-sm font-semibold text-[#1d2208] hover:bg-[#dbe63a]">
-              {t("trackCta")}
-            </Link>
-            <Link href="/citizen/login" className="rounded-md bg-white px-5 py-3 text-sm font-semibold text-[#0b2a8f] hover:bg-white/90">
+            <Link href="/citizen/login" className="rounded-md bg-[#e6f04a] px-5 py-3 text-sm font-semibold text-[#1d2208] hover:bg-[#dbe63a]">
               {t("citizenCta")}
             </Link>
           </div>

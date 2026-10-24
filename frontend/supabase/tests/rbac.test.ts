@@ -317,7 +317,7 @@ describe("citizens", () => {
       }),
       "aal1",
     );
-    expect(r).toEqual({ kind: "citizen", apply: true, admin: false, districts: [] });
+    expect(r).toEqual({ kind: "citizen", apply: false, admin: false, districts: [] });
   });
 
   it("app_metadata.kind cannot be set by the user (only via service role)", async () => {

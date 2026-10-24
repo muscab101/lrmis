@@ -194,38 +194,11 @@ describe("application lifecycle", () => {
 });
 
 describe("citizen portal", () => {
-  let citizenApp: string;
-
-  it("a citizen applies online and becomes the 100% owner", async () => {
-    const r = await asUser(
-      db,
-      citizen,
-      (tx) => scalar<{ id: string }>(tx, `select public.application_create($1)`, [JSON.stringify({ district_id: hodan, ...PIN_IN, channel: "office" })]),
-      "aal1",
-    );
-    citizenApp = r.id;
-    const row = await db.query<{ channel: string; role: string; share_pct: string }>(
-      `select a.channel, ap.role, ap.share_pct from public.applications a join public.application_parties ap on ap.application_id = a.id where a.id = $1`,
-      [citizenApp],
-    );
-    expect(row.rows[0]).toMatchObject({ channel: "portal", role: "owner" });
-    expect(Number(row.rows[0]?.share_pct)).toBe(100);
-  });
-
-  it("other citizens cannot see it; district staff can", async () => {
+  it("citizens no longer apply online (the portal shows their land, bills and certificates)", async () => {
+    await expect(
+      asUser(db, citizen, (tx) => tx.query(`select public.application_create($1)`, [JSON.stringify({ district_id: hodan, ...PIN_IN, channel: "office" })]), "aal1"),
+    ).rejects.toThrow(/^PERMISSION_DENIED/);
     expect(await asUser(db, otherCitizen, (tx) => scalar<number>(tx, `select count(*)::int from public.applications`), "aal1")).toBe(0);
-    expect(await asUser(db, clerkHodan, (tx) => scalar<number>(tx, `select count(*)::int from public.applications where id = $1`, [citizenApp]))).toBe(1);
-  });
-
-  it("flags another application within 10 m of the same pin", async () => {
-    const near = await asUser(db, clerkHodan, (tx) => tx.query<{ number: string; distance_m: number }>(`select * from public.application_nearby($1)`, [appId]));
-    expect(near.rows).toHaveLength(1);
-    expect(near.rows[0]?.distance_m).toBeLessThan(1);
-  });
-
-  it("the applicant can cancel a draft", async () => {
-    await asUser(db, citizen, (tx) => tx.query(`select public.application_transition($1, 'cancel')`, [citizenApp]), "aal1");
-    expect(await scalar(db, `select status from public.applications where id = $1`, [citizenApp])).toBe("cancelled");
   });
 });
 

@@ -3624,7 +3624,9 @@
       "verified": "Hubinta waa la dhaafay",
       "fee_paid": "Khidmadda waa la bixiyay",
       "fee_waived": "Khidmadda waa laga cafiyay"
-    }
+    },
+    "noHouses": "Weli dhul magacaaga ku qoran ma jiro",
+    "noHousesBody": "Marka degmadu diiwaangeliso dhul aad leedahay, halkan ayuu ka muuqanayaa isaga oo wata biilashiisa iyo shahaadadiisa."
   },
   "yetToRegister": {
     "title": "Weli lama diiwaangelin",

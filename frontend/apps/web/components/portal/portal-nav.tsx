@@ -14,7 +14,7 @@ const ITEMS = [
 export function PortalNav() {
   const t = useTranslations("portalNav");
   const path = usePathname();
-  const active = (href: string) => (href === "/portal" ? path === "/portal" || path.startsWith("/portal/parcels") : path.startsWith(href) || (href === "/portal/bills" && path.startsWith("/portal/pay")) || (href === "/portal/track" && path.startsWith("/portal/applications")));
+  const active = (href: string) => (href === "/portal" ? path === "/portal" || path.startsWith("/portal/parcels") : path.startsWith(href) || (href === "/portal/bills" && path.startsWith("/portal/pay")));
   return (
     <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4" aria-label={t("label")}>
       {ITEMS.map(({ key, href, icon: Icon }) => (
