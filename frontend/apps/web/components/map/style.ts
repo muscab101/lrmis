@@ -129,6 +129,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
       streets: vector("streets"),
       facilities: vector("facilities"),
       highlight: { type: "geojson", data: { type: "FeatureCollection", features: [] } },
+      // Section/sector points (public.location_pins), filled in by DhulkaMap's `pins` prop.
+      pins: { type: "geojson", data: { type: "FeatureCollection", features: [] }, promoteId: "id" },
       ...(opts.parcels
         ? {
             parcels: {
@@ -259,6 +261,29 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         source: "highlight",
         paint: { "line-color": FLAG, "line-width": 3 },
       },
+      // Pins: solid where the point names the place, hollow where it is only the district centre.
+      ...(["section", "sector"] as const).map((level) => ({
+        id: `${level}-pins`,
+        type: "circle" as const,
+        source: "pins",
+        filter: ["==", ["get", "level"], level],
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 4, 15, 7],
+          "circle-color": ["case", ["==", ["get", "confidence"], "placeholder"], "#ffffff", level === "section" ? C.sections : C.sectors],
+          "circle-stroke-color": ["case", ["==", ["get", "confidence"], "placeholder"], "#5d6573", INK],
+          "circle-stroke-width": 1.5,
+          "circle-opacity": ["case", ["==", ["get", "confidence"], "placeholder"], 0.7, 1],
+        },
+      })) as StyleSpecification["layers"],
+      {
+        id: "pins-label",
+        type: "symbol",
+        source: "pins",
+        minzoom: 13,
+        filter: ["!=", ["get", "confidence"], "placeholder"],
+        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 11, "text-offset": [0, 1.1], "text-anchor": "top" },
+        paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 1.5 },
+      },
       {
         id: "neighbourhoods-label",
         type: "symbol",
@@ -284,8 +309,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
 /** Map layer ids that belong to each toggle in the layers panel. */
 export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
   districts: ["districts-fill", "districts-line", "districts-label"],
-  sections: ["sections-fill", "sections-line"],
-  sectors: ["sectors-fill", "sectors-line"],
+  sections: ["sections-fill", "sections-line", "section-pins", "pins-label"],
+  sectors: ["sectors-fill", "sectors-line", "sector-pins"],
   neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-line", "neighbourhoods-label"],
   streets: ["streets-line"],
   facilities: ["facilities-circle"],

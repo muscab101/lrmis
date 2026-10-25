@@ -57,7 +57,7 @@ export function AreaFilter({ districts, sections, sectors, neighbourhoods, initi
         setSector("");
         setNbhd("");
       }, !district)}
-      {select(t("sector"), "sector", sector, t("allSectors"), sectorList, (v) => {
+      {select(t("sector"), "sector", sector, t("allSectors"), sectorList.map(({ code: _code, ...s }) => s), (v) => {
         setSector(v);
         setNbhd("");
       }, !section)}

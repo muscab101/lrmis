@@ -128,4 +128,16 @@ describe("lookups and tiles", () => {
   it("anonymous visitors cannot read the location tables directly", async () => {
     await expect(as(db, "anon", {}, (tx) => tx.query(`select * from public.neighbourhoods`))).rejects.toThrow(/permission denied/);
   });
+
+  it("location pins: sections and sectors with a point, for staff only", async () => {
+    await asUser(db, admin, (tx) =>
+      tx.query(`update public.sections set point = extensions.st_setsrid(extensions.st_makepoint(45.3, 2.04), 4326),
+                  point_confidence = 'low', point_source = 'test' where id = $1`, [sectionH]),
+    );
+    const pins = await asUser(db, gisHodan, (tx) => scalar<{ features: { properties: Record<string, unknown>; geometry: { coordinates: number[] } }[] }>(tx, `select public.location_pins()`));
+    const pin = pins.features.find((f) => f.properties.id === sectionH);
+    expect(pin?.properties).toMatchObject({ level: "section", confidence: "low", source: "test" });
+    expect(pin?.geometry.coordinates).toEqual([45.3, 2.04]);
+    await expect(as(db, "anon", {}, (tx) => tx.query(`select public.location_pins()`))).rejects.toThrow(/permission denied/);
+  });
 });

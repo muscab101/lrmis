@@ -153,7 +153,7 @@ export function LocationSheet({ level, row, districts, defaultDistrictId, onClos
                   <option value="">{sectionId && sectors.length === 0 ? t("noSectors") : t("choose")}</option>
                   {sectors.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {label(s)}
+                      {locale === "so" ? s.name_so : s.name_en || s.name_so}
                     </option>
                   ))}
                 </NativeSelect>

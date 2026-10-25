@@ -23,7 +23,7 @@ interface Prefs {
 
 const DEFAULT_PREFS: Prefs = {
   base: "streets",
-  visible: { districts: true, sections: false, sectors: false, neighbourhoods: true, streets: true, facilities: true },
+  visible: { districts: true, sections: true, sectors: true, neighbourhoods: true, streets: true, facilities: true },
 };
 
 export function MapWorkspace({
@@ -32,12 +32,14 @@ export function MapWorkspace({
   canEditLocations,
   canViewParcels,
   districts,
+  pins,
 }: {
   initialView: MapView | undefined;
   extent: [number, number, number, number] | null;
   canEditLocations: boolean;
   canViewParcels: boolean;
   districts: { id: string; code: string; name_so: string; name_en: string; has_geom: boolean | null }[];
+  pins: GeoJSON.FeatureCollection | null;
 }) {
   const t = useTranslations("map");
   const tc = useTranslations("common");
@@ -89,7 +91,9 @@ export function MapWorkspace({
 
   const onFeatureClick = useCallback((f: MapGeoJSONFeature | null, lngLat: { lng: number; lat: number }) => {
     setCursor(lngLat);
-    setSelected(f ? { layer: f.sourceLayer ?? f.layer.id, props: f.properties } : null);
+    // Pins come from one GeoJSON source; show them under their level's name.
+    const layer = f?.source === "pins" ? (f.properties.level === "sector" ? "sectors" : "sections") : (f?.sourceLayer ?? f?.layer.id);
+    setSelected(f && layer ? { layer, props: f.properties } : null);
   }, []);
 
   const searchNeighbourhoods = useCallback(
@@ -127,6 +131,7 @@ export function MapWorkspace({
         onFeatureClick={onFeatureClick}
         onViewChange={onViewChange}
         parcels={canViewParcels}
+        pins={pins}
       />
 
       {/* Search */}
@@ -255,6 +260,14 @@ export function MapWorkspace({
               <>
                 <dt className="text-muted-foreground">{t("capacity")}</dt>
                 <dd className="tabular">{String(selected.props.capacity)}</dd>
+              </>
+            )}
+            {selected.props.confidence !== undefined && (
+              <>
+                <dt className="text-muted-foreground">{t("pinAccuracy")}</dt>
+                <dd>{t(`pin_${String(selected.props.confidence)}`)}</dd>
+                <dt className="text-muted-foreground">{t("pinSource")}</dt>
+                <dd className="text-xs text-muted-foreground">{String(selected.props.source ?? "—")}</dd>
               </>
             )}
             {selected.props.kind !== undefined && (

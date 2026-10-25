@@ -128,7 +128,7 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
             <option value="">{sectorList.length ? t("choose") : t("none")}</option>
             {sectorList.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.code} · {name(s)}
+                {name(s)}
               </option>
             ))}
           </NativeSelect>
