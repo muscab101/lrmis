@@ -2,7 +2,7 @@
 
 import { countryOptions, dialCode, NO_ID_NUMBER } from "@dhulka/core/countries";
 import type { AppError } from "@dhulka/core/errors";
-import { ID_TYPES, ownerSchema, partySchema, type PartyInput } from "@dhulka/core/schemas";
+import { capitalizeName, ID_TYPES, ownerSchema, partySchema, type PartyInput } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
@@ -69,6 +69,20 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   });
   const countries = useMemo(() => countryOptions(locale), [locale]);
   const nationalityField = form.register("nationality");
+  // Names start each word with a capital as they are typed ("mohamed al haji" → "Mohamed Al Haji").
+  const nameField = (name: "fullName" | "motherName" | "nextOfKinName") => {
+    const field = form.register(name);
+    return {
+      ...field,
+      onChange: (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const el = ev.target;
+        const caret = el.selectionStart;
+        el.value = capitalizeName(el.value);
+        if (caret !== null) el.setSelectionRange(caret, caret);
+        return field.onChange(ev);
+      },
+    };
+  };
   const e = form.formState.errors;
   const kind = form.watch("kind");
 
@@ -108,12 +122,12 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="fullName" label={kind === "organisation" ? t("orgName") : t("fullName")} error={vm(e.fullName?.message)} required className="sm:col-span-2">
-          <Input autoComplete="off" {...form.register("fullName")} />
+          <Input autoComplete="off" {...nameField("fullName")} />
         </Field>
         {kind === "person" && (
           <>
             <Field id="motherName" label={t("motherName")} hint={t("motherNameHint")} error={vm(e.motherName?.message)} required={mode === "staff"}>
-              <Input autoComplete="off" {...form.register("motherName")} />
+              <Input autoComplete="off" {...nameField("motherName")} />
             </Field>
             <Field id="gender" label={t("gender")} error={vm(e.gender?.message)} required={mode === "staff"}>
               <NativeSelect {...form.register("gender")}>
@@ -189,7 +203,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
         {mode === "staff" && kind === "person" && (
           <>
             <Field id="nextOfKinName" label={t("nextOfKinName")} error={vm(e.nextOfKinName?.message)} required>
-              <Input {...form.register("nextOfKinName")} />
+              <Input {...nameField("nextOfKinName")} />
             </Field>
             <Field id="nextOfKinPhone" label={t("nextOfKinPhone")} error={vm(e.nextOfKinPhone?.message)} required>
               <Input type="tel" {...form.register("nextOfKinPhone")} />

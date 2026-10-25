@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { uuid } from "./common";
 
+/** "mohamed al haji" → "Mohamed Al Haji": each word starts with a capital; the rest is kept as typed. */
+export function capitalizeName(v: string): string {
+  return v.replace(/(^|[\s-])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toLocaleUpperCase());
+}
+
 export const PARTY_KINDS = ["person", "organisation"] as const;
 export const ID_TYPES = ["national_id", "passport", "driving_licence", "birth_certificate", "company_registration", "other"] as const;
 export const APPLICATION_TYPES = ["new_registration", "transfer", "subdivision", "merge", "reprint", "permit", "correction"] as const;
@@ -41,8 +46,8 @@ const phoneOrEmpty = z
 
 const partyFields = z.object({
     kind: z.enum(PARTY_KINDS).default("person"),
-    fullName: z.string().trim().min(2, "validation.name").max(160, "validation.too_long"),
-    motherName: optionalText(120),
+    fullName: z.string().trim().min(2, "validation.name").max(160, "validation.too_long").transform(capitalizeName),
+    motherName: optionalText(120).transform((v) => (v === null ? null : capitalizeName(v))),
     gender: z.enum(["male", "female", ""]).default("").transform((v) => (v === "" ? null : v)),
     dateOfBirth: z
       .string()
@@ -63,7 +68,7 @@ const partyFields = z.object({
       .default(""),
     address: optionalText(300),
     orgRegistrationNo: optionalText(60),
-    nextOfKinName: optionalText(120),
+    nextOfKinName: optionalText(120).transform((v) => (v === null ? null : capitalizeName(v))),
     nextOfKinPhone: phoneOrEmpty.default(""),
     districtId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),
 });

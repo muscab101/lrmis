@@ -3301,7 +3301,7 @@
     "startTransferBody": "Creates a draft. Submitting it raises the stamp duty invoice.",
     "createDraft": "Create draft",
     "newOwners": "New owners",
-    "newOwnersHint": "Search people already on the register, or register a new owner. Shares must add up to 100 %.",
+    "newOwnersHint": "Search people already on the register, or register a new owner. Several owners share the land equally.",
     "addPerson": "Add a person…",
     "role": "Role",
     "share": "Share %",

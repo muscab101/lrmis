@@ -16,9 +16,15 @@ import { PartyForm } from "@/components/owners/party-form";
 import { useRouter } from "@/i18n/navigation";
 
 type Kind = "sale" | "gift" | "inheritance" | "court_order";
-type Recipient = { party: ComboOption; role: "owner" | "co_owner" | "heir"; share: string };
+type Recipient = { party: ComboOption; role: "owner" | "co_owner" | "heir" };
 
-/** Start a transfer: kind, declared value (or court order), new owners with shares that total 100 %. */
+/** Equal shares that add up to exactly 100 % (the last one takes the rounding). */
+function equalShares(n: number): number[] {
+  const each = Math.floor(10000 / n) / 100;
+  return Array.from({ length: n }, (_, i) => (i === n - 1 ? Math.round((100 - each * (n - 1)) * 100) / 100 : each));
+}
+
+/** Start a transfer: kind, declared value (or court order), and the new owners (who share the land equally). */
 export function TransferWizard({
   parcelId,
   transferOrders,
@@ -43,9 +49,8 @@ export function TransferWizard({
   const [lastAdded, setLastAdded] = useState<ComboOption | null>(null);
   const addPerson = (p: ComboOption) => {
     setLastAdded(p);
-    setPeople((cur) => (cur.some((x) => x.party.value === p.value) ? cur : [...cur, { party: p, role: cur.length ? "co_owner" : "owner", share: cur.length ? "" : "100" }]));
+    setPeople((cur) => (cur.some((x) => x.party.value === p.value) ? cur : [...cur, { party: p, role: cur.length ? "co_owner" : "owner" }]));
   };
-  const total = people.reduce((s, p) => s + (Number(p.share) || 0), 0);
 
   const search = useCallback(async (q: string): Promise<ComboOption[]> => {
     const res = await searchPartiesAction({ q });
@@ -77,7 +82,7 @@ export function TransferWizard({
             kind,
             value: kind === "sale" || kind === "gift" ? value : null,
             courtOrderId: kind === "court_order" ? orderId || null : null,
-            owners: people.map((p) => ({ partyId: p.party.value, role: p.role, share: p.share })),
+            owners: people.map((p, i) => ({ partyId: p.party.value, role: p.role, share: equalShares(people.length)[i]! })),
             note,
           })
         }
@@ -155,20 +160,18 @@ export function TransferWizard({
                   </div>
                 )}
                 {people.map((p, i) => (
-                  <div key={p.party.value} className="grid grid-cols-[1fr_8rem_5rem_auto] items-center gap-2 text-sm">
+                  <div key={p.party.value} className="grid grid-cols-[1fr_8rem_auto] items-center gap-2 text-sm">
                     <span className="truncate">{p.party.label}</span>
                     <NativeSelect value={p.role} onChange={(e) => setPeople(people.map((x, j) => (j === i ? { ...x, role: e.target.value as Recipient["role"] } : x)))} aria-label={t("role")}>
                       <option value="owner">{t("roles.owner")}</option>
                       <option value="co_owner">{t("roles.co_owner")}</option>
                       <option value="heir">{t("roles.heir")}</option>
                     </NativeSelect>
-                    <Input type="number" min={0} max={100} aria-label={t("share")} value={p.share} onChange={(e) => setPeople(people.map((x, j) => (j === i ? { ...x, share: e.target.value } : x)))} />
                     <Button size="icon-sm" variant="ghost" aria-label={t("remove")} onClick={() => setPeople(people.filter((_, j) => j !== i))}>
                       <Trash2 aria-hidden />
                     </Button>
                   </div>
                 ))}
-                {people.length > 0 && <p className={`text-xs ${Math.abs(total - 100) < 0.01 ? "text-status-approved" : "text-status-rejected"}`}>{t("sharesTotal", { total })}</p>}
               </div>
             </Field>
             <Field id="note" label={t("noteOptional")}>
