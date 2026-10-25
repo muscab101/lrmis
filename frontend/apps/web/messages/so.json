@@ -3300,7 +3300,7 @@
     "startTransferBody": "Waxay samaysaa qabyo. Gudbintu waxay soo saartaa biilka canshuurta.",
     "createDraft": "Samee qabyo",
     "newOwners": "Milkiilayaasha cusub",
-    "newOwnersHint": "Raadi dadka horey diiwaanka ugu jiray. Saamiyadu waa inay noqdaan 100 %.",
+    "newOwnersHint": "Raadi dadka horay diiwaanka ugu jira, ama diiwaangeli masuul cusub. Saamiyadu waa inay noqdaan 100 %.",
     "addPerson": "Ku dar qof…",
     "role": "Doorka",
     "share": "Saami %",
@@ -3445,7 +3445,12 @@
     "takeDuty": "Ka qaado canshuurta khasnajiga",
     "findParcel": "Dhul (PUN) — wareejin, qaybin, isku darid, beddelka isticmaalka, sixid, ogolaansho, muran, rahan ama amar maxkamadeed",
     "find": "Raadi",
-    "parcelNotFound": "Ma jiro dhul diiwaangashan {pun} oo degmooyinkaaga ku jira."
+    "parcelNotFound": "Ma jiro dhul diiwaangashan {pun} oo degmooyinkaaga ku jira.",
+    "newOwnerButton": "Masuul cusub",
+    "newOwnerTitle": "Diiwaangeli masuul cusub",
+    "newOwnerBody": "Qof aan weli diiwaanka ku jirin. Marka la kaydiyo, waxaa lagu darayaa masuuliyiinta cusub ee wareejintan.",
+    "newOwnerSave": "Kaydi oo ku dar wareejinta",
+    "newOwnerAdded": "{name} waa la diiwaangeliyay oo waa lagu daray"
   },
   "reports": {
     "title": "Warbixinada",

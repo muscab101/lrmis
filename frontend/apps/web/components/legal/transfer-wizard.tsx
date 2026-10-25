@@ -3,21 +3,33 @@
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle, SheetContent } from "@dhulka/ui/dialog";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { ArrowRightLeft, Trash2 } from "lucide-react";
+import { toast } from "@dhulka/ui/toaster";
+import { ArrowRightLeft, Trash2, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import { createTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { PartyForm } from "@/components/owners/party-form";
 import { useRouter } from "@/i18n/navigation";
 
 type Kind = "sale" | "gift" | "inheritance" | "court_order";
 type Recipient = { party: ComboOption; role: "owner" | "co_owner" | "heir"; share: string };
 
 /** Start a transfer: kind, declared value (or court order), new owners with shares that total 100 %. */
-export function TransferWizard({ parcelId, transferOrders }: { parcelId: string; transferOrders: { id: string; order_no: string }[] }) {
+export function TransferWizard({
+  parcelId,
+  transferOrders,
+  newOwner,
+}: {
+  parcelId: string;
+  transferOrders: { id: string; order_no: string }[];
+  /** Staff who may create owners can register a new one here (the full owner form) and add them straight away. */
+  newOwner?: { districts: { id: string; name_so: string; name_en: string }[]; districtId: string | null } | null;
+}) {
   const t = useTranslations("legal");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -27,6 +39,10 @@ export function TransferWizard({ parcelId, transferOrders }: { parcelId: string;
   const [orderId, setOrderId] = useState(transferOrders[0]?.id ?? "");
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
+  const [creating, setCreating] = useState(false);
+  const addPerson = (p: ComboOption) => {
+    if (!people.some((x) => x.party.value === p.value)) setPeople((cur) => [...cur, { party: p, role: cur.length ? "co_owner" : "owner", share: cur.length ? "" : "100" }]);
+  };
   const total = people.reduce((s, p) => s + (Number(p.share) || 0), 0);
 
   const search = useCallback(async (q: string): Promise<ComboOption[]> => {
@@ -90,17 +106,24 @@ export function TransferWizard({ parcelId, transferOrders }: { parcelId: string;
             </div>
             <Field id="people" label={t("newOwners")} hint={t("newOwnersHint")} error={fe("owners")} required>
               <div className="space-y-2">
-                <AsyncCombobox
-                  search={search}
-                  value={[]}
-                  onChange={(o) => {
-                    const p = o[0];
-                    if (p && !people.some((x) => x.party.value === p.value)) setPeople([...people, { party: p, role: people.length ? "co_owner" : "owner", share: people.length ? "" : "100" }]);
-                  }}
-                  placeholder={t("addPerson")}
-                  searchPlaceholder={tc("search")}
-                  emptyText={tc("noResults")}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="min-w-48 flex-1">
+                    <AsyncCombobox
+                      search={search}
+                      value={[]}
+                      onChange={(o) => o[0] && addPerson(o[0])}
+                      placeholder={t("addPerson")}
+                      searchPlaceholder={tc("search")}
+                      emptyText={tc("noResults")}
+                    />
+                  </div>
+                  {newOwner && (
+                    <Button type="button" size="sm" variant="outline" onClick={() => setCreating(true)}>
+                      <UserPlus aria-hidden />
+                      {t("newOwnerButton")}
+                    </Button>
+                  )}
+                </div>
                 {people.map((p, i) => (
                   <div key={p.party.value} className="grid grid-cols-[1fr_8rem_5rem_auto] items-center gap-2 text-sm">
                     <span className="truncate">{p.party.label}</span>
@@ -124,6 +147,32 @@ export function TransferWizard({ parcelId, transferOrders }: { parcelId: string;
           </>
         )}
       </FormDialog>
+
+      {/* Register a new owner without leaving the transfer; they're added to the new owners when saved. */}
+      {newOwner && (
+        <Dialog open={creating} onOpenChange={setCreating}>
+          <SheetContent className="max-w-2xl" closeLabel={tc("close")}>
+            <DialogHeader>
+              <DialogTitle>{t("newOwnerTitle")}</DialogTitle>
+              <DialogDescription>{t("newOwnerBody")}</DialogDescription>
+            </DialogHeader>
+            {creating && (
+              <PartyForm
+                party={null}
+                districts={newOwner.districts}
+                districtId={newOwner.districtId}
+                onCancel={() => setCreating(false)}
+                submitLabel={t("newOwnerSave")}
+                onSaved={(id, values) => {
+                  addPerson({ value: id, label: values.fullName, hint: values.idNumber || values.phone || "" });
+                  setCreating(false);
+                  toast.success(t("newOwnerAdded", { name: values.fullName }));
+                }}
+              />
+            )}
+          </SheetContent>
+        </Dialog>
+      )}
     </>
   );
 }

@@ -34,12 +34,14 @@ interface Props {
   data: Data;
   me: string;
   can: { transfer: boolean; legal: boolean; legalApprove: boolean; change: boolean; permit: boolean; lease: boolean };
+  /** Lets the transfer form register a new owner (staff with owners.create). */
+  newOwner?: { districts: { id: string; name_so: string; name_en: string }[]; districtId: string | null } | null;
 }
 
 type Dialog = null | "dispute" | "order" | "lien" | "use" | "merge" | "permit" | "lease" | "correct";
 const USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
-export function ParcelLegalCard({ parcel, data, me, can }: Props) {
+export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Props) {
   const t = useTranslations("legal");
   const ts = useTranslations("stage");
   const tc = useTranslations("common");
@@ -79,7 +81,7 @@ export function ParcelLegalCard({ parcel, data, me, can }: Props) {
 
         {!archived && (
           <div className="flex flex-wrap gap-2">
-            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} transferOrders={transferOrders} />}
+            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} transferOrders={transferOrders} newOwner={newOwner} />}
             {openTransfer && (
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/transfers/${openTransfer.id}`}>

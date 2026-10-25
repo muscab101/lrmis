@@ -11,6 +11,7 @@ import { ParcelLegalCard } from "@/components/legal/parcel-legal";
 import { legalCounts, listTransfers, parcelLegal, type RequestStatus } from "@/lib/server/legal";
 import { getParcel } from "@/lib/server/parcels";
 import { createClient } from "@/lib/supabase/server";
+import { listDistricts } from "@/lib/server/users";
 
 export async function generateMetadata() {
   const t = await getTranslations("legal");
@@ -39,6 +40,9 @@ export default async function TransfersPage({ params, searchParams }: { params: 
     : null;
   const parcel = found ? await getParcel(found.id) : null;
   const legal = parcel ? await parcelLegal(parcel.id) : null;
+  // New owners can be registered from the transfer form by staff allowed to create owners.
+  const ownerDistricts = parcel && viewer.can("owners.create") ? await listDistricts() : null;
+  const newOwner = parcel && ownerDistricts ? { districts: ownerDistricts, districtId: ownerDistricts.find((d) => d.code === parcel.district?.code)?.id ?? null } : null;
 
   return (
     <>
@@ -78,6 +82,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
               permit: viewer.can("permits.create"),
               lease: viewer.can("parcels.approve"),
             }}
+            newOwner={newOwner}
           />
         </div>
       )}

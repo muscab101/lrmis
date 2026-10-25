@@ -3300,7 +3300,7 @@
     "startTransferBody": "Creates a draft. Submitting it raises the stamp duty invoice.",
     "createDraft": "Create draft",
     "newOwners": "New owners",
-    "newOwnersHint": "Search people already on the register. Shares must add up to 100 %.",
+    "newOwnersHint": "Search people already on the register, or register a new owner. Shares must add up to 100 %.",
     "addPerson": "Add a person…",
     "role": "Role",
     "share": "Share %",
@@ -3445,7 +3445,12 @@
     "takeDuty": "Take the duty payment at the cashier",
     "findParcel": "Parcel (PUN) — transfer, subdivide, merge, change of use, correct, permit, dispute, lien or court order",
     "find": "Find",
-    "parcelNotFound": "No registered parcel {pun} in your districts."
+    "parcelNotFound": "No registered parcel {pun} in your districts.",
+    "newOwnerButton": "New owner",
+    "newOwnerTitle": "Register a new owner",
+    "newOwnerBody": "For someone not on the register yet. When saved, they're added to the new owners of this transfer.",
+    "newOwnerSave": "Save and add to transfer",
+    "newOwnerAdded": "{name} was registered and added"
   },
   "reports": {
     "title": "Reports",
