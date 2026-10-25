@@ -153,6 +153,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                 {level === "districts" && (
                   <>
                     <TableHead className="hidden text-end md:table-cell">{t("level_sections")}</TableHead>
+                    <TableHead className="hidden text-end md:table-cell">{t("level_sectors")}</TableHead>
                     <TableHead className="hidden text-end md:table-cell">{t("level_neighbourhoods")}</TableHead>
                   </>
                 )}
@@ -189,6 +190,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                     {level === "districts" && (
                       <>
                         <TableCell className="hidden text-end md:table-cell">{c?.sections ?? 0}</TableCell>
+                        <TableCell className="hidden text-end md:table-cell">{c?.sectors ?? 0}</TableCell>
                         <TableCell className="hidden text-end md:table-cell">
                           {c ? `${c.mapped_neighbourhoods}/${c.neighbourhoods}` : "0/0"}
                         </TableCell>
