@@ -7,15 +7,13 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { Alert } from "@dhulka/ui/misc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
-import { duplicatePartiesAction, savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
+import { savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
 import { FormError } from "@/components/forms/form-error";
-import { Link } from "@/i18n/navigation";
 import { applyFieldErrors, useValidationMessage } from "@/lib/client/errors";
 import type { PartyRow } from "@/lib/server/applications";
 
@@ -53,14 +51,13 @@ interface Props {
   submitLabel?: string;
 }
 
-/** Owner (person/organisation) form with a live duplicate check (§4.1). */
+/** Owner (person/organisation) form. A clashing ID number is refused when saving. */
 export function PartyForm({ party, mode = "staff", districtId, districts, onSaved, onCancel, submitLabel }: Props) {
   const locale = useLocale();
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const vm = useValidationMessage();
   const [error, setError] = useState<AppError | null>(null);
-  const [dupes, setDupes] = useState<Awaited<ReturnType<typeof duplicatePartiesAction>> | null>(null);
   const form = useForm<PartyInput, unknown, Out>({
     // Staff record a full owner (every field, the ID included); citizens keep the lighter profile form.
     resolver: zodResolver(mode === "staff" ? ownerSchema : partySchema) as unknown as Resolver<PartyInput, unknown, Out>,
@@ -74,24 +71,6 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   const nationalityField = form.register("nationality");
   const e = form.formState.errors;
   const kind = form.watch("kind");
-  const [fullName, motherName, idType, idNumber, phone] = form.watch(["fullName", "motherName", "idType", "idNumber", "phone"]);
-
-  // Debounced duplicate check while typing.
-  useEffect(() => {
-    if ((fullName ?? "").trim().length < 3 && !(idNumber ?? "").trim() && !(phone ?? "").trim()) return setDupes(null);
-    const h = setTimeout(async () => {
-      const res = await duplicatePartiesAction({
-        fullName: fullName ?? "",
-        motherName: motherName ?? "",
-        idType: idType ?? "",
-        idNumber: idNumber ?? "",
-        phone: phone ?? "",
-        excludeId: party?.id ?? null,
-      });
-      setDupes(res);
-    }, 500);
-    return () => clearTimeout(h);
-  }, [fullName, motherName, idType, idNumber, phone, party?.id]);
 
   const onSubmit = form.handleSubmit(async (values) => {
     setError(null);
@@ -111,8 +90,6 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
     void values;
     onSaved(res.data!.id, form.getValues());
   });
-
-  const dupeCount = dupes?.ok ? dupes.data.count : 0;
 
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
@@ -232,25 +209,6 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
           </Field>
         )}
       </div>
-
-      {dupeCount > 0 && dupes?.ok && (
-        <Alert tone="warning" title={t("dupesTitle", { count: dupeCount })}>
-          {dupes.data.matches ? (
-            <ul className="mt-1 space-y-1">
-              {dupes.data.matches.map((m) => (
-                <li key={m.id}>
-                  <Link href={`/owners/${m.id}`} className="font-medium underline" target="_blank">
-                    {m.full_name}
-                  </Link>
-                  {m.mother_name ? ` · ${m.mother_name}` : ""} — {m.reasons.map((r) => t(`reason_${r}`)).join(", ")}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>{t("dupesCitizen")}</p>
-          )}
-        </Alert>
-      )}
 
       <div className="flex justify-end gap-2">
         {onCancel && (
