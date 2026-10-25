@@ -39,8 +39,11 @@ export function TransferWizard({
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
   const [creating, setCreating] = useState(false);
+  // The owner just added (picked or newly registered) stays shown in the search box.
+  const [lastAdded, setLastAdded] = useState<ComboOption | null>(null);
   const addPerson = (p: ComboOption) => {
-    if (!people.some((x) => x.party.value === p.value)) setPeople((cur) => [...cur, { party: p, role: cur.length ? "co_owner" : "owner", share: cur.length ? "" : "100" }]);
+    setLastAdded(p);
+    setPeople((cur) => (cur.some((x) => x.party.value === p.value) ? cur : [...cur, { party: p, role: cur.length ? "co_owner" : "owner", share: cur.length ? "" : "100" }]));
   };
   const total = people.reduce((s, p) => s + (Number(p.share) || 0), 0);
 
@@ -60,7 +63,10 @@ export function TransferWizard({
         open={open}
         onOpenChange={(o) => {
           setOpen(o);
-          if (!o) setCreating(false);
+          if (!o) {
+            setCreating(false);
+            setLastAdded(null);
+          }
         }}
         title={t("startTransfer")}
         description={t("startTransferBody")}
@@ -113,7 +119,7 @@ export function TransferWizard({
                   <div className="min-w-48 flex-1">
                     <AsyncCombobox
                       search={search}
-                      value={[]}
+                      value={lastAdded && people.some((x) => x.party.value === lastAdded.value) ? [lastAdded] : []}
                       onChange={(o) => o[0] && addPerson(o[0])}
                       placeholder={t("addPerson")}
                       searchPlaceholder={tc("search")}
