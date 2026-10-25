@@ -1,11 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { ParcelInvoices } from "@/components/billing/parcel-invoices";
+import { ParcelCertificate } from "@/components/documents/parcel-certificate";
+import { GeometryPreview } from "@/components/map/geometry-preview";
+import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { TransferActions } from "@/components/legal/transfer-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getTransfer } from "@/lib/server/legal";
+import { getParcel } from "@/lib/server/parcels";
+import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,6 +29,26 @@ export default async function TransferPage({ params }: { params: Promise<{ local
   const tr = await getTransfer(id);
   if (!tr) notFound();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
+  const tp = await getTranslations("parcels");
+  const ts = await getTranslations("stage");
+  const lang = await getLocale();
+  // The land being transferred, with its invoices and certificate.
+  const [land, propertyTypes] = await Promise.all([tr.parcel ? getParcel(tr.parcel.id) : null, listPropertyTypes()]);
+  const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
+  const landFacts: [string, React.ReactNode][] = land
+    ? [
+        [tp("account"), <Mono key="a">{land.account_no ?? "—"}</Mono>],
+        [tp("area"), num(land.area_m2, "m²")],
+        [ta("propertyType"), propertyTypeName(propertyTypes, land.property_type, lang) ?? "—"],
+        [ts("landUse"), ts(`landUses.${land.land_use}`)],
+        [tp("place"), [land.district && (lang === "so" ? land.district.name_so : land.district.name_en), land.neighbourhood && (lang === "so" ? land.neighbourhood.name_so : land.neighbourhood.name_en)].filter(Boolean).join(" · ") || "—"],
+        [ta("plotNo"), land.plot_no ?? "—"],
+        [tp("houseNo"), land.house_no ?? "—"],
+        ...(land.flat_no ? [[ta("flatNo"), land.flat_no] as [string, string]] : []),
+        [ta("govtReceiptNo"), land.govt_receipt_no ?? "—"],
+        [tp("registeredOn"), land.registered_at ? format.dateTime(new Date(land.registered_at), { dateStyle: "medium" }) : "—"],
+      ]
+    : [];
   const dutyDue = tr.duty_invoice && Number(tr.duty_invoice.balance) > 0;
 
   const Owners = ({ list }: { list: typeof tr.from_owners }) =>
@@ -122,6 +148,43 @@ export default async function TransferPage({ params }: { params: Promise<{ local
             <Owners list={tr.to_owners} />
           </CardContent>
         </Card>
+
+        {land && (
+          <>
+            <Card>
+              <CardHeader className="flex-row items-center justify-between gap-2">
+                <CardTitle className="text-base">{t("landTitle")}</CardTitle>
+                <span className="flex items-center gap-2">
+                  <ParcelStatusBadge status={land.status} />
+                  <Link href={`/parcels/${land.id}`} className="text-primary text-sm hover:underline">
+                    {t("openParcel")}
+                  </Link>
+                </span>
+              </CardHeader>
+              <CardContent>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
+                  {landFacts.map(([k, v]) => (
+                    <div key={k} className="contents">
+                      <dt className="text-muted-foreground">{k}</dt>
+                      <dd className="min-w-0 [overflow-wrap:anywhere]">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
+            <GeometryPreview geometry={land.geom} className="h-72 md:h-full" />
+            {viewer.can("certificates.view") && land.pun && (
+              <div className="md:col-span-2">
+                <ParcelCertificate parcelId={land.id} pun={land.pun} canIssue={viewer.can("certificates.approve")} />
+              </div>
+            )}
+            {viewer.can("invoices.view") && (
+              <div className="md:col-span-2">
+                <ParcelInvoices parcelId={land.id} canCreate={viewer.can("invoices.create")} />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

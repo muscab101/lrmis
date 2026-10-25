@@ -3451,7 +3451,9 @@
     "newOwnerTitle": "Register a new owner",
     "newOwnerBody": "For someone not on the register yet. When saved, they're added to the new owners of this transfer.",
     "newOwnerSave": "Save and add to transfer",
-    "newOwnerAdded": "{name} was registered and added"
+    "newOwnerAdded": "{name} was registered and added",
+    "landTitle": "Land",
+    "openParcel": "Open parcel"
   },
   "reports": {
     "title": "Reports",

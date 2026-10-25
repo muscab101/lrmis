@@ -3451,7 +3451,9 @@
     "newOwnerTitle": "Diiwaangeli masuul cusub",
     "newOwnerBody": "Qof aan weli diiwaanka ku jirin. Marka la kaydiyo, waxaa lagu darayaa masuuliyiinta cusub ee wareejintan.",
     "newOwnerSave": "Kaydi oo ku dar wareejinta",
-    "newOwnerAdded": "{name} waa la diiwaangeliyay oo waa lagu daray"
+    "newOwnerAdded": "{name} waa la diiwaangeliyay oo waa lagu daray",
+    "landTitle": "Dhulka",
+    "openParcel": "Fur dhulka"
   },
   "reports": {
     "title": "Warbixinada",
