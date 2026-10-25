@@ -1776,7 +1776,7 @@
     "idType": "Dukumenti aqoonsi",
     "idNumber": "Lambarka dukumentiga",
     "phone": "Telefoon",
-    "phoneHint": "Qaab caalami ah, tusaale +252 61 123 4567",
+    "phoneHint": "Qaab caalami ah; wuxuu ku bilaabmaa koodhka dalka.",
     "email": "Iimayl",
     "address": "Cinwaan",
     "orgRegistrationNo": "Lambarka diiwaangelinta",
@@ -1843,7 +1843,8 @@
     "saveAndAddLand": "Kaydi oo ku dar dhulkiisa",
     "createdNextLand": "Milkiilaha waa la kaydiyay. Hadda ku dar dhulkiisa aaggan.",
     "deleteBodyRegistered": "Milkiilahan la diiwaangeliyay waa laga saarayaa diiwaanka. Wuxuu ku jirayaa taariikhda iyo sababtaada. Milkiile weli dhul haysta lama tirtiri karo: marka hore tirtir ama wareeji dhulka.",
-    "deleteReason": "Sababta loo tirtirayo"
+    "deleteReason": "Sababta loo tirtirayo",
+    "noIdHint": "Aqoonsi ma haysto? Riix N/A."
   },
   "track": {
     "title": "Raadraac codsi",

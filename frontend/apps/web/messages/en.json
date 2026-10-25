@@ -1776,7 +1776,7 @@
     "idType": "ID document",
     "idNumber": "Document number",
     "phone": "Phone",
-    "phoneHint": "International format, e.g. +252 61 123 4567",
+    "phoneHint": "International format; it starts with the nationality's code.",
     "email": "Email",
     "address": "Address",
     "orgRegistrationNo": "Registration number",
@@ -1843,7 +1843,8 @@
     "saveAndAddLand": "Save and add their land",
     "createdNextLand": "Owner saved. Now add their land in this zone.",
     "deleteBodyRegistered": "This registered owner is removed from the register. It stays in the history with your reason. An owner who still holds land can't be deleted: delete or transfer the land first.",
-    "deleteReason": "Why it's deleted"
+    "deleteReason": "Why it's deleted",
+    "noIdHint": "No ID document? Press N/A."
   },
   "track": {
     "title": "Track an application",

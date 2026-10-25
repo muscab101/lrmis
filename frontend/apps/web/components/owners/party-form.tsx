@@ -1,5 +1,6 @@
 "use client";
 
+import { countryOptions, dialCode, NO_ID_NUMBER } from "@dhulka/core/countries";
 import type { AppError } from "@dhulka/core/errors";
 import { ID_TYPES, ownerSchema, partySchema, type PartyInput } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
@@ -9,7 +10,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert } from "@dhulka/ui/misc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
 import { duplicatePartiesAction, savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
@@ -28,8 +29,9 @@ export function partyToInput(p: PartyRow | null, districtId?: string | null): Pa
     gender: p?.gender ?? "",
     dateOfBirth: p?.date_of_birth ?? "",
     nationality: p?.nationality ?? "SO",
-    idType: (p?.id_type as PartyInput["idType"]) ?? "",
-    idNumber: p?.id_number ?? "",
+    // A saved person without an ID document shows "N/A" (staff typed N/A; it's stored as no ID).
+    idType: (p?.id_type as PartyInput["idType"]) ?? (p && p.kind === "person" ? "other" : ""),
+    idNumber: p?.id_number ?? (p && p.kind === "person" ? NO_ID_NUMBER : ""),
     phone: p?.phone ?? "",
     email: p?.email ?? "",
     address: p?.address ?? "",
@@ -62,8 +64,14 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   const form = useForm<PartyInput, unknown, Out>({
     // Staff record a full owner (every field, the ID included); citizens keep the lighter profile form.
     resolver: zodResolver(mode === "staff" ? ownerSchema : partySchema) as unknown as Resolver<PartyInput, unknown, Out>,
-    defaultValues: partyToInput(party, districtId),
+    defaultValues: (() => {
+      const v = partyToInput(party, districtId);
+      // A new owner's phone starts with their country's dialling code.
+      return party ? v : { ...v, phone: v.phone || dialCode(v.nationality) };
+    })(),
   });
+  const countries = useMemo(() => countryOptions(locale), [locale]);
+  const nationalityField = form.register("nationality");
   const e = form.formState.errors;
   const kind = form.watch("kind");
   const [fullName, motherName, idType, idNumber, phone] = form.watch(["fullName", "motherName", "idType", "idNumber", "phone"]);
@@ -140,8 +148,23 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
             <Field id="dateOfBirth" label={t("dateOfBirth")} error={vm(e.dateOfBirth?.message)} required={mode === "staff"}>
               <Input type="date" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} {...form.register("dateOfBirth")} />
             </Field>
-            <Field id="nationality" label={t("nationality")} hint={t("nationalityHint")} error={vm(e.nationality?.message)} required={mode === "staff"}>
-              <Input maxLength={2} className="uppercase" {...form.register("nationality")} />
+            <Field id="nationality" label={t("nationality")} error={vm(e.nationality?.message)} required={mode === "staff"}>
+              <NativeSelect
+                {...nationalityField}
+                onChange={(ev) => {
+                  void nationalityField.onChange(ev);
+                  // The phone follows the country: swap the dialling code while only the code (or nothing) is typed.
+                  const before = (form.getValues("phone") ?? "").replace(/\s/g, "");
+                  const next = dialCode(ev.target.value);
+                  if (next && (!before || /^\+\d{1,4}$/.test(before))) form.setValue("phone", next, { shouldDirty: true });
+                }}
+              >
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name} ({c.dial})
+                  </option>
+                ))}
+              </NativeSelect>
             </Field>
           </>
         )}
@@ -160,16 +183,30 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
             ))}
           </NativeSelect>
         </Field>
-        <Field id="idNumber" label={t("idNumber")} error={vm(e.idNumber?.message)} required={mode === "staff" && kind === "person"}>
-          <Input className="font-mono uppercase" {...form.register("idNumber")} />
+        <Field id="idNumber" label={t("idNumber")} hint={mode === "staff" && kind === "person" ? t("noIdHint") : undefined} error={vm(e.idNumber?.message)} required={mode === "staff" && kind === "person"}>
+          <div className="flex gap-2">
+            <Input className="font-mono uppercase" {...form.register("idNumber")} />
+            {/* No ID document: N/A, accepted for anyone and never a duplicate. */}
+            <Button
+              type="button"
+              variant="outline"
+              title={t("noIdHint")}
+              onClick={() => {
+                form.setValue("idNumber", NO_ID_NUMBER, { shouldDirty: true, shouldValidate: true });
+                if (!form.getValues("idType")) form.setValue("idType", "other", { shouldDirty: true, shouldValidate: true });
+              }}
+            >
+              N/A
+            </Button>
+          </div>
         </Field>
         <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(e.phone?.message)} required={mode === "staff"}>
-          <Input type="tel" inputMode="tel" placeholder="+252 61 …" disabled={mode === "self"} {...form.register("phone")} />
+          <Input type="tel" inputMode="tel" placeholder={`${dialCode(form.watch("nationality")) || "+252"} …`} disabled={mode === "self"} {...form.register("phone")} />
         </Field>
         <Field id="email" label={t("email")} error={vm(e.email?.message)} required={mode === "staff"}>
           <Input type="email" {...form.register("email")} />
         </Field>
-        <Field id="address" label={t("address")} error={vm(e.address?.message)} className="sm:col-span-2" required={mode === "staff"}>
+        <Field id="address" label={t("address")} error={vm(e.address?.message)} className="sm:col-span-2">
           <Textarea rows={2} {...form.register("address")} />
         </Field>
         {mode === "staff" && kind === "person" && (

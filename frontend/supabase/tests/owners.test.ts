@@ -72,3 +72,26 @@ describe("owner registration (draft → registered)", () => {
     await expectError(asUser(db, registrar, (tx) => tx.query(`select public.party_delete($1)`, [id])), "HAS_RECORDS");
   });
 });
+
+describe('"N/A" as the ID number (0108)', () => {
+  it("anyone without an ID can use it; it's stored as no ID and never a duplicate", async () => {
+    const save = (name: string, phone: string) =>
+      asUser(db, clerk, (tx) =>
+        scalar<string>(tx, `select public.save_party(null, $1)`, [
+          JSON.stringify({ full_name: name, phone, district_id: hodan, id_type: "other", id_number: "N/A" }),
+        ]),
+      );
+    const a = await save("No Id One", "+252611110001");
+    const b = await save("No Id Two", "+252611110002");
+    const rows = await db.query<{ id_type: string | null; id_number: string | null }>(`select id_type::text, id_number from public.parties where id in ($1, $2)`, [a, b]);
+    expect(rows.rows).toEqual([
+      { id_type: null, id_number: null },
+      { id_type: null, id_number: null },
+    ]);
+    // A real number is still checked for duplicates.
+    await asUser(db, clerk, (tx) => tx.query(`select public.save_party(null, $1)`, [JSON.stringify({ full_name: "Has Id", phone: "+252611110003", district_id: hodan, id_type: "national_id", id_number: "SO-123" })]));
+    await expect(
+      asUser(db, clerk, (tx) => tx.query(`select public.save_party(null, $1)`, [JSON.stringify({ full_name: "Same Id", phone: "+252611110004", district_id: hodan, id_type: "national_id", id_number: "so 123".replace(" ", "-") })])),
+    ).rejects.toThrow(/^CONFLICT: id_number/);
+  });
+});
