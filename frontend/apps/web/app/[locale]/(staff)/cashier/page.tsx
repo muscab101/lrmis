@@ -24,8 +24,8 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
   const format = await getFormatter();
   const shift = await myOpenShift();
   const find = ((await searchParams).find ?? "").slice(0, 40);
-  // Every registered house in the district that still owes: the cashier collects from this list.
-  const houses = await housesToCollect();
+  // Every registered house in the district that still owes: the cashier collects from this list, only while a shift is open.
+  const houses = shift ? await housesToCollect() : [];
   const [points, taken] = await Promise.all([shift ? [] : listPointsOfSale({ id: viewer.user.id, allDistricts: viewer.profile.all_districts, posId: viewer.profile.point_of_sale_id ?? null }), shift ? listPayments({ shiftId: shift.id, status: "any" }) : []]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const cash = taken.filter((p) => p.method === "cash" && p.status !== "reversed").reduce((s, p) => s + Number(p.amount_base), 0);
@@ -70,7 +70,7 @@ export default async function CashierPage({ params, searchParams }: { params: Pr
           </Card>
         </div>
       )}
-      <ToCollect houses={houses} shiftOpen={!!shift} cardEnabled={getProvider("stripe")?.configured() ?? false} />
+      {shift && <ToCollect houses={houses} shiftOpen cardEnabled={getProvider("stripe")?.configured() ?? false} />}
       <CardPrintBill />
     </>
   );
