@@ -106,10 +106,20 @@ export async function listShifts(status: "closed" | "any") {
   return unwrap(await req.order("opened_at", { ascending: false }).limit(50), "shifts") as unknown as ShiftRow[];
 }
 
-export async function listPointsOfSale() {
+export async function listPointsOfSale(forUser?: { id: string; allDistricts: boolean; posId: string | null }) {
   const supabase = await createClient();
   const { data } = await supabase.from("points_of_sale").select("id, code, name, kind, district_id, active").eq("active", true).neq("kind", "online").order("code");
-  return (data ?? []) as { id: string; code: string; name: string; kind: string; district_id: string | null }[];
+  let rows = (data ?? []) as { id: string; code: string; name: string; kind: string; district_id: string | null }[];
+  if (forUser) {
+    // A cashier sees the desks of their own districts, with their own desk first.
+    if (!forUser.allDistricts) {
+      const { data: mine } = await supabase.from("user_districts").select("district_id").eq("user_id", forUser.id);
+      const ids = new Set((mine ?? []).map((r) => r.district_id as string));
+      rows = rows.filter((r) => r.district_id === null || ids.has(r.district_id));
+    }
+    rows.sort((a, b) => Number(b.id === forUser.posId) - Number(a.id === forUser.posId));
+  }
+  return rows;
 }
 
 export async function listProviders() {

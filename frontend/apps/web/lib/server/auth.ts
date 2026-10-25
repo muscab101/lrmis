@@ -15,6 +15,9 @@ export interface Profile {
   status: "active" | "invited" | "suspended" | "deleted";
   must_change_password: boolean;
   locale: "so" | "en";
+  all_districts: boolean;
+  /** The cashier's own cash desk (Admin → Users). */
+  point_of_sale_id: string | null;
 }
 
 export interface Viewer {
@@ -38,7 +41,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   const [profileRes, permsRes, aalRes, stateRes, superRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("user_id, kind, full_name, email, phone, status, must_change_password, locale")
+      .select("user_id, kind, full_name, email, phone, status, must_change_password, locale, all_districts, point_of_sale_id")
       .eq("user_id", user.id)
       .single(),
     supabase.rpc("my_permissions"),

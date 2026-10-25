@@ -79,6 +79,7 @@
       "settings": "Dejinta",
       "health": "Caafimaadka nidaamka",
       "assistant": "Kaaliyaha AI",
+      "pointsOfSale": "Goobaha lacag bixinta",
       "yetToRegister": "Weli lama diiwaangelin",
       "idCards": "Kaararka aqoonsiga",
       "collections": "Ururinta lacagta"
@@ -364,6 +365,10 @@
     "location_in_use": "Goobtan weli diiwaanno kale ayaa isticmaala, lama tirtiri karo. Kaydi (archive) beddelkeeda.",
     "plot_size_required": "Geli ballaca iyo dhererka dhulka: noocan hantida m² kiiba ayaa lagu qiimeeyaa.",
     "email_taken": "Akoon kale ayaa horay u isticmaalaya iimaylkan.",
+    "pos_code": "Isticmaal 2–12 xaraf waaweyn ama tiro, tusaale KRN1.",
+    "pos_prefix": "Isticmaal 2–16 xaraf waaweyn, tiro ama jiitin.",
+    "pos_code_taken": "Miis kale ayaa horay u isticmaalaya koodhkan.",
+    "pos_not_in_user_districts": "Miiskani kuma jiro degmooyinka qofkan. Marka hore ku dar degmada.",
     "pin_required": "Khariidadda ku dhig biin meesha guriga.",
     "owner_name": "Geli magaca buuxa ee milkiilaha.",
     "neighbourhood": "Dooro xaafad, ama biinka ku dhig mid gudaheed.",
@@ -1036,6 +1041,42 @@
         "audit_rows": "Diiwaanka hubinta",
         "active_staff": "Shaqaale firfircoon"
       }
+    },
+    "pos": {
+      "title": "Goobaha lacag bixinta",
+      "subtitle": "Miisaska lacagta ee degmo kasta. Qasnajigu wuxuu ka shaqeeyaa miis ku yaal degmadiisa; ku dooro bogga isticmaalaha qasnajiga.",
+      "add": "Ku dar miis",
+      "editTitle": "Wax ka beddel {code}",
+      "formBody": "Rasiidhada miiskan waxaa lagu tirsadaa horgalaha rasiidhka.",
+      "code": "Koodh",
+      "codeHint": "2–12 xaraf waaweyn ama tiro, tusaale KRN1.",
+      "receiptPrefix": "Horgalaha rasiidhka",
+      "receiptPrefixHint": "Haddii madhan yahay waa koodhka.",
+      "name": "Magac",
+      "district": "Degmo",
+      "choose": "Dooro…",
+      "kind": "Nooc",
+      "kinds": {
+        "cashier": "Miiska xafiiska",
+        "field": "Ururinta goobta"
+      },
+      "activeLabel": "Waa la isticmaalaa",
+      "status": "Xaalad",
+      "active": "Waa la isticmaalaa",
+      "off": "Dami",
+      "cashiers": "Qasnajiyaal",
+      "noCashier": "Weli qasnaji ma leh",
+      "actions": "Ficillo",
+      "delete": "Tirtir",
+      "deleteTitle": "Ma tirtiraysaa {code}?",
+      "deleteBody": "Miis horay u lahaa wareegyo ama lacag bixinno waa la damiyaa, si diiwaankiisu u haysto. Qasnajiyaasha ku jira waa laga saarayaa.",
+      "deleted": "Miiska waa la tirtiray",
+      "hidden": "Miiska waa la isticmaalay, sidaas darteed waa la damiyay",
+      "cashDesk": "Miiska lacagta",
+      "cashDeskHelp": "Miiska qofkani uga shaqeeyo qasnaji ahaan. Kaliya miisaska degmooyinkiisa ayaa la soo bandhigayaa; miiska qasnajigu wuu ku furmaa.",
+      "pointOfSale": "Goobta lacag bixinta",
+      "noDesk": "Miis ma leh",
+      "noDesksInDistricts": "Weli miis kuma jiro degmooyinka qofkan. Ku dar Dakhliga → Goobaha lacag bixinta."
     }
   },
   "audit": {

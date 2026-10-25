@@ -10,6 +10,7 @@ import { UserForm } from "@/components/admin/user-form";
 import { requirePermission } from "@/lib/server/auth";
 import { listRoles, rolePermissionMap } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
+import { CashDeskCard } from "./cash-desk-card";
 import { UserSecurityPanel } from "./security-panel";
 
 export default async function UserDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -23,13 +24,13 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("user_id, kind, full_name, email, phone, status, all_districts, last_login_at, created_at, user_roles(role_id), user_districts(district_id, districts(id, code, name_so, name_en))")
+    .select("user_id, kind, full_name, email, phone, status, all_districts, point_of_sale_id, last_login_at, created_at, user_roles(role_id), user_districts(district_id, districts(id, code, name_so, name_en))")
     .eq("user_id", id)
     .eq("kind", "staff")
     .maybeSingle();
   if (!profile) notFound();
 
-  const [roles, rolePermissions, mfa, logins, audit, records] = await Promise.all([
+  const [roles, rolePermissions, mfa, logins, audit, records, desks] = await Promise.all([
     listRoles(),
     rolePermissionMap(),
     supabase.rpc("admin_user_mfa_status", { p_user_ids: [id] }),
@@ -38,6 +39,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
       ? supabase.from("audit_log").select("id, at, action, actor_email, ip").eq("record_id", id).order("at", { ascending: false }).limit(30)
       : Promise.resolve({ data: null }),
     supabase.rpc("admin_user_record_counts", { p_user_id: id }),
+    supabase.from("points_of_sale").select("id, code, name, district_id, districts(name_so, name_en)").eq("active", true).neq("kind", "online").order("code"),
   ]);
 
   type DistrictJoin = { district_id: string; districts: { id: string; code: string; name_so: string; name_en: string } | null };
@@ -48,6 +50,12 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
   const hasTotp = ((mfa.data ?? []) as { has_totp: boolean }[])[0]?.has_totp ?? false;
   const isSelf = id === viewer.user.id;
   const recordTotal = ((records.data ?? {}) as { total?: number }).total ?? 0;
+  // Desks the user may work at: those in their districts (all of them for an all-districts account).
+  type DeskJoin = { id: string; code: string; name: string; district_id: string | null; districts: { name_so: string; name_en: string } | null };
+  const districtIds = new Set(districts.map((d) => d.id));
+  const userDesks = ((desks.data ?? []) as unknown as DeskJoin[])
+    .filter((d) => profile.all_districts || (d.district_id !== null && districtIds.has(d.district_id)))
+    .map((d) => ({ id: d.id, code: d.code, name: d.name, district: d.districts ? (locale === "so" ? d.districts.name_so : d.districts.name_en) : "" }));
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -96,6 +104,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
               <CardContent className="p-5 text-sm text-muted-foreground">{t("readOnly")}</CardContent>
             </Card>
           )}
+          <CashDeskCard userId={id} current={(profile.point_of_sale_id as string | null) ?? null} desks={userDesks} canEdit={viewer.can("users.update")} />
         </TabsContent>
 
         <TabsContent value="security">

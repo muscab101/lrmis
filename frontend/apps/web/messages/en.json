@@ -79,6 +79,7 @@
       "settings": "Settings",
       "health": "System health",
       "assistant": "AI assistant",
+      "pointsOfSale": "Points of sale",
       "yetToRegister": "Yet to register",
       "idCards": "ID cards",
       "collections": "Collections"
@@ -364,6 +365,10 @@
     "location_in_use": "This location is still used by other records, so it can't be deleted. Archive it instead.",
     "plot_size_required": "Enter the plot width and length: this property type is billed per m².",
     "email_taken": "Another account already uses this email.",
+    "pos_code": "Use 2–12 capital letters or digits, e.g. KRN1.",
+    "pos_prefix": "Use 2–16 capital letters, digits or dashes.",
+    "pos_code_taken": "Another desk already uses this code.",
+    "pos_not_in_user_districts": "This desk isn't in one of this person's districts. Add the district first.",
     "pin_required": "Put a pin on the map at the house.",
     "owner_name": "Enter the owner's full name.",
     "neighbourhood": "Choose a neighbourhood, or drop the pin inside one.",
@@ -1036,6 +1041,42 @@
         "audit_rows": "Audit log entries",
         "active_staff": "Active staff"
       }
+    },
+    "pos": {
+      "title": "Points of sale",
+      "subtitle": "The cash desks of each district. A cashier works at a desk in their own district; set it on the cashier's user page.",
+      "add": "Add desk",
+      "editTitle": "Edit {code}",
+      "formBody": "Receipts from this desk are numbered with its receipt prefix.",
+      "code": "Code",
+      "codeHint": "2–12 capital letters or digits, e.g. KRN1.",
+      "receiptPrefix": "Receipt prefix",
+      "receiptPrefixHint": "Empty means the code.",
+      "name": "Name",
+      "district": "District",
+      "choose": "Choose…",
+      "kind": "Kind",
+      "kinds": {
+        "cashier": "Office cash desk",
+        "field": "Field collection"
+      },
+      "activeLabel": "In use",
+      "status": "Status",
+      "active": "In use",
+      "off": "Off",
+      "cashiers": "Cashiers",
+      "noCashier": "No cashier yet",
+      "actions": "Actions",
+      "delete": "Delete",
+      "deleteTitle": "Delete {code}?",
+      "deleteBody": "A desk that already had shifts or payments is switched off instead, so its records keep it. Cashiers on it are moved off it.",
+      "deleted": "Desk deleted",
+      "hidden": "Desk was used, so it was switched off",
+      "cashDesk": "Cash desk",
+      "cashDeskHelp": "The desk this person works at as cashier. Only desks in their districts are listed; the cashier desk opens on it.",
+      "pointOfSale": "Point of sale",
+      "noDesk": "No desk",
+      "noDesksInDistricts": "No desks in this person's districts yet. Add one on Revenue → Points of sale."
     }
   },
   "audit": {

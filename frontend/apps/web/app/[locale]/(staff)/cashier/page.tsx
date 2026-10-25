@@ -19,14 +19,14 @@ export async function generateMetadata() {
 export default async function CashierPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ find?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "cashier.view");
+  const viewer = await requirePermission(locale, "cashier.view");
   const t = await getTranslations("payments");
   const format = await getFormatter();
   const shift = await myOpenShift();
   const find = ((await searchParams).find ?? "").slice(0, 40);
   // Every registered house in the district that still owes: the cashier collects from this list.
   const houses = await housesToCollect();
-  const [points, taken] = await Promise.all([shift ? [] : listPointsOfSale(), shift ? listPayments({ shiftId: shift.id, status: "any" }) : []]);
+  const [points, taken] = await Promise.all([shift ? [] : listPointsOfSale({ id: viewer.user.id, allDistricts: viewer.profile.all_districts, posId: viewer.profile.point_of_sale_id ?? null }), shift ? listPayments({ shiftId: shift.id, status: "any" }) : []]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const cash = taken.filter((p) => p.method === "cash" && p.status !== "reversed").reduce((s, p) => s + Number(p.amount_base), 0);
   return (

@@ -270,3 +270,22 @@ export const searchDistrictsAction = defineAction(
     return unwrap(await req, "districts") as { id: string; code: string; name_so: string; name_en: string }[];
   },
 );
+
+/** Give a staff member their own cash desk (must be in one of their districts); null clears it. */
+export const setUserPosAction = defineAction(
+  "admin.users.set_pos",
+  z.object({ userId: z.uuid(), posId: z.uuid().nullable() }),
+  async ({ userId, posId }, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("admin_set_user_pos", { p_user_id: userId, p_pos: posId }), "set point of sale");
+    } catch (err) {
+      if (err instanceof AppFailure && err.values?.detail === "pos_not_in_user_districts") {
+        throw new AppFailure("VALIDATION", undefined, { posId: ["validation.pos_not_in_user_districts"] });
+      }
+      throw err;
+    }
+    revalidatePath(`/[locale]/admin/users/${userId}`, "page");
+    revalidatePath("/[locale]/points-of-sale", "page");
+    return null;
+  },
+);
