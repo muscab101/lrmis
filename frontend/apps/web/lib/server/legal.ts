@@ -16,6 +16,7 @@ export interface TransferRow {
   created_at: string;
   created_by: string | null;
   submitted_at: string | null;
+  decided_at: string | null;
   decision_note: string | null;
   note: string | null;
   parcel: { id: string; pun: string | null } | null;
@@ -23,7 +24,7 @@ export interface TransferRow {
 }
 
 const TRANSFER_COLS =
-  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decision_note, note, parcel:parcels(id, pun), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
+  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decided_at, decision_note, note, parcel:parcels(id, pun), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
 
 export async function listTransfers(status: RequestStatus | "open" | "any", parcelId?: string) {
   const supabase = await createClient();

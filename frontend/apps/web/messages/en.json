@@ -3288,7 +3288,7 @@
     "dutyDueTitle": "Stamp duty not paid yet",
     "dutyDueBody": "The transfer can be approved once the duty invoice is paid at a cashier or online.",
     "needsSecond": "You created this transfer, so another officer has to approve it.",
-    "noTransfers": "No transfers here",
+    "noTransfers": "This land has never been transferred.",
     "noTransfersBody": "Start a transfer from a registered parcel's Legal card.",
     "declaredValue": "Declared value (USD)",
     "declaredValueHint": "Stamp duty is a percentage of this value.",
@@ -3453,7 +3453,9 @@
     "newOwnerSave": "Save and add to transfer",
     "newOwnerAdded": "{name} was registered and added",
     "landTitle": "Land",
-    "openParcel": "Open parcel"
+    "openParcel": "Open parcel",
+    "transferHistory": "Transfer history",
+    "transferredTo": "transferred to"
   },
   "reports": {
     "title": "Reports",

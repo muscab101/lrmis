@@ -3288,7 +3288,7 @@
     "dutyDueTitle": "Canshuurta weli lama bixin",
     "dutyDueBody": "Wareejinta waa la ansixin karaa marka biilka canshuurta lagu bixiyo khasnajiga ama online.",
     "needsSecond": "Adiga ayaa sameeyay wareejintan, sidaa darteed sarkaal kale ayaa ansixinaya.",
-    "noTransfers": "Wareejin halkan ma jirto",
+    "noTransfers": "Dhulkan weligiis lama wareejin.",
     "noTransfersBody": "Ka bilow wareejin kaarka Sharciga ee dhul diiwaangashan.",
     "declaredValue": "Qiimaha la sheegay (USD)",
     "declaredValueHint": "Canshuurtu waa boqolley qiimahan ka mid ah.",
@@ -3453,7 +3453,9 @@
     "newOwnerSave": "Kaydi oo ku dar wareejinta",
     "newOwnerAdded": "{name} waa la diiwaangeliyay oo waa lagu daray",
     "landTitle": "Dhulka",
-    "openParcel": "Fur dhulka"
+    "openParcel": "Fur dhulka",
+    "transferHistory": "Taariikhda wareejinta",
+    "transferredTo": "loo wareejiyay"
   },
   "reports": {
     "title": "Warbixinada",

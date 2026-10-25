@@ -16,6 +16,7 @@ import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
+import { TransferHistory } from "@/components/legal/transfer-history";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -173,6 +174,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </ol>
           </CardContent>
         </Card>
+        {viewer.can("transfers.view") && p.pun && (
+          <div className="md:col-span-2">
+            <TransferHistory parcelId={p.id} />
+          </div>
+        )}
         {viewer.can("certificates.view") && p.pun && (
           <div className="md:col-span-2">
             <ParcelCertificate parcelId={p.id} pun={p.pun} canIssue={viewer.can("certificates.approve")} />

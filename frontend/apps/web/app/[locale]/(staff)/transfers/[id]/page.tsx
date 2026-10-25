@@ -9,6 +9,7 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { TransferActions } from "@/components/legal/transfer-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
+import { TransferHistory } from "@/components/legal/transfer-history";
 import { getTransfer } from "@/lib/server/legal";
 import { getParcel } from "@/lib/server/parcels";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
@@ -172,6 +173,9 @@ export default async function TransferPage({ params }: { params: Promise<{ local
               </CardContent>
             </Card>
             <GeometryPreview geometry={land.geom} className="h-72 md:h-full" />
+            <div className="md:col-span-2">
+              <TransferHistory parcelId={land.id} currentId={tr.id} />
+            </div>
             {viewer.can("certificates.view") && land.pun && (
               <div className="md:col-span-2">
                 <ParcelCertificate parcelId={land.id} pun={land.pun} canIssue={viewer.can("certificates.approve")} />
