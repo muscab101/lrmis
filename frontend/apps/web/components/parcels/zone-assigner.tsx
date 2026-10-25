@@ -138,7 +138,8 @@ export function ZoneAssigner({ districts, sections, sectors, neighbourhoods, sta
             <option value="">{nbhdList.length ? t("choose") : t("none")}</option>
             {nbhdList.map((n) => (
               <option key={n.id} value={n.id}>
-                {n.code} · {name(n)}
+                {/* Banaadir blocks are named by their code (BDSYKW01): say it once. */}
+                {n.code === name(n) ? n.code : `${n.code} · ${name(n)}`}
               </option>
             ))}
           </NativeSelect>
