@@ -23,6 +23,35 @@ export async function dashboardKpis(): Promise<Kpis> {
   return unwrap(await supabase.rpc("dashboard_kpis"), "dashboard") as Kpis;
 }
 
+/** Pair of figures: this period and the one before. */
+export interface PeriodPair {
+  cur: number;
+  prev: number;
+}
+export interface DashboardPeriod {
+  days: number;
+  from: string;
+  to: string;
+  prev_from: string;
+  prev_to: string;
+  applications?: PeriodPair;
+  weekday?: number[];
+  recent?: { id: string; number: string; status: string; created_at: string; district_en: string | null; district_so: string | null; owners: string | null }[];
+  registered?: PeriodPair & { total: number };
+  owners?: PeriodPair & { total: number };
+  collected?: PeriodPair;
+  billed?: PeriodPair & { paid_cur: number; outstanding: number };
+  series?: { day: string; collected: number; billed: number }[];
+  by_fee?: { code: string; name_en: string; name_so: string; amount: number }[];
+  districts?: { name_en: string; name_so: string; amount: number }[];
+}
+
+/** The dashboard's figures for the last `days` days next to the same length before. */
+export async function dashboardPeriod(days: number): Promise<DashboardPeriod> {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc("dashboard_period", { p_days: days }), "dashboard period") as DashboardPeriod;
+}
+
 export const REPORTS = [
   "revenue",
   "billing",

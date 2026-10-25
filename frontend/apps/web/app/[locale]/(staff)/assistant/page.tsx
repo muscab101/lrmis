@@ -11,7 +11,7 @@ export async function generateMetadata() {
 }
 
 /** Every staff member gets the help assistant; administrators get the admin one. */
-export default async function AssistantPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AssistantPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requireStaff(locale);
@@ -21,7 +21,7 @@ export default async function AssistantPage({ params }: { params: Promise<{ loca
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader title={t("title")} description={t("subtitle")} />
-      <AssistantChat endpoint="/api/assistant" namespace={namespace} />
+      <AssistantChat endpoint="/api/assistant" namespace={namespace} initialQuestion={((await searchParams).q ?? "").slice(0, 500)} />
     </div>
   );
 }

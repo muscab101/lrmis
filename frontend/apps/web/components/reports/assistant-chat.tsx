@@ -15,13 +15,22 @@ type Chat = { id: string; title: string; updated_at: string };
  * Texts come from `<namespace>.*`: title, help, placeholder, ask, disclaimer, suggestions.q1–q4,
  * notConfigured, limit, failed, offline; the history texts from `assistantHistory.*`.
  */
-export function AssistantChat({ endpoint, namespace }: { endpoint: string; namespace: "assistantPage" | "adminAssistant" | "portalAssistant" }) {
+export function AssistantChat({
+  endpoint,
+  namespace,
+  initialQuestion = "",
+}: {
+  endpoint: string;
+  namespace: "assistantPage" | "adminAssistant" | "portalAssistant";
+  /** Typed in the dashboard's assistant box: put in the question field, ready to send. */
+  initialQuestion?: string;
+}) {
   const t = useTranslations(namespace);
   const th = useTranslations("assistantHistory");
   const tc = useTranslations("common");
   const format = useFormatter();
   const locale = useLocale() as "so" | "en";
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuestion);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[] | null>(null);
