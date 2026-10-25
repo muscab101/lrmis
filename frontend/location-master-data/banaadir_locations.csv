@@ -1,0 +1,510 @@
+region,district_code,district_name,section_code,section_name,location_code,sector_code,sector_name,neighborhood_count,neighborhood_code_prefix,lat,lon,coord_level,coord_confidence,coord_source,alt_name
+Banaadir,12,Dayniile,,,,,,707,DY,2.05762,45.28532,district,high,OSM place node (suburb) – Dayniile,Daynile
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,,,105,DYCC,2.08724,45.32862,section,low,"Google Maps match: ""Gubta ciise cabdi""",
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,01,Janaraal Daa'uud,25,DYCCJD,2.08724,45.32862,sector,inherited,inherited from section DYCC (low),
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,02,Ifka Xalane,26,DYCCIX,2.08724,45.32862,sector,inherited,inherited from section DYCC (low),
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,03,Shiraaye,26,DYCCSR,2.08724,45.32862,sector,inherited,inherited from section DYCC (low),
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,04,Jaran,8,DYCCJR,2.08724,45.32862,sector,inherited,inherited from section DYCC (low),
+Banaadir,12,Dayniile,01,Ciise Cabdi,DYCC,05,Rati Weyne,20,DYCCRW,2.08724,45.32862,sector,inherited,inherited from section DYCC (low),
+Banaadir,12,Dayniile,02,Barwaaqo,DYBR,,,116,DYBR,2.07286,45.32157,section,low,"Google Maps match: ""Barwaaqo Stadium""",
+Banaadir,12,Dayniile,02,Barwaaqo,DYBR,01,Walaalaha,38,DYBRWL,2.07286,45.32157,sector,inherited,inherited from section DYBR (low),
+Banaadir,12,Dayniile,02,Barwaaqo,DYBR,02,Cali Wardhiigleey,23,DYBRCW,2.07286,45.32157,sector,inherited,inherited from section DYBR (low),
+Banaadir,12,Dayniile,02,Barwaaqo,DYBR,03,Isxijiwaaq,35,DYBRIW,2.07286,45.32157,sector,inherited,inherited from section DYBR (low),
+Banaadir,12,Dayniile,02,Barwaaqo,DYBR,04,Hormuud,20,DYBRHR,2.07286,45.32157,sector,inherited,inherited from section DYBR (low),
+Banaadir,12,Dayniile,03,Halgan,DYHL,,,139,DYHL,2.07303,45.29493,section,medium,"Google Maps match: ""DAYNIILE-HALGAN"" (Housing society)",
+Banaadir,12,Dayniile,03,Halgan,DYHL,01,Iftin,25,DYHLIF,2.07303,45.29493,sector,inherited,inherited from section DYHL (medium),
+Banaadir,12,Dayniile,03,Halgan,DYHL,02,Jawle,48,DYHLJW,2.07303,45.29493,sector,inherited,inherited from section DYHL (medium),
+Banaadir,12,Dayniile,03,Halgan,DYHL,03,Cali Booy,26,DYHLCB,2.07303,45.29493,sector,inherited,inherited from section DYHL (medium),
+Banaadir,12,Dayniile,03,Halgan,DYHL,04,Toroobikaal,40,DYHLTR,2.07303,45.29493,sector,inherited,inherited from section DYHL (medium),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,,,145,DYKD,2.05762,45.28532,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,01,Ifis,30,DYKDIF,2.05762,45.28532,sector,inherited,inherited from section DYKD (placeholder),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,02,Daadsaney,25,DYKDDS,2.05762,45.28532,sector,inherited,inherited from section DYKD (placeholder),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,03,Warlalis,25,DYKDWR,2.05762,45.28532,sector,inherited,inherited from section DYKD (placeholder),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,04,Gaheyr,25,DYKDGH,2.05762,45.28532,sector,inherited,inherited from section DYKD (placeholder),
+Banaadir,12,Dayniile,04,Kur Damac,DYKD,05,Haanta Dheer,40,DYKDHD,2.05762,45.28532,sector,inherited,inherited from section DYKD (placeholder),
+Banaadir,12,Dayniile,05,Oodweyne,DYOW,,,122,DYOW,2.05762,45.28532,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,12,Dayniile,05,Oodweyne,DYOW,01,Hagardiid,24,DYOWHG,2.05762,45.28532,sector,inherited,inherited from section DYOW (placeholder),
+Banaadir,12,Dayniile,05,Oodweyne,DYOW,02,Wardheere,38,DYOWWR,2.05762,45.28532,sector,inherited,inherited from section DYOW (placeholder),
+Banaadir,12,Dayniile,05,Oodweyne,DYOW,03,Midnimo,46,DYOWMD,2.05762,45.28532,sector,inherited,inherited from section DYOW (placeholder),
+Banaadir,12,Dayniile,05,Oodweyne,DYOW,04,Dibida,14,DYOWDB,2.05762,45.28532,sector,inherited,inherited from section DYOW (placeholder),
+Banaadir,12,Dayniile,06,Garas Baalleey,DYGB,,,32,DYGB,2.06109,45.26156,section,medium,"Google Maps match: ""Garasbaaleey""",
+Banaadir,12,Dayniile,06,Garas Baalleey,DYGB,01,Kowaad,8,DYGBKW,2.06109,45.26156,sector,inherited,inherited from section DYGB (medium),Koowaad; 1st
+Banaadir,12,Dayniile,06,Garas Baalleey,DYGB,02,Labaad,8,DYGBLB,2.06109,45.26156,sector,inherited,inherited from section DYGB (medium),2nd
+Banaadir,12,Dayniile,06,Garas Baalleey,DYGB,03,Saddexaad,8,DYGBSD,2.06109,45.26156,sector,inherited,inherited from section DYGB (medium),3rd
+Banaadir,12,Dayniile,06,Garas Baalleey,DYGB,04,Afaraad,8,DYGBAF,2.06109,45.26156,sector,inherited,inherited from section DYGB (medium),4th
+Banaadir,12,Dayniile,07,Daarusalaam,DYDS,,,48,DYDS,2.07632,45.25119,section,low,"Google Maps match: ""Masjid Daarusalaam"" (Mosque)",
+Banaadir,12,Dayniile,07,Daarusalaam,DYDS,01,Boqolsoon,10,DYDSBS,2.07632,45.25119,sector,inherited,inherited from section DYDS (low),
+Banaadir,12,Dayniile,07,Daarusalaam,DYDS,02,Dacarow,10,DYDSDC,2.07632,45.25119,sector,inherited,inherited from section DYDS (low),
+Banaadir,12,Dayniile,07,Daarusalaam,DYDS,03,Gacan Quuqle,18,DYDSGQ,2.07632,45.25119,sector,inherited,inherited from section DYDS (low),
+Banaadir,12,Dayniile,07,Daarusalaam,DYDS,04,Abtooy,10,DYDSAB,2.07632,45.25119,sector,inherited,inherited from section DYDS (low),
+Banaadir,16,Howlwadaag,,,,,,167,HW,2.05029,45.32344,district,high,OSM place node – Howlwadaag,Hawl Wadaag; Hawle Wadag
+Banaadir,16,Howlwadaag,01,Saqaawaddiin,HWSQ,,,37,HWSQ,2.05029,45.32344,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,16,Howlwadaag,01,Saqaawaddiin,HWSQ,01,Heegan,9,HWSQHG,2.05029,45.32344,sector,inherited,inherited from section HWSQ (placeholder),
+Banaadir,16,Howlwadaag,01,Saqaawaddiin,HWSQ,02,Halgan,9,HWSQHL,2.05029,45.32344,sector,inherited,inherited from section HWSQ (placeholder),
+Banaadir,16,Howlwadaag,01,Saqaawaddiin,HWSQ,03,Xalane,9,HWSQXL,2.05029,45.32344,sector,inherited,inherited from section HWSQ (placeholder),
+Banaadir,16,Howlwadaag,01,Saqaawaddiin,HWSQ,04,Kacaan,10,HWSQKC,2.05029,45.32344,sector,inherited,inherited from section HWSQ (placeholder),
+Banaadir,16,Howlwadaag,02,Sayidka,HWSY,,,33,HWSY,2.03723,45.32997,section,medium,"Google Maps match: ""Sayidka Statue""",
+Banaadir,16,Howlwadaag,02,Sayidka,HWSY,01,Hilaac,7,HWSYHL,2.03723,45.32997,sector,inherited,inherited from section HWSY (medium),
+Banaadir,16,Howlwadaag,02,Sayidka,HWSY,02,Hantiwadaag,8,HWSYHW,2.03723,45.32997,sector,inherited,inherited from section HWSY (medium),
+Banaadir,16,Howlwadaag,02,Sayidka,HWSY,03,Onkod,10,HWSYOK,2.03723,45.32997,sector,inherited,inherited from section HWSY (medium),
+Banaadir,16,Howlwadaag,02,Sayidka,HWSY,04,Faanoole,8,HWSYFN,2.03723,45.32997,sector,inherited,inherited from section HWSY (medium),
+Banaadir,16,Howlwadaag,03,Axmed Gureey,HWAG,,,38,HWAG,2.05995,45.31611,section,low,"Google Maps match: ""Axmed gurey"" (Alternative medicine)",
+Banaadir,16,Howlwadaag,03,Axmed Gureey,HWAG,01,Ceel Jaale,10,HWAGCJ,2.05995,45.31611,sector,inherited,inherited from section HWAG (low),
+Banaadir,16,Howlwadaag,03,Axmed Gureey,HWAG,02,Janaraal Daa'uud,7,HWAGJD,2.05995,45.31611,sector,inherited,inherited from section HWAG (low),
+Banaadir,16,Howlwadaag,03,Axmed Gureey,HWAG,03,Xalane,11,HWAGXL,2.05995,45.31611,sector,inherited,inherited from section HWAG (low),
+Banaadir,16,Howlwadaag,03,Axmed Gureey,HWAG,04,Hilaac,10,HWAGHL,2.05995,45.31611,sector,inherited,inherited from section HWAG (low),
+Banaadir,16,Howlwadaag,04,Xaawa Taako,HWXT,,,59,HWXT,2.03726,45.33821,section,medium,"Google Maps match: ""Taalada Xaawo Taako""",Xaawo Taako
+Banaadir,16,Howlwadaag,04,Xaawa Taako,HWXT,01,Nasrudiin,17,HWXTND,2.03726,45.33821,sector,inherited,inherited from section HWXT (medium),
+Banaadir,16,Howlwadaag,04,Xaawa Taako,HWXT,02,Xamarjadiid,12,HWXTXJ,2.03726,45.33821,sector,inherited,inherited from section HWXT (medium),
+Banaadir,16,Howlwadaag,04,Xaawa Taako,HWXT,03,Kamaaludiin,11,HWXTKD,2.03726,45.33821,sector,inherited,inherited from section HWXT (medium),
+Banaadir,16,Howlwadaag,04,Xaawa Taako,HWXT,04,Axmed Gureey,19,HWXTAG,2.03726,45.33821,sector,inherited,inherited from section HWXT (medium),
+Banaadir,14,Heliwaa,,,,,,273,HL,2.08381,45.38667,district,high,OSM place node – Huriwa (Heliwaa),Huriwa; Heliwa
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,,,137,HLBW,2.08381,45.38667,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,01,Iftin,16,HLBWIF,2.08381,45.38667,sector,inherited,inherited from section HLBW (placeholder),
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,02,Xorriyo,20,HLBWXR,2.08381,45.38667,sector,inherited,inherited from section HLBW (placeholder),
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,03,Onkod,31,HLBWOK,2.08381,45.38667,sector,inherited,inherited from section HLBW (placeholder),
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,04,Hillaac,40,HLBWHL,2.08381,45.38667,sector,inherited,inherited from section HLBW (placeholder),Hilaac
+Banaadir,14,Heliwaa,01,Bandar Wanaag,HLBW,05,Gunbocoole,30,HLBWGB,2.08381,45.38667,sector,inherited,inherited from section HLBW (placeholder),
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,,,20,HLWX,2.08381,45.38667,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,01,Koowaad,4,HLWXKW,2.08381,45.38667,sector,inherited,inherited from section HLWX (placeholder),1st
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,02,Labaad,4,HLWXLB,2.08381,45.38667,sector,inherited,inherited from section HLWX (placeholder),2nd
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,03,Saddexaad,4,HLWXSD,2.08381,45.38667,sector,inherited,inherited from section HLWX (placeholder),3rd
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,04,Afaraad,4,HLWXAF,2.08381,45.38667,sector,inherited,inherited from section HLWX (placeholder),4th
+Banaadir,14,Heliwaa,02,Waxaracadde,HLWX,05,Shanaad,4,HLWXSN,2.08381,45.38667,sector,inherited,inherited from section HLWX (placeholder),5th
+Banaadir,14,Heliwaa,03,Barwaaqo,HLBR,,,100,HLBR,2.10554,45.36661,section,low,"Google Maps match: ""Barwaaqo super market""",
+Banaadir,14,Heliwaa,03,Barwaaqo,HLBR,01,Daryeel,30,HLBRDY,2.10554,45.36661,sector,inherited,inherited from section HLBR (low),
+Banaadir,14,Heliwaa,03,Barwaaqo,HLBR,02,Alkheyraad,20,HLBRAK,2.10554,45.36661,sector,inherited,inherited from section HLBR (low),
+Banaadir,14,Heliwaa,03,Barwaaqo,HLBR,03,Cali Agoon,30,HLBRCA,2.10554,45.36661,sector,inherited,inherited from section HLBR (low),
+Banaadir,14,Heliwaa,03,Barwaaqo,HLBR,04,Jilayaale,20,HLBRJL,2.10554,45.36661,sector,inherited,inherited from section HLBR (low),
+Banaadir,14,Heliwaa,04,Ceel Cirfiid,HLCL,,,16,HLCL,2.14871,45.43624,section,medium,"Google Maps match: ""Qabuuraha Ceel cirfiid""",
+Banaadir,14,Heliwaa,04,Ceel Cirfiid,HLCL,01,Koowaad,4,HLCLKW,2.14871,45.43624,sector,inherited,inherited from section HLCL (medium),1st
+Banaadir,14,Heliwaa,04,Ceel Cirfiid,HLCL,02,Labaad,4,HLCLLB,2.14871,45.43624,sector,inherited,inherited from section HLCL (medium),2nd
+Banaadir,14,Heliwaa,04,Ceel Cirfiid,HLCL,03,Saddexaad,4,HLCLSD,2.14871,45.43624,sector,inherited,inherited from section HLCL (medium),3rd
+Banaadir,14,Heliwaa,04,Ceel Cirfiid,HLCL,04,Afaraad,4,HLCLAF,2.14871,45.43624,sector,inherited,inherited from section HLCL (medium),4th
+Banaadir,23,Wartanabadda,,,,,,316,WR,2.05247,45.33190,district,high,OSM place node – Wardhiigley (old name of Wartanabadda),Wardhiigleey (former name); Wardhigley
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,,,32,WRJD,2.04374,45.33866,section,low,"Google Maps match: ""General Daauud Health Center""",
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,01,15ka May,8,WRJDFM,2.04374,45.33866,sector,inherited,inherited from section WRJD (low),
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,02,Nasiib Buundo,7,WRJDNB,2.04374,45.33866,sector,inherited,inherited from section WRJD (low),
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,03,Halgan,6,WRJDHG,2.04374,45.33866,sector,inherited,inherited from section WRJD (low),
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,04,Heegan,6,WRJDHN,2.04374,45.33866,sector,inherited,inherited from section WRJD (low),
+Banaadir,23,Wartanabadda,01,Janaraal Daa'uud,WRJD,05,Siinaay,5,WRJDSY,2.04374,45.33866,sector,inherited,inherited from section WRJD (low),
+Banaadir,23,Wartanabadda,02,Hantiwadaag,WRHW,,,44,WRHW,2.04818,45.33054,section,low,"Google Maps match: ""Hanti-wadaag school"" (Primary school)",
+Banaadir,23,Wartanabadda,02,Hantiwadaag,WRHW,01,Sheekh Suufi,4,WRHWSS,2.04818,45.33054,sector,inherited,inherited from section WRHW (low),
+Banaadir,23,Wartanabadda,02,Hantiwadaag,WRHW,02,Horseed,11,WRHWHR,2.04818,45.33054,sector,inherited,inherited from section WRHW (low),
+Banaadir,23,Wartanabadda,02,Hantiwadaag,WRHW,03,Nugaal,9,WRHWNG,2.04818,45.33054,sector,inherited,inherited from section WRHW (low),
+Banaadir,23,Wartanabadda,02,Hantiwadaag,WRHW,04,Sh Xasan Barsame,20,WRHWSX,2.04818,45.33054,sector,inherited,inherited from section WRHW (low),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,,,47,WRHR,2.05247,45.33190,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,01,Maxamuud Xarbi,9,WRHRMX,2.05247,45.33190,sector,inherited,inherited from section WRHR (placeholder),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,02,Lakari,8,WRHRLK,2.05247,45.33190,sector,inherited,inherited from section WRHR (placeholder),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,03,Sheekh Adan Dheere,13,WRHRSA,2.05247,45.33190,sector,inherited,inherited from section WRHR (placeholder),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,04,Xararyaale,8,WRHRXY,2.05247,45.33190,sector,inherited,inherited from section WRHR (placeholder),
+Banaadir,23,Wartanabadda,03,Horseed,WRHR,05,Cawbaarka,9,WRHRCB,2.05247,45.33190,sector,inherited,inherited from section WRHR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,,,143,WRBR,2.05247,45.33190,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,01,Labadhagax,8,WRBRLD,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,02,Quracley,11,WRBRQY,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,03,Hilaac,14,WRBRHL,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,04,Furayaasha,16,WRBRFY,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,05,Cali Kamiin,18,WRBRCK,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,06,Carwo Iidka,16,WRBRCI,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,07,Simad,23,WRBRSM,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,08,Xero Taraafiko,20,WRBRXT,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,04,Barwaaqo,WRBR,09,Madbacadda,17,WRBRMD,2.05247,45.33190,sector,inherited,inherited from section WRBR (placeholder),
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,,,50,WRXB,2.05623,45.33607,section,high,"Google Maps match: ""Xaafadda Xamar Bile""",
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,01,Halgan,12,WRXBHG,2.05623,45.33607,sector,inherited,inherited from section WRXB (high),
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,02,Horseed,10,WRXBHR,2.05623,45.33607,sector,inherited,inherited from section WRXB (high),
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,03,Janaraal Daauud,10,WRXBJD,2.05623,45.33607,sector,inherited,inherited from section WRXB (high),Janaraal Daa'uud
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,04,Gooh iyo Garoon,8,WRXBGG,2.05623,45.33607,sector,inherited,inherited from section WRXB (high),
+Banaadir,23,Wartanabadda,05,Xamarbile,WRXB,05,Sunno Barwaaqo,10,WRXBSB,2.05623,45.33607,sector,inherited,inherited from section WRXB (high),
+Banaadir,15,Hodan,,,,,,292,HD,2.03897,45.30605,district,high,OSM place node – Hodan,
+Banaadir,15,Hodan,01,Axmed Gurey,HDAG,,,16,HDAG,2.03897,45.30605,section,placeholder,placeholder = district centre (no reliable match found),Axmed Gureey
+Banaadir,15,Hodan,01,Axmed Gurey,HDAG,01,Cusmaan Geeddi Raage,5,HDAGCG,2.03897,45.30605,sector,inherited,inherited from section HDAG (placeholder),
+Banaadir,15,Hodan,01,Axmed Gurey,HDAG,02,Janaraal Daa,5,HDAGJD,2.03897,45.30605,sector,inherited,inherited from section HDAG (placeholder),Janaraal Daa'uud (probably truncated)
+Banaadir,15,Hodan,01,Axmed Gurey,HDAG,03,Dhagaxtuur,3,HDAGDT,2.03897,45.30605,sector,inherited,inherited from section HDAG (placeholder),
+Banaadir,15,Hodan,01,Axmed Gurey,HDAG,04,Xaawo Taako,3,HDAGXT,2.03897,45.30605,sector,inherited,inherited from section HDAG (placeholder),
+Banaadir,15,Hodan,02,Kacaan,HDKC,,,19,HDKC,2.02705,45.27984,section,low,"Google Maps match: ""Kacaan School"" (General education school)",
+Banaadir,15,Hodan,02,Kacaan,HDKC,01,Kaasa Bobolaare,4,HDKCKB,2.02705,45.27984,sector,inherited,inherited from section HDKC (low),
+Banaadir,15,Hodan,02,Kacaan,HDKC,02,Maxamuud Sabriye,5,HDKCMS,2.02705,45.27984,sector,inherited,inherited from section HDKC (low),
+Banaadir,15,Hodan,02,Kacaan,HDKC,03,Bashiir Lugeey,5,HDKCBL,2.02705,45.27984,sector,inherited,inherited from section HDKC (low),
+Banaadir,15,Hodan,02,Kacaan,HDKC,04,Abuukar Goyle,5,HDKCAG,2.02705,45.27984,sector,inherited,inherited from section HDKC (low),
+Banaadir,15,Hodan,03,Oktoobar,HDOK,,,169,HDOK,2.02920,45.31514,section,low,"Google Maps match: ""Buundada 21-Oktoobar""",
+Banaadir,15,Hodan,03,Oktoobar,HDOK,01,Faanoole,14,HDOKFN,2.02920,45.31514,sector,inherited,inherited from section HDOK (low),
+Banaadir,15,Hodan,03,Oktoobar,HDOK,02,Feerfeer,20,HDOKFF,2.02920,45.31514,sector,inherited,inherited from section HDOK (low),
+Banaadir,15,Hodan,03,Oktoobar,HDOK,03,Xaawo Taako,19,HDOKXT,2.02920,45.31514,sector,inherited,inherited from section HDOK (low),
+Banaadir,15,Hodan,03,Oktoobar,HDOK,04,Boosniya,75,HDOKBS,2.02920,45.31514,sector,inherited,inherited from section HDOK (low),
+Banaadir,15,Hodan,03,Oktoobar,HDOK,05,Midnimo,41,HDOKMD,2.02920,45.31514,sector,inherited,inherited from section HDOK (low),
+Banaadir,15,Hodan,04,Taleex,HDTL,,,88,HDTL,2.03722,45.31219,section,low,"Google Maps match: ""W Taleex""",
+Banaadir,15,Hodan,04,Taleex,HDTL,01,Bangaariyo,18,HDTLBG,2.03722,45.31219,sector,inherited,inherited from section HDTL (low),
+Banaadir,15,Hodan,04,Taleex,HDTL,02,Horseed,20,HDTLHS,2.03722,45.31219,sector,inherited,inherited from section HDTL (low),
+Banaadir,15,Hodan,04,Taleex,HDTL,03,Shiirkole,30,HDTLSH,2.03722,45.31219,sector,inherited,inherited from section HDTL (low),
+Banaadir,15,Hodan,04,Taleex,HDTL,04,Damaanyo,20,HDTLDM,2.03722,45.31219,sector,inherited,inherited from section HDTL (low),
+Banaadir,10,Boondheere,,,,,,56,BD,2.04616,45.34117,district,high,OSM place node – Boondheere,Bondhere
+Banaadir,10,Boondheere,01,Sinaay,BDSY,,,12,BDSY,2.04616,45.34117,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,10,Boondheere,01,Sinaay,BDSY,01,Koowaad,4,BDSYKW,2.04616,45.34117,sector,inherited,inherited from section BDSY (placeholder),1st
+Banaadir,10,Boondheere,01,Sinaay,BDSY,02,Labaad,4,BDSYLB,2.04616,45.34117,sector,inherited,inherited from section BDSY (placeholder),2nd
+Banaadir,10,Boondheere,01,Sinaay,BDSY,03,Saddexaad,4,BDSYSD,2.04616,45.34117,sector,inherited,inherited from section BDSY (placeholder),3rd
+Banaadir,10,Boondheere,02,Nasiib Buundo,BDNB,,,19,BDNB,2.04616,45.34117,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,10,Boondheere,02,Nasiib Buundo,BDNB,01,Koowaad,4,BDNBKW,2.04616,45.34117,sector,inherited,inherited from section BDNB (placeholder),1st
+Banaadir,10,Boondheere,02,Nasiib Buundo,BDNB,02,Labaad,4,BDNBLB,2.04616,45.34117,sector,inherited,inherited from section BDNB (placeholder),2nd
+Banaadir,10,Boondheere,02,Nasiib Buundo,BDNB,03,Saddexaad,4,BDNBSD,2.04616,45.34117,sector,inherited,inherited from section BDNB (placeholder),3rd
+Banaadir,10,Boondheere,02,Nasiib Buundo,BDNB,04,Afaraad,7,BDNBAF,2.04616,45.34117,sector,inherited,inherited from section BDNB (placeholder),4th
+Banaadir,10,Boondheere,03,Yuusuf Alkowneyn,BDYK,,,17,BDYK,2.04616,45.34117,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,10,Boondheere,03,Yuusuf Alkowneyn,BDYK,01,Koowaad,5,BDYKKW,2.04616,45.34117,sector,inherited,inherited from section BDYK (placeholder),1st
+Banaadir,10,Boondheere,03,Yuusuf Alkowneyn,BDYK,02,Labaad,4,BDYKLB,2.04616,45.34117,sector,inherited,inherited from section BDYK (placeholder),2nd
+Banaadir,10,Boondheere,03,Yuusuf Alkowneyn,BDYK,03,Saddexaad,4,BDYKSD,2.04616,45.34117,sector,inherited,inherited from section BDYK (placeholder),3rd
+Banaadir,10,Boondheere,03,Yuusuf Alkowneyn,BDYK,04,Afaraad,4,BDYKAF,2.04616,45.34117,sector,inherited,inherited from section BDYK (placeholder),4th
+Banaadir,10,Boondheere,04,Daljirka,BDDJ,,,8,BDDJ,2.03919,45.34197,section,high,"Google Maps match: ""Taalada Daljirka Daahsoon"" (Historical landmark)",
+Banaadir,10,Boondheere,04,Daljirka,BDDJ,01,Koowaad,4,BDDJKW,2.03919,45.34197,sector,inherited,inherited from section BDDJ (high),1st
+Banaadir,10,Boondheere,04,Daljirka,BDDJ,02,Labaad,4,BDDJLB,2.03919,45.34197,sector,inherited,inherited from section BDDJ (high),2nd
+Banaadir,11,Cabdicasiis,,,,,,52,CC,2.04045,45.36000,district,high,OSM place node – Cabdulcasiis,Abdiaziz; Cabdulcasiis
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,,,10,CCDB,2.04045,45.36000,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,01,Koowaad,2,CCDBKW,2.04045,45.36000,sector,inherited,inherited from section CCDB (placeholder),1st
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,02,Labaad,2,CCDBLB,2.04045,45.36000,sector,inherited,inherited from section CCDB (placeholder),2nd
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,03,Saddexaad,2,CCDBSD,2.04045,45.36000,sector,inherited,inherited from section CCDB (placeholder),3rd
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,04,Afaraad,2,CCDBAF,2.04045,45.36000,sector,inherited,inherited from section CCDB (placeholder),4th
+Banaadir,11,Cabdicasiis,01,Dhagaxbuur,CCDB,05,Shanaad,2,CCDBSN,2.04045,45.36000,sector,inherited,inherited from section CCDB (placeholder),5th
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,,,15,CCLC,2.04045,45.36000,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,01,Koowaad,4,CCLCKW,2.04045,45.36000,sector,inherited,inherited from section CCLC (placeholder),1st
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,02,Labaad,3,CCLCLB,2.04045,45.36000,sector,inherited,inherited from section CCLC (placeholder),2nd
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,03,Saddexaad,2,CCLCSD,2.04045,45.36000,sector,inherited,inherited from section CCLC (placeholder),3rd
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,04,Afaraad,2,CCLCAF,2.04045,45.36000,sector,inherited,inherited from section CCLC (placeholder),4th
+Banaadir,11,Cabdicasiis,02,Lowyacadde,CCLC,05,Shanaad,4,CCLCSN,2.04045,45.36000,sector,inherited,inherited from section CCLC (placeholder),5th
+Banaadir,11,Cabdicasiis,03,Gaarisa,CCGR,,,7,CCGR,2.04045,45.36000,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,11,Cabdicasiis,03,Gaarisa,CCGR,01,Koowaad,2,CCGRKW,2.04045,45.36000,sector,inherited,inherited from section CCGR (placeholder),1st
+Banaadir,11,Cabdicasiis,03,Gaarisa,CCGR,02,Labaad,2,CCGRLB,2.04045,45.36000,sector,inherited,inherited from section CCGR (placeholder),2nd
+Banaadir,11,Cabdicasiis,03,Gaarisa,CCGR,03,Saddexaad,1,CCGRSD,2.04045,45.36000,sector,inherited,inherited from section CCGR (placeholder),3rd
+Banaadir,11,Cabdicasiis,03,Gaarisa,CCGR,04,Afaraad,2,CCGRAF,2.04045,45.36000,sector,inherited,inherited from section CCGR (placeholder),4th
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,,,20,CCJN,2.04045,45.36000,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,01,Koowaad,4,CCJNKW,2.04045,45.36000,sector,inherited,inherited from section CCJN (placeholder),1st
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,02,Labaad,4,CCJNLB,2.04045,45.36000,sector,inherited,inherited from section CCJN (placeholder),2nd
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,03,Saddexaad,4,CCJNSD,2.04045,45.36000,sector,inherited,inherited from section CCJN (placeholder),3rd
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,04,Afaraad,4,CCJNAF,2.04045,45.36000,sector,inherited,inherited from section CCJN (placeholder),4th
+Banaadir,11,Cabdicasiis,04,Janaraal Neero,CCJN,05,Shanaad,4,CCJNSN,2.04045,45.36000,sector,inherited,inherited from section CCJN (placeholder),5th
+Banaadir,13,Dharkeenley,,,,,,620,DK,2.03145,45.26422,district,high,OSM place node – Dharkeynley,Dharkenley; Dharkeynley
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,,,181,DKDY,2.02578,45.27867,section,medium,"Google Maps match: ""School Dhama Yaasiin Cartan"" (Educational institution)",
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,01,Koowaad,27,DKDYKW,2.02578,45.27867,sector,inherited,inherited from section DKDY (medium),1st
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,02,Labaad,35,DKDYLB,2.02578,45.27867,sector,inherited,inherited from section DKDY (medium),2nd
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,03,Saddexaad,25,DKDYSD,2.02578,45.27867,sector,inherited,inherited from section DKDY (medium),3rd
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,04,Afaraad,24,DKDYAF,2.02578,45.27867,sector,inherited,inherited from section DKDY (medium),4th
+Banaadir,13,Dharkeenley,01,Dhamme Yaasiin Cartan,DKDY,05,Shanaad,70,DKDYSN,2.02578,45.27867,sector,inherited,inherited from section DKDY (medium),5th
+Banaadir,13,Dharkeenley,02,Xannaano Bulsho,DKXB,,,90,DKXB,2.03145,45.26422,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,13,Dharkeenley,02,Xannaano Bulsho,DKXB,01,Koowaad,12,DKXBKW,2.03145,45.26422,sector,inherited,inherited from section DKXB (placeholder),1st
+Banaadir,13,Dharkeenley,02,Xannaano Bulsho,DKXB,02,Labaad,18,DKXBLB,2.03145,45.26422,sector,inherited,inherited from section DKXB (placeholder),2nd
+Banaadir,13,Dharkeenley,02,Xannaano Bulsho,DKXB,03,Saddexaad,14,DKXBSD,2.03145,45.26422,sector,inherited,inherited from section DKXB (placeholder),3rd
+Banaadir,13,Dharkeenley,02,Xannaano Bulsho,DKXB,04,Afaraad,46,DKXBAF,2.03145,45.26422,sector,inherited,inherited from section DKXB (placeholder),4th
+Banaadir,13,Dharkeenley,03,Saciid Rooraaye,DKSR,,,176,DKSR,2.02214,45.28854,section,low,"Google Maps match: ""Ugaas Saciid Rooraaye"" (Housing complex)",
+Banaadir,13,Dharkeenley,03,Saciid Rooraaye,DKSR,01,Koowaad,35,DKSRKW,2.02214,45.28854,sector,inherited,inherited from section DKSR (low),1st
+Banaadir,13,Dharkeenley,03,Saciid Rooraaye,DKSR,02,Labaad,26,DKSRLB,2.02214,45.28854,sector,inherited,inherited from section DKSR (low),2nd
+Banaadir,13,Dharkeenley,03,Saciid Rooraaye,DKSR,03,Saddexaad,55,DKSRSD,2.02214,45.28854,sector,inherited,inherited from section DKSR (low),3rd
+Banaadir,13,Dharkeenley,03,Saciid Rooraaye,DKSR,04,Afaraad,60,DKSRAF,2.02214,45.28854,sector,inherited,inherited from section DKSR (low),4th
+Banaadir,13,Dharkeenley,04,Dhagaxtuur,DKDG,,,73,DKDG,2.03145,45.26422,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,13,Dharkeenley,04,Dhagaxtuur,DKDG,01,Koowaad,13,DKDGKW,2.03145,45.26422,sector,inherited,inherited from section DKDG (placeholder),1st
+Banaadir,13,Dharkeenley,04,Dhagaxtuur,DKDG,02,Labaad,14,DKDGLB,2.03145,45.26422,sector,inherited,inherited from section DKDG (placeholder),2nd
+Banaadir,13,Dharkeenley,04,Dhagaxtuur,DKDG,03,Saddexaad,8,DKDGSD,2.03145,45.26422,sector,inherited,inherited from section DKDG (placeholder),3rd
+Banaadir,13,Dharkeenley,04,Dhagaxtuur,DKDG,04,Afaraad,38,DKDGAF,2.03145,45.26422,sector,inherited,inherited from section DKDG (placeholder),4th
+Banaadir,13,Dharkeenley,05,Kaawo Godeey,DKKG,,,100,DKKG,2.03145,45.26422,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,13,Dharkeenley,05,Kaawo Godeey,DKKG,01,Koowaad,25,DKKGKW,2.03145,45.26422,sector,inherited,inherited from section DKKG (placeholder),1st
+Banaadir,13,Dharkeenley,05,Kaawo Godeey,DKKG,02,Labaad,25,DKKGLB,2.03145,45.26422,sector,inherited,inherited from section DKKG (placeholder),2nd
+Banaadir,13,Dharkeenley,05,Kaawo Godeey,DKKG,03,Saddexaad,25,DKKGSD,2.03145,45.26422,sector,inherited,inherited from section DKKG (placeholder),3rd
+Banaadir,13,Dharkeenley,05,Kaawo Godeey,DKKG,04,Afaraad,25,DKKGAF,2.03145,45.26422,sector,inherited,inherited from section DKKG (placeholder),4th
+Banaadir,17,Kaaraan,,,,,,565,KR,2.05097,45.36799,district,high,OSM place node – Karan (Kaaraan),Karan; Karaan
+Banaadir,17,Kaaraan,01,Faanoole,KRFN,,,99,KRFN,2.05097,45.36799,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,17,Kaaraan,01,Faanoole,KRFN,01,Godey,30,KRFNGD,2.05097,45.36799,sector,inherited,inherited from section KRFN (placeholder),
+Banaadir,17,Kaaraan,01,Faanoole,KRFN,02,Dayax,19,KRFNDY,2.05097,45.36799,sector,inherited,inherited from section KRFN (placeholder),
+Banaadir,17,Kaaraan,01,Faanoole,KRFN,03,Maxamud Axmed Cali,22,KRFNMA,2.05097,45.36799,sector,inherited,inherited from section KRFN (placeholder),
+Banaadir,17,Kaaraan,01,Faanoole,KRFN,04,Wadajir,28,KRFNWD,2.05097,45.36799,sector,inherited,inherited from section KRFN (placeholder),
+Banaadir,17,Kaaraan,02,Jabuuti,KRJB,,,105,KRJB,2.05097,45.36799,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,17,Kaaraan,02,Jabuuti,KRJB,01,Onkod,12,KRJBON,2.05097,45.36799,sector,inherited,inherited from section KRJB (placeholder),
+Banaadir,17,Kaaraan,02,Jabuuti,KRJB,02,Danan,31,KRJBDN,2.05097,45.36799,sector,inherited,inherited from section KRJB (placeholder),
+Banaadir,17,Kaaraan,02,Jabuuti,KRJB,03,Dirir,31,KRJBDR,2.05097,45.36799,sector,inherited,inherited from section KRJB (placeholder),
+Banaadir,17,Kaaraan,02,Jabuuti,KRJB,04,Cadceed,31,KRJBCD,2.05097,45.36799,sector,inherited,inherited from section KRJB (placeholder),
+Banaadir,17,Kaaraan,03,Nageyle,KRNG,,,129,KRNG,2.05394,45.36658,section,high,"OSM node 4924241025 (place=neighbourhood, 'Xaafada Nageyle' / 'Nageyle Neighborhood'), inside the OSM Kaaraan district boundary; retrieved 2026-10-25",
+Banaadir,17,Kaaraan,03,Nageyle,KRNG,01,Wadajir,33,KRNGWD,2.05394,45.36658,sector,inherited,inherited from section KRNG (high),
+Banaadir,17,Kaaraan,03,Nageyle,KRNG,02,Xiddig,28,KRNGXD,2.05394,45.36658,sector,inherited,inherited from section KRNG (high),
+Banaadir,17,Kaaraan,03,Nageyle,KRNG,03,Horseed,40,KRNGHR,2.05394,45.36658,sector,inherited,inherited from section KRNG (high),
+Banaadir,17,Kaaraan,03,Nageyle,KRNG,04,Cabdulle Cadde,28,KRNGCB,2.05394,45.36658,sector,inherited,inherited from section KRNG (high),
+Banaadir,17,Kaaraan,04,Wajeer,KRWJ,,,66,KRWJ,2.05006,45.36342,section,low,"Google Maps match: ""Wajeer"" (Bakery)",
+Banaadir,17,Kaaraan,04,Wajeer,KRWJ,01,Xaaji Laameer,8,KRWJXL,2.05006,45.36342,sector,inherited,inherited from section KRWJ (low),
+Banaadir,17,Kaaraan,04,Wajeer,KRWJ,02,Liibaan,10,KRWJLB,2.05006,45.36342,sector,inherited,inherited from section KRWJ (low),
+Banaadir,17,Kaaraan,04,Wajeer,KRWJ,03,Aamanuu,10,KRWJAM,2.05006,45.36342,sector,inherited,inherited from section KRWJ (low),
+Banaadir,17,Kaaraan,04,Wajeer,KRWJ,04,Cabdi Cadde,38,KRWJCC,2.05006,45.36342,sector,inherited,inherited from section KRWJ (low),
+Banaadir,17,Kaaraan,05,Jamhuuriya,KRJM,,,83,KRJM,2.05097,45.36799,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,17,Kaaraan,05,Jamhuuriya,KRJM,01,Horseed,20,KRJMHR,2.05097,45.36799,sector,inherited,inherited from section KRJM (placeholder),
+Banaadir,17,Kaaraan,05,Jamhuuriya,KRJM,02,Halgan,20,KRJMHL,2.05097,45.36799,sector,inherited,inherited from section KRJM (placeholder),
+Banaadir,17,Kaaraan,05,Jamhuuriya,KRJM,03,Heegan,20,KRJMHG,2.05097,45.36799,sector,inherited,inherited from section KRJM (placeholder),
+Banaadir,17,Kaaraan,05,Jamhuuriya,KRJM,04,Hormuud,23,KRJMHM,2.05097,45.36799,sector,inherited,inherited from section KRJM (placeholder),
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,,,83,KRBM,2.05745,45.38223,section,high,"Google Maps match: ""Xaafada Buulo Maaxaay""",
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,01,Nagaad,28,KRBMNG,2.05745,45.38223,sector,inherited,inherited from section KRBM (high),
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,02,Xirka Dheere,21,KRBMXD,2.05745,45.38223,sector,inherited,inherited from section KRBM (high),
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,03,Sheekh Aadan Dheere,14,KRBMSA,2.05745,45.38223,sector,inherited,inherited from section KRBM (high),
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,04,Sheekh Jirre,10,KRBMSJ,2.05745,45.38223,sector,inherited,inherited from section KRBM (high),
+Banaadir,17,Kaaraan,06,Buulo Maaxaay,KRBM,05,Shimiteerka,10,KRBMSH,2.05745,45.38223,sector,inherited,inherited from section KRBM (high),
+Banaadir,19,Shibis,,,,,,54,SB,2.04737,45.34989,district,high,OSM place node – Shibis,
+Banaadir,19,Shibis,01,Saqaawaddiin,SBSQ,,,10,SBSQ,2.04737,45.34989,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,19,Shibis,01,Saqaawaddiin,SBSQ,01,Koowaad,2,SBSQKW,2.04737,45.34989,sector,inherited,inherited from section SBSQ (placeholder),1st
+Banaadir,19,Shibis,01,Saqaawaddiin,SBSQ,02,Labaad,2,SBSQLB,2.04737,45.34989,sector,inherited,inherited from section SBSQ (placeholder),2nd
+Banaadir,19,Shibis,01,Saqaawaddiin,SBSQ,03,Saddexaad,2,SBSQSD,2.04737,45.34989,sector,inherited,inherited from section SBSQ (placeholder),3rd
+Banaadir,19,Shibis,01,Saqaawaddiin,SBSQ,04,Afaraad,4,SBSQAF,2.04737,45.34989,sector,inherited,inherited from section SBSQ (placeholder),4th
+Banaadir,19,Shibis,02,Axmed Gurey,SBAG,,,11,SBAG,2.04737,45.34989,section,placeholder,placeholder = district centre (no reliable match found),Axmed Gureey
+Banaadir,19,Shibis,02,Axmed Gurey,SBAG,01,Koowaad,2,SBAGKW,2.04737,45.34989,sector,inherited,inherited from section SBAG (placeholder),1st
+Banaadir,19,Shibis,02,Axmed Gurey,SBAG,02,Labaad,2,SBAGLB,2.04737,45.34989,sector,inherited,inherited from section SBAG (placeholder),2nd
+Banaadir,19,Shibis,02,Axmed Gurey,SBAG,03,Saddexaad,3,SBAGSD,2.04737,45.34989,sector,inherited,inherited from section SBAG (placeholder),3rd
+Banaadir,19,Shibis,02,Axmed Gurey,SBAG,04,Afaraad,4,SBAGAF,2.04737,45.34989,sector,inherited,inherited from section SBAG (placeholder),4th
+Banaadir,19,Shibis,03,Xalane,SBXL,,,18,SBXL,2.04737,45.34989,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,19,Shibis,03,Xalane,SBXL,01,Koowaad,4,SBXLKW,2.04737,45.34989,sector,inherited,inherited from section SBXL (placeholder),1st
+Banaadir,19,Shibis,03,Xalane,SBXL,02,Labaad,4,SBXLLB,2.04737,45.34989,sector,inherited,inherited from section SBXL (placeholder),2nd
+Banaadir,19,Shibis,03,Xalane,SBXL,03,Saddexaad,4,SBXLSD,2.04737,45.34989,sector,inherited,inherited from section SBXL (placeholder),3rd
+Banaadir,19,Shibis,03,Xalane,SBXL,04,Afaraad,6,SBXLAF,2.04737,45.34989,sector,inherited,inherited from section SBXL (placeholder),4th
+Banaadir,19,Shibis,04,Calasoow Dheere,SBCD,,,15,SBCD,2.04737,45.34989,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,19,Shibis,04,Calasoow Dheere,SBCD,01,Koowaad,4,SBCDKW,2.04737,45.34989,sector,inherited,inherited from section SBCD (placeholder),1st
+Banaadir,19,Shibis,04,Calasoow Dheere,SBCD,02,Labaad,4,SBCDLB,2.04737,45.34989,sector,inherited,inherited from section SBCD (placeholder),2nd
+Banaadir,19,Shibis,04,Calasoow Dheere,SBCD,03,Saddexaad,3,SBCDSD,2.04737,45.34989,sector,inherited,inherited from section SBCD (placeholder),3rd
+Banaadir,19,Shibis,04,Calasoow Dheere,SBCD,04,Afaraad,4,SBCDAF,2.04737,45.34989,sector,inherited,inherited from section SBCD (placeholder),4th
+Banaadir,20,Shingaani,,,,,,21,SN,2.03603,45.34764,district,high,OSM place node – Shingaani,Shangani; Shangaani
+Banaadir,20,Shingaani,01,Howd,SNHW,,,6,SNHW,2.03603,45.34764,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,20,Shingaani,01,Howd,SNHW,01,Sid Barqash,2,SNHWSB,2.03603,45.34764,sector,inherited,inherited from section SNHW (placeholder),
+Banaadir,20,Shingaani,01,Howd,SNHW,02,Jelesbarees,2,SNHWJB,2.03603,45.34764,sector,inherited,inherited from section SNHW (placeholder),
+Banaadir,20,Shingaani,01,Howd,SNHW,03,Otabaarka,2,SNHWOB,2.03603,45.34764,sector,inherited,inherited from section SNHW (placeholder),
+Banaadir,20,Shingaani,02,Mooyaale,SNMY,,,7,SNMY,2.03603,45.34764,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,20,Shingaani,02,Mooyaale,SNMY,01,Baar Itaaliya,2,SNMYBI,2.03603,45.34764,sector,inherited,inherited from section SNMY (placeholder),
+Banaadir,20,Shingaani,02,Mooyaale,SNMY,02,Dalsan,2,SNMYDS,2.03603,45.34764,sector,inherited,inherited from section SNMY (placeholder),
+Banaadir,20,Shingaani,02,Mooyaale,SNMY,03,Sugunto Liido,3,SNMYSL,2.03603,45.34764,sector,inherited,inherited from section SNMY (placeholder),
+Banaadir,20,Shingaani,03,Jabuuti,SNJB,,,4,SNJB,2.03603,45.34764,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,20,Shingaani,03,Jabuuti,SNJB,01,Hanti Wadaag,2,SNJBHW,2.03603,45.34764,sector,inherited,inherited from section SNJB (placeholder),Hantiwadaag
+Banaadir,20,Shingaani,03,Jabuuti,SNJB,02,Horseed,2,SNJBHR,2.03603,45.34764,sector,inherited,inherited from section SNJB (placeholder),
+Banaadir,20,Shingaani,04,Midnimo,SNMD,,,4,SNMD,2.03603,45.34764,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,20,Shingaani,04,Midnimo,SNMD,01,Ceymiska,2,SNMDCY,2.03603,45.34764,sector,inherited,inherited from section SNMD (placeholder),
+Banaadir,20,Shingaani,04,Midnimo,SNMD,02,Danwadaag,2,SNMDDW,2.03603,45.34764,sector,inherited,inherited from section SNMD (placeholder),
+Banaadir,22,Wadajir,,,,,,430,WD,2.02625,45.28520,district,high,OSM place node – Wadajir (Medina),Medina
+Banaadir,22,Wadajir,01,Janaraal Daa'uud,WDJD,,,91,WDJD,2.02625,45.28520,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,22,Wadajir,01,Janaraal Daa'uud,WDJD,01,Tiitiinleey,35,WDJDTT,2.02625,45.28520,sector,inherited,inherited from section WDJD (placeholder),
+Banaadir,22,Wadajir,01,Janaraal Daa'uud,WDJD,02,Xasan Hillaac,18,WDJDXH,2.02625,45.28520,sector,inherited,inherited from section WDJD (placeholder),
+Banaadir,22,Wadajir,01,Janaraal Daa'uud,WDJD,03,Midnimo,13,WDJDMD,2.02625,45.28520,sector,inherited,inherited from section WDJD (placeholder),
+Banaadir,22,Wadajir,01,Janaraal Daa'uud,WDJD,04,Siyaad,25,WDJDSY,2.02625,45.28520,sector,inherited,inherited from section WDJD (placeholder),
+Banaadir,22,Wadajir,02,Xaawo Taako,WDXT,,,99,WDXT,2.02625,45.28520,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,22,Wadajir,02,Xaawo Taako,WDXT,01,Xoriyadda,9,WDXTXR,2.02625,45.28520,sector,inherited,inherited from section WDXT (placeholder),
+Banaadir,22,Wadajir,02,Xaawo Taako,WDXT,02,Xaaji Maxamed,8,WDXTXM,2.02625,45.28520,sector,inherited,inherited from section WDXT (placeholder),
+Banaadir,22,Wadajir,02,Xaawo Taako,WDXT,03,Hagardiid,49,WDXTHD,2.02625,45.28520,sector,inherited,inherited from section WDXT (placeholder),
+Banaadir,22,Wadajir,02,Xaawo Taako,WDXT,04,Barwaaqo,33,WDXTBR,2.02625,45.28520,sector,inherited,inherited from section WDXT (placeholder),
+Banaadir,22,Wadajir,03,Xalane,WDXL,,,79,WDXL,2.01712,45.28955,section,low,"Google Maps match: ""Xalane Football Club""",
+Banaadir,22,Wadajir,03,Xalane,WDXL,01,Gabyow,15,WDXLGB,2.01712,45.28955,sector,inherited,inherited from section WDXL (low),
+Banaadir,22,Wadajir,03,Xalane,WDXL,02,Gololeey,14,WDXLGL,2.01712,45.28955,sector,inherited,inherited from section WDXL (low),
+Banaadir,22,Wadajir,03,Xalane,WDXL,03,Faarax Sindiko,12,WDXLFS,2.01712,45.28955,sector,inherited,inherited from section WDXL (low),
+Banaadir,22,Wadajir,03,Xalane,WDXL,04,Gaheyr,38,WDXLGH,2.01712,45.28955,sector,inherited,inherited from section WDXL (low),
+Banaadir,22,Wadajir,04,Timacadde,WDTC,,,93,WDTC,2.01970,45.28650,section,low,"Google Maps match: ""TIMACADDE"" (Sports club)",
+Banaadir,22,Wadajir,04,Timacadde,WDTC,01,Taraawiil,18,WDTCTR,2.01970,45.28650,sector,inherited,inherited from section WDTC (low),
+Banaadir,22,Wadajir,04,Timacadde,WDTC,02,Halgan,17,WDTCHL,2.01970,45.28650,sector,inherited,inherited from section WDTC (low),
+Banaadir,22,Wadajir,04,Timacadde,WDTC,03,Tarbuush,32,WDTCTB,2.01970,45.28650,sector,inherited,inherited from section WDTC (low),
+Banaadir,22,Wadajir,04,Timacadde,WDTC,04,Xasan jiis,26,WDTCXJ,2.01970,45.28650,sector,inherited,inherited from section WDTC (low),
+Banaadir,22,Wadajir,05,Maxamuud Hilowle,WDMH,,,68,WDMH,2.00404,45.28035,section,medium,"Google Maps match: ""DUGSIGA H DHEXE SARE MAXAMUUD HILOWLE""",
+Banaadir,22,Wadajir,05,Maxamuud Hilowle,WDMH,01,Maxamed Catoosh,19,WDMHMC,2.00404,45.28035,sector,inherited,inherited from section WDMH (medium),
+Banaadir,22,Wadajir,05,Maxamuud Hilowle,WDMH,02,Tarbuush,15,WDMHTB,2.00404,45.28035,sector,inherited,inherited from section WDMH (medium),
+Banaadir,22,Wadajir,05,Maxamuud Hilowle,WDMH,03,Rajo,24,WDMHRJ,2.00404,45.28035,sector,inherited,inherited from section WDMH (medium),
+Banaadir,22,Wadajir,05,Maxamuud Hilowle,WDMH,04,Axmed Waayeel,10,WDMHAW,2.00404,45.28035,sector,inherited,inherited from section WDMH (medium),
+Banaadir,24,Xamarjajab,,,,,,65,XJ,2.02915,45.32913,district,high,OSM place node – Xamar Jajab,Hamar Jajab; Hamar Jabjab
+Banaadir,24,Xamarjajab,01,Gaheyr,XJGH,,,12,XJGH,2.02915,45.32913,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,24,Xamarjajab,01,Gaheyr,XJGH,01,Xalane,4,XJGHXL,2.02915,45.32913,sector,inherited,inherited from section XJGH (placeholder),
+Banaadir,24,Xamarjajab,01,Gaheyr,XJGH,02,Sheekh Shaacir,2,XJGHSS,2.02915,45.32913,sector,inherited,inherited from section XJGH (placeholder),
+Banaadir,24,Xamarjajab,01,Gaheyr,XJGH,03,Axmed Gureey,2,XJGHAG,2.02915,45.32913,sector,inherited,inherited from section XJGH (placeholder),
+Banaadir,24,Xamarjajab,01,Gaheyr,XJGH,04,Saqaawaddiin,4,XJGHSQ,2.02915,45.32913,sector,inherited,inherited from section XJGH (placeholder),
+Banaadir,24,Xamarjajab,02,Horseed,XJHR,,,12,XJHR,2.02915,45.32913,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,24,Xamarjajab,02,Horseed,XJHR,01,Wajeer,4,XJHRWJ,2.02915,45.32913,sector,inherited,inherited from section XJHR (placeholder),
+Banaadir,24,Xamarjajab,02,Horseed,XJHR,02,Nasiib Buundo,2,XJHRNB,2.02915,45.32913,sector,inherited,inherited from section XJHR (placeholder),
+Banaadir,24,Xamarjajab,02,Horseed,XJHR,03,Hawaas,4,XJHRHW,2.02915,45.32913,sector,inherited,inherited from section XJHR (placeholder),
+Banaadir,24,Xamarjajab,02,Horseed,XJHR,04,Maxamuud Xarbi,2,XJHRMX,2.02915,45.32913,sector,inherited,inherited from section XJHR (placeholder),
+Banaadir,24,Xamarjajab,03,Kowda May,XJKM,,,14,XJKM,2.02915,45.32913,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,24,Xamarjajab,03,Kowda May,XJKM,01,Axmed gureey,4,XJKMAG,2.02915,45.32913,sector,inherited,inherited from section XJKM (placeholder),Axmed Gureey
+Banaadir,24,Xamarjajab,03,Kowda May,XJKM,02,Jabuuti,3,XJKMJB,2.02915,45.32913,sector,inherited,inherited from section XJKM (placeholder),
+Banaadir,24,Xamarjajab,03,Kowda May,XJKM,03,Oktoobar,3,XJKMOK,2.02915,45.32913,sector,inherited,inherited from section XJKM (placeholder),
+Banaadir,24,Xamarjajab,03,Kowda May,XJKM,04,Jannaayo,4,XJKMJN,2.02915,45.32913,sector,inherited,inherited from section XJKM (placeholder),
+Banaadir,24,Xamarjajab,04,Janaraal Daa'uud,XJJD,,,27,XJJD,2.02915,45.32913,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,24,Xamarjajab,04,Janaraal Daa'uud,XJJD,01,26 Juun,7,XJJDLJ,2.02915,45.32913,sector,inherited,inherited from section XJJD (placeholder),
+Banaadir,24,Xamarjajab,04,Janaraal Daa'uud,XJJD,02,Kowda Luulyo,6,XJJDKL,2.02915,45.32913,sector,inherited,inherited from section XJJD (placeholder),
+Banaadir,24,Xamarjajab,04,Janaraal Daa'uud,XJJD,03,Iftin,6,XJJDIF,2.02915,45.32913,sector,inherited,inherited from section XJJD (placeholder),
+Banaadir,24,Xamarjajab,04,Janaraal Daa'uud,XJJD,04,Taleex,8,XJJDTL,2.02915,45.32913,sector,inherited,inherited from section XJJD (placeholder),
+Banaadir,25,Xamarweyne,,,,,,32,XW,2.03251,45.33897,district,high,OSM place node – Xamar Weyne,Hamar Weyne; Xamar Weyne
+Banaadir,25,Xamarweyne,01,Kacaan,XWKC,,,8,XWKC,2.03721,45.33792,section,medium,"Google Maps match: ""Xaafadda kacaan"" (Apartment building)",
+Banaadir,25,Xamarweyne,01,Kacaan,XWKC,01,Aw awayska,2,XWKCAA,2.03721,45.33792,sector,inherited,inherited from section XWKC (medium),
+Banaadir,25,Xamarweyne,01,Kacaan,XWKC,02,Aweys Geedow,2,XWKCAG,2.03721,45.33792,sector,inherited,inherited from section XWKC (medium),
+Banaadir,25,Xamarweyne,01,Kacaan,XWKC,03,Aw Cusmaanka,2,XWKCAC,2.03721,45.33792,sector,inherited,inherited from section XWKC (medium),
+Banaadir,25,Xamarweyne,01,Kacaan,XWKC,04,Sosman,2,XWKCSS,2.03721,45.33792,sector,inherited,inherited from section XWKC (medium),
+Banaadir,25,Xamarweyne,02,Gobannimo,XWGB,,,8,XWGB,2.03251,45.33897,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,25,Xamarweyne,02,Gobannimo,XWGB,01,Cadeyga,2,XWGBCD,2.03251,45.33897,sector,inherited,inherited from section XWGB (placeholder),
+Banaadir,25,Xamarweyne,02,Gobannimo,XWGB,02,Koodka,2,XWGBKD,2.03251,45.33897,sector,inherited,inherited from section XWGB (placeholder),
+Banaadir,25,Xamarweyne,02,Gobannimo,XWGB,03,Buurfuule,2,XWGBBF,2.03251,45.33897,sector,inherited,inherited from section XWGB (placeholder),
+Banaadir,25,Xamarweyne,02,Gobannimo,XWGB,04,Moorada Sheekh Muumin,2,XWGBMM,2.03251,45.33897,sector,inherited,inherited from section XWGB (placeholder),
+Banaadir,25,Xamarweyne,03,Horseed,XWHR,,,8,XWHR,2.03710,45.33790,section,low,"Google Maps match: ""Horseed"" (Housing Development)",
+Banaadir,25,Xamarweyne,03,Horseed,XWHR,01,Cabdalla Shiddeeye,2,XWHRCS,2.03710,45.33790,sector,inherited,inherited from section XWHR (low),
+Banaadir,25,Xamarweyne,03,Horseed,XWHR,02,Sheekh Rumaani,2,XWHRSR,2.03710,45.33790,sector,inherited,inherited from section XWHR (low),
+Banaadir,25,Xamarweyne,03,Horseed,XWHR,03,Raqayga,2,XWHRRQ,2.03710,45.33790,sector,inherited,inherited from section XWHR (low),
+Banaadir,25,Xamarweyne,03,Horseed,XWHR,04,Wakaalada filimada,2,XWHRWF,2.03710,45.33790,sector,inherited,inherited from section XWHR (low),
+Banaadir,25,Xamarweyne,04,Hilaac,XWHL,,,8,XWHL,2.03715,45.33791,section,low,"Google Maps match: ""Hilaac University"" (Educational institution)",
+Banaadir,25,Xamarweyne,04,Hilaac,XWHL,01,Yoobsan,2,XWHLYB,2.03715,45.33791,sector,inherited,inherited from section XWHL (low),
+Banaadir,25,Xamarweyne,04,Hilaac,XWHL,02,Macalin Jaamac,2,XWHLMJ,2.03715,45.33791,sector,inherited,inherited from section XWHL (low),
+Banaadir,25,Xamarweyne,04,Hilaac,XWHL,03,Via Eejito,2,XWHLVE,2.03715,45.33791,sector,inherited,inherited from section XWHL (low),
+Banaadir,25,Xamarweyne,04,Hilaac,XWHL,04,Xaawo Taako,2,XWHLXT,2.03715,45.33791,sector,inherited,inherited from section XWHL (low),
+Banaadir,21,Waaberi,,,,,,87,WB,2.03108,45.32171,district,high,OSM place node – Waaberi,Waberi
+Banaadir,21,Waaberi,01,Hantiwadaag,WBHW,,,24,WBHW,2.03108,45.32171,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,21,Waaberi,01,Hantiwadaag,WBHW,01,Xaawo Taako,6,WBHWXT,2.03108,45.32171,sector,inherited,inherited from section WBHW (placeholder),
+Banaadir,21,Waaberi,01,Hantiwadaag,WBHW,02,Kowda Luulyo,6,WBHWKL,2.03108,45.32171,sector,inherited,inherited from section WBHW (placeholder),
+Banaadir,21,Waaberi,01,Hantiwadaag,WBHW,03,26ka Juun,6,WBHWLJ,2.03108,45.32171,sector,inherited,inherited from section WBHW (placeholder),
+Banaadir,21,Waaberi,01,Hantiwadaag,WBHW,04,Jabuuti,6,WBHWJB,2.03108,45.32171,sector,inherited,inherited from section WBHW (placeholder),
+Banaadir,21,Waaberi,02,Horseed,WBHR,,,20,WBHR,2.02850,45.31949,section,low,"Google Maps match: ""Horseed"" (Apartment building)",
+Banaadir,21,Waaberi,02,Horseed,WBHR,01,Iskaashi,5,WBHRIK,2.02850,45.31949,sector,inherited,inherited from section WBHR (low),
+Banaadir,21,Waaberi,02,Horseed,WBHR,02,Hillaac,5,WBHRHL,2.02850,45.31949,sector,inherited,inherited from section WBHR (low),Hilaac
+Banaadir,21,Waaberi,02,Horseed,WBHR,03,Adari,4,WBHRAD,2.02850,45.31949,sector,inherited,inherited from section WBHR (low),
+Banaadir,21,Waaberi,02,Horseed,WBHR,04,Halgan,6,WBHRHG,2.02850,45.31949,sector,inherited,inherited from section WBHR (low),
+Banaadir,21,Waaberi,03,Oktoobar,WBOK,,,18,WBOK,2.03108,45.32171,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,21,Waaberi,03,Oktoobar,WBOK,01,Xooga,4,WBOKXG,2.03108,45.32171,sector,inherited,inherited from section WBOK (placeholder),
+Banaadir,21,Waaberi,03,Oktoobar,WBOK,02,Janaraal Daa'uud,4,WBOKJD,2.03108,45.32171,sector,inherited,inherited from section WBOK (placeholder),
+Banaadir,21,Waaberi,03,Oktoobar,WBOK,03,Dhagaxtuur,4,WBOKDT,2.03108,45.32171,sector,inherited,inherited from section WBOK (placeholder),
+Banaadir,21,Waaberi,03,Oktoobar,WBOK,04,Wajeer,6,WBOKWJ,2.03108,45.32171,sector,inherited,inherited from section WBOK (placeholder),
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,,,25,WBKM,2.02749,45.31953,section,medium,"Google Maps match: ""Xaafada Maajo Waaberi""",
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,01,Via Liberia,4,WBKMVL,2.02749,45.31953,sector,inherited,inherited from section WBKM (medium),
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,02,Sayid Maxamed,4,WBKMSM,2.02749,45.31953,sector,inherited,inherited from section WBKM (medium),
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,03,Axmed Gureey,7,WBKMAG,2.02749,45.31953,sector,inherited,inherited from section WBKM (medium),
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,04,Kowda Luulyo,4,WBKMKL,2.02749,45.31953,sector,inherited,inherited from section WBKM (medium),
+Banaadir,21,Waaberi,04,Kowda Maajo,WBKM,05,20ka Diseembar,6,WBKMLD,2.02749,45.31953,sector,inherited,inherited from section WBKM (medium),
+Banaadir,26,Yaaqshiid,,,,,,352,YQ,2.05686,45.34492,district,high,OSM place node – Yaaqshiid,Yaqshid
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,,,89,YQHG,2.05877,45.35105,section,low,"Google Maps match: ""Heegan"" (Bakery)",
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,01,Sahan,16,YQHGSH,2.05877,45.35105,sector,inherited,inherited from section YQHG (low),
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,02,Dalxiis,12,YQHGDX,2.05877,45.35105,sector,inherited,inherited from section YQHG (low),
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,03,Iftin,21,YQHGIF,2.05877,45.35105,sector,inherited,inherited from section YQHG (low),
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,04,Taleex,20,YQHGTX,2.05877,45.35105,sector,inherited,inherited from section YQHG (low),
+Banaadir,26,Yaaqshiid,01,Heegan,YQHG,05,Danwadaag,20,YQHGDW,2.05877,45.35105,sector,inherited,inherited from section YQHG (low),
+Banaadir,26,Yaaqshiid,02,Horseed,YQHR,,,50,YQHR,2.05686,45.34492,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,26,Yaaqshiid,02,Horseed,YQHR,01,Danab,8,YQHRDN,2.05686,45.34492,sector,inherited,inherited from section YQHR (placeholder),
+Banaadir,26,Yaaqshiid,02,Horseed,YQHR,02,Dayax,8,YQHRDY,2.05686,45.34492,sector,inherited,inherited from section YQHR (placeholder),
+Banaadir,26,Yaaqshiid,02,Horseed,YQHR,03,Bulsho,14,YQHRBS,2.05686,45.34492,sector,inherited,inherited from section YQHR (placeholder),
+Banaadir,26,Yaaqshiid,02,Horseed,YQHR,04,Onkod,20,YQHROK,2.05686,45.34492,sector,inherited,inherited from section YQHR (placeholder),
+Banaadir,26,Yaaqshiid,03,Jungal,YQJN,,,112,YQJN,2.05686,45.34492,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,26,Yaaqshiid,03,Jungal,YQJN,01,Alraxma,25,YQJNAL,2.05686,45.34492,sector,inherited,inherited from section YQJN (placeholder),
+Banaadir,26,Yaaqshiid,03,Jungal,YQJN,02,Danan,9,YQJNDA,2.05686,45.34492,sector,inherited,inherited from section YQJN (placeholder),
+Banaadir,26,Yaaqshiid,03,Jungal,YQJN,03,Onkod,28,YQJNOK,2.05686,45.34492,sector,inherited,inherited from section YQJN (placeholder),
+Banaadir,26,Yaaqshiid,03,Jungal,YQJN,04,Alaqsa,50,YQJNAQ,2.05686,45.34492,sector,inherited,inherited from section YQJN (placeholder),
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,,,101,YQTW,2.06454,45.34103,section,medium,"Google Maps match: ""TOWFIQ""",
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,01,Bakaal,19,YQTWBK,2.06454,45.34103,sector,inherited,inherited from section YQTW (medium),
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,02,Barwaaqo,7,YQTWBW,2.06454,45.34103,sector,inherited,inherited from section YQTW (medium),
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,03,Hillaac,15,YQTWHL,2.06454,45.34103,sector,inherited,inherited from section YQTW (medium),Hilaac
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,04,Aaran,40,YQTWAR,2.06454,45.34103,sector,inherited,inherited from section YQTW (medium),
+Banaadir,26,Yaaqshiid,04,Towfiiq,YQTW,05,Siliga,20,YQTWSL,2.06454,45.34103,sector,inherited,inherited from section YQTW (medium),
+Banaadir,18,Kaxda,,,,,,301,KX,2.04998,45.23971,district,high,OSM place node – Kahda,Kahda
+Banaadir,18,Kaxda,01,Janaraal Liiqliiqato,KXJL,,,89,KXJL,2.03640,45.25229,section,medium,"Google Maps match: ""Liiqliiqato"" (Housing society)",
+Banaadir,18,Kaxda,01,Janaraal Liiqliiqato,KXJL,01,Nuuro,20,KXJLNR,2.03640,45.25229,sector,inherited,inherited from section KXJL (medium),
+Banaadir,18,Kaxda,01,Janaraal Liiqliiqato,KXJL,02,Horseed,28,KXJLHR,2.03640,45.25229,sector,inherited,inherited from section KXJL (medium),
+Banaadir,18,Kaxda,01,Janaraal Liiqliiqato,KXJL,03,Geesguud,20,KXJLGG,2.03640,45.25229,sector,inherited,inherited from section KXJL (medium),
+Banaadir,18,Kaxda,01,Janaraal Liiqliiqato,KXJL,04,Foollaroow,21,KXJLFL,2.03640,45.25229,sector,inherited,inherited from section KXJL (medium),
+Banaadir,18,Kaxda,02,Abaadir,KXAB,,,100,KXAB,2.02156,45.25211,section,low,"Google Maps match: ""Abaadir Hotel"" (Hotel)",
+Banaadir,18,Kaxda,02,Abaadir,KXAB,01,Farjanno,30,KXABFJ,2.02156,45.25211,sector,inherited,inherited from section KXAB (low),
+Banaadir,18,Kaxda,02,Abaadir,KXAB,02,Dhakaajo,20,KXABDK,2.02156,45.25211,sector,inherited,inherited from section KXAB (low),
+Banaadir,18,Kaxda,02,Abaadir,KXAB,03,Farkheyr,20,KXABFK,2.02156,45.25211,sector,inherited,inherited from section KXAB (low),
+Banaadir,18,Kaxda,02,Abaadir,KXAB,04,Gacan Libaax,30,KXABGL,2.02156,45.25211,sector,inherited,inherited from section KXAB (low),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,,,55,KXCF,2.04998,45.23971,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,01,Tareedisho,7,KXCFTD,2.04998,45.23971,sector,inherited,inherited from section KXCF (placeholder),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,02,Sheekh Ibraahim,6,KXCFSI,2.04998,45.23971,sector,inherited,inherited from section KXCF (placeholder),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,03,Gaalkacyo,6,KXCFGK,2.04998,45.23971,sector,inherited,inherited from section KXCF (placeholder),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,04,Shabeelle,6,KXCFSL,2.04998,45.23971,sector,inherited,inherited from section KXCF (placeholder),
+Banaadir,18,Kaxda,03,Cumar Fiyaasko,KXCF,05,Dharkaynta,30,KXCFDK,2.04998,45.23971,sector,inherited,inherited from section KXCF (placeholder),
+Banaadir,18,Kaxda,04,Shimbiroole,KXSM,,,40,KXSM,2.04998,45.23971,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,18,Kaxda,04,Shimbiroole,KXSM,01,Gumashleey,12,KXSMGM,2.04998,45.23971,sector,inherited,inherited from section KXSM (placeholder),
+Banaadir,18,Kaxda,04,Shimbiroole,KXSM,02,Nasiib,10,KXSMNS,2.04998,45.23971,sector,inherited,inherited from section KXSM (placeholder),
+Banaadir,18,Kaxda,04,Shimbiroole,KXSM,03,Xaliimo Nuur,10,KXSMXN,2.04998,45.23971,sector,inherited,inherited from section KXSM (placeholder),
+Banaadir,18,Kaxda,04,Shimbiroole,KXSM,04,Dawacaale,8,KXSMDW,2.04998,45.23971,sector,inherited,inherited from section KXSM (placeholder),
+Banaadir,18,Kaxda,05,Siinka Dheer,KXSD,,,17,KXSD,2.07280,45.22320,section,medium,"Google Maps match: ""Siinka dheer"" (Military base)",
+Banaadir,18,Kaxda,05,Siinka Dheer,KXSD,01,Albirri,6,KXSDAB,2.07280,45.22320,sector,inherited,inherited from section KXSD (medium),
+Banaadir,18,Kaxda,05,Siinka Dheer,KXSD,02,Alfaraj,6,KXSDAF,2.07280,45.22320,sector,inherited,inherited from section KXSD (medium),
+Banaadir,18,Kaxda,05,Siinka Dheer,KXSD,03,Midnimo,5,KXSDMD,2.07280,45.22320,sector,inherited,inherited from section KXSD (medium),
+Banaadir,30,Daarusalaam,,,,,,430,DS,2.13391,45.32030,district,medium,"OSM place node – Daru-Salaam City (new 2022 district, not yet mapped as a boundary)",Daru-Salaam
+Banaadir,30,Daarusalaam,01,Kowda Luulyo,DSKL,,,128,DSKL,2.13391,45.32030,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,30,Daarusalaam,01,Kowda Luulyo,DSKL,01,Mahad Alla,33,DSKLMA,2.13391,45.32030,sector,inherited,inherited from section DSKL (placeholder),
+Banaadir,30,Daarusalaam,01,Kowda Luulyo,DSKL,02,Eeneeye,41,DSKLEN,2.13391,45.32030,sector,inherited,inherited from section DSKL (placeholder),
+Banaadir,30,Daarusalaam,01,Kowda Luulyo,DSKL,03,Dabaqeyn,32,DSKLDQ,2.13391,45.32030,sector,inherited,inherited from section DSKL (placeholder),
+Banaadir,30,Daarusalaam,01,Kowda Luulyo,DSKL,04,Cali Turcaaye,22,DSKLCT,2.13391,45.32030,sector,inherited,inherited from section DSKL (placeholder),
+Banaadir,30,Daarusalaam,02,Tawakal,DSTK,,,134,DSTK,2.13391,45.32030,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,30,Daarusalaam,02,Tawakal,DSTK,01,Carafaat,31,DSTKCR,2.13391,45.32030,sector,inherited,inherited from section DSTK (placeholder),
+Banaadir,30,Daarusalaam,02,Tawakal,DSTK,02,8 Maarso,60,DSTKSM,2.13391,45.32030,sector,inherited,inherited from section DSTK (placeholder),
+Banaadir,30,Daarusalaam,02,Tawakal,DSTK,03,Janaraal Daa'uud,23,DSTKJD,2.13391,45.32030,sector,inherited,inherited from section DSTK (placeholder),
+Banaadir,30,Daarusalaam,02,Tawakal,DSTK,04,Heenan,20,DSTKHN,2.13391,45.32030,sector,inherited,inherited from section DSTK (placeholder),
+Banaadir,30,Daarusalaam,03,Ratiweyne,DSRW,,,51,DSRW,2.15145,45.33001,section,medium,"OSM node 1404224271 (place=village, 'Rati-Wayne', alt 'Rat Wayne', pcode NA-3807-W08-002), 2.2 km from the Daarusalaam district point; the district has no mapped boundary to test against; retrieved 2026-10-25",Rati Weyne; Rati-Wayne (OSM)
+Banaadir,30,Daarusalaam,03,Ratiweyne,DSRW,01,Bilicsan,18,DSRWBS,2.15145,45.33001,sector,inherited,inherited from section DSRW (medium),
+Banaadir,30,Daarusalaam,03,Ratiweyne,DSRW,02,Horseed,13,DSRWHR,2.15145,45.33001,sector,inherited,inherited from section DSRW (medium),
+Banaadir,30,Daarusalaam,03,Ratiweyne,DSRW,03,Cadaad Kalaa,11,DSRWCK,2.15145,45.33001,sector,inherited,inherited from section DSRW (medium),
+Banaadir,30,Daarusalaam,03,Ratiweyne,DSRW,04,Yoocaaloow,9,DSRWYC,2.15145,45.33001,sector,inherited,inherited from section DSRW (medium),
+Banaadir,30,Daarusalaam,04,Lebiga,,,,20,,2.13391,45.32030,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,30,Daarusalaam,04,Lebiga,,01,Dibida,20,DSTKDB,2.13391,45.32030,sector,inherited,inherited from section Lebiga (placeholder),
+Banaadir,30,Daarusalaam,04,Lebiga,,02,Buulo Barreey,0,,2.13391,45.32030,sector,inherited,inherited from section Lebiga (placeholder),
+Banaadir,30,Daarusalaam,04,Lebiga,,03,Ceel Cirfiid,0,,2.13391,45.32030,sector,inherited,inherited from section Lebiga (placeholder),
+Banaadir,30,Daarusalaam,04,Lebiga,,04,Xaanshooleey,0,,2.13391,45.32030,sector,inherited,inherited from section Lebiga (placeholder),
+Banaadir,30,Daarusalaam,05,Ceel Mareer,DSCM,,,97,DSCM,2.11896,45.37037,section,medium,"Google Maps match: ""Ceel Mareer"" (Homestay)",
+Banaadir,30,Daarusalaam,05,Ceel Mareer,DSCM,01,Ceel Qaraar,30,DSCMCQ,2.11896,45.37037,sector,inherited,inherited from section DSCM (medium),
+Banaadir,30,Daarusalaam,05,Ceel Mareer,DSCM,02,Jilayga,33,DSCMJL,2.11896,45.37037,sector,inherited,inherited from section DSCM (medium),
+Banaadir,30,Daarusalaam,05,Ceel Mareer,DSCM,03,Daban Doob,25,DSCMDD,2.13682,45.35734,sector,medium,"OSM node 1404229793 (place=village, 'Dabandoob'), 2.5 km from the Ceel Mareer section point and 4.1 km from the Daarusalaam district point; the district has no mapped boundary to test against; retrieved 2026-10-25",Dabandoob (OSM)
+Banaadir,30,Daarusalaam,05,Ceel Mareer,DSCM,04,Darmooleey,9,DSCMDR,2.11896,45.37037,sector,inherited,inherited from section DSCM (medium),
+Banaadir,31,Gubadleey,,,,,,304,GD,2.07686,45.41355,district,medium,"Google Maps – ""Degmada Gubadley"" (district office; new 2022 district)",Gubadley
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,,,64,GDTW,2.07686,45.41355,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,01,Jidda Yarey,10,GDTWJY,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,02,Barwaaqo,10,GDTWBR,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,03,Jiiro,10,GDTWJR,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,04,Horseed,10,GDTWHR,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,05,Maandeeq,10,GDTWMN,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,06,Sheekh Aadan,10,GDTWSA,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,01,Tawakal,GDTW,07,Xaawo Taako,4,GDTWXW,2.07686,45.41355,sector,inherited,inherited from section GDTW (placeholder),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,,,50,GDBB,2.07686,45.41355,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,01,Bilkheyr,10,GDBBBK,2.07686,45.41355,sector,inherited,inherited from section GDBB (placeholder),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,02,Maandeeq,10,GDBBMN,2.07686,45.41355,sector,inherited,inherited from section GDBB (placeholder),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,03,Talowadaag,10,GDBBTW,2.07686,45.41355,sector,inherited,inherited from section GDBB (placeholder),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,04,Garsoor,10,GDBBGR,2.07686,45.41355,sector,inherited,inherited from section GDBB (placeholder),
+Banaadir,31,Gubadleey,02,Buur Bishaaro,GDBB,05,Towfiiq,10,GDBBTF,2.07686,45.41355,sector,inherited,inherited from section GDBB (placeholder),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,,,60,GDDY,2.08230,45.39685,section,medium,"Google Maps match: ""Suuqa dayax""",
+Banaadir,31,Gubadleey,03,Dayax,GDDY,01,Waaya Arag,10,GDDYWA,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,02,Wardheer,10,GDDYWR,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,03,Waddani,10,GDDYWN,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,04,Wadajir,10,GDDYWD,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,05,Daaru Dayax,10,GDDYDD,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,03,Dayax,GDDY,06,Waxara Cadde,10,GDDYWC,2.08230,45.39685,sector,inherited,inherited from section GDDY (medium),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,,,50,GDDL,2.07686,45.41355,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,01,Hormuud,10,GDDLHM,2.07686,45.41355,sector,inherited,inherited from section GDDL (placeholder),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,02,Horseed,10,GDDLHR,2.07686,45.41355,sector,inherited,inherited from section GDDL (placeholder),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,03,Heegan,10,GDDLHG,2.07686,45.41355,sector,inherited,inherited from section GDDL (placeholder),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,04,Tayo,10,GDDLTY,2.07686,45.41355,sector,inherited,inherited from section GDDL (placeholder),
+Banaadir,31,Gubadleey,04,Dalsan,GDDL,05,Tawakal,10,GDDLTW,2.07686,45.41355,sector,inherited,inherited from section GDDL (placeholder),
+Banaadir,31,Gubadleey,05,Xaaji Cabdi,GDXC,,,40,GDXC,2.07686,45.41355,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,31,Gubadleey,05,Xaaji Cabdi,GDXC,01,Shandool,10,GDXCSD,2.07686,45.41355,sector,inherited,inherited from section GDXC (placeholder),
+Banaadir,31,Gubadleey,05,Xaaji Cabdi,GDXC,02,Buur Madow,10,GDXCBM,2.07686,45.41355,sector,inherited,inherited from section GDXC (placeholder),
+Banaadir,31,Gubadleey,05,Xaaji Cabdi,GDXC,03,Barwaaqo,10,GDXCBW,2.07686,45.41355,sector,inherited,inherited from section GDXC (placeholder),
+Banaadir,31,Gubadleey,05,Xaaji Cabdi,GDXC,04,Badbaado,10,GDXCBD,2.07686,45.41355,sector,inherited,inherited from section GDXC (placeholder),
+Banaadir,31,Gubadleey,06,Ceel Cadde,GDCC,,,40,GDCC,2.10366,45.46288,section,low,"Google Maps match: ""Masjidka ceel Cadde""",
+Banaadir,31,Gubadleey,06,Ceel Cadde,GDCC,01,Ceel Cadde,10,GDCCCC,2.10366,45.46288,sector,inherited,inherited from section GDCC (low),
+Banaadir,31,Gubadleey,06,Ceel Cadde,GDCC,02,Alla Aamin,10,GDCCAL,2.10366,45.46288,sector,inherited,inherited from section GDCC (low),
+Banaadir,31,Gubadleey,06,Ceel Cadde,GDCC,03,Xeeb Yarey,10,GDCCXY,2.10366,45.46288,sector,inherited,inherited from section GDCC (low),
+Banaadir,31,Gubadleey,06,Ceel Cadde,GDCC,04,Cisileey,10,GDCCCS,2.10366,45.46288,sector,inherited,inherited from section GDCC (low),
+Banaadir,32,Garasbaalleey,,,,,,240,GB,2.06223,45.26007,district,medium,"Google Maps – ""Garasbaley district"" government office (new 2022 district)",Garasbaley
+Banaadir,32,Garasbaalleey,01,Galmudug,GBGM,,,40,GBGM,2.05357,45.27481,section,low,"Google Maps match: ""Galmudug Entertainment"" (Stadium)",
+Banaadir,32,Garasbaalleey,01,Galmudug,GBGM,01,Daawada,10,GBGMDW,2.05357,45.27481,sector,inherited,inherited from section GBGM (low),
+Banaadir,32,Garasbaalleey,01,Galmudug,GBGM,02,Alnaciim,10,GBGMAN,2.05357,45.27481,sector,inherited,inherited from section GBGM (low),
+Banaadir,32,Garasbaalleey,01,Galmudug,GBGM,03,Barwaaqo,10,GBGMBW,2.05357,45.27481,sector,inherited,inherited from section GBGM (low),
+Banaadir,32,Garasbaalleey,01,Galmudug,GBGM,04,Gaalkacyo,10,GBGMGK,2.05357,45.27481,sector,inherited,inherited from section GBGM (low),
+Banaadir,32,Garasbaalleey,02,Fooriloow,GBFR,,,40,GBFR,2.04090,45.26936,section,medium,"Google Maps match: ""Fooriloow"" (Housing society)",
+Banaadir,32,Garasbaalleey,02,Fooriloow,GBFR,01,Ugaarta,10,GBFRUG,2.04090,45.26936,sector,inherited,inherited from section GBFR (medium),
+Banaadir,32,Garasbaalleey,02,Fooriloow,GBFR,02,Shaboshabo,10,GBFRSS,2.04090,45.26936,sector,inherited,inherited from section GBFR (medium),
+Banaadir,32,Garasbaalleey,02,Fooriloow,GBFR,03,Baariyoow,10,GBFRBR,2.04090,45.26936,sector,inherited,inherited from section GBFR (medium),
+Banaadir,32,Garasbaalleey,02,Fooriloow,GBFR,04,Saney,10,GBFRSN,2.04090,45.26936,sector,inherited,inherited from section GBFR (medium),
+Banaadir,32,Garasbaalleey,03,Geeddi Firdhiye,GBGF,,,40,GBGF,2.06223,45.26007,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,32,Garasbaalleey,03,Geeddi Firdhiye,GBGF,01,Tundheer,10,GBGFTD,2.06223,45.26007,sector,inherited,inherited from section GBGF (placeholder),
+Banaadir,32,Garasbaalleey,03,Geeddi Firdhiye,GBGF,02,Shabeelle,10,GBGFSB,2.06223,45.26007,sector,inherited,inherited from section GBGF (placeholder),
+Banaadir,32,Garasbaalleey,03,Geeddi Firdhiye,GBGF,03,Maalin,10,GBGFML,2.06223,45.26007,sector,inherited,inherited from section GBGF (placeholder),
+Banaadir,32,Garasbaalleey,03,Geeddi Firdhiye,GBGF,04,Indheey,10,GBGFIN,2.06223,45.26007,sector,inherited,inherited from section GBGF (placeholder),
+Banaadir,32,Garasbaalleey,04,Shuufac,GBSH,,,40,GBSH,2.06223,45.26007,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,32,Garasbaalleey,04,Shuufac,GBSH,01,Bankiga,10,GBSHBN,2.06223,45.26007,sector,inherited,inherited from section GBSH (placeholder),
+Banaadir,32,Garasbaalleey,04,Shuufac,GBSH,02,Alnimca,10,GBSHAN,2.06223,45.26007,sector,inherited,inherited from section GBSH (placeholder),
+Banaadir,32,Garasbaalleey,04,Shuufac,GBSH,03,Barroow,10,GBSHBR,2.06223,45.26007,sector,inherited,inherited from section GBSH (placeholder),
+Banaadir,32,Garasbaalleey,04,Shuufac,GBSH,04,Cali Garaad,10,GBSHCG,2.06223,45.26007,sector,inherited,inherited from section GBSH (placeholder),
+Banaadir,32,Garasbaalleey,05,Tabeellaha,GBTB,,,40,GBTB,2.07276,45.27391,section,medium,"Google Maps match: ""Tabeelaha""",
+Banaadir,32,Garasbaalleey,05,Tabeellaha,GBTB,01,Cali Basar,10,GBTBCB,2.07276,45.27391,sector,inherited,inherited from section GBTB (medium),
+Banaadir,32,Garasbaalleey,05,Tabeellaha,GBTB,02,Yabaroow,10,GBTBYB,2.07276,45.27391,sector,inherited,inherited from section GBTB (medium),
+Banaadir,32,Garasbaalleey,05,Tabeellaha,GBTB,03,Istanbuul,10,GBTBIS,2.07276,45.27391,sector,inherited,inherited from section GBTB (medium),
+Banaadir,32,Garasbaalleey,05,Tabeellaha,GBTB,04,Madaale,10,GBTBMD,2.07276,45.27391,sector,inherited,inherited from section GBTB (medium),
+Banaadir,32,Garasbaalleey,06,Weydoow,GBWY,,,40,GBWY,2.06223,45.26007,section,placeholder,placeholder = district centre (no reliable match found),
+Banaadir,32,Garasbaalleey,06,Weydoow,GBWY,01,Weydoow,10,GBWYWY,2.06223,45.26007,sector,inherited,inherited from section GBWY (placeholder),
+Banaadir,32,Garasbaalleey,06,Weydoow,GBWY,02,Macaani,10,GBWYMC,2.06223,45.26007,sector,inherited,inherited from section GBWY (placeholder),
+Banaadir,32,Garasbaalleey,06,Weydoow,GBWY,03,Buulo Cadaab,10,GBWYBC,2.06223,45.26007,sector,inherited,inherited from section GBWY (placeholder),
+Banaadir,32,Garasbaalleey,06,Weydoow,GBWY,03,Macaanteey,10,GBWYMT,2.06223,45.26007,sector,inherited,inherited from section GBWY (placeholder),

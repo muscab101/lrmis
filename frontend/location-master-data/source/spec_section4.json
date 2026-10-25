@@ -1,0 +1,4523 @@
+{
+  "source": "LRMIS Location Settings, exported 2026-10-25 (specification §4)",
+  "region_name_as_stored": [
+    "Benaadir",
+    "Banaadir"
+  ],
+  "districts": [
+    {
+      "spec_ref": "4.1",
+      "district_name": "Dayniile",
+      "district_code": "12",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Ciise Cabdi",
+          "location_code": "DYCC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Janaraal Daa'uud",
+              "neighborhood_count": 25,
+              "first_code": "DYCCJD01",
+              "last_code": "DYCCJD25",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Ifka Xalane",
+              "neighborhood_count": 26,
+              "first_code": "DYCCIX01",
+              "last_code": "DYCCIX26",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Shiraaye",
+              "neighborhood_count": 26,
+              "first_code": "DYCCSR01",
+              "last_code": "DYCCSR26",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Jaran",
+              "neighborhood_count": 8,
+              "first_code": "DYCCJR01",
+              "last_code": "DYCCJR08",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Rati Weyne",
+              "neighborhood_count": 20,
+              "first_code": "DYCCRW01",
+              "last_code": "DYCCRW20",
+              "note": null
+            }
+          ],
+          "lat": 2.08724,
+          "lon": 45.32862,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Gubta ciise cabdi\""
+        },
+        {
+          "section_code": "02",
+          "section_name": "Barwaaqo",
+          "location_code": "DYBR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Walaalaha",
+              "neighborhood_count": 38,
+              "first_code": "DYBRWL01",
+              "last_code": "DYBRWL38",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Cali Wardhiigleey",
+              "neighborhood_count": 23,
+              "first_code": "DYBRCW01",
+              "last_code": "DYBRCW23",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Isxijiwaaq",
+              "neighborhood_count": 35,
+              "first_code": "DYBRIW01",
+              "last_code": "DYBRIW35",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Hormuud",
+              "neighborhood_count": 20,
+              "first_code": "DYBRHR01",
+              "last_code": "DYBRHR20",
+              "note": null
+            }
+          ],
+          "lat": 2.07286,
+          "lon": 45.32157,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Barwaaqo Stadium\""
+        },
+        {
+          "section_code": "03",
+          "section_name": "Halgan",
+          "location_code": "DYHL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Iftin",
+              "neighborhood_count": 25,
+              "first_code": "DYHLIF01",
+              "last_code": "DYHLIF25",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Jawle",
+              "neighborhood_count": 48,
+              "first_code": "DYHLJW01",
+              "last_code": "DYHLJW48",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Cali Booy",
+              "neighborhood_count": 26,
+              "first_code": "DYHLCB01",
+              "last_code": "DYHLCB26",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Toroobikaal",
+              "neighborhood_count": 40,
+              "first_code": "DYHLTR01",
+              "last_code": "DYHLTR40",
+              "note": null
+            }
+          ],
+          "lat": 2.07303,
+          "lon": 45.29493,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"DAYNIILE-HALGAN\" (Housing society)"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Kur Damac",
+          "location_code": "DYKD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ifis",
+              "neighborhood_count": 30,
+              "first_code": "DYKDIF01",
+              "last_code": "DYKDIF30",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Daadsaney",
+              "neighborhood_count": 25,
+              "first_code": "DYKDDS01",
+              "last_code": "DYKDDS25",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Warlalis",
+              "neighborhood_count": 25,
+              "first_code": "DYKDWR01",
+              "last_code": "DYKDWR25",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Gaheyr",
+              "neighborhood_count": 25,
+              "first_code": "DYKDGH01",
+              "last_code": "DYKDGH25",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Haanta Dheer",
+              "neighborhood_count": 40,
+              "first_code": "DYKDHD01",
+              "last_code": "DYKDHD40",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Oodweyne",
+          "location_code": "DYOW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Hagardiid",
+              "neighborhood_count": 24,
+              "first_code": "DYOWHG01",
+              "last_code": "DYOWHG24",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Wardheere",
+              "neighborhood_count": 38,
+              "first_code": "DYOWWR01",
+              "last_code": "DYOWWR38",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Midnimo",
+              "neighborhood_count": 46,
+              "first_code": "DYOWMD01",
+              "last_code": "DYOWMD46",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Dibida",
+              "neighborhood_count": 14,
+              "first_code": "DYOWDB01",
+              "last_code": "DYOWDB14",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "06",
+          "section_name": "Garas Baalleey",
+          "location_code": "DYGB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Kowaad",
+              "neighborhood_count": 8,
+              "first_code": "DYGBKW01",
+              "last_code": "DYGBKW08",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 8,
+              "first_code": "DYGBLB01",
+              "last_code": "DYGBLB08",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 8,
+              "first_code": "DYGBSD01",
+              "last_code": "DYGBSD08",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 8,
+              "first_code": "DYGBAF01",
+              "last_code": "DYGBAF08",
+              "note": null
+            }
+          ],
+          "lat": 2.06109,
+          "lon": 45.26156,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Garasbaaleey\""
+        },
+        {
+          "section_code": "07",
+          "section_name": "Daarusalaam",
+          "location_code": "DYDS",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Boqolsoon",
+              "neighborhood_count": 10,
+              "first_code": "DYDSBS01",
+              "last_code": "DYDSBS10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dacarow",
+              "neighborhood_count": 10,
+              "first_code": "DYDSDC01",
+              "last_code": "DYDSDC10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Gacan Quuqle",
+              "neighborhood_count": 18,
+              "first_code": "DYDSGQ01",
+              "last_code": "DYDSGQ18",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Abtooy",
+              "neighborhood_count": 10,
+              "first_code": "DYDSAB01",
+              "last_code": "DYDSAB10",
+              "note": null
+            }
+          ],
+          "lat": 2.07632,
+          "lon": 45.25119,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Masjid Daarusalaam\" (Mosque)"
+        }
+      ],
+      "lat": 2.05762,
+      "lon": 45.28532,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node (suburb) – Dayniile",
+      "stated_totals": {
+        "sections": 7,
+        "sectors": 30,
+        "neighborhoods": 707
+      }
+    },
+    {
+      "spec_ref": "4.2",
+      "district_name": "Howlwadaag",
+      "district_code": "16",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Saqaawaddiin",
+          "location_code": "HWSQ",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Heegan",
+              "neighborhood_count": 9,
+              "first_code": "HWSQHG01",
+              "last_code": "HWSQHG09",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Halgan",
+              "neighborhood_count": 9,
+              "first_code": "HWSQHL01",
+              "last_code": "HWSQHL09",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Xalane",
+              "neighborhood_count": 9,
+              "first_code": "HWSQXL01",
+              "last_code": "HWSQXL09",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Kacaan",
+              "neighborhood_count": 10,
+              "first_code": "HWSQKC01",
+              "last_code": "HWSQKC10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Sayidka",
+          "location_code": "HWSY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Hilaac",
+              "neighborhood_count": 7,
+              "first_code": "HWSYHL01",
+              "last_code": "HWSYHL07",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Hantiwadaag",
+              "neighborhood_count": 8,
+              "first_code": "HWSYHW01",
+              "last_code": "HWSYHW08",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Onkod",
+              "neighborhood_count": 10,
+              "first_code": "HWSYOK01",
+              "last_code": "HWSYOK10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Faanoole",
+              "neighborhood_count": 8,
+              "first_code": "HWSYFN01",
+              "last_code": "HWSYFN08",
+              "note": null
+            }
+          ],
+          "lat": 2.03723,
+          "lon": 45.32997,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Sayidka Statue\""
+        },
+        {
+          "section_code": "03",
+          "section_name": "Axmed Gureey",
+          "location_code": "HWAG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ceel Jaale",
+              "neighborhood_count": 10,
+              "first_code": "HWAGCJ01",
+              "last_code": "HWAGCJ10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Janaraal Daa'uud",
+              "neighborhood_count": 7,
+              "first_code": "HWAGJD01",
+              "last_code": "HWAGJD07",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Xalane",
+              "neighborhood_count": 11,
+              "first_code": "HWAGXL01",
+              "last_code": "HWAGXL11",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Hilaac",
+              "neighborhood_count": 10,
+              "first_code": "HWAGHL01",
+              "last_code": "HWAGHL10",
+              "note": null
+            }
+          ],
+          "lat": 2.05995,
+          "lon": 45.31611,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Axmed gurey\" (Alternative medicine)"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Xaawa Taako",
+          "location_code": "HWXT",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Nasrudiin",
+              "neighborhood_count": 17,
+              "first_code": "HWXTND01",
+              "last_code": "HWXTND17",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xamarjadiid",
+              "neighborhood_count": 12,
+              "first_code": "HWXTXJ01",
+              "last_code": "HWXTXJ12",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Kamaaludiin",
+              "neighborhood_count": 11,
+              "first_code": "HWXTKD01",
+              "last_code": "HWXTKD11",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Axmed Gureey",
+              "neighborhood_count": 19,
+              "first_code": "HWXTAG01",
+              "last_code": "HWXTAG19",
+              "note": null
+            }
+          ],
+          "lat": 2.03726,
+          "lon": 45.33821,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Taalada Xaawo Taako\""
+        }
+      ],
+      "lat": 2.05029,
+      "lon": 45.32344,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Howlwadaag",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 16,
+        "neighborhoods": 167
+      }
+    },
+    {
+      "spec_ref": "4.3",
+      "district_name": "Heliwaa",
+      "district_code": "14",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Bandar Wanaag",
+          "location_code": "HLBW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Iftin",
+              "neighborhood_count": 16,
+              "first_code": "HLBWIF01",
+              "last_code": "HLBWIF16",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xorriyo",
+              "neighborhood_count": 20,
+              "first_code": "HLBWXR01",
+              "last_code": "HLBWXR20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Onkod",
+              "neighborhood_count": 31,
+              "first_code": "HLBWOK01",
+              "last_code": "HLBWOK31",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Hillaac",
+              "neighborhood_count": 40,
+              "first_code": "HLBWHL01",
+              "last_code": "HLBWHL40",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Gunbocoole",
+              "neighborhood_count": 30,
+              "first_code": "HLBWGB01",
+              "last_code": "HLBWGB30",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Waxaracadde",
+          "location_code": "HLWX",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "HLWXKW01",
+              "last_code": "HLWXKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "HLWXLB01",
+              "last_code": "HLWXLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "HLWXSD01",
+              "last_code": "HLWXSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "HLWXAF01",
+              "last_code": "HLWXAF04",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shanaad",
+              "neighborhood_count": 4,
+              "first_code": "HLWXSN01",
+              "last_code": "HLWXSN04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Barwaaqo",
+          "location_code": "HLBR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Daryeel",
+              "neighborhood_count": 30,
+              "first_code": "HLBRDY01",
+              "last_code": "HLBRDY30",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Alkheyraad",
+              "neighborhood_count": 20,
+              "first_code": "HLBRAK01",
+              "last_code": "HLBRAK20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Cali Agoon",
+              "neighborhood_count": 30,
+              "first_code": "HLBRCA01",
+              "last_code": "HLBRCA30",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Jilayaale",
+              "neighborhood_count": 20,
+              "first_code": "HLBRJL01",
+              "last_code": "HLBRJL20",
+              "note": null
+            }
+          ],
+          "lat": 2.10554,
+          "lon": 45.36661,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Barwaaqo super market\""
+        },
+        {
+          "section_code": "04",
+          "section_name": "Ceel Cirfiid",
+          "location_code": "HLCL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "HLCLKW01",
+              "last_code": "HLCLKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "HLCLLB01",
+              "last_code": "HLCLLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "HLCLSD01",
+              "last_code": "HLCLSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "HLCLAF01",
+              "last_code": "HLCLAF04",
+              "note": null
+            }
+          ],
+          "lat": 2.14871,
+          "lon": 45.43624,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Qabuuraha Ceel cirfiid\""
+        }
+      ],
+      "lat": 2.08381,
+      "lon": 45.38667,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Huriwa (Heliwaa)",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 18,
+        "neighborhoods": 273
+      }
+    },
+    {
+      "spec_ref": "4.4",
+      "district_name": "Wartanabadda",
+      "district_code": "23",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Janaraal Daa'uud",
+          "location_code": "WRJD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "15ka May",
+              "neighborhood_count": 8,
+              "first_code": "WRJDFM01",
+              "last_code": "WRJDFM08",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Nasiib Buundo",
+              "neighborhood_count": 7,
+              "first_code": "WRJDNB01",
+              "last_code": "WRJDNB07",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Halgan",
+              "neighborhood_count": 6,
+              "first_code": "WRJDHG01",
+              "last_code": "WRJDHG06",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Heegan",
+              "neighborhood_count": 6,
+              "first_code": "WRJDHN01",
+              "last_code": "WRJDHN06",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Siinaay",
+              "neighborhood_count": 5,
+              "first_code": "WRJDSY01",
+              "last_code": "WRJDSY05",
+              "note": null
+            }
+          ],
+          "lat": 2.04374,
+          "lon": 45.33866,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"General Daauud Health Center\""
+        },
+        {
+          "section_code": "02",
+          "section_name": "Hantiwadaag",
+          "location_code": "WRHW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Sheekh Suufi",
+              "neighborhood_count": 4,
+              "first_code": "WRHWSS01",
+              "last_code": "WRHWSS04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 11,
+              "first_code": "WRHWHR01",
+              "last_code": "WRHWHR11",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Nugaal",
+              "neighborhood_count": 9,
+              "first_code": "WRHWNG01",
+              "last_code": "WRHWNG09",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Sh Xasan Barsame",
+              "neighborhood_count": 20,
+              "first_code": "WRHWSX01",
+              "last_code": "WRHWSX20",
+              "note": null
+            }
+          ],
+          "lat": 2.04818,
+          "lon": 45.33054,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Hanti-wadaag school\" (Primary school)"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Horseed",
+          "location_code": "WRHR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Maxamuud Xarbi",
+              "neighborhood_count": 9,
+              "first_code": "WRHRMX01",
+              "last_code": "WRHRMX09",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Lakari",
+              "neighborhood_count": 8,
+              "first_code": "WRHRLK01",
+              "last_code": "WRHRLK08",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Sheekh Adan Dheere",
+              "neighborhood_count": 13,
+              "first_code": "WRHRSA01",
+              "last_code": "WRHRSA13",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Xararyaale",
+              "neighborhood_count": 8,
+              "first_code": "WRHRXY01",
+              "last_code": "WRHRXY08",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Cawbaarka",
+              "neighborhood_count": 9,
+              "first_code": "WRHRCB01",
+              "last_code": "WRHRCB09",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Barwaaqo",
+          "location_code": "WRBR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Labadhagax",
+              "neighborhood_count": 8,
+              "first_code": "WRBRLD01",
+              "last_code": "WRBRLD08",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Quracley",
+              "neighborhood_count": 11,
+              "first_code": "WRBRQY01",
+              "last_code": "WRBRQY11",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Hilaac",
+              "neighborhood_count": 14,
+              "first_code": "WRBRHL01",
+              "last_code": "WRBRHL14",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Furayaasha",
+              "neighborhood_count": 16,
+              "first_code": "WRBRFY01",
+              "last_code": "WRBRFY16",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Cali Kamiin",
+              "neighborhood_count": 18,
+              "first_code": "WRBRCK01",
+              "last_code": "WRBRCK18",
+              "note": null
+            },
+            {
+              "sector_code": "06",
+              "sector_name": "Carwo Iidka",
+              "neighborhood_count": 16,
+              "first_code": "WRBRCI01",
+              "last_code": "WRBRCI16",
+              "note": null
+            },
+            {
+              "sector_code": "07",
+              "sector_name": "Simad",
+              "neighborhood_count": 23,
+              "first_code": "WRBRSM01",
+              "last_code": "WRBRSM23",
+              "note": null
+            },
+            {
+              "sector_code": "08",
+              "sector_name": "Xero Taraafiko",
+              "neighborhood_count": 20,
+              "first_code": "WRBRXT01",
+              "last_code": "WRBRXT20",
+              "note": null
+            },
+            {
+              "sector_code": "09",
+              "sector_name": "Madbacadda",
+              "neighborhood_count": 17,
+              "first_code": "WRBRMD01",
+              "last_code": "WRBRMD17",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Xamarbile",
+          "location_code": "WRXB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Halgan",
+              "neighborhood_count": 12,
+              "first_code": "WRXBHG01",
+              "last_code": "WRXBHG12",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 10,
+              "first_code": "WRXBHR01",
+              "last_code": "WRXBHR10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Janaraal Daauud",
+              "neighborhood_count": 10,
+              "first_code": "WRXBJD01",
+              "last_code": "WRXBJD10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Gooh iyo Garoon",
+              "neighborhood_count": 8,
+              "first_code": "WRXBGG01",
+              "last_code": "WRXBGG08",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Sunno Barwaaqo",
+              "neighborhood_count": 10,
+              "first_code": "WRXBSB01",
+              "last_code": "WRXBSB10",
+              "note": null
+            }
+          ],
+          "lat": 2.05623,
+          "lon": 45.33607,
+          "coord_confidence": "high",
+          "coord_source": "Google Maps match: \"Xaafadda Xamar Bile\""
+        }
+      ],
+      "lat": 2.05247,
+      "lon": 45.3319,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Wardhiigley (old name of Wartanabadda)",
+      "stated_totals": {
+        "sections": 5,
+        "sectors": 28,
+        "neighborhoods": 316
+      }
+    },
+    {
+      "spec_ref": "4.5",
+      "district_name": "Hodan",
+      "district_code": "15",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Axmed Gurey",
+          "location_code": "HDAG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Cusmaan Geeddi Raage",
+              "neighborhood_count": 5,
+              "first_code": "HDAGCG01",
+              "last_code": "HDAGCG05",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Janaraal Daa",
+              "neighborhood_count": 5,
+              "first_code": "HDAGJD01",
+              "last_code": "HDAGJD05",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Dhagaxtuur",
+              "neighborhood_count": 3,
+              "first_code": "HDAGDT01",
+              "last_code": "HDAGDT03",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Xaawo Taako",
+              "neighborhood_count": 3,
+              "first_code": "HDAGXT01",
+              "last_code": "HDAGXT03",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Kacaan",
+          "location_code": "HDKC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Kaasa Bobolaare",
+              "neighborhood_count": 4,
+              "first_code": "HDKCKB01",
+              "last_code": "HDKCKB04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Maxamuud Sabriye",
+              "neighborhood_count": 5,
+              "first_code": "HDKCMS01",
+              "last_code": "HDKCMS05",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Bashiir Lugeey",
+              "neighborhood_count": 5,
+              "first_code": "HDKCBL01",
+              "last_code": "HDKCBL05",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Abuukar Goyle",
+              "neighborhood_count": 5,
+              "first_code": "HDKCAG01",
+              "last_code": "HDKCAG05",
+              "note": null
+            }
+          ],
+          "lat": 2.02705,
+          "lon": 45.27984,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Kacaan School\" (General education school)"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Oktoobar",
+          "location_code": "HDOK",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Faanoole",
+              "neighborhood_count": 14,
+              "first_code": "HDOKFN01",
+              "last_code": "HDOKFN14",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Feerfeer",
+              "neighborhood_count": 20,
+              "first_code": "HDOKFF01",
+              "last_code": "HDOKFF20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Xaawo Taako",
+              "neighborhood_count": 19,
+              "first_code": "HDOKXT01",
+              "last_code": "HDOKXT19",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Boosniya",
+              "neighborhood_count": 75,
+              "first_code": "HDOKBS01",
+              "last_code": "HDOKBS75",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Midnimo",
+              "neighborhood_count": 41,
+              "first_code": "HDOKMD01",
+              "last_code": "HDOKMD41",
+              "note": null
+            }
+          ],
+          "lat": 2.0292,
+          "lon": 45.31514,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Buundada 21-Oktoobar\""
+        },
+        {
+          "section_code": "04",
+          "section_name": "Taleex",
+          "location_code": "HDTL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Bangaariyo",
+              "neighborhood_count": 18,
+              "first_code": "HDTLBG01",
+              "last_code": "HDTLBG18",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 20,
+              "first_code": "HDTLHS01",
+              "last_code": "HDTLHS20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Shiirkole",
+              "neighborhood_count": 30,
+              "first_code": "HDTLSH01",
+              "last_code": "HDTLSH30",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Damaanyo",
+              "neighborhood_count": 20,
+              "first_code": "HDTLDM01",
+              "last_code": "HDTLDM20",
+              "note": null
+            }
+          ],
+          "lat": 2.03722,
+          "lon": 45.31219,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"W Taleex\""
+        }
+      ],
+      "lat": 2.03897,
+      "lon": 45.30605,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Hodan",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 17,
+        "neighborhoods": 292
+      }
+    },
+    {
+      "spec_ref": "4.6",
+      "district_name": "Boondheere",
+      "district_code": "10",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Sinaay",
+          "location_code": "BDSY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "BDSYKW01",
+              "last_code": "BDSYKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "BDSYLB01",
+              "last_code": "BDSYLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "BDSYSD01",
+              "last_code": "BDSYSD04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Nasiib Buundo",
+          "location_code": "BDNB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "BDNBKW01",
+              "last_code": "BDNBKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "BDNBLB01",
+              "last_code": "BDNBLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "BDNBSD01",
+              "last_code": "BDNBSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 7,
+              "first_code": "BDNBAF01",
+              "last_code": "BDNBAF07",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Yuusuf Alkowneyn",
+          "location_code": "BDYK",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 5,
+              "first_code": "BDYKKW01",
+              "last_code": "BDYKKW05",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "BDYKLB01",
+              "last_code": "BDYKLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "BDYKSD01",
+              "last_code": "BDYKSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "BDYKAF01",
+              "last_code": "BDYKAF04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Daljirka",
+          "location_code": "BDDJ",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "BDDJKW01",
+              "last_code": "BDDJKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "BDDJLB01",
+              "last_code": "BDDJLB04",
+              "note": null
+            }
+          ],
+          "lat": 2.03919,
+          "lon": 45.34197,
+          "coord_confidence": "high",
+          "coord_source": "Google Maps match: \"Taalada Daljirka Daahsoon\" (Historical landmark)"
+        }
+      ],
+      "lat": 2.04616,
+      "lon": 45.34117,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Boondheere",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 13,
+        "neighborhoods": 56
+      }
+    },
+    {
+      "spec_ref": "4.7",
+      "district_name": "Cabdicasiis",
+      "district_code": "11",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Dhagaxbuur",
+          "location_code": "CCDB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 2,
+              "first_code": "CCDBKW01",
+              "last_code": "CCDBKW02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 2,
+              "first_code": "CCDBLB01",
+              "last_code": "CCDBLB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 2,
+              "first_code": "CCDBSD01",
+              "last_code": "CCDBSD02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 2,
+              "first_code": "CCDBAF01",
+              "last_code": "CCDBAF02",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shanaad",
+              "neighborhood_count": 2,
+              "first_code": "CCDBSN01",
+              "last_code": "CCDBSN02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Lowyacadde",
+          "location_code": "CCLC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "CCLCKW01",
+              "last_code": "CCLCKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 3,
+              "first_code": "CCLCLB01",
+              "last_code": "CCLCLB03",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 2,
+              "first_code": "CCLCSD01",
+              "last_code": "CCLCSD02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 2,
+              "first_code": "CCLCAF01",
+              "last_code": "CCLCAF02",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shanaad",
+              "neighborhood_count": 4,
+              "first_code": "CCLCSN01",
+              "last_code": "CCLCSN04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Gaarisa",
+          "location_code": "CCGR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 2,
+              "first_code": "CCGRKW01",
+              "last_code": "CCGRKW02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 2,
+              "first_code": "CCGRLB01",
+              "last_code": "CCGRLB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 1,
+              "first_code": "CCGRSD01",
+              "last_code": "CCGRSD01",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 2,
+              "first_code": "CCGRAF01",
+              "last_code": "CCGRAF02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Janaraal Neero",
+          "location_code": "CCJN",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "CCJNKW01",
+              "last_code": "CCJNKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "CCJNLB01",
+              "last_code": "CCJNLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "CCJNSD01",
+              "last_code": "CCJNSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "CCJNAF01",
+              "last_code": "CCJNAF04",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shanaad",
+              "neighborhood_count": 4,
+              "first_code": "CCJNSN01",
+              "last_code": "CCJNSN04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.04045,
+      "lon": 45.36,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Cabdulcasiis",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 19,
+        "neighborhoods": 52
+      }
+    },
+    {
+      "spec_ref": "4.8",
+      "district_name": "Dharkeenley",
+      "district_code": "13",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Dhamme Yaasiin Cartan",
+          "location_code": "DKDY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 27,
+              "first_code": "DKDYKW01",
+              "last_code": "DKDYKW27",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 35,
+              "first_code": "DKDYLB01",
+              "last_code": "DKDYLB35",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 25,
+              "first_code": "DKDYSD01",
+              "last_code": "DKDYSD25",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 24,
+              "first_code": "DKDYAF01",
+              "last_code": "DKDYAF24",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shanaad",
+              "neighborhood_count": 70,
+              "first_code": "DKDYSN01",
+              "last_code": "DKDYSN70",
+              "note": null
+            }
+          ],
+          "lat": 2.02578,
+          "lon": 45.27867,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"School Dhama Yaasiin Cartan\" (Educational institution)"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Xannaano Bulsho",
+          "location_code": "DKXB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 12,
+              "first_code": "DKXBKW01",
+              "last_code": "DKXBKW12",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 18,
+              "first_code": "DKXBLB01",
+              "last_code": "DKXBLB18",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 14,
+              "first_code": "DKXBSD01",
+              "last_code": "DKXBSD14",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 46,
+              "first_code": "DKXBAF01",
+              "last_code": "DKXBAF52",
+              "note": "numbering 1-52 missing 46-51"
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Saciid Rooraaye",
+          "location_code": "DKSR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 35,
+              "first_code": "DKSRKW01",
+              "last_code": "DKSRKW51",
+              "note": "numbering 1-51 missing 35-50"
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 26,
+              "first_code": "DKSRLB01",
+              "last_code": "DKSRLB30",
+              "note": "numbering 1-30 missing 26-29"
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 55,
+              "first_code": "DKSRSD01",
+              "last_code": "DKSRSD55",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 60,
+              "first_code": "DKSRAF01",
+              "last_code": "DKSRAF60",
+              "note": null
+            }
+          ],
+          "lat": 2.02214,
+          "lon": 45.28854,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Ugaas Saciid Rooraaye\" (Housing complex)"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Dhagaxtuur",
+          "location_code": "DKDG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 13,
+              "first_code": "DKDGKW01",
+              "last_code": "DKDGKW13",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 14,
+              "first_code": "DKDGLB01",
+              "last_code": "DKDGLB14",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 8,
+              "first_code": "DKDGSD01",
+              "last_code": "DKDGSD08",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 38,
+              "first_code": "DKDGAF01",
+              "last_code": "DKDGAF38",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Kaawo Godeey",
+          "location_code": "DKKG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 25,
+              "first_code": "DKKGKW01",
+              "last_code": "DKKGKW25",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 25,
+              "first_code": "DKKGLB01",
+              "last_code": "DKKGLB25",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 25,
+              "first_code": "DKKGSD01",
+              "last_code": "DKKGSD25",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 25,
+              "first_code": "DKKGAF01",
+              "last_code": "DKKGAF25",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.03145,
+      "lon": 45.26422,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Dharkeynley",
+      "stated_totals": {
+        "sections": 5,
+        "sectors": 21,
+        "neighborhoods": 620
+      }
+    },
+    {
+      "spec_ref": "4.9",
+      "district_name": "Kaaraan",
+      "district_code": "17",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Faanoole",
+          "location_code": "KRFN",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Godey",
+              "neighborhood_count": 30,
+              "first_code": "KRFNGD01",
+              "last_code": "KRFNGD30",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dayax",
+              "neighborhood_count": 19,
+              "first_code": "KRFNDY01",
+              "last_code": "KRFNDY19",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Maxamud Axmed Cali",
+              "neighborhood_count": 22,
+              "first_code": "KRFNMA01",
+              "last_code": "KRFNMA22",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Wadajir",
+              "neighborhood_count": 28,
+              "first_code": "KRFNWD01",
+              "last_code": "KRFNWD28",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Jabuuti",
+          "location_code": "KRJB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Onkod",
+              "neighborhood_count": 12,
+              "first_code": "KRJBON01",
+              "last_code": "KRJBON12",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Danan",
+              "neighborhood_count": 31,
+              "first_code": "KRJBDN01",
+              "last_code": "KRJBDN31",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Dirir",
+              "neighborhood_count": 31,
+              "first_code": "KRJBDR01",
+              "last_code": "KRJBDR31",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cadceed",
+              "neighborhood_count": 31,
+              "first_code": "KRJBCD01",
+              "last_code": "KRJBCD31",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Nageyle",
+          "location_code": "KRNG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Wadajir",
+              "neighborhood_count": 33,
+              "first_code": "KRNGWD01",
+              "last_code": "KRNGWD33",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xiddig",
+              "neighborhood_count": 28,
+              "first_code": "KRNGXD01",
+              "last_code": "KRNGXD28",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Horseed",
+              "neighborhood_count": 40,
+              "first_code": "KRNGHR01",
+              "last_code": "KRNGHR40",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cabdulle Cadde",
+              "neighborhood_count": 28,
+              "first_code": "KRNGCB01",
+              "last_code": "KRNGCB28",
+              "note": null
+            }
+          ],
+          "lat": 2.05478,
+          "lon": 45.36575,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Nageyle\" (Supermarket)"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Wajeer",
+          "location_code": "KRWJ",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Xaaji Laameer",
+              "neighborhood_count": 8,
+              "first_code": "KRWJXL01",
+              "last_code": "KRWJXL08",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Liibaan",
+              "neighborhood_count": 10,
+              "first_code": "KRWJLB01",
+              "last_code": "KRWJLB10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Aamanuu",
+              "neighborhood_count": 10,
+              "first_code": "KRWJAM01",
+              "last_code": "KRWJAM10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cabdi Cadde",
+              "neighborhood_count": 38,
+              "first_code": "KRWJCC01",
+              "last_code": "KRWJCC38",
+              "note": null
+            }
+          ],
+          "lat": 2.05006,
+          "lon": 45.36342,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Wajeer\" (Bakery)"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Jamhuuriya",
+          "location_code": "KRJM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Horseed",
+              "neighborhood_count": 20,
+              "first_code": "KRJMHR01",
+              "last_code": "KRJMHR20",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Halgan",
+              "neighborhood_count": 20,
+              "first_code": "KRJMHL01",
+              "last_code": "KRJMHL20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Heegan",
+              "neighborhood_count": 20,
+              "first_code": "KRJMHG01",
+              "last_code": "KRJMHG20",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Hormuud",
+              "neighborhood_count": 23,
+              "first_code": "KRJMHM01",
+              "last_code": "KRJMHM23",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "06",
+          "section_name": "Buulo Maaxaay",
+          "location_code": "KRBM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Nagaad",
+              "neighborhood_count": 28,
+              "first_code": "KRBMNG01",
+              "last_code": "KRBMNG28",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xirka Dheere",
+              "neighborhood_count": 21,
+              "first_code": "KRBMXD01",
+              "last_code": "KRBMXD21",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Sheekh Aadan Dheere",
+              "neighborhood_count": 14,
+              "first_code": "KRBMSA01",
+              "last_code": "KRBMSA14",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Sheekh Jirre",
+              "neighborhood_count": 10,
+              "first_code": "KRBMSJ01",
+              "last_code": "KRBMSJ10",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Shimiteerka",
+              "neighborhood_count": 10,
+              "first_code": "KRBMSH01",
+              "last_code": "KRBMSH10",
+              "note": null
+            }
+          ],
+          "lat": 2.05745,
+          "lon": 45.38223,
+          "coord_confidence": "high",
+          "coord_source": "Google Maps match: \"Xaafada Buulo Maaxaay\""
+        }
+      ],
+      "lat": 2.05097,
+      "lon": 45.36799,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Karan (Kaaraan)",
+      "stated_totals": {
+        "sections": 6,
+        "sectors": 25,
+        "neighborhoods": 565
+      }
+    },
+    {
+      "spec_ref": "4.10",
+      "district_name": "Shibis",
+      "district_code": "19",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Saqaawaddiin",
+          "location_code": "SBSQ",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 2,
+              "first_code": "SBSQKW01",
+              "last_code": "SBSQKW02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 2,
+              "first_code": "SBSQLB01",
+              "last_code": "SBSQLB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 2,
+              "first_code": "SBSQSD01",
+              "last_code": "SBSQSD02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "SBSQAF01",
+              "last_code": "SBSQAF04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Axmed Gurey",
+          "location_code": "SBAG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 2,
+              "first_code": "SBAGKW01",
+              "last_code": "SBAGKW02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 2,
+              "first_code": "SBAGLB01",
+              "last_code": "SBAGLB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 3,
+              "first_code": "SBAGSD01",
+              "last_code": "SBAGSD03",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "SBAGAF01",
+              "last_code": "SBAGAF04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Xalane",
+          "location_code": "SBXL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "SBXLKW01",
+              "last_code": "SBXLKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "SBXLLB01",
+              "last_code": "SBXLLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 4,
+              "first_code": "SBXLSD01",
+              "last_code": "SBXLSD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 6,
+              "first_code": "SBXLAF01",
+              "last_code": "SBXLAF06",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Calasoow Dheere",
+          "location_code": "SBCD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Koowaad",
+              "neighborhood_count": 4,
+              "first_code": "SBCDKW01",
+              "last_code": "SBCDKW04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Labaad",
+              "neighborhood_count": 4,
+              "first_code": "SBCDLB01",
+              "last_code": "SBCDLB04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Saddexaad",
+              "neighborhood_count": 3,
+              "first_code": "SBCDSD01",
+              "last_code": "SBCDSD03",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Afaraad",
+              "neighborhood_count": 4,
+              "first_code": "SBCDAF01",
+              "last_code": "SBCDAF04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.04737,
+      "lon": 45.34989,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Shibis",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 16,
+        "neighborhoods": 54
+      }
+    },
+    {
+      "spec_ref": "4.11",
+      "district_name": "Shingaani",
+      "district_code": "20",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Howd",
+          "location_code": "SNHW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Sid Barqash",
+              "neighborhood_count": 2,
+              "first_code": "SNHWSB01",
+              "last_code": "SNHWSB02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Jelesbarees",
+              "neighborhood_count": 2,
+              "first_code": "SNHWJB01",
+              "last_code": "SNHWJB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Otabaarka",
+              "neighborhood_count": 2,
+              "first_code": "SNHWOB01",
+              "last_code": "SNHWOB02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Mooyaale",
+          "location_code": "SNMY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Baar Itaaliya",
+              "neighborhood_count": 2,
+              "first_code": "SNMYBI01",
+              "last_code": "SNMYBI02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dalsan",
+              "neighborhood_count": 2,
+              "first_code": "SNMYDS01",
+              "last_code": "SNMYDS02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Sugunto Liido",
+              "neighborhood_count": 3,
+              "first_code": "SNMYSL01",
+              "last_code": "SNMYSL03",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Jabuuti",
+          "location_code": "SNJB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Hanti Wadaag",
+              "neighborhood_count": 2,
+              "first_code": "SNJBHW01",
+              "last_code": "SNJBHW02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 2,
+              "first_code": "SNJBHR01",
+              "last_code": "SNJBHR02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Midnimo",
+          "location_code": "SNMD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ceymiska",
+              "neighborhood_count": 2,
+              "first_code": "SNMDCY01",
+              "last_code": "SNMDCY02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Danwadaag",
+              "neighborhood_count": 2,
+              "first_code": "SNMDDW01",
+              "last_code": "SNMDDW02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.03603,
+      "lon": 45.34764,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Shingaani",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 10,
+        "neighborhoods": 21
+      }
+    },
+    {
+      "spec_ref": "4.12",
+      "district_name": "Wadajir",
+      "district_code": "22",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Janaraal Daa'uud",
+          "location_code": "WDJD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Tiitiinleey",
+              "neighborhood_count": 35,
+              "first_code": "WDJDTT01",
+              "last_code": "WDJDTT35",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xasan Hillaac",
+              "neighborhood_count": 18,
+              "first_code": "WDJDXH01",
+              "last_code": "WDJDXH18",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Midnimo",
+              "neighborhood_count": 13,
+              "first_code": "WDJDMD01",
+              "last_code": "WDJDMD13",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Siyaad",
+              "neighborhood_count": 25,
+              "first_code": "WDJDSY01",
+              "last_code": "WDJDSY25",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Xaawo Taako",
+          "location_code": "WDXT",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Xoriyadda",
+              "neighborhood_count": 9,
+              "first_code": "WDXTXR01",
+              "last_code": "WDXTXR09",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Xaaji Maxamed",
+              "neighborhood_count": 8,
+              "first_code": "WDXTXM01",
+              "last_code": "WDXTXM08",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Hagardiid",
+              "neighborhood_count": 49,
+              "first_code": "WDXTHD01",
+              "last_code": "WDXTHD49",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Barwaaqo",
+              "neighborhood_count": 33,
+              "first_code": "WDXTBR01",
+              "last_code": "WDXTBR33",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Xalane",
+          "location_code": "WDXL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Gabyow",
+              "neighborhood_count": 15,
+              "first_code": "WDXLGB01",
+              "last_code": "WDXLGB15",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Gololeey",
+              "neighborhood_count": 14,
+              "first_code": "WDXLGL01",
+              "last_code": "WDXLGL14",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Faarax Sindiko",
+              "neighborhood_count": 12,
+              "first_code": "WDXLFS01",
+              "last_code": "WDXLFS12",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Gaheyr",
+              "neighborhood_count": 38,
+              "first_code": "WDXLGH01",
+              "last_code": "WDXLGH38",
+              "note": null
+            }
+          ],
+          "lat": 2.01712,
+          "lon": 45.28955,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Xalane Football Club\""
+        },
+        {
+          "section_code": "04",
+          "section_name": "Timacadde",
+          "location_code": "WDTC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Taraawiil",
+              "neighborhood_count": 18,
+              "first_code": "WDTCTR01",
+              "last_code": "WDTCTR18",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Halgan",
+              "neighborhood_count": 17,
+              "first_code": "WDTCHL01",
+              "last_code": "WDTCHL17",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Tarbuush",
+              "neighborhood_count": 32,
+              "first_code": "WDTCTB01",
+              "last_code": "WDTCTB32",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Xasan jiis",
+              "neighborhood_count": 26,
+              "first_code": "WDTCXJ01",
+              "last_code": "WDTCXJ26",
+              "note": null
+            }
+          ],
+          "lat": 2.0197,
+          "lon": 45.2865,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"TIMACADDE\" (Sports club)"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Maxamuud Hilowle",
+          "location_code": "WDMH",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Maxamed Catoosh",
+              "neighborhood_count": 19,
+              "first_code": "WDMHMC01",
+              "last_code": "WDMHMC19",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Tarbuush",
+              "neighborhood_count": 15,
+              "first_code": "WDMHTB01",
+              "last_code": "WDMHTB15",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Rajo",
+              "neighborhood_count": 24,
+              "first_code": "WDMHRJ01",
+              "last_code": "WDMHRJ24",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Axmed Waayeel",
+              "neighborhood_count": 10,
+              "first_code": "WDMHAW01",
+              "last_code": "WDMHAW10",
+              "note": null
+            }
+          ],
+          "lat": 2.00404,
+          "lon": 45.28035,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"DUGSIGA H DHEXE SARE MAXAMUUD HILOWLE\""
+        }
+      ],
+      "lat": 2.02625,
+      "lon": 45.2852,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Wadajir (Medina)",
+      "stated_totals": {
+        "sections": 5,
+        "sectors": 20,
+        "neighborhoods": 430
+      }
+    },
+    {
+      "spec_ref": "4.13",
+      "district_name": "Xamarjajab",
+      "district_code": "24",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Gaheyr",
+          "location_code": "XJGH",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Xalane",
+              "neighborhood_count": 4,
+              "first_code": "XJGHXL01",
+              "last_code": "XJGHXL04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Sheekh Shaacir",
+              "neighborhood_count": 2,
+              "first_code": "XJGHSS01",
+              "last_code": "XJGHSS02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Axmed Gureey",
+              "neighborhood_count": 2,
+              "first_code": "XJGHAG01",
+              "last_code": "XJGHAG02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Saqaawaddiin",
+              "neighborhood_count": 4,
+              "first_code": "XJGHSQ01",
+              "last_code": "XJGHSQ04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Horseed",
+          "location_code": "XJHR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Wajeer",
+              "neighborhood_count": 4,
+              "first_code": "XJHRWJ01",
+              "last_code": "XJHRWJ04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Nasiib Buundo",
+              "neighborhood_count": 2,
+              "first_code": "XJHRNB01",
+              "last_code": "XJHRNB02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Hawaas",
+              "neighborhood_count": 4,
+              "first_code": "XJHRHW01",
+              "last_code": "XJHRHW04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Maxamuud Xarbi",
+              "neighborhood_count": 2,
+              "first_code": "XJHRMX01",
+              "last_code": "XJHRMX02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Kowda May",
+          "location_code": "XJKM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Axmed gureey",
+              "neighborhood_count": 4,
+              "first_code": "XJKMAG01",
+              "last_code": "XJKMAG04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Jabuuti",
+              "neighborhood_count": 3,
+              "first_code": "XJKMJB01",
+              "last_code": "XJKMJB03",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Oktoobar",
+              "neighborhood_count": 3,
+              "first_code": "XJKMOK01",
+              "last_code": "XJKMOK03",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Jannaayo",
+              "neighborhood_count": 4,
+              "first_code": "XJKMJN01",
+              "last_code": "XJKMJN04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Janaraal Daa'uud",
+          "location_code": "XJJD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "26 Juun",
+              "neighborhood_count": 7,
+              "first_code": "XJJDLJ01",
+              "last_code": "XJJDLJ07",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Kowda Luulyo",
+              "neighborhood_count": 6,
+              "first_code": "XJJDKL01",
+              "last_code": "XJJDKL06",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Iftin",
+              "neighborhood_count": 6,
+              "first_code": "XJJDIF01",
+              "last_code": "XJJDIF06",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Taleex",
+              "neighborhood_count": 8,
+              "first_code": "XJJDTL01",
+              "last_code": "XJJDTL08",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.02915,
+      "lon": 45.32913,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Xamar Jajab",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 16,
+        "neighborhoods": 65
+      }
+    },
+    {
+      "spec_ref": "4.14",
+      "district_name": "Xamarweyne",
+      "district_code": "25",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Kacaan",
+          "location_code": "XWKC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Aw awayska",
+              "neighborhood_count": 2,
+              "first_code": "XWKCAA01",
+              "last_code": "XWKCAA02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Aweys Geedow",
+              "neighborhood_count": 2,
+              "first_code": "XWKCAG01",
+              "last_code": "XWKCAG02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Aw Cusmaanka",
+              "neighborhood_count": 2,
+              "first_code": "XWKCAC01",
+              "last_code": "XWKCAC02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Sosman",
+              "neighborhood_count": 2,
+              "first_code": "XWKCSS01",
+              "last_code": "XWKCSS02",
+              "note": null
+            }
+          ],
+          "lat": 2.03721,
+          "lon": 45.33792,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Xaafadda kacaan\" (Apartment building)"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Gobannimo",
+          "location_code": "XWGB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Cadeyga",
+              "neighborhood_count": 2,
+              "first_code": "XWGBCD01",
+              "last_code": "XWGBCD02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Koodka",
+              "neighborhood_count": 2,
+              "first_code": "XWGBKD01",
+              "last_code": "XWGBKD02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Buurfuule",
+              "neighborhood_count": 2,
+              "first_code": "XWGBBF01",
+              "last_code": "XWGBBF02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Moorada Sheekh Muumin",
+              "neighborhood_count": 2,
+              "first_code": "XWGBMM01",
+              "last_code": "XWGBMM02",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Horseed",
+          "location_code": "XWHR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Cabdalla Shiddeeye",
+              "neighborhood_count": 2,
+              "first_code": "XWHRCS01",
+              "last_code": "XWHRCS02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Sheekh Rumaani",
+              "neighborhood_count": 2,
+              "first_code": "XWHRSR01",
+              "last_code": "XWHRSR02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Raqayga",
+              "neighborhood_count": 2,
+              "first_code": "XWHRRQ01",
+              "last_code": "XWHRRQ02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Wakaalada filimada",
+              "neighborhood_count": 2,
+              "first_code": "XWHRWF01",
+              "last_code": "XWHRWF02",
+              "note": null
+            }
+          ],
+          "lat": 2.0371,
+          "lon": 45.3379,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Horseed\" (Housing Development)"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Hilaac",
+          "location_code": "XWHL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Yoobsan",
+              "neighborhood_count": 2,
+              "first_code": "XWHLYB01",
+              "last_code": "XWHLYB02",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Macalin Jaamac",
+              "neighborhood_count": 2,
+              "first_code": "XWHLMJ01",
+              "last_code": "XWHLMJ02",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Via Eejito",
+              "neighborhood_count": 2,
+              "first_code": "XWHLVE01",
+              "last_code": "XWHLVE02",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Xaawo Taako",
+              "neighborhood_count": 2,
+              "first_code": "XWHLXT01",
+              "last_code": "XWHLXT02",
+              "note": null
+            }
+          ],
+          "lat": 2.03715,
+          "lon": 45.33791,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Hilaac University\" (Educational institution)"
+        }
+      ],
+      "lat": 2.03251,
+      "lon": 45.33897,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Xamar Weyne",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 16,
+        "neighborhoods": 32
+      }
+    },
+    {
+      "spec_ref": "4.15",
+      "district_name": "Waaberi",
+      "district_code": "21",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Hantiwadaag",
+          "location_code": "WBHW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Xaawo Taako",
+              "neighborhood_count": 6,
+              "first_code": "WBHWXT01",
+              "last_code": "WBHWXT06",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Kowda Luulyo",
+              "neighborhood_count": 6,
+              "first_code": "WBHWKL01",
+              "last_code": "WBHWKL06",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "26ka Juun",
+              "neighborhood_count": 6,
+              "first_code": "WBHWLJ01",
+              "last_code": "WBHWLJ06",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Jabuuti",
+              "neighborhood_count": 6,
+              "first_code": "WBHWJB01",
+              "last_code": "WBHWJB06",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Horseed",
+          "location_code": "WBHR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Iskaashi",
+              "neighborhood_count": 5,
+              "first_code": "WBHRIK01",
+              "last_code": "WBHRIK05",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Hillaac",
+              "neighborhood_count": 5,
+              "first_code": "WBHRHL01",
+              "last_code": "WBHRHL05",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Adari",
+              "neighborhood_count": 4,
+              "first_code": "WBHRAD01",
+              "last_code": "WBHRAD04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Halgan",
+              "neighborhood_count": 6,
+              "first_code": "WBHRHG01",
+              "last_code": "WBHRHG06",
+              "note": null
+            }
+          ],
+          "lat": 2.0285,
+          "lon": 45.31949,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Horseed\" (Apartment building)"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Oktoobar",
+          "location_code": "WBOK",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Xooga",
+              "neighborhood_count": 4,
+              "first_code": "WBOKXG01",
+              "last_code": "WBOKXG04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Janaraal Daa'uud",
+              "neighborhood_count": 4,
+              "first_code": "WBOKJD01",
+              "last_code": "WBOKJD04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Dhagaxtuur",
+              "neighborhood_count": 4,
+              "first_code": "WBOKDT01",
+              "last_code": "WBOKDT04",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Wajeer",
+              "neighborhood_count": 6,
+              "first_code": "WBOKWJ01",
+              "last_code": "WBOKWJ06",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Kowda Maajo",
+          "location_code": "WBKM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Via Liberia",
+              "neighborhood_count": 4,
+              "first_code": "WBKMVL01",
+              "last_code": "WBKMVL04",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Sayid Maxamed",
+              "neighborhood_count": 4,
+              "first_code": "WBKMSM01",
+              "last_code": "WBKMSM04",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Axmed Gureey",
+              "neighborhood_count": 7,
+              "first_code": "WBKMAG01",
+              "last_code": "WBKMAG07",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Kowda Luulyo",
+              "neighborhood_count": 4,
+              "first_code": "WBKMKL01",
+              "last_code": "WBKMKL04",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "20ka Diseembar",
+              "neighborhood_count": 6,
+              "first_code": "WBKMLD01",
+              "last_code": "WBKMLD06",
+              "note": null
+            }
+          ],
+          "lat": 2.02749,
+          "lon": 45.31953,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Xaafada Maajo Waaberi\""
+        }
+      ],
+      "lat": 2.03108,
+      "lon": 45.32171,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Waaberi",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 17,
+        "neighborhoods": 87
+      }
+    },
+    {
+      "spec_ref": "4.16",
+      "district_name": "Yaaqshiid",
+      "district_code": "26",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Heegan",
+          "location_code": "YQHG",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Sahan",
+              "neighborhood_count": 16,
+              "first_code": "YQHGSH01",
+              "last_code": "YQHGSH16",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dalxiis",
+              "neighborhood_count": 12,
+              "first_code": "YQHGDX01",
+              "last_code": "YQHGDX12",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Iftin",
+              "neighborhood_count": 21,
+              "first_code": "YQHGIF01",
+              "last_code": "YQHGIF21",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Taleex",
+              "neighborhood_count": 20,
+              "first_code": "YQHGTX01",
+              "last_code": "YQHGTX20",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Danwadaag",
+              "neighborhood_count": 20,
+              "first_code": "YQHGDW01",
+              "last_code": "YQHGDW20",
+              "note": null
+            }
+          ],
+          "lat": 2.05877,
+          "lon": 45.35105,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Heegan\" (Bakery)"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Horseed",
+          "location_code": "YQHR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Danab",
+              "neighborhood_count": 8,
+              "first_code": "YQHRDN01",
+              "last_code": "YQHRDN08",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dayax",
+              "neighborhood_count": 8,
+              "first_code": "YQHRDY01",
+              "last_code": "YQHRDY08",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Bulsho",
+              "neighborhood_count": 14,
+              "first_code": "YQHRBS01",
+              "last_code": "YQHRBS14",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Onkod",
+              "neighborhood_count": 20,
+              "first_code": "YQHROK01",
+              "last_code": "YQHROK20",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Jungal",
+          "location_code": "YQJN",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Alraxma",
+              "neighborhood_count": 25,
+              "first_code": "YQJNAL01",
+              "last_code": "YQJNAL25",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Danan",
+              "neighborhood_count": 9,
+              "first_code": "YQJNDA01",
+              "last_code": "YQJNDA09",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Onkod",
+              "neighborhood_count": 28,
+              "first_code": "YQJNOK01",
+              "last_code": "YQJNOK28",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Alaqsa",
+              "neighborhood_count": 50,
+              "first_code": "YQJNAQ01",
+              "last_code": "YQJNAQ50",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Towfiiq",
+          "location_code": "YQTW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Bakaal",
+              "neighborhood_count": 19,
+              "first_code": "YQTWBK01",
+              "last_code": "YQTWBK19",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Barwaaqo",
+              "neighborhood_count": 7,
+              "first_code": "YQTWBW01",
+              "last_code": "YQTWBW07",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Hillaac",
+              "neighborhood_count": 15,
+              "first_code": "YQTWHL01",
+              "last_code": "YQTWHL15",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Aaran",
+              "neighborhood_count": 40,
+              "first_code": "YQTWAR01",
+              "last_code": "YQTWAR40",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Siliga",
+              "neighborhood_count": 20,
+              "first_code": "YQTWSL01",
+              "last_code": "YQTWSL20",
+              "note": null
+            }
+          ],
+          "lat": 2.06454,
+          "lon": 45.34103,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"TOWFIQ\""
+        }
+      ],
+      "lat": 2.05686,
+      "lon": 45.34492,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Yaaqshiid",
+      "stated_totals": {
+        "sections": 4,
+        "sectors": 18,
+        "neighborhoods": 352
+      }
+    },
+    {
+      "spec_ref": "4.17",
+      "district_name": "Kaxda",
+      "district_code": "18",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Janaraal Liiqliiqato",
+          "location_code": "KXJL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Nuuro",
+              "neighborhood_count": 20,
+              "first_code": "KXJLNR01",
+              "last_code": "KXJLNR20",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 28,
+              "first_code": "KXJLHR01",
+              "last_code": "KXJLHR28",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Geesguud",
+              "neighborhood_count": 20,
+              "first_code": "KXJLGG01",
+              "last_code": "KXJLGG20",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Foollaroow",
+              "neighborhood_count": 21,
+              "first_code": "KXJLFL01",
+              "last_code": "KXJLFL21",
+              "note": null
+            }
+          ],
+          "lat": 2.0364,
+          "lon": 45.25229,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Liiqliiqato\" (Housing society)"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Abaadir",
+          "location_code": "KXAB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Farjanno",
+              "neighborhood_count": 30,
+              "first_code": "KXABFJ01",
+              "last_code": "KXABFJ30",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Dhakaajo",
+              "neighborhood_count": 20,
+              "first_code": "KXABDK01",
+              "last_code": "KXABDK20",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Farkheyr",
+              "neighborhood_count": 20,
+              "first_code": "KXABFK01",
+              "last_code": "KXABFK20",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Gacan Libaax",
+              "neighborhood_count": 30,
+              "first_code": "KXABGL01",
+              "last_code": "KXABGL30",
+              "note": null
+            }
+          ],
+          "lat": 2.02156,
+          "lon": 45.25211,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Abaadir Hotel\" (Hotel)"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Cumar Fiyaasko",
+          "location_code": "KXCF",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Tareedisho",
+              "neighborhood_count": 7,
+              "first_code": "KXCFTD01",
+              "last_code": "KXCFTD07",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Sheekh Ibraahim",
+              "neighborhood_count": 6,
+              "first_code": "KXCFSI01",
+              "last_code": "KXCFSI06",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Gaalkacyo",
+              "neighborhood_count": 6,
+              "first_code": "KXCFGK01",
+              "last_code": "KXCFGK06",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Shabeelle",
+              "neighborhood_count": 6,
+              "first_code": "KXCFSL01",
+              "last_code": "KXCFSL06",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Dharkaynta",
+              "neighborhood_count": 30,
+              "first_code": "KXCFDK01",
+              "last_code": "KXCFDK30",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Shimbiroole",
+          "location_code": "KXSM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Gumashleey",
+              "neighborhood_count": 12,
+              "first_code": "KXSMGM01",
+              "last_code": "KXSMGM12",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Nasiib",
+              "neighborhood_count": 10,
+              "first_code": "KXSMNS01",
+              "last_code": "KXSMNS10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Xaliimo Nuur",
+              "neighborhood_count": 10,
+              "first_code": "KXSMXN01",
+              "last_code": "KXSMXN10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Dawacaale",
+              "neighborhood_count": 8,
+              "first_code": "KXSMDW01",
+              "last_code": "KXSMDW08",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Siinka Dheer",
+          "location_code": "KXSD",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Albirri",
+              "neighborhood_count": 6,
+              "first_code": "KXSDAB01",
+              "last_code": "KXSDAB06",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Alfaraj",
+              "neighborhood_count": 6,
+              "first_code": "KXSDAF01",
+              "last_code": "KXSDAF06",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Midnimo",
+              "neighborhood_count": 5,
+              "first_code": "KXSDMD01",
+              "last_code": "KXSDMD05",
+              "note": null
+            }
+          ],
+          "lat": 2.0728,
+          "lon": 45.2232,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Siinka dheer\" (Military base)"
+        }
+      ],
+      "lat": 2.04998,
+      "lon": 45.23971,
+      "coord_confidence": "high",
+      "coord_source": "OSM place node – Kahda",
+      "stated_totals": {
+        "sections": 5,
+        "sectors": 20,
+        "neighborhoods": 301
+      }
+    },
+    {
+      "spec_ref": "4.18",
+      "district_name": "Daarusalaam",
+      "district_code": "30",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Kowda Luulyo",
+          "location_code": "DSKL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Mahad Alla",
+              "neighborhood_count": 33,
+              "first_code": "DSKLMA01",
+              "last_code": "DSKLMA33",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Eeneeye",
+              "neighborhood_count": 41,
+              "first_code": "DSKLEN01",
+              "last_code": "DSKLEN41",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Dabaqeyn",
+              "neighborhood_count": 32,
+              "first_code": "DSKLDQ01",
+              "last_code": "DSKLDQ32",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cali Turcaaye",
+              "neighborhood_count": 22,
+              "first_code": "DSKLCT01",
+              "last_code": "DSKLCT79",
+              "note": "numbering 1-79 non-contiguous"
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Tawakal",
+          "location_code": "DSTK",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Carafaat",
+              "neighborhood_count": 31,
+              "first_code": "DSTKCR01",
+              "last_code": "DSTKCR31",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "8 Maarso",
+              "neighborhood_count": 60,
+              "first_code": "DSTKSM01",
+              "last_code": "DSTKSM60",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Janaraal Daa'uud",
+              "neighborhood_count": 23,
+              "first_code": "DSTKJD01",
+              "last_code": "DSTKJD23",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Heenan",
+              "neighborhood_count": 20,
+              "first_code": "DSTKHN01",
+              "last_code": "DSTKHN20",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Ratiweyne",
+          "location_code": "DSRW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Bilicsan",
+              "neighborhood_count": 18,
+              "first_code": "DSRWBS01",
+              "last_code": "DSRWBS18",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 13,
+              "first_code": "DSRWHR01",
+              "last_code": "DSRWHR13",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Cadaad Kalaa",
+              "neighborhood_count": 11,
+              "first_code": "DSRWCK01",
+              "last_code": "DSRWCK11",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Yoocaaloow",
+              "neighborhood_count": 9,
+              "first_code": "DSRWYC01",
+              "last_code": "DSRWYC09",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Lebiga",
+          "location_code": "n/a",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Dibida",
+              "neighborhood_count": 20,
+              "first_code": "DSTKDB01",
+              "last_code": "DSTKDB20",
+              "note": "neighborhoods are coded under the Tawakal DS prefix DSTK (data-entry issue)"
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Buulo Barreey",
+              "neighborhood_count": 0,
+              "first_code": null,
+              "last_code": null,
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Ceel Cirfiid",
+              "neighborhood_count": 0,
+              "first_code": null,
+              "last_code": null,
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Xaanshooleey",
+              "neighborhood_count": 0,
+              "first_code": null,
+              "last_code": null,
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Ceel Mareer",
+          "location_code": "DSCM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ceel Qaraar",
+              "neighborhood_count": 30,
+              "first_code": "DSCMCQ01",
+              "last_code": "DSCMCQ30",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Jilayga",
+              "neighborhood_count": 33,
+              "first_code": "DSCMJL01",
+              "last_code": "DSCMJL33",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Daban Doob",
+              "neighborhood_count": 25,
+              "first_code": "DSCMDD01",
+              "last_code": "DSCMDD25",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Darmooleey",
+              "neighborhood_count": 9,
+              "first_code": "DSCMDR01",
+              "last_code": "DSCMDR09",
+              "note": null
+            }
+          ],
+          "lat": 2.11896,
+          "lon": 45.37037,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Ceel Mareer\" (Homestay)"
+        }
+      ],
+      "lat": 2.13391,
+      "lon": 45.3203,
+      "coord_confidence": "medium",
+      "coord_source": "OSM place node – Daru-Salaam City (new 2022 district, not yet mapped as a boundary)",
+      "stated_totals": {
+        "sections": 5,
+        "sectors": 20,
+        "neighborhoods": 430
+      }
+    },
+    {
+      "spec_ref": "4.19",
+      "district_name": "Gubadleey",
+      "district_code": "31",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Tawakal",
+          "location_code": "GDTW",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Jidda Yarey",
+              "neighborhood_count": 10,
+              "first_code": "GDTWJY01",
+              "last_code": "GDTWJY10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Barwaaqo",
+              "neighborhood_count": 10,
+              "first_code": "GDTWBR01",
+              "last_code": "GDTWBR10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Jiiro",
+              "neighborhood_count": 10,
+              "first_code": "GDTWJR01",
+              "last_code": "GDTWJR10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Horseed",
+              "neighborhood_count": 10,
+              "first_code": "GDTWHR01",
+              "last_code": "GDTWHR10",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Maandeeq",
+              "neighborhood_count": 10,
+              "first_code": "GDTWMN01",
+              "last_code": "GDTWMN10",
+              "note": null
+            },
+            {
+              "sector_code": "06",
+              "sector_name": "Sheekh Aadan",
+              "neighborhood_count": 10,
+              "first_code": "GDTWSA01",
+              "last_code": "GDTWSA10",
+              "note": null
+            },
+            {
+              "sector_code": "07",
+              "sector_name": "Xaawo Taako",
+              "neighborhood_count": 4,
+              "first_code": "GDTWXW01",
+              "last_code": "GDTWXW04",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Buur Bishaaro",
+          "location_code": "GDBB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Bilkheyr",
+              "neighborhood_count": 10,
+              "first_code": "GDBBBK01",
+              "last_code": "GDBBBK10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Maandeeq",
+              "neighborhood_count": 10,
+              "first_code": "GDBBMN01",
+              "last_code": "GDBBMN10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Talowadaag",
+              "neighborhood_count": 10,
+              "first_code": "GDBBTW01",
+              "last_code": "GDBBTW10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Garsoor",
+              "neighborhood_count": 10,
+              "first_code": "GDBBGR01",
+              "last_code": "GDBBGR10",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Towfiiq",
+              "neighborhood_count": 10,
+              "first_code": "GDBBTF01",
+              "last_code": "GDBBTF10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Dayax",
+          "location_code": "GDDY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Waaya Arag",
+              "neighborhood_count": 10,
+              "first_code": "GDDYWA01",
+              "last_code": "GDDYWA10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Wardheer",
+              "neighborhood_count": 10,
+              "first_code": "GDDYWR01",
+              "last_code": "GDDYWR10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Waddani",
+              "neighborhood_count": 10,
+              "first_code": "GDDYWN01",
+              "last_code": "GDDYWN10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Wadajir",
+              "neighborhood_count": 10,
+              "first_code": "GDDYWD01",
+              "last_code": "GDDYWD10",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Daaru Dayax",
+              "neighborhood_count": 10,
+              "first_code": "GDDYDD01",
+              "last_code": "GDDYDD10",
+              "note": null
+            },
+            {
+              "sector_code": "06",
+              "sector_name": "Waxara Cadde",
+              "neighborhood_count": 10,
+              "first_code": "GDDYWC01",
+              "last_code": "GDDYWC10",
+              "note": null
+            }
+          ],
+          "lat": 2.0823,
+          "lon": 45.39685,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Suuqa dayax\""
+        },
+        {
+          "section_code": "04",
+          "section_name": "Dalsan",
+          "location_code": "GDDL",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Hormuud",
+              "neighborhood_count": 10,
+              "first_code": "GDDLHM01",
+              "last_code": "GDDLHM10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Horseed",
+              "neighborhood_count": 10,
+              "first_code": "GDDLHR01",
+              "last_code": "GDDLHR10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Heegan",
+              "neighborhood_count": 10,
+              "first_code": "GDDLHG01",
+              "last_code": "GDDLHG10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Tayo",
+              "neighborhood_count": 10,
+              "first_code": "GDDLTY01",
+              "last_code": "GDDLTY10",
+              "note": null
+            },
+            {
+              "sector_code": "05",
+              "sector_name": "Tawakal",
+              "neighborhood_count": 10,
+              "first_code": "GDDLTW01",
+              "last_code": "GDDLTW10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Xaaji Cabdi",
+          "location_code": "GDXC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Shandool",
+              "neighborhood_count": 10,
+              "first_code": "GDXCSD01",
+              "last_code": "GDXCSD10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Buur Madow",
+              "neighborhood_count": 10,
+              "first_code": "GDXCBM01",
+              "last_code": "GDXCBM10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Barwaaqo",
+              "neighborhood_count": 10,
+              "first_code": "GDXCBW01",
+              "last_code": "GDXCBW10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Badbaado",
+              "neighborhood_count": 10,
+              "first_code": "GDXCBD01",
+              "last_code": "GDXCBD10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "06",
+          "section_name": "Ceel Cadde",
+          "location_code": "GDCC",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ceel Cadde",
+              "neighborhood_count": 10,
+              "first_code": "GDCCCC01",
+              "last_code": "GDCCCC10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Alla Aamin",
+              "neighborhood_count": 10,
+              "first_code": "GDCCAL01",
+              "last_code": "GDCCAL10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Xeeb Yarey",
+              "neighborhood_count": 10,
+              "first_code": "GDCCXY01",
+              "last_code": "GDCCXY10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cisileey",
+              "neighborhood_count": 10,
+              "first_code": "GDCCCS01",
+              "last_code": "GDCCCS10",
+              "note": null
+            }
+          ],
+          "lat": 2.10366,
+          "lon": 45.46288,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Masjidka ceel Cadde\""
+        }
+      ],
+      "lat": 2.07686,
+      "lon": 45.41355,
+      "coord_confidence": "medium",
+      "coord_source": "Google Maps – \"Degmada Gubadley\" (district office; new 2022 district)",
+      "stated_totals": {
+        "sections": 6,
+        "sectors": 31,
+        "neighborhoods": 304
+      }
+    },
+    {
+      "spec_ref": "4.20",
+      "district_name": "Garasbaalleey",
+      "district_code": "32",
+      "sections": [
+        {
+          "section_code": "01",
+          "section_name": "Galmudug",
+          "location_code": "GBGM",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Daawada",
+              "neighborhood_count": 10,
+              "first_code": "GBGMDW01",
+              "last_code": "GBGMDW10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Alnaciim",
+              "neighborhood_count": 10,
+              "first_code": "GBGMAN01",
+              "last_code": "GBGMAN10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Barwaaqo",
+              "neighborhood_count": 10,
+              "first_code": "GBGMBW01",
+              "last_code": "GBGMBW10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Gaalkacyo",
+              "neighborhood_count": 10,
+              "first_code": "GBGMGK01",
+              "last_code": "GBGMGK10",
+              "note": null
+            }
+          ],
+          "lat": 2.05357,
+          "lon": 45.27481,
+          "coord_confidence": "low",
+          "coord_source": "Google Maps match: \"Galmudug Entertainment\" (Stadium)"
+        },
+        {
+          "section_code": "02",
+          "section_name": "Fooriloow",
+          "location_code": "GBFR",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Ugaarta",
+              "neighborhood_count": 10,
+              "first_code": "GBFRUG01",
+              "last_code": "GBFRUG10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Shaboshabo",
+              "neighborhood_count": 10,
+              "first_code": "GBFRSS01",
+              "last_code": "GBFRSS10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Baariyoow",
+              "neighborhood_count": 10,
+              "first_code": "GBFRBR01",
+              "last_code": "GBFRBR10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Saney",
+              "neighborhood_count": 10,
+              "first_code": "GBFRSN01",
+              "last_code": "GBFRSN10",
+              "note": null
+            }
+          ],
+          "lat": 2.0409,
+          "lon": 45.26936,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Fooriloow\" (Housing society)"
+        },
+        {
+          "section_code": "03",
+          "section_name": "Geeddi Firdhiye",
+          "location_code": "GBGF",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Tundheer",
+              "neighborhood_count": 10,
+              "first_code": "GBGFTD01",
+              "last_code": "GBGFTD10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Shabeelle",
+              "neighborhood_count": 10,
+              "first_code": "GBGFSB01",
+              "last_code": "GBGFSB10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Maalin",
+              "neighborhood_count": 10,
+              "first_code": "GBGFML01",
+              "last_code": "GBGFML10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Indheey",
+              "neighborhood_count": 10,
+              "first_code": "GBGFIN01",
+              "last_code": "GBGFIN10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "04",
+          "section_name": "Shuufac",
+          "location_code": "GBSH",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Bankiga",
+              "neighborhood_count": 10,
+              "first_code": "GBSHBN01",
+              "last_code": "GBSHBN10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Alnimca",
+              "neighborhood_count": 10,
+              "first_code": "GBSHAN01",
+              "last_code": "GBSHAN10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Barroow",
+              "neighborhood_count": 10,
+              "first_code": "GBSHBR01",
+              "last_code": "GBSHBR10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Cali Garaad",
+              "neighborhood_count": 10,
+              "first_code": "GBSHCG01",
+              "last_code": "GBSHCG10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        },
+        {
+          "section_code": "05",
+          "section_name": "Tabeellaha",
+          "location_code": "GBTB",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Cali Basar",
+              "neighborhood_count": 10,
+              "first_code": "GBTBCB01",
+              "last_code": "GBTBCB10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Yabaroow",
+              "neighborhood_count": 10,
+              "first_code": "GBTBYB01",
+              "last_code": "GBTBYB10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Istanbuul",
+              "neighborhood_count": 10,
+              "first_code": "GBTBIS01",
+              "last_code": "GBTBIS10",
+              "note": null
+            },
+            {
+              "sector_code": "04",
+              "sector_name": "Madaale",
+              "neighborhood_count": 10,
+              "first_code": "GBTBMD01",
+              "last_code": "GBTBMD10",
+              "note": null
+            }
+          ],
+          "lat": 2.07276,
+          "lon": 45.27391,
+          "coord_confidence": "medium",
+          "coord_source": "Google Maps match: \"Tabeelaha\""
+        },
+        {
+          "section_code": "06",
+          "section_name": "Weydoow",
+          "location_code": "GBWY",
+          "sectors": [
+            {
+              "sector_code": "01",
+              "sector_name": "Weydoow",
+              "neighborhood_count": 10,
+              "first_code": "GBWYWY01",
+              "last_code": "GBWYWY10",
+              "note": null
+            },
+            {
+              "sector_code": "02",
+              "sector_name": "Macaani",
+              "neighborhood_count": 10,
+              "first_code": "GBWYMC01",
+              "last_code": "GBWYMC10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Buulo Cadaab",
+              "neighborhood_count": 10,
+              "first_code": "GBWYBC01",
+              "last_code": "GBWYBC10",
+              "note": null
+            },
+            {
+              "sector_code": "03",
+              "sector_name": "Macaanteey",
+              "neighborhood_count": 10,
+              "first_code": "GBWYMT01",
+              "last_code": "GBWYMT10",
+              "note": null
+            }
+          ],
+          "lat": null,
+          "lon": null,
+          "coord_confidence": "placeholder",
+          "coord_source": "placeholder = district centre"
+        }
+      ],
+      "lat": 2.06223,
+      "lon": 45.26007,
+      "coord_confidence": "medium",
+      "coord_source": "Google Maps – \"Garasbaley district\" government office (new 2022 district)",
+      "stated_totals": {
+        "sections": 6,
+        "sectors": 24,
+        "neighborhoods": 240
+      }
+    }
+  ]
+}

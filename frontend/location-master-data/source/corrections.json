@@ -1,0 +1,59 @@
+{
+  "_about": "Hand-curated changes applied by build.py on top of spec_section4.json. Every entry is explained in CHANGELOG.md.",
+  "region": {
+    "name": "Banaadir",
+    "alt_name": "Benaadir",
+    "reason": "§6: region stored as 'Benaadir' (19 districts) and 'Banaadir' (Boondheere). 'Banaadir' is the spelling of the Banaadir Regional Administration and of OSM name:so for the region."
+  },
+  "coordinate_updates": {
+    "KRNG": {
+      "lat": 2.05394, "lon": 45.36658, "coord_confidence": "high",
+      "coord_source": "OSM node 4924241025 (place=neighbourhood, 'Xaafada Nageyle' / 'Nageyle Neighborhood'), inside the OSM Kaaraan district boundary; retrieved 2026-10-25"
+    },
+    "DSRW": {
+      "lat": 2.15145, "lon": 45.33001, "coord_confidence": "medium",
+      "coord_source": "OSM node 1404224271 (place=village, 'Rati-Wayne', alt 'Rat Wayne', pcode NA-3807-W08-002), 2.2 km from the Daarusalaam district point; the district has no mapped boundary to test against; retrieved 2026-10-25"
+    },
+    "DSCM03": {
+      "lat": 2.13682, "lon": 45.35734, "coord_confidence": "medium",
+      "coord_source": "OSM node 1404229793 (place=village, 'Dabandoob'), 2.5 km from the Ceel Mareer section point and 4.1 km from the Daarusalaam district point; the district has no mapped boundary to test against; retrieved 2026-10-25"
+    }
+  },
+  "district_alt_names": {
+    "12": "Daynile",
+    "16": "Hawl Wadaag; Hawle Wadag",
+    "14": "Huriwa; Heliwa",
+    "23": "Wardhiigleey (former name); Wardhigley",
+    "10": "Bondhere",
+    "11": "Abdiaziz; Cabdulcasiis",
+    "13": "Dharkenley; Dharkeynley",
+    "17": "Karan; Karaan",
+    "20": "Shangani; Shangaani",
+    "22": "Medina",
+    "24": "Hamar Jajab; Hamar Jabjab",
+    "25": "Hamar Weyne; Xamar Weyne",
+    "21": "Waberi",
+    "26": "Yaqshid",
+    "18": "Kahda",
+    "30": "Daru-Salaam",
+    "31": "Gubadley",
+    "32": "Garasbaley"
+  },
+  "name_alt_names": {
+    "Koowaad": "1st",
+    "Kowaad": "Koowaad; 1st",
+    "Labaad": "2nd",
+    "Saddexaad": "3rd",
+    "Afaraad": "4th",
+    "Shanaad": "5th",
+    "Axmed Gurey": "Axmed Gureey",
+    "Axmed gureey": "Axmed Gureey",
+    "Xaawa Taako": "Xaawo Taako",
+    "Hillaac": "Hilaac",
+    "Janaraal Daauud": "Janaraal Daa'uud",
+    "Janaraal Daa": "Janaraal Daa'uud (probably truncated)",
+    "Ratiweyne": "Rati Weyne; Rati-Wayne (OSM)",
+    "Daban Doob": "Dabandoob (OSM)",
+    "Hanti Wadaag": "Hantiwadaag"
+  }
+}

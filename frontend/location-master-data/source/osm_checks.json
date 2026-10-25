@@ -1,0 +1,704 @@
+{
+ "retrieved": "2026-10-25",
+ "sources": {
+  "osm_district_boundaries": "Nominatim lookup of OSM admin relations (admin_level 6; Kahda admin_level 9). The 2022 districts (Daarusalaam, Gubadleey, Garasbaalleey) have no OSM boundary. OSM region relation 14278313 was not used: it excludes the Kaxda district centre, so it predates the current region extent.",
+  "osm_names": "Overpass API: all nwr with place=* or name=* in bbox 1.95,45.15,2.20,45.50"
+ },
+ "verified_points": [
+  {
+   "target": "KRNG",
+   "osm": "node/4924241025",
+   "tags": {
+    "name:ar": "Xaafada Nageyle",
+    "name:en": "Nageyle Neighborhood",
+    "place": "neighbourhood"
+   },
+   "lat": 2.05394,
+   "lon": 45.36658
+  },
+  {
+   "target": "DSRW",
+   "osm": "node/1404224271",
+   "tags": {
+    "alt_name": "Rat Wayne",
+    "name": "Rati-Wayne",
+    "pcode": "NA-3807-W08-002",
+    "place": "village"
+   },
+   "lat": 2.15145,
+   "lon": 45.33001
+  },
+  {
+   "target": "DSCM03",
+   "osm": "node/1404229793",
+   "tags": {
+    "name": "Dabandoob",
+    "pcode": "NA-3807-W08-001",
+    "place": "village"
+   },
+   "lat": 2.13682,
+   "lon": 45.35734
+  }
+ ],
+ "district_check": [
+  {
+   "district": "Dayniile",
+   "osm_boundary": "Daynile",
+   "inside_osm_districts": [
+    "Daynile"
+   ]
+  },
+  {
+   "district": "Howlwadaag",
+   "osm_boundary": "Hawl Wadaag حول وداك",
+   "inside_osm_districts": [
+    "Hawl Wadaag حول وداك"
+   ]
+  },
+  {
+   "district": "Heliwaa",
+   "osm_boundary": "Heliwa حليلوا",
+   "inside_osm_districts": [
+    "Heliwa حليلوا"
+   ]
+  },
+  {
+   "district": "Wartanabadda",
+   "osm_boundary": "Wardhiigleey وارديكليت",
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ]
+  },
+  {
+   "district": "Hodan",
+   "osm_boundary": "Hodan حودان",
+   "inside_osm_districts": [
+    "Hodan حودان"
+   ]
+  },
+  {
+   "district": "Boondheere",
+   "osm_boundary": "Boondheere بوندير",
+   "inside_osm_districts": [
+    "Boondheere بوندير"
+   ]
+  },
+  {
+   "district": "Cabdicasiis",
+   "osm_boundary": "Cabdlcasiis عبد العزيز",
+   "inside_osm_districts": [
+    "Cabdlcasiis عبد العزيز"
+   ]
+  },
+  {
+   "district": "Dharkeenley",
+   "osm_boundary": "Dharkenley دهاركنلي",
+   "inside_osm_districts": [
+    "Dharkenley دهاركنلي"
+   ]
+  },
+  {
+   "district": "Kaaraan",
+   "osm_boundary": "Karaan كاران",
+   "inside_osm_districts": [
+    "Karaan كاران"
+   ]
+  },
+  {
+   "district": "Shibis",
+   "osm_boundary": "Shibis شيبيس",
+   "inside_osm_districts": [
+    "Shibis شيبيس"
+   ]
+  },
+  {
+   "district": "Shingaani",
+   "osm_boundary": "Shangaani شانكاني",
+   "inside_osm_districts": [
+    "Shangaani شانكاني"
+   ]
+  },
+  {
+   "district": "Wadajir",
+   "osm_boundary": "Wadajir وداجير مدينة",
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ]
+  },
+  {
+   "district": "Xamarjajab",
+   "osm_boundary": "Hamar Jabjab",
+   "inside_osm_districts": [
+    "Hamar Jabjab"
+   ]
+  },
+  {
+   "district": "Xamarweyne",
+   "osm_boundary": "Hamar Weyne حي حمروين",
+   "inside_osm_districts": [
+    "Hamar Weyne حي حمروين"
+   ]
+  },
+  {
+   "district": "Waaberi",
+   "osm_boundary": "Waaberi وابيري",
+   "inside_osm_districts": [
+    "Waaberi وابيري"
+   ]
+  },
+  {
+   "district": "Yaaqshiid",
+   "osm_boundary": "Yaaqshiid ياقشيد",
+   "inside_osm_districts": [
+    "Yaaqshiid ياقشيد"
+   ]
+  },
+  {
+   "district": "Kaxda",
+   "osm_boundary": "Kahda",
+   "inside_osm_districts": [
+    "Kahda"
+   ]
+  },
+  {
+   "district": "Daarusalaam",
+   "osm_boundary": null,
+   "inside_osm_districts": []
+  },
+  {
+   "district": "Gubadleey",
+   "osm_boundary": null,
+   "inside_osm_districts": [
+    "Karaan كاران"
+   ]
+  },
+  {
+   "district": "Garasbaalleey",
+   "osm_boundary": null,
+   "inside_osm_districts": [
+    "Kahda"
+   ]
+  }
+ ],
+ "section_check": [
+  {
+   "location_code": "DYCC",
+   "section": "Ciise Cabdi",
+   "district": "Dayniile",
+   "lat": 2.08724,
+   "lon": 45.32862,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Daynile",
+   "in_expected": false
+  },
+  {
+   "location_code": "DYBR",
+   "section": "Barwaaqo",
+   "district": "Dayniile",
+   "lat": 2.07286,
+   "lon": 45.32157,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Daynile",
+   "in_expected": false
+  },
+  {
+   "location_code": "DYHL",
+   "section": "Halgan",
+   "district": "Dayniile",
+   "lat": 2.07303,
+   "lon": 45.29493,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Daynile",
+   "in_expected": false
+  },
+  {
+   "location_code": "DYGB",
+   "section": "Garas Baalleey",
+   "district": "Dayniile",
+   "lat": 2.06109,
+   "lon": 45.26156,
+   "inside_osm_districts": [
+    "Kahda"
+   ],
+   "expected_osm_district": "Daynile",
+   "in_expected": false
+  },
+  {
+   "location_code": "DYDS",
+   "section": "Daarusalaam",
+   "district": "Dayniile",
+   "lat": 2.07632,
+   "lon": 45.25119,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Daynile",
+   "in_expected": false
+  },
+  {
+   "location_code": "HWSY",
+   "section": "Sayidka",
+   "district": "Howlwadaag",
+   "lat": 2.03723,
+   "lon": 45.32997,
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ],
+   "expected_osm_district": "Hawl Wadaag حول وداك",
+   "in_expected": false
+  },
+  {
+   "location_code": "HWAG",
+   "section": "Axmed Gureey",
+   "district": "Howlwadaag",
+   "lat": 2.05995,
+   "lon": 45.31611,
+   "inside_osm_districts": [
+    "Hawl Wadaag حول وداك"
+   ],
+   "expected_osm_district": "Hawl Wadaag حول وداك",
+   "in_expected": true
+  },
+  {
+   "location_code": "HWXT",
+   "section": "Xaawa Taako",
+   "district": "Howlwadaag",
+   "lat": 2.03726,
+   "lon": 45.33821,
+   "inside_osm_districts": [
+    "Hamar Weyne حي حمروين"
+   ],
+   "expected_osm_district": "Hawl Wadaag حول وداك",
+   "in_expected": false
+  },
+  {
+   "location_code": "HLBR",
+   "section": "Barwaaqo",
+   "district": "Heliwaa",
+   "lat": 2.10554,
+   "lon": 45.36661,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Heliwa حليلوا",
+   "in_expected": false
+  },
+  {
+   "location_code": "HLCL",
+   "section": "Ceel Cirfiid",
+   "district": "Heliwaa",
+   "lat": 2.14871,
+   "lon": 45.43624,
+   "inside_osm_districts": [],
+   "expected_osm_district": "Heliwa حليلوا",
+   "in_expected": false
+  },
+  {
+   "location_code": "WRJD",
+   "section": "Janaraal Daa'uud",
+   "district": "Wartanabadda",
+   "lat": 2.04374,
+   "lon": 45.33866,
+   "inside_osm_districts": [
+    "Boondheere بوندير"
+   ],
+   "expected_osm_district": "Wardhiigleey وارديكليت",
+   "in_expected": false
+  },
+  {
+   "location_code": "WRHW",
+   "section": "Hantiwadaag",
+   "district": "Wartanabadda",
+   "lat": 2.04818,
+   "lon": 45.33054,
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ],
+   "expected_osm_district": "Wardhiigleey وارديكليت",
+   "in_expected": true
+  },
+  {
+   "location_code": "WRXB",
+   "section": "Xamarbile",
+   "district": "Wartanabadda",
+   "lat": 2.05623,
+   "lon": 45.33607,
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ],
+   "expected_osm_district": "Wardhiigleey وارديكليت",
+   "in_expected": true
+  },
+  {
+   "location_code": "HDKC",
+   "section": "Kacaan",
+   "district": "Hodan",
+   "lat": 2.02705,
+   "lon": 45.27984,
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ],
+   "expected_osm_district": "Hodan حودان",
+   "in_expected": false
+  },
+  {
+   "location_code": "HDOK",
+   "section": "Oktoobar",
+   "district": "Hodan",
+   "lat": 2.0292,
+   "lon": 45.31514,
+   "inside_osm_districts": [
+    "Waaberi وابيري"
+   ],
+   "expected_osm_district": "Hodan حودان",
+   "in_expected": false
+  },
+  {
+   "location_code": "HDTL",
+   "section": "Taleex",
+   "district": "Hodan",
+   "lat": 2.03722,
+   "lon": 45.31219,
+   "inside_osm_districts": [
+    "Hodan حودان"
+   ],
+   "expected_osm_district": "Hodan حودان",
+   "in_expected": true
+  },
+  {
+   "location_code": "BDDJ",
+   "section": "Daljirka",
+   "district": "Boondheere",
+   "lat": 2.03919,
+   "lon": 45.34197,
+   "inside_osm_districts": [
+    "Boondheere بوندير"
+   ],
+   "expected_osm_district": "Boondheere بوندير",
+   "in_expected": true
+  },
+  {
+   "location_code": "DKDY",
+   "section": "Dhamme Yaasiin Cartan",
+   "district": "Dharkeenley",
+   "lat": 2.02578,
+   "lon": 45.27867,
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ],
+   "expected_osm_district": "Dharkenley دهاركنلي",
+   "in_expected": false
+  },
+  {
+   "location_code": "DKSR",
+   "section": "Saciid Rooraaye",
+   "district": "Dharkeenley",
+   "lat": 2.02214,
+   "lon": 45.28854,
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ],
+   "expected_osm_district": "Dharkenley دهاركنلي",
+   "in_expected": false
+  },
+  {
+   "location_code": "KRNG",
+   "section": "Nageyle",
+   "district": "Kaaraan",
+   "lat": 2.05394,
+   "lon": 45.36658,
+   "inside_osm_districts": [
+    "Karaan كاران"
+   ],
+   "expected_osm_district": "Karaan كاران",
+   "in_expected": true
+  },
+  {
+   "location_code": "KRWJ",
+   "section": "Wajeer",
+   "district": "Kaaraan",
+   "lat": 2.05006,
+   "lon": 45.36342,
+   "inside_osm_districts": [
+    "Karaan كاران"
+   ],
+   "expected_osm_district": "Karaan كاران",
+   "in_expected": true
+  },
+  {
+   "location_code": "KRBM",
+   "section": "Buulo Maaxaay",
+   "district": "Kaaraan",
+   "lat": 2.05745,
+   "lon": 45.38223,
+   "inside_osm_districts": [
+    "Karaan كاران"
+   ],
+   "expected_osm_district": "Karaan كاران",
+   "in_expected": true
+  },
+  {
+   "location_code": "WDXL",
+   "section": "Xalane",
+   "district": "Wadajir",
+   "lat": 2.01712,
+   "lon": 45.28955,
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ],
+   "expected_osm_district": "Wadajir وداجير مدينة",
+   "in_expected": true
+  },
+  {
+   "location_code": "WDTC",
+   "section": "Timacadde",
+   "district": "Wadajir",
+   "lat": 2.0197,
+   "lon": 45.2865,
+   "inside_osm_districts": [
+    "Wadajir وداجير مدينة"
+   ],
+   "expected_osm_district": "Wadajir وداجير مدينة",
+   "in_expected": true
+  },
+  {
+   "location_code": "WDMH",
+   "section": "Maxamuud Hilowle",
+   "district": "Wadajir",
+   "lat": 2.00404,
+   "lon": 45.28035,
+   "inside_osm_districts": [
+    "Waaberi وابيري"
+   ],
+   "expected_osm_district": "Wadajir وداجير مدينة",
+   "in_expected": false
+  },
+  {
+   "location_code": "XWKC",
+   "section": "Kacaan",
+   "district": "Xamarweyne",
+   "lat": 2.03721,
+   "lon": 45.33792,
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ],
+   "expected_osm_district": "Hamar Weyne حي حمروين",
+   "in_expected": false
+  },
+  {
+   "location_code": "XWHR",
+   "section": "Horseed",
+   "district": "Xamarweyne",
+   "lat": 2.0371,
+   "lon": 45.3379,
+   "inside_osm_districts": [
+    "Hamar Weyne حي حمروين"
+   ],
+   "expected_osm_district": "Hamar Weyne حي حمروين",
+   "in_expected": true
+  },
+  {
+   "location_code": "XWHL",
+   "section": "Hilaac",
+   "district": "Xamarweyne",
+   "lat": 2.03715,
+   "lon": 45.33791,
+   "inside_osm_districts": [
+    "Wardhiigleey وارديكليت"
+   ],
+   "expected_osm_district": "Hamar Weyne حي حمروين",
+   "in_expected": false
+  },
+  {
+   "location_code": "WBHR",
+   "section": "Horseed",
+   "district": "Waaberi",
+   "lat": 2.0285,
+   "lon": 45.31949,
+   "inside_osm_districts": [
+    "Waaberi وابيري"
+   ],
+   "expected_osm_district": "Waaberi وابيري",
+   "in_expected": true
+  },
+  {
+   "location_code": "WBKM",
+   "section": "Kowda Maajo",
+   "district": "Waaberi",
+   "lat": 2.02749,
+   "lon": 45.31953,
+   "inside_osm_districts": [
+    "Waaberi وابيري"
+   ],
+   "expected_osm_district": "Waaberi وابيري",
+   "in_expected": true
+  },
+  {
+   "location_code": "YQHG",
+   "section": "Heegan",
+   "district": "Yaaqshiid",
+   "lat": 2.05877,
+   "lon": 45.35105,
+   "inside_osm_districts": [
+    "Yaaqshiid ياقشيد"
+   ],
+   "expected_osm_district": "Yaaqshiid ياقشيد",
+   "in_expected": true
+  },
+  {
+   "location_code": "YQTW",
+   "section": "Towfiiq",
+   "district": "Yaaqshiid",
+   "lat": 2.06454,
+   "lon": 45.34103,
+   "inside_osm_districts": [
+    "Yaaqshiid ياقشيد"
+   ],
+   "expected_osm_district": "Yaaqshiid ياقشيد",
+   "in_expected": true
+  },
+  {
+   "location_code": "KXJL",
+   "section": "Janaraal Liiqliiqato",
+   "district": "Kaxda",
+   "lat": 2.0364,
+   "lon": 45.25229,
+   "inside_osm_districts": [
+    "Kahda"
+   ],
+   "expected_osm_district": "Kahda",
+   "in_expected": true
+  },
+  {
+   "location_code": "KXAB",
+   "section": "Abaadir",
+   "district": "Kaxda",
+   "lat": 2.02156,
+   "lon": 45.25211,
+   "inside_osm_districts": [
+    "Dharkenley دهاركنلي"
+   ],
+   "expected_osm_district": "Kahda",
+   "in_expected": false
+  },
+  {
+   "location_code": "KXSD",
+   "section": "Siinka Dheer",
+   "district": "Kaxda",
+   "lat": 2.0728,
+   "lon": 45.2232,
+   "inside_osm_districts": [
+    "Kahda"
+   ],
+   "expected_osm_district": "Kahda",
+   "in_expected": true
+  },
+  {
+   "location_code": "DSRW",
+   "section": "Ratiweyne",
+   "district": "Daarusalaam",
+   "lat": 2.15145,
+   "lon": 45.33001,
+   "inside_osm_districts": [],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "DSCM",
+   "section": "Ceel Mareer",
+   "district": "Daarusalaam",
+   "lat": 2.11896,
+   "lon": 45.37037,
+   "inside_osm_districts": [],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "GDDY",
+   "section": "Dayax",
+   "district": "Gubadleey",
+   "lat": 2.0823,
+   "lon": 45.39685,
+   "inside_osm_districts": [
+    "Heliwa حليلوا"
+   ],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "GDCC",
+   "section": "Ceel Cadde",
+   "district": "Gubadleey",
+   "lat": 2.10366,
+   "lon": 45.46288,
+   "inside_osm_districts": [],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "GBGM",
+   "section": "Galmudug",
+   "district": "Garasbaalleey",
+   "lat": 2.05357,
+   "lon": 45.27481,
+   "inside_osm_districts": [
+    "Kahda"
+   ],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "GBFR",
+   "section": "Fooriloow",
+   "district": "Garasbaalleey",
+   "lat": 2.0409,
+   "lon": 45.26936,
+   "inside_osm_districts": [
+    "Kahda"
+   ],
+   "expected_osm_district": null,
+   "in_expected": null
+  },
+  {
+   "location_code": "GBTB",
+   "section": "Tabeellaha",
+   "district": "Garasbaalleey",
+   "lat": 2.07276,
+   "lon": 45.27391,
+   "inside_osm_districts": [
+    "Daynile"
+   ],
+   "expected_osm_district": null,
+   "in_expected": null
+  }
+ ],
+ "section_points_within_100m": [
+  [
+   "HWXT",
+   "XWKC",
+   33
+  ],
+  [
+   "HWXT",
+   "XWHR",
+   39
+  ],
+  [
+   "HWXT",
+   "XWHL",
+   36
+  ],
+  [
+   "XWKC",
+   "XWHR",
+   12
+  ],
+  [
+   "XWKC",
+   "XWHL",
+   7
+  ],
+  [
+   "XWHR",
+   "XWHL",
+   6
+  ]
+ ],
+ "note": "in_expected is null where the district has no OSM boundary; inside_osm_districts empty = outside every mapped old-district polygon (common in the northern periphery, which OSM leaves unassigned)."
+}
