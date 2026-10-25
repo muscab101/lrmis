@@ -4,6 +4,7 @@ import { z } from "zod";
 import { visibleNav } from "@/components/shell/nav";
 import { askAssistant, assistantConfigured, isAssistantAdmin, type StaffContext } from "@/lib/server/assistant";
 import { withinBudget } from "@/lib/server/assistant-budget";
+import { chatMessages, saveTurn } from "@/lib/server/assistant-chats";
 import { getViewer } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,6 +14,8 @@ const body = z.object({
   history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(4000) })).max(12).default([]),
   /** The finance panel on Reports: figures for people with the reports assistant. */
   reports: z.boolean().default(false),
+  /** The saved chat to continue; none starts a new one. */
+  chatId: z.string().uuid().nullish(),
 });
 
 /**
@@ -48,10 +51,20 @@ export async function POST(request: NextRequest) {
     pages: visibleNav(viewer.can).flatMap((g) => g.items.map((i) => tn(`items.${i.key}`))),
   };
 
+  // A saved chat brings its own history; the Reports panel isn't saved.
+  const saved = parsed.data.reports ? null : parsed.data.chatId ?? null;
+  const history = saved ? await chatMessages(supabase, saved) : parsed.data.history;
+  if (!history) return NextResponse.json({ code: "NOT_FOUND" }, { status: 404 });
+
   try {
     const figures = admin || (parsed.data.reports && viewer.can("reports.assistant"));
-    const answer = await askAssistant(supabase, parsed.data.question, parsed.data.locale, parsed.data.history, figures ? "admin" : "staff", who);
-    return NextResponse.json({ answer });
+    const answer = await askAssistant(supabase, parsed.data.question, parsed.data.locale, history.slice(-12), figures ? "admin" : "staff", who);
+    if (parsed.data.reports) return NextResponse.json({ answer });
+    const chatId = await saveTurn(supabase, saved, parsed.data.question, answer).catch((e: Error) => {
+      console.error("assistant chat not saved", e.message);
+      return saved;
+    });
+    return NextResponse.json({ answer, chatId });
   } catch (err) {
     console.error("assistant failed", err instanceof Error ? err.message : err);
     return NextResponse.json({ code: "UNAVAILABLE" }, { status: 502 });

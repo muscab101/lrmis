@@ -4002,5 +4002,15 @@
     "limit": "Su'aalo badan ayaad saacaddan weydiisay. Mar dambe isku day.",
     "failed": "Kaaliyuhu hadda ma jawaabi karo.",
     "offline": "Xiriir ma jiro. Hubi shabakaddaada."
+  },
+  "assistantHistory": {
+    "title": "Taariikhda",
+    "newChat": "Wada-hadal cusub",
+    "empty": "Wada-hadalladaada halkan ayaa lagu hayn doonaa.",
+    "delete": "Tirtir wada-hadalka",
+    "deleteTitle": "Ma tirtirtaa wada-hadalkan?",
+    "deleteBody": "“{title}” iyo dhammaan fariimihiisa waa la tirtirayaa. Dib looma soo celin karo.",
+    "deleteFailed": "Wada-hadalka lama tirtiri karin.",
+    "loadFailed": "Wada-hadalka lama furi karin."
   }
 }

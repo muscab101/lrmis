@@ -4002,5 +4002,15 @@
     "limit": "You've asked a lot of questions this hour. Try again later.",
     "failed": "The assistant couldn't answer just now.",
     "offline": "No connection. Check your network."
+  },
+  "assistantHistory": {
+    "title": "History",
+    "newChat": "New chat",
+    "empty": "Your chats will be kept here.",
+    "delete": "Delete chat",
+    "deleteTitle": "Delete this chat?",
+    "deleteBody": "“{title}” and all its messages are deleted. This can't be undone.",
+    "deleteFailed": "The chat couldn't be deleted.",
+    "loadFailed": "The chat couldn't be opened."
   }
 }
