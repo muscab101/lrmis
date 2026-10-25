@@ -81,12 +81,11 @@ export default async function TransferPage({ params }: { params: Promise<{ local
           </span>
         }
       >
-        <TransferActions id={tr.id} status={tr.status} mine={tr.created_by === viewer.user.id} can={{ create: viewer.can("transfers.create"), approve: viewer.can("transfers.approve") }} />
+        <TransferActions id={tr.id} status={tr.status} can={{ create: viewer.can("transfers.create"), approve: viewer.can("transfers.approve") }} />
       </PageHeader>
       {tr.status === "submitted" && dutyDue && <Alert tone="warning" title={t("dutyDueTitle")} className="mb-5">
           {t("dutyDueBody")}
         </Alert>}
-      {tr.status === "submitted" && tr.created_by === viewer.user.id && <Alert tone="info" title={t("needsSecond")} className="mb-5" />}
       <div className="grid gap-5 md:grid-cols-2">
         <Card className="md:col-span-2">
           <CardContent className="pt-5">

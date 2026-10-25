@@ -209,3 +209,11 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
     expect(await scalar<string>(db, `select status::text from public.leases where id = $1`, [lease])).toBe("terminated");
   });
 });
+
+describe("transfer approval without a second person (0109)", () => {
+  it("the person who started a transfer may approve it", async () => {
+    const src = await scalar<string>(db, `select prosrc from pg_proc where proname = 'transfer_decide'`);
+    expect(src).not.toContain("assert_maker_checker");
+    expect(src).toContain("assert_permission('transfers.approve')");
+  });
+});

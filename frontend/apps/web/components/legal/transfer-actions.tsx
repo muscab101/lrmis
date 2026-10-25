@@ -11,7 +11,7 @@ import { useErrorMessage } from "@/lib/client/errors";
 import { DecideButtons } from "./decide";
 import { NoteAction } from "./note-action";
 
-export function TransferActions({ id, status, mine, can }: { id: string; status: string; mine: boolean; can: { create: boolean; approve: boolean } }) {
+export function TransferActions({ id, status, can }: { id: string; status: string; can: { create: boolean; approve: boolean } }) {
   const t = useTranslations("legal");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -48,7 +48,7 @@ export function TransferActions({ id, status, mine, can }: { id: string; status:
           />
         </>
       )}
-      {status === "submitted" && can.approve && !mine && <DecideButtons decide={(v) => decideTransferAction({ id, approve: v.approve, note: v.note })} />}
+      {status === "submitted" && can.approve && <DecideButtons decide={(v) => decideTransferAction({ id, approve: v.approve, note: v.note })} />}
       {can.create && (
         <NoteAction label={t("cancelTransfer")} title={t("cancelTransfer")} noteLabel={t("reason")} variant="ghost" destructive success={t("cancelled")} submit={(n) => cancelTransferAction({ id, note: n })} />
       )}
