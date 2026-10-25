@@ -224,3 +224,8 @@ Not loaded:
   - The map draws these as pins. Section pins are yellow and sector pins green. A placeholder pin (district centre, position unknown) is drawn hollow and has no label.
   - Clicking a pin shows its accuracy and source.
   - No boundaries were drawn. No public source has them, and made-up shapes would put parcels in the wrong block.
+- **All sectors mapped:** migration 0106 makes `location_pins()` place every sector on the map, so all 395 sectors are now pinned.
+  - A sector without its own point uses its section's point and is flagged `inherited`. This is the same as the "inherited from section" data the user supplied.
+  - The point is not copied into `sectors.point`, so correcting a section's point moves its sectors with it.
+  - On the map, these sectors show as a green ring around the section pin. Clicking the pin lists the section's sectors.
+  - Nageyle and Ratiweyne keep their verified OSM points rather than the older Google Maps values in the supplied JSON. Their 8 sectors inherit the verified points.

@@ -138,6 +138,10 @@ describe("lookups and tiles", () => {
     const pin = pins.features.find((f) => f.properties.id === sectionH);
     expect(pin?.properties).toMatchObject({ level: "section", confidence: "low", source: "test" });
     expect(pin?.geometry.coordinates).toEqual([45.3, 2.04]);
+    // A sector with no point of its own sits on its section's point, flagged as inherited.
+    const sector = pins.features.find((f) => f.properties.id === sectorH);
+    expect(sector?.properties).toMatchObject({ level: "sector", inherited: true, confidence: "low", section_id: sectionH });
+    expect(sector?.geometry.coordinates).toEqual([45.3, 2.04]);
     await expect(as(db, "anon", {}, (tx) => tx.query(`select public.location_pins()`))).rejects.toThrow(/permission denied/);
   });
 });

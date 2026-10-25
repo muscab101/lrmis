@@ -1366,6 +1366,8 @@
     "pin_medium": "Medium: named place in the area",
     "pin_low": "Low: business named after the area",
     "pin_placeholder": "Unknown: district centre shown",
+    "pinSectors": "Sectors here ({count})",
+    "pinOwnPoint": "own point",
     "openParcel": "Open parcel",
     "noPun": "No PUN yet",
     "parcel_draft": "Draft",

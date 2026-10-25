@@ -1366,6 +1366,8 @@
     "pin_medium": "Dhexe: goob magacan leh oo aagga ku taal",
     "pin_low": "Hoose: ganacsi aagga lagu magacaabay",
     "pin_placeholder": "Lama yaqaan: bartamaha degmada",
+    "pinSectors": "Laamaha halkan ({count})",
+    "pinOwnPoint": "bar u gaar ah",
     "openParcel": "Fur dhulka",
     "noPun": "Weli PUN ma leh",
     "parcel_draft": "Qabyo",
