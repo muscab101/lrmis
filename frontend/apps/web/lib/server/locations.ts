@@ -16,7 +16,7 @@ export interface LocationRow {
   kind?: string;
   district: { id: string; code: string; name_so: string; name_en: string } | null;
   section?: { id: string; code: string; name_so: string } | null;
-  sector?: { id: string; code: string; name_so: string; section_id: string } | null;
+  sector?: { id: string; code: string; name_so: string; section_id: string; section: { id: string; code: string; name_so: string } | null } | null;
 }
 
 const SELECT: Record<LocationLevel, string> = {
@@ -25,7 +25,7 @@ const SELECT: Record<LocationLevel, string> = {
   sectors:
     "id, code, name_so, name_en, has_geom, deleted_at, section:sections(id, code, name_so), district:districts(id, code, name_so, name_en)",
   neighbourhoods:
-    "id, code, name_so, name_en, capacity, has_geom, deleted_at, sector:sectors(id, code, name_so, section_id), district:districts(id, code, name_so, name_en)",
+    "id, code, name_so, name_en, capacity, has_geom, deleted_at, sector:sectors(id, code, name_so, section_id, section:sections(id, code, name_so)), district:districts(id, code, name_so, name_en)",
   streets: "id, name_so, name_en, has_geom, deleted_at, district:districts(id, code, name_so, name_en)",
   facilities: "id, kind, name_so, name_en, has_geom, deleted_at, district:districts(id, code, name_so, name_en)",
 };

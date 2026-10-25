@@ -146,6 +146,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                 {hasCode && <TableHead>{t("code")}</TableHead>}
                 <TableHead>{t("name")}</TableHead>
                 {level !== "districts" && <TableHead>{t("district")}</TableHead>}
+                {level === "neighbourhoods" && <TableHead className="hidden md:table-cell">{t("section")}</TableHead>}
                 {(level === "sectors" || level === "neighbourhoods") && <TableHead className="hidden md:table-cell">{t(level === "sectors" ? "section" : "sector")}</TableHead>}
                 {level === "neighbourhoods" && <TableHead className="hidden text-end lg:table-cell">{t("capacity")}</TableHead>}
                 {level === "facilities" && <TableHead>{t("kind")}</TableHead>}
@@ -168,7 +169,8 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                   <TableRow key={r.id}>
                     {hasCode && (
                       <TableCell>
-                        <Mono>{level === "neighbourhoods" && r.district ? `${r.district.code}-${r.code}` : r.code}</Mono>
+                        {/* Neighbourhood codes are full LRMIS codes (BDDJKW01); show just the block number. */}
+                        <Mono>{level === "neighbourhoods" ? (r.code?.match(/\d+$/)?.[0] ?? r.code) : r.code}</Mono>
                       </TableCell>
                     )}
                     <TableCell>
@@ -176,6 +178,9 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
                       {r.name_en && r.name_en !== r.name_so && <div className="text-xs text-muted-foreground">{r.name_en}</div>}
                     </TableCell>
                     {level !== "districts" && <TableCell className="text-sm">{r.district ? name(r.district) : "—"}</TableCell>}
+                    {level === "neighbourhoods" && (
+                      <TableCell className="hidden text-sm text-muted-foreground md:table-cell">{r.sector?.section?.name_so ?? "—"}</TableCell>
+                    )}
                     {(level === "sectors" || level === "neighbourhoods") && (
                       <TableCell className="hidden text-sm text-muted-foreground md:table-cell">{parentLabel(r)}</TableCell>
                     )}

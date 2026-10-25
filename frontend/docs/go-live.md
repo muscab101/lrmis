@@ -2,6 +2,7 @@
 
 ## 1. Readiness (two weeks before)
 - [ ] Domain decided; `NEXT_PUBLIC_SITE_URL` and the `site.public_url` setting updated.
+- [ ] Base maps: `NEXT_PUBLIC_MAPTILER_KEY` set in Vercel (without it the map falls back to the free OSM/Esri tiles, which aren't licensed for production); in the MapTiler dashboard the key is restricted to the production domain.
 - [ ] Production Supabase project on a paid plan with daily backups and point-in-time recovery; all migrations applied (`pnpm db:push`).
 - [ ] Every item under "Before go-live" in `docs/security-review.md` done.
 - [ ] Payment providers: WaafiPay merchant live keys, webhook URL `https://<domain>/api/payments/webhook/waafipay`, test payment of USD 0.10 reconciled.
