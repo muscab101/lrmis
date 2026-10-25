@@ -72,11 +72,10 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
   }, [q]);
 
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  // Sector codes are running numbers (01, 02…) that users don't want shown; the name identifies them.
-  const hasCode = level !== "streets" && level !== "facilities" && level !== "sectors";
+  const hasCode = level !== "streets" && level !== "facilities";
 
   const parentLabel = (r: LocationRow) => {
-    if (level === "sectors" && r.section) return `${r.section.code} · ${r.section.name_so}`;
+    if (level === "sectors" && r.section) return r.section.name_so;
     if (level === "neighbourhoods" && r.sector) return r.sector.name_so;
     return null;
   };

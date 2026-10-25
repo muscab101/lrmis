@@ -8,6 +8,8 @@ export const PAGE_SIZE = 50;
 export interface LocationRow {
   id: string;
   code: string | null;
+  /** Sectors: the LRMIS sector code (block code prefix, e.g. KRNGWD), shown instead of the running number. */
+  legacy_id?: string | null;
   name_so: string;
   name_en: string;
   has_geom: boolean;
@@ -23,7 +25,7 @@ const SELECT: Record<LocationLevel, string> = {
   districts: "id, code, name_so, name_en, has_geom, deleted_at",
   sections: "id, code, name_so, name_en, has_geom, deleted_at, district:districts(id, code, name_so, name_en)",
   sectors:
-    "id, code, name_so, name_en, has_geom, deleted_at, section:sections(id, code, name_so), district:districts(id, code, name_so, name_en)",
+    "id, code, legacy_id, name_so, name_en, has_geom, deleted_at, section:sections(id, code, name_so), district:districts(id, code, name_so, name_en)",
   neighbourhoods:
     "id, code, name_so, name_en, capacity, has_geom, deleted_at, sector:sectors(id, code, name_so, section_id, section:sections(id, code, name_so)), district:districts(id, code, name_so, name_en)",
   streets: "id, name_so, name_en, has_geom, deleted_at, district:districts(id, code, name_so, name_en)",
@@ -43,11 +45,18 @@ export async function queryLocations(q: LocationsQuery, districtIds?: string[] |
   const term = q.q.replace(/[,()*%\\]/g, " ").trim();
   if (term) {
     req = req.or(
-      [`name_so.ilike.%${term}%`, `name_en.ilike.%${term}%`, ...(HAS_CODE.has(q.level) ? [`code.ilike.${term}%`] : [])].join(","),
+      [
+        `name_so.ilike.%${term}%`,
+        `name_en.ilike.%${term}%`,
+        ...(HAS_CODE.has(q.level) ? [`code.ilike.${term}%`] : []),
+        ...(q.level === "sectors" ? [`legacy_id.ilike.${term}%`] : []),
+      ].join(","),
     );
   }
   const order = HAS_CODE.has(q.level) ? "code" : "name_so";
   const from = (q.page - 1) * PAGE_SIZE;
+  // Sectors sort by their LRMIS code, so each section's sectors sit together.
+  if (q.level === "sectors") req = req.order("legacy_id", { nullsFirst: false });
   const res = await req.order(order).range(from, from + PAGE_SIZE - 1);
   return { rows: unwrap(res, q.level) as unknown as LocationRow[], total: res.count ?? 0 };
 }
