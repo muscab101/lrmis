@@ -904,8 +904,13 @@
       "name": "Magaca"
     },
     "permissionsPage": {
-      "title": "Liiska ogolaanshaha",
-      "subtitle": "Fure kasta oo ogolaansho ah ee nidaamka. Doorarku waxay isku daraan kuwan."
+      "title": "Ogolaanshaha",
+      "subtitle": "Ogolaansho kasta oo nidaamka ka shaqeeya iyo waxa uu qofka u oggolaado. Doorarku waxay isku daraan kuwan; dadka ku sii Doorarka.",
+      "roles": "Doorarka",
+      "noRole": "Weli door ma haysto",
+      "superAdmin": "Super admin wuxuu leeyahay ogolaansho kasta.",
+      "search": "Raadi ogolaansho…",
+      "count": "{count} ogolaansho"
     },
     "loginHistory": {
       "title": "Taariikhda galitaanka",
@@ -1114,6 +1119,162 @@
       "parcels_delete_registered": "Tirtir dhulka la diiwaangeliyay",
       "owners_registered": "Arag milkiilayaasha la diiwaangeliyay",
       "owners_delete_registered": "Tirtir milkiilayaasha la diiwaangeliyay"
+    },
+    "what": {
+      "dashboard": {
+        "view": "Fur Dashboard-ka oo isticmaal kaaliyaha AI."
+      },
+      "map": {
+        "view": "Fur Khariidadda oo arag xuduudaha dhulka.",
+        "edit_geometry": "Sax xuduudda sahanka inta lagu jiro dib-u-eegista isku-dhaafka GIS."
+      },
+      "applications": {
+        "view": "Arag dhulka sugaya diiwaangelinta ee codsi lagu bilaabay.",
+        "create": "Ku dar dhul goobta laga helay (Add land) oo bilow diiwaangelintiisa.",
+        "update": "Ka shaqee dhulka sugaya diiwaangelinta: sax faahfaahintiisa, dib u biil khidmaddiisa, codso hubin goobeed, u gudbi.",
+        "approve": "Xaqiiji dhulka sugaya diiwaangelinta si loo diiwaangeliyo.",
+        "cancel": "Jooji dhulka sugaya diiwaangelinta.",
+        "capture_location": "Dhig ama dhaqaaji goobta GPS-ka guriga, oo sax goobtiisa marka xog la saxayo."
+      },
+      "parcels": {
+        "view": "Fur Dhulka oo arag tab-ka Diiwaangelin qayb ah (dhul aan weli la diiwaangelin) ee degmooyinkaaga.",
+        "registered": "Arag tab-ka La diiwaangeliyay ee Dhulka: dhulka diiwaanka rasmiga ah.",
+        "update": "Wax ka beddel faahfaahinta xafiiska, dir sahamiye si uu u hubiyo inuu jiro, oo codso isbeddel (xuduud, kala qaybin, isticmaal).",
+        "approve": "Diiwaangeli dhul (wuxuu helayaa PUN, biilashiisana waa la soo saarayaa), oo go'aami isbeddelada dhulka iyo kirada.",
+        "delete": "Tirtir dhul qayb ah (aan weli la diiwaangelin).",
+        "delete_registered": "Ka tirtir dhul diiwaangashan diiwaanka. Dhul lacag laga bixiyay weligii lama tirtiri karo.",
+        "lock": "Quful oo fur dhul, tusaale kiis maxkamadeed, si aan waxba looga beddelin.",
+        "yet_to_register": "Fur Aan weli la diiwaangelin: xaafadaha weli la diiwaangelin, iyo aagagga sahamiyayaasha la siiyay."
+      },
+      "owners": {
+        "view": "Fur Milkiilayaasha oo arag kuwa qayb ahaan ah; hubi labalaab.",
+        "registered": "Arag tab-ka La diiwaangeliyay ee Milkiilayaasha.",
+        "create": "Ku dar milkiile cusub.",
+        "update": "Wax ka beddel faahfaahinta iyo sawirka milkiilaha.",
+        "approve": "U gudbi milkiile diiwaanka.",
+        "delete": "Tirtir milkiile qayb ah.",
+        "delete_registered": "Tirtir milkiile diiwaangashan (kaliya mid aan dhul haysan)."
+      },
+      "surveys": {
+        "view": "Fur Sahannada iyo aagagga, oo arag hawlaha sahanka.",
+        "create": "U shaqee sidii sahamiye: dhul ku dar aag, codso hubin goobeed, lagu siiyo hawlo sahan.",
+        "update": "Qabo hawlahaaga sahanka iyo hubinta goobta, oo qor waxa aad goobta ka heshay.",
+        "approve": "Kormeer sahamiyayaasha: qaybi sahannada iyo aagagga, ka jawaab hubin kasta, dib u eeg isku-dhaafka, xir aagagga."
+      },
+      "valuation": {
+        "view": "Fur Qiimaynta (heerarka, qiimaha, qiimeynta) oo arag xisaabta canshuurta dhulka.",
+        "create": "Qiimee dhul ama xaafad dhan, oo qor racfaannada iyo codsiyada dhaafidda.",
+        "update": "Dhig noocyada guryaha (heerarka) iyo qiimahooda, qiimaha xaafadaha, khidmadaha iyo dhismayaasha dhulka.",
+        "approve": "Go'aami racfaannada iyo dhaafidda, oo tirtir qiimeyn."
+      },
+      "billing": {
+        "view": "Fur Wareegyada biilasha.",
+        "create": "Bilow, cusboonaysii, gudbi oo jooji wareegyada biilasha.",
+        "update": "Codso qorshayaal lacag-bixin oo dabaq ganaaxyada daahitaanka.",
+        "approve": "Ansixi wareegyada biilasha oo soo saar biilashooda; go'aami qorshayaasha lacag-bixinta.",
+        "cancel": "Jooji wareegyada biilasha."
+      },
+      "invoices": {
+        "view": "Fur Biilasha oo arag waxa dhulku ku leeyahay.",
+        "create": "Biil khidmad hal mar ah oo codso dhimis (credit note).",
+        "approve": "Go'aami dhimisyada (credit notes).",
+        "cancel": "Jooji biil aan lacag laga bixin.",
+        "print": "Daabac biil."
+      },
+      "payments": {
+        "view": "Fur Lacag-bixinta oo arag lacagta la helay.",
+        "create": "Qaado lacag, ku dar caddayn, isticmaal dheeraadka milkiilaha, oo codso saxitaan.",
+        "approve": "Kormeer lacag-bixinta: is waafaji, go'aami saxitaannada iyo celinta, cafi khidmado, arag shift-yada iyo maalmaha khasnajiyaasha oo dhan.",
+        "refund": "Codso in lacag-bixin la celiyo.",
+        "print": "Daabac rasiidka lacag-bixinta."
+      },
+      "cashier": {
+        "view": "Fur Khasnajiga iyo liiska La ururinayo.",
+        "create": "Fur shift khasnaji.",
+        "update": "Xir shift khasnaji adoo tirinaya lacagta.",
+        "approve": "Ansixi shift khasnaji oo la xiray."
+      },
+      "reconciliation": {
+        "view": "Fur Ururinta: waxa khasnajiyaashu ururiyeen, labalaabka iyo isu-dheellitirka maalinlaha.",
+        "create": "Soo geli bayaan lacag-mobile ama bangi oo la waafaji lacag-bixinta.",
+        "update": "Xaqiiji ama diid lacag-bixin, ku dar caddayn, oo diyaari isu-dheellitirka maalinta.",
+        "approve": "Ansixi ama diid isu-dheellitirka maalinta."
+      },
+      "accounting": {
+        "view": "Fur Xisaabaadka iyo buugga.",
+        "create": "Geli qoraal xisaabeed gacanta lagu sameeyo.",
+        "update": "Dhig sicirka sarifka.",
+        "approve": "Fur oo xir xilliyada xisaabaadka."
+      },
+      "transfers": {
+        "view": "Fur Wareejinta iyo kaarka Sharciga ee dhulka.",
+        "create": "Bilow, wax ka beddel oo gudbi wareejinta lahaanshaha.",
+        "approve": "Ansixi ama diid wareejin.",
+        "cancel": "Jooji wareejin."
+      },
+      "disputes": {
+        "view": "Fur Khilaafaadka.",
+        "create": "Fur khilaaf, diiwaangeli rahaan, oo ku dar amar maxkamadeed.",
+        "approve": "Xir khilaafaadka, sii daa rahaannada, qaad amarrada maxkamadda oo xalli diidmooyinka."
+      },
+      "permits": {
+        "view": "Fur Ruqsadaha.",
+        "create": "Codso ruqsad dhismo oo dhul ah.",
+        "approve": "Ansixi ama diid ruqsadaha."
+      },
+      "documents": {
+        "view": "Arag xuduudaha khariidadda ee ku daabacan shahaadooyinka."
+      },
+      "certificates": {
+        "view": "Fur Shahaadooyinka oo arag shahaadooyinka iyo kaararka aqoonsiga la bixiyay.",
+        "approve": "Bixi shahaadooyin iyo kaarar aqoonsi, oo go'aami dib-u-daabacaadda.",
+        "print": "Daabac shahaadooyin iyo kaarar aqoonsi, oo dhig sawirrada milkiilayaasha ee kaararka.",
+        "cancel": "Jooji shahaado ama kaar aqoonsi.",
+        "reprint": "Codso in shahaado ama kaar dib loo daabaco ama dib loo bixiyo.",
+        "id_cards": "Fur Kaararka aqoonsiga."
+      },
+      "messages": {
+        "view": "Fur Fariimaha: SMS iyo WhatsApp loo diray milkiilayaasha.",
+        "create": "Diyaari olole fariimeed.",
+        "update": "Dib u dir fariimaha fashilmay oo wax ka beddel qaababka fariimaha.",
+        "approve": "Ansixi ololeyaasha fariimaha.",
+        "cancel": "Jooji fariin in la diro."
+      },
+      "reports": {
+        "view": "Fur Warbixinnada iyo tirooyinka Dashboard-ka.",
+        "export": "Soo deji warbixinnada PDF ama Excel ahaan.",
+        "assistant": "Isticmaal caawiyaha maaliyadda AI ee Warbixinnada."
+      },
+      "locations": {
+        "view": "Fur Goobaha: degmooyinka, qaybaha, waaxyaha, xaafadaha iyo waddooyinka.",
+        "create": "Ku dar goobo.",
+        "update": "Wax ka beddel goobaha oo sawir xuduudahooda.",
+        "delete": "Tirtir goobo."
+      },
+      "settings": {
+        "view": "Fur Dejinta iyo Caafimaadka nidaamka.",
+        "update": "Beddel dejinta, qiimaha khidmadaha, bixiyeyaasha lacagta, noocyada guryaha iyo miisaska lacagta."
+      },
+      "audit": {
+        "view": "Fur Diiwaanka hubinta iyo Taariikhda gelitaanka."
+      },
+      "users": {
+        "view": "Fur Isticmaalayaasha oo arag xisaabaadka shaqaalaha.",
+        "create": "Ku dar xisaabaad shaqaale oo dir casuumado.",
+        "update": "Wax ka beddel xisaabaadka shaqaalaha: magaca, doorarka, degmooyinka iyo miiska lacagta.",
+        "delete": "Ka saar xisaabaadka shaqaalaha.",
+        "export": "Soo deji liiska isticmaalayaasha.",
+        "manage": "Hakad geli oo dib u fur xisaabaadka shaqaalaha.",
+        "reset_password": "Dhig furaha sirta cusub ama dir xiriir dib-u-dejin.",
+        "reset_2fa": "Dib u deji gelitaanka labada tallaabo ee isticmaalaha.",
+        "force_signout": "Isticmaalaha meel kasta ka saar."
+      },
+      "roles": {
+        "view": "Fur Doorarka iyo Ogolaanshaha.",
+        "create": "Samee doorar cusub.",
+        "update": "Beddel ogolaanshaha door oo u wareeji isticmaalayaashiisa.",
+        "delete": "Tirtir doorar."
+      }
     }
   },
   "design": {

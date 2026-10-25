@@ -904,8 +904,13 @@
       "name": "Name"
     },
     "permissionsPage": {
-      "title": "Permission catalog",
-      "subtitle": "Every permission key in the system. Roles combine these."
+      "title": "Permissions",
+      "subtitle": "Every permission that works in the system and what it lets someone do. Roles combine these; give them to people under Roles.",
+      "roles": "Roles",
+      "noRole": "No role has it yet",
+      "superAdmin": "Super admin has every permission.",
+      "search": "Search permissions…",
+      "count": "{count} permissions"
     },
     "loginHistory": {
       "title": "Login history",
@@ -1114,6 +1119,162 @@
       "parcels_delete_registered": "Delete registered land",
       "owners_registered": "See registered owners",
       "owners_delete_registered": "Delete registered owners"
+    },
+    "what": {
+      "dashboard": {
+        "view": "Open the Dashboard and use the AI assistant."
+      },
+      "map": {
+        "view": "Open the Map and see parcel boundaries.",
+        "edit_geometry": "Fix a survey's boundary during the GIS overlap review."
+      },
+      "applications": {
+        "view": "See land that is waiting for registration through an application.",
+        "create": "Add land found in the field (Add land) and start its registration.",
+        "update": "Work land waiting for registration: correct its details, re-bill its fee, ask for a site check, move it on.",
+        "approve": "Verify land waiting for registration so it can be registered.",
+        "cancel": "Cancel land waiting for registration.",
+        "capture_location": "Set or move a house's GPS pin, and fix its location in a data correction."
+      },
+      "parcels": {
+        "view": "Open Parcels and see the Partial registration tab (land not registered yet) in your districts.",
+        "registered": "See the Registered tab in Parcels: land on the official register.",
+        "update": "Edit a parcel's office details, send a surveyor to check it exists, and request changes (boundary, subdivide, change of use).",
+        "approve": "Register land (gives the PUN and raises its bills), and decide parcel changes and leases.",
+        "delete": "Delete partial land (not registered yet).",
+        "delete_registered": "Delete registered land from the register. Land with money paid can never be deleted.",
+        "lock": "Lock and unlock a parcel, e.g. for a court case, so nothing on it can change.",
+        "yet_to_register": "Open Yet to register: neighbourhoods still to register, and zones given to surveyors."
+      },
+      "owners": {
+        "view": "Open Owners and see the Partial owners; check for duplicates.",
+        "registered": "See the Registered tab in Owners.",
+        "create": "Add a new owner.",
+        "update": "Edit an owner's details and photo.",
+        "approve": "Move an owner to the register.",
+        "delete": "Delete a partial owner.",
+        "delete_registered": "Delete a registered owner (only one who holds no land)."
+      },
+      "surveys": {
+        "view": "Open Surveys and the zones, and see survey tasks.",
+        "create": "Work as a surveyor: add land in a zone, ask for site checks, be given survey tasks.",
+        "update": "Do your own survey tasks and site checks, and record what you found on site.",
+        "approve": "Supervise surveyors: give out surveys and zones, answer any site check, review overlaps, close zones."
+      },
+      "valuation": {
+        "view": "Open Valuation (grades, rates, assessments) and see a parcel's tax calculation.",
+        "create": "Assess a parcel or a whole neighbourhood, and record appeals and exemption requests.",
+        "update": "Set house types (grades) and their price, neighbourhood rates, fees, and a parcel's buildings.",
+        "approve": "Decide appeals and exemptions, and delete an assessment."
+      },
+      "billing": {
+        "view": "Open Billing runs.",
+        "create": "Start, refresh, submit and cancel billing runs.",
+        "update": "Request payment plans and apply late penalties.",
+        "approve": "Approve billing runs and generate their invoices; decide payment plans.",
+        "cancel": "Cancel billing runs."
+      },
+      "invoices": {
+        "view": "Open Invoices and see what parcels owe.",
+        "create": "Bill a one-off fee for a parcel and request a credit note.",
+        "approve": "Decide credit notes.",
+        "cancel": "Cancel an invoice that has no payments.",
+        "print": "Print an invoice."
+      },
+      "payments": {
+        "view": "Open Payments and see the money received.",
+        "create": "Take payments, add evidence, use an owner's credit, and ask for corrections.",
+        "approve": "Supervise payments: match them, decide corrections and reversals, waive fees, see every cashier's shifts and days.",
+        "refund": "Ask for a payment to be reversed (refunded).",
+        "print": "Print a payment receipt."
+      },
+      "cashier": {
+        "view": "Open Cashier and its To collect list.",
+        "create": "Open a cashier shift.",
+        "update": "Close a cashier shift with a cash count.",
+        "approve": "Approve a cashier's closed shift."
+      },
+      "reconciliation": {
+        "view": "Open Collections: what cashiers collected, duplicates and daily reconciliation.",
+        "create": "Import a mobile-money or bank statement and match it to payments.",
+        "update": "Verify or dispute payments, add evidence, and prepare a day's reconciliation.",
+        "approve": "Approve or reject a day's reconciliation."
+      },
+      "accounting": {
+        "view": "Open Accounting and the ledger.",
+        "create": "Post a manual journal entry.",
+        "update": "Set exchange rates.",
+        "approve": "Open and close accounting periods."
+      },
+      "transfers": {
+        "view": "Open Transfers and a parcel's Legal card.",
+        "create": "Start, edit and submit transfers of ownership.",
+        "approve": "Approve or reject a transfer.",
+        "cancel": "Cancel a transfer."
+      },
+      "disputes": {
+        "view": "Open Disputes.",
+        "create": "Open disputes, register liens and add court orders.",
+        "approve": "Close disputes, release liens, lift court orders and resolve objections."
+      },
+      "permits": {
+        "view": "Open Permits.",
+        "create": "Apply for a building permit for a parcel.",
+        "approve": "Approve or reject permits."
+      },
+      "documents": {
+        "view": "See the map outlines printed on certificates."
+      },
+      "certificates": {
+        "view": "Open Certificates and see issued certificates and ID cards.",
+        "approve": "Issue certificates and ID cards, and decide reprints.",
+        "print": "Print certificates and ID cards, and set owners' photos for cards.",
+        "cancel": "Cancel a certificate or ID card.",
+        "reprint": "Ask for a certificate or ID card to be reprinted or reissued.",
+        "id_cards": "Open ID cards."
+      },
+      "messages": {
+        "view": "Open Messages: SMS and WhatsApp sent to owners.",
+        "create": "Prepare a message campaign.",
+        "update": "Retry failed messages and edit message templates.",
+        "approve": "Approve message campaigns.",
+        "cancel": "Stop a message from being sent."
+      },
+      "reports": {
+        "view": "Open Reports and the figures on the Dashboard.",
+        "export": "Download reports as PDF or Excel.",
+        "assistant": "Use the AI finance helper on Reports."
+      },
+      "locations": {
+        "view": "Open Locations: districts, sections, sectors, neighbourhoods and streets.",
+        "create": "Add locations.",
+        "update": "Edit locations and draw their boundaries.",
+        "delete": "Delete locations."
+      },
+      "settings": {
+        "view": "Open Settings and System health.",
+        "update": "Change settings, fee amounts, payment providers, house types and cash desks."
+      },
+      "audit": {
+        "view": "Open the Audit log and Login history."
+      },
+      "users": {
+        "view": "Open Users and see staff accounts.",
+        "create": "Add staff accounts and send invitations.",
+        "update": "Edit staff accounts: name, roles, districts and cash desk.",
+        "delete": "Remove staff accounts.",
+        "export": "Download the list of users.",
+        "manage": "Suspend and reactivate staff accounts.",
+        "reset_password": "Set a new password or send a reset link.",
+        "reset_2fa": "Reset a user's two-step sign-in.",
+        "force_signout": "Sign a user out everywhere."
+      },
+      "roles": {
+        "view": "Open Roles and Permissions.",
+        "create": "Create new roles.",
+        "update": "Change a role's permissions and move its users.",
+        "delete": "Delete roles."
+      }
     }
   },
   "design": {
