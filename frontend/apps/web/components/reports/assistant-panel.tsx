@@ -25,7 +25,7 @@ export function AssistantPanel() {
     const res = await fetch("/api/assistant", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ question, locale, history: turns }),
+      body: JSON.stringify({ question, locale, history: turns, reports: true }),
     }).catch(() => null);
     setBusy(false);
     if (!res) return setError(t("assistant.offline"));

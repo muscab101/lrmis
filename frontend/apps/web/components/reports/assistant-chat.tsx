@@ -9,11 +9,11 @@ import { useEffect, useRef, useState } from "react";
 type Turn = { role: "user" | "assistant"; content: string };
 
 /**
- * Full-page chat for the staff finance assistant and the citizen help assistant.
+ * Full-page chat for the staff, admin and citizen assistants.
  * Texts come from `<namespace>.*`: title, help, placeholder, ask, disclaimer, suggestions.q1–q4,
  * notConfigured, limit, failed, offline.
  */
-export function AssistantChat({ endpoint, namespace }: { endpoint: string; namespace: "assistantPage" | "portalAssistant" }) {
+export function AssistantChat({ endpoint, namespace }: { endpoint: string; namespace: "assistantPage" | "adminAssistant" | "portalAssistant" }) {
   const t = useTranslations(namespace);
   const locale = useLocale() as "so" | "en";
   const [q, setQ] = useState("");

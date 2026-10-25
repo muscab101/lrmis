@@ -3579,26 +3579,26 @@
   },
   "assistantPage": {
     "title": "AI assistant",
-    "subtitle": "Ask about income, outgoings, collections, arrears and registrations. Answers use the same reports you can open, limited to your districts.",
-    "help": "For example, compare this month with last month, or find which district owes the most.",
-    "placeholder": "Ask a question about the figures…",
-    "ask": "Ask",
-    "thinking": "Looking at the figures…",
-    "disclaimer": "AI can make mistakes. Check important figures in Reports before you use them.",
+    "subtitle": "Ask how LRMIS works and how to do your work in it. Answers fit your role and the pages you can open.",
+    "help": "Ask in Somali or English: how a page works, or the steps for a task.",
+    "placeholder": "Ask how to do something…",
+    "thinking": "Thinking…",
+    "disclaimer": "AI can make mistakes. If something doesn't match what you see, ask your supervisor.",
     "suggestions": {
-      "q1": "How much money came in and went out this month?",
-      "q2": "What is our income this year by type, compared with last year?",
-      "q3": "Which district has the most unpaid bills, and how old are they?",
-      "q4": "Summarise this year's finances in five bullet points."
+      "q1": "How does land go from Yet to register to Registered?",
+      "q2": "What can I do with my role?",
+      "q3": "How do I register a parcel and its owners?",
+      "q4": "What happens after the cashier takes the payment?"
     },
     "notConfigured": "The assistant isn't switched on yet. An administrator needs to add the AI key on the server.",
+    "ask": "Ask",
     "limit": "You've asked a lot of questions this hour. Try again later.",
     "failed": "The assistant couldn't answer just now.",
     "offline": "No connection. Check your network."
   },
   "portalAssistant": {
     "title": "Help assistant",
-    "subtitle": "Ask about your property, bills, documents or application. It only sees your own records.",
+    "subtitle": "Ask about your own land, bills, payments, certificate and ID card. It only sees your own records.",
     "help": "Ask in Somali or English.",
     "placeholder": "Ask a question…",
     "ask": "Ask",
@@ -3606,7 +3606,7 @@
     "disclaimer": "AI can make mistakes. For anything official, contact your district office.",
     "suggestions": {
       "q1": "How much do I owe and when is it due?",
-      "q2": "Where is my application now and what happens next?",
+      "q2": "How can I pay my bill?",
       "q3": "How do I get my title certificate?",
       "q4": "What are the fees and taxes for a house?"
     },
@@ -3983,5 +3983,24 @@
       "daysReconciled": "Days reconciled",
       "noCashiers": "No cashier collections this month yet."
     }
+  },
+  "adminAssistant": {
+    "title": "Admin assistant",
+    "subtitle": "Ask how the whole system and every role works, how districts work, what the system brings, and the figures for your districts.",
+    "help": "For example: compare districts' collections, explain the benefits to leaders, or how a role works.",
+    "placeholder": "Ask about the system, districts or figures…",
+    "thinking": "Looking into it…",
+    "disclaimer": "AI can make mistakes. Check important figures in Reports before you use them.",
+    "suggestions": {
+      "q1": "What are the benefits of this system for the administration?",
+      "q2": "How do districts, desks and cashiers work together?",
+      "q3": "Which district has the most unpaid bills, and how old are they?",
+      "q4": "How much money came in this month compared with last month?"
+    },
+    "notConfigured": "The assistant isn't switched on yet. Add the AI key on the server.",
+    "ask": "Ask",
+    "limit": "You've asked a lot of questions this hour. Try again later.",
+    "failed": "The assistant couldn't answer just now.",
+    "offline": "No connection. Check your network."
   }
 }

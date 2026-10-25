@@ -3579,35 +3579,35 @@
   },
   "assistantPage": {
     "title": "Kaaliyaha AI",
-    "subtitle": "Weydii dakhliga, kharashka, ururinta, deymaha iyo diiwaangelinta. Jawaabuhu waxay isticmaalaan warbixinada aad furi karto, degmooyinkaaga oo keliya.",
-    "help": "Tusaale ahaan, isbarbardhig bishan iyo bishii hore, ama ogow degmada ugu deyn badan.",
-    "placeholder": "Weydii su'aal ku saabsan tirooyinka…",
-    "ask": "Weydii",
-    "thinking": "Tirooyinka ayaan eegayaa…",
-    "disclaimer": "AI wuu khaldami karaa. Ka hubi tirooyinka muhiimka ah Warbixinada ka hor intaadan isticmaalin.",
+    "subtitle": "Weydii sida LRMIS u shaqeyso iyo sida shaqadaada loogu qabto. Jawaabuhu waxay ku habboon yihiin doorkaaga iyo boggaga aad furi karto.",
+    "help": "Ku weydii af-Soomaali ama Ingiriisi: sida bog u shaqeeyo, ama tallaabooyinka hawl.",
+    "placeholder": "Weydii sida wax loo sameeyo…",
+    "thinking": "Wuu fikirayaa…",
+    "disclaimer": "AI wuu khaldami karaa. Haddii wax aysan ku habboonayn waxa aad aragto, weydii kormeerahaaga.",
     "suggestions": {
-      "q1": "Immisa lacag ayaa soo gashay oo baxday bishan?",
-      "q2": "Waa maxay dakhligeenna sannadkan nooc kasta, marka la barbardhigo sannadkii hore?",
-      "q3": "Degmadee ayaa leh biilasha ugu badan ee aan la bixin, immisa ayayse jiraan?",
-      "q4": "Ku soo koob maaliyadda sannadkan shan qodob."
+      "q1": "Sidee dhul uga gudbaa 'Aan weli la diiwaangelin' ilaa 'La diiwaangeliyay'?",
+      "q2": "Maxaan ku samayn karaa doorkayga?",
+      "q3": "Sidee u diiwaangeliyaa dhul iyo milkiilayaashiisa?",
+      "q4": "Maxaa dhaca marka khasnajigu lacagta qaato?"
     },
     "notConfigured": "Kaaliyaha weli lama shidin. Maamule ayaa u baahan inuu furaha AI ku daro server-ka.",
-    "limit": "Saacaddan su'aalo badan ayaad weydiisay. Mar dambe isku day.",
+    "ask": "Weydii",
+    "limit": "Su'aalo badan ayaad saacaddan weydiisay. Mar dambe isku day.",
     "failed": "Kaaliyuhu hadda ma jawaabi karo.",
     "offline": "Xiriir ma jiro. Hubi shabakaddaada."
   },
   "portalAssistant": {
     "title": "Kaaliyaha caawinta",
-    "subtitle": "Weydii hantidaada, biilasha, dukumentiyada ama codsigaaga. Wuxuu arkaa diiwaankaaga oo keliya.",
+    "subtitle": "Weydii dhulkaaga, biilashaada, lacag-bixintaada, shahaadadaada iyo kaarkaaga aqoonsiga. Waxay aragtaa oo kaliya diiwaannadaada.",
     "help": "Ku weydii Soomaali ama Ingiriis.",
     "placeholder": "Weydii su'aal…",
     "ask": "Weydii",
     "thinking": "Diiwaankaaga ayaan hubinayaa…",
     "disclaimer": "AI wuu khaldami karaa. Wixii rasmi ah la xiriir xafiiska degmadaada.",
     "suggestions": {
-      "q1": "Immisa ayaa lagu leeyahay, goormaanse la bixinayaa?",
-      "q2": "Xaggee ayuu marayaa codsigaygu, maxaase xiga?",
-      "q3": "Sideen ku helaa shahaadada lahaanshaha?",
+      "q1": "Immisa ayaan ku leeyahay oo goorma ayay dhacaysaa?",
+      "q2": "Sidee u bixin karaa biilkayga?",
+      "q3": "Sidee ku helaa shahaadada lahaanshaha?",
       "q4": "Waa maxay khidmadaha iyo canshuuraha guriga?"
     },
     "notConfigured": "Kaaliyuhu weli ma diyaarsana. Fadlan la xiriir xafiiska degmadaada.",
@@ -3983,5 +3983,24 @@
       "daysReconciled": "Maalmaha la isku dheelitiray",
       "noCashiers": "Bishan weli ururin khasnaji ma jirto."
     }
+  },
+  "adminAssistant": {
+    "title": "Kaaliyaha maamulka",
+    "subtitle": "Weydii sida nidaamka oo dhan iyo door kasta u shaqeeyaan, sida degmooyinku u shaqeeyaan, faa'iidada nidaamka, iyo tirooyinka degmooyinkaaga.",
+    "help": "Tusaale: is barbar dhig ururinta degmooyinka, u sharax faa'iidada hoggaanka, ama sida door u shaqeeyo.",
+    "placeholder": "Weydii nidaamka, degmooyinka ama tirooyinka…",
+    "thinking": "Waan eegayaa…",
+    "disclaimer": "AI wuu khaldami karaa. Hubi tirooyinka muhiimka ah ee Warbixinnada ka hor intaadan isticmaalin.",
+    "suggestions": {
+      "q1": "Waa maxay faa'iidooyinka nidaamkan u leeyahay maamulka?",
+      "q2": "Sidee degmooyinka, miisaska iyo khasnajiyaashu u wada shaqeeyaan?",
+      "q3": "Degmadee leh biilasha ugu badan ee aan la bixin, immisa ayay jiraan?",
+      "q4": "Immisa lacag ah ayaa soo gashay bishan marka loo eego bishii hore?"
+    },
+    "notConfigured": "Kaaliyaha weli lama shidin. Ku dar furaha AI server-ka.",
+    "ask": "Weydii",
+    "limit": "Su'aalo badan ayaad saacaddan weydiisay. Mar dambe isku day.",
+    "failed": "Kaaliyuhu hadda ma jawaabi karo.",
+    "offline": "Xiriir ma jiro. Hubi shabakaddaada."
   }
 }

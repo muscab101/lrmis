@@ -32,7 +32,7 @@ function configuration() {
     ["dispatch", has("MESSAGES_DISPATCH_SECRET")],
     ["ussd", has("USSD_CALLBACK_KEY")],
     ["whatsapp", has("WHATSAPP_TOKEN") && has("WHATSAPP_APP_SECRET")],
-    ["assistant", has("ANTHROPIC_API_KEY")],
+    ["assistant", has("DEEPSEEK_API_KEY")],
   ] as const;
 }
 
