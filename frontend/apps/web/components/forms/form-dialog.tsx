@@ -23,10 +23,12 @@ interface Props {
   onDone?: (data: unknown) => void;
   /** Fields; `fe(name)` gives the translated error for a field. */
   children?: (fe: (name: string) => string | undefined) => React.ReactNode;
+  /** Extra classes for the dialog panel (e.g. wider for a long form). */
+  className?: string;
 }
 
 /** Confirm-style dialog around a server action: busy state, form-level error, field errors, refresh on success. */
-export function FormDialog({ open, onOpenChange, title, description, confirmLabel, destructive, submit, successMessage, onDone, children }: Props) {
+export function FormDialog({ open, onOpenChange, title, description, confirmLabel, destructive, submit, successMessage, onDone, children, className }: Props) {
   const tc = useTranslations("common");
   const vm = useValidationMessage();
   const router = useRouter();
@@ -47,6 +49,7 @@ export function FormDialog({ open, onOpenChange, title, description, confirmLabe
       cancelLabel={tc("cancel")}
       destructive={destructive}
       loading={busy}
+      className={className}
       onConfirm={async () => {
         setBusy(true);
         setError(null);

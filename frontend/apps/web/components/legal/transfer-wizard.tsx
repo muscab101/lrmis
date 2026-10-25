@@ -3,7 +3,6 @@
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
-import { Dialog, DialogDescription, DialogHeader, DialogTitle, SheetContent } from "@dhulka/ui/dialog";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
@@ -59,7 +58,10 @@ export function TransferWizard({
       </Button>
       <FormDialog
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setCreating(false);
+        }}
         title={t("startTransfer")}
         description={t("startTransferBody")}
         confirmLabel={t("createDraft")}
@@ -74,6 +76,7 @@ export function TransferWizard({
           })
         }
         onDone={(d) => router.push(`/transfers/${(d as { id: string }).id}`)}
+        className={creating ? "max-w-3xl" : undefined}
       >
         {(fe) => (
           <>
@@ -117,13 +120,34 @@ export function TransferWizard({
                       emptyText={tc("noResults")}
                     />
                   </div>
-                  {newOwner && (
+                  {newOwner && !creating && (
                     <Button type="button" size="sm" variant="outline" onClick={() => setCreating(true)}>
                       <UserPlus aria-hidden />
                       {t("newOwnerButton")}
                     </Button>
                   )}
                 </div>
+                {/* Register a new owner right here, below the search; when saved they join the new owners. */}
+                {newOwner && creating && (
+                  <div className="bg-muted/40 space-y-3 rounded-md border p-4">
+                    <div>
+                      <p className="text-sm font-semibold">{t("newOwnerTitle")}</p>
+                      <p className="text-muted-foreground text-xs">{t("newOwnerBody")}</p>
+                    </div>
+                    <PartyForm
+                      party={null}
+                      districts={newOwner.districts}
+                      districtId={newOwner.districtId}
+                      onCancel={() => setCreating(false)}
+                      submitLabel={t("newOwnerSave")}
+                      onSaved={(id, values) => {
+                        addPerson({ value: id, label: values.fullName, hint: values.idNumber || values.phone || "" });
+                        setCreating(false);
+                        toast.success(t("newOwnerAdded", { name: values.fullName }));
+                      }}
+                    />
+                  </div>
+                )}
                 {people.map((p, i) => (
                   <div key={p.party.value} className="grid grid-cols-[1fr_8rem_5rem_auto] items-center gap-2 text-sm">
                     <span className="truncate">{p.party.label}</span>
@@ -148,31 +172,6 @@ export function TransferWizard({
         )}
       </FormDialog>
 
-      {/* Register a new owner without leaving the transfer; they're added to the new owners when saved. */}
-      {newOwner && (
-        <Dialog open={creating} onOpenChange={setCreating}>
-          <SheetContent className="max-w-2xl" closeLabel={tc("close")}>
-            <DialogHeader>
-              <DialogTitle>{t("newOwnerTitle")}</DialogTitle>
-              <DialogDescription>{t("newOwnerBody")}</DialogDescription>
-            </DialogHeader>
-            {creating && (
-              <PartyForm
-                party={null}
-                districts={newOwner.districts}
-                districtId={newOwner.districtId}
-                onCancel={() => setCreating(false)}
-                submitLabel={t("newOwnerSave")}
-                onSaved={(id, values) => {
-                  addPerson({ value: id, label: values.fullName, hint: values.idNumber || values.phone || "" });
-                  setCreating(false);
-                  toast.success(t("newOwnerAdded", { name: values.fullName }));
-                }}
-              />
-            )}
-          </SheetContent>
-        </Dialog>
-      )}
     </>
   );
 }
