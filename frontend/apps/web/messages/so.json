@@ -87,7 +87,7 @@
   "status": {
     "active": "Firfircoon",
     "invited": "La casuumay",
-    "suspended": "La hakiyay",
+    "suspended": "La joojiyay",
     "deleted": "La tirtiray"
   },
   "errors": {
@@ -114,7 +114,7 @@
       "DUPLICATE_SUBMISSION": "Foomkan hadda ayaa la kaydinayaa. Fadlan wax yar sug.",
       "RATE_LIMITED": "Isku dayo aad u badan. Fadlan daqiiqad sug kadibna isku day.",
       "ACCOUNT_LOCKED": "Galitaanno badan oo fashilmay. Akoonkan waa la xiray {minutes} daqiiqo.",
-      "ACCOUNT_SUSPENDED": "Akoonkan waa la hakiyay. La xiriir maamulahaaga.",
+      "ACCOUNT_SUSPENDED": "Akoonkan waa la joojiyay. La xiriir maamulahaaga.",
       "INVALID_CREDENTIALS": "Iimaylka ama furaha sirta sax maaha. {remaining, plural, =0 {Akoonka hadda waa la xiray 15 daqiiqo.} one {# isku day ayaa kuu haray ka hor xiritaanka 15 daqiiqo.} other {# isku day ayaa kuu haray ka hor xiritaanka 15 daqiiqo.}}",
       "PASSWORD_WEAK": "Furahaas sirta waa daciif. Isticmaal ugu yaraan 10 xaraf oo isugu jira xarfo, tirooyin ama calaamado.",
       "PASSWORD_BREACHED": "Furahaas sirta waxa uu ka soo muuqday xog la xaday. Dooro mid kale.",
@@ -125,7 +125,7 @@
       "PROTECTED_ROLE": "Doorka Maamulaha Sare waa ilaalisan yahay lamana beddeli karo lamana tirtiri karo.",
       "ROLE_IN_USE": "Doorkan wali waxaa haysta {detail} isticmaale. Marka hore u wareeji door kale.",
       "SYSTEM_ROLE": "Doorarka nidaamka wax waa laga beddeli karaa laakiin lama tirtiri karo. Isticmaal \"Ku celi asalka\".",
-      "HAS_RECORDS": "Isticmaalahan wuxuu leeyahay diiwaanno sharci ama maaliyadeed, sidaa darteed waa la hakin karaa ama si jilicsan ayaa loo tirtiri karaa oo keliya.",
+      "HAS_RECORDS": "Isticmaalahan wuxuu leeyahay diiwaanno sharci ama maaliyadeed, sidaa darteed kaliya waa la joojin karaa ama la saari karaa, gebi ahaan lama tirtiri karo.",
       "DISTRICT_OUT_OF_SCOPE": "Waxaad bixin kartaa oo keliya degmooyinka adiga aad maamusho.",
       "SETUP_ALREADY_DONE": "Dejinta hore ayaa loo dhammaystiray. Gal halkii.",
       "GOOGLE_NO_STAFF_ACCOUNT": "Ma jiro akoon shaqaale oo leh iimaylkan Google. Weydii maamule inuu mid kuu sameeyo.",
@@ -697,7 +697,7 @@
       "export": "U dhoofi CSV",
       "kpiActive": "Firfircoon",
       "kpiInvited": "La casuumay",
-      "kpiSuspended": "La hakiyay",
+      "kpiSuspended": "La joojiyay",
       "searchPlaceholder": "Raadi magac, iimayl ama telefoon",
       "anyStatus": "Xaalad kasta (aan la tirtirin)",
       "anyRole": "Door kasta",
@@ -784,12 +784,12 @@
         "signoutTitle": "Fadhiyada",
         "signoutBody": "Hadda ka saar isticmaalaha qalab kasta.",
         "signout": "Ka saar meel kasta",
-        "suspendTitle": "Hakin akoonka",
-        "suspendBody": "Isla markiiba wuu joojinayaa galitaanka. Taariikhda waa la hayaa, akoonkana dib ayaa loo furi karaa.",
-        "suspend": "Hakin",
-        "reactivateTitle": "Dib u fur akoonka",
-        "reactivateBody": "U ogolow isticmaalahan inuu mar kale galo.",
-        "reactivate": "Dib u fur",
+        "suspendTitle": "Jooji akoonka",
+        "suspendBody": "Qof shaqada ka tagay. Hadda kadib ma geli karo; wixii uu qabtay waxay ku jiraan diiwaannada, akoonkana mar kale ayaa la furi karaa.",
+        "suspend": "Jooji",
+        "reactivateTitle": "Hawlgeli akoonka",
+        "reactivateBody": "U oggolow qofkan inuu mar kale galo.",
+        "reactivate": "Hawlgeli",
         "deleteTitle": "Tirtir akoonka",
         "deleteBody": "Tirtirka jilicsan wuxuu hayaa taariikhda. Tirtirka buuxa waa suurtagal oo keliya marka aysan jirin diiwaanno sharci ama maaliyadeed.",
         "delete": "Tirtir",
@@ -804,8 +804,8 @@
         "deletedTitle": "Akoonkan waa la tirtiray",
         "deletedBody": "Ma geli karo. Taariikhda waxaa lagu hayaa diiwaanka hubinta.",
         "done": {
-          "suspend": "Isticmaalaha waa la hakiyay",
-          "reactivate": "Isticmaalaha dib ayaa loo furay",
+          "suspend": "Isticmaalaha waa la joojiyay",
+          "reactivate": "Isticmaalaha waa la hawlgeliyay",
           "force_signout": "Isticmaalaha waa laga saaray meel kasta",
           "reset_2fa": "2FA dib ayaa loo dejiyay. Isticmaaluhu mar kale ayuu dejin doonaa galitaanka xiga.",
           "send_reset_link": "Xiriirka dib-u-dejinta waa la diray",
@@ -816,12 +816,12 @@
         },
         "confirm": {
           "suspend": {
-            "title": "Ma hakinaysaa isticmaalahan?",
-            "body": "{email} waa laga saarayaa waana laga joojinayaa galitaanka."
+            "title": "Ma joojinaysaa isticmaalahan?",
+            "body": "{email} waa laga saarayaa, mana geli karo ilaa akoonka la hawlgeliyo. Shaqadiisu waxay ku jirtaa diiwaannada."
           },
           "reactivate": {
-            "title": "Dib ma u furaysaa isticmaalahan?",
-            "body": "{email} mar kale ayuu geli karaa."
+            "title": "Ma hawlgelinaysaa isticmaalahan?",
+            "body": "{email} mar kale ayuu geli karaa isagoo leh doorarkiisa iyo degmooyinkiisa."
           },
           "force_signout": {
             "title": "Ka saar meel kasta?",
@@ -1106,7 +1106,7 @@
       "payments_refund": "Celin",
       "certificates_reprint": "Dib u daabac",
       "map_edit_geometry": "Beddel xuduudaha",
-      "users_manage": "Hakin / dib u fur",
+      "users_manage": "Jooji / hawlgeli",
       "users_reset_2fa": "Dib u deji 2FA",
       "users_reset_password": "Dib u deji furaha",
       "users_force_signout": "Ka saar meel kasta",
@@ -1264,7 +1264,7 @@
         "update": "Wax ka beddel xisaabaadka shaqaalaha: magaca, doorarka, degmooyinka iyo miiska lacagta.",
         "delete": "Ka saar xisaabaadka shaqaalaha.",
         "export": "Soo deji liiska isticmaalayaasha.",
-        "manage": "Hakad geli oo dib u fur xisaabaadka shaqaalaha.",
+        "manage": "Jooji shaqaalaha shaqada ka tagay, oo mar kale hawlgeli.",
         "reset_password": "Dhig furaha sirta cusub ama dir xiriir dib-u-dejin.",
         "reset_2fa": "Dib u deji gelitaanka labada tallaabo ee isticmaalaha.",
         "force_signout": "Isticmaalaha meel kasta ka saar."

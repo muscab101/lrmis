@@ -8,31 +8,39 @@ import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
-import { KeyRound, Mail, Trash2, Wand2 } from "lucide-react";
+import { KeyRound, Mail, Trash2, UserCheck, UserX, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { FormError } from "@/components/forms/form-error";
 import { PasswordInput } from "@/components/forms/password-input";
 import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
-import { changeUserEmailAction, deleteUserAction, setUserPasswordAction } from "./actions";
+import { changeUserEmailAction, deleteUserAction, setUserPasswordAction, userStatusAction } from "./actions";
 
 export interface UserRowPerms {
   changeEmail: boolean;
   resetPassword: boolean;
   remove: boolean;
+  /** Deactivate someone who left the job, or activate them again. */
+  manage: boolean;
 }
 
 /**
- * Change email, set password and delete for one row of the users list. Changing the email
- * and deleting need the admin's own password; the user is signed out either way.
+ * Deactivate / activate, change email, set password and delete for one row of the users list. Changing the
+ * email and deleting need the admin's own password; the user is signed out either way.
  */
-export function UserRowActions({ user, perms }: { user: { user_id: string; email: string | null; full_name: string | null }; perms: UserRowPerms }) {
+export function UserRowActions({
+  user,
+  perms,
+}: {
+  user: { user_id: string; email: string | null; full_name: string | null; status: string };
+  perms: UserRowPerms;
+}) {
   const t = useTranslations("admin.users.security");
   const tc = useTranslations("common");
   const vm = useValidationMessage();
   const router = useRouter();
-  const [open, setOpen] = useState<"email" | "password" | "delete" | null>(null);
+  const [open, setOpen] = useState<"email" | "password" | "delete" | "status" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
   const [email, setEmail] = useState(user.email ?? "");
@@ -40,7 +48,7 @@ export function UserRowActions({ user, perms }: { user: { user_id: string; email
   const [myPassword, setMyPassword] = useState("");
   const [hard, setHard] = useState(false);
 
-  const show = (which: "email" | "password" | "delete") => {
+  const show = (which: "email" | "password" | "delete" | "status") => {
     setError(null);
     setEmail(user.email ?? "");
     setNewPassword("");
@@ -49,6 +57,7 @@ export function UserRowActions({ user, perms }: { user: { user_id: string; email
     setOpen(which);
   };
   const close = (o: boolean) => !o && setOpen(null);
+  const deactivating = user.status === "active";
   async function run(fn: () => Promise<{ ok: true } | { ok: false; error: AppError }>, done: string) {
     setBusy(true);
     setError(null);
@@ -59,7 +68,7 @@ export function UserRowActions({ user, perms }: { user: { user_id: string; email
     setOpen(null);
     router.refresh();
   }
-  const key = (label: string, className: string, icon: React.ReactNode, which: "email" | "password" | "delete") => (
+  const key = (label: string, className: string, icon: React.ReactNode, which: "email" | "password" | "delete" | "status") => (
     <Tooltip content={label}>
       <Button variant="ghost" size="icon-sm" className={className} aria-label={label} onClick={() => show(which)}>
         {icon}
@@ -70,10 +79,28 @@ export function UserRowActions({ user, perms }: { user: { user_id: string; email
   return (
     <>
       <div className="flex justify-end gap-0.5">
+        {perms.manage && user.status === "active" && key(t("suspend"), "text-warning", <UserX aria-hidden />, "status")}
+        {perms.manage && user.status === "suspended" && key(t("reactivate"), "text-success", <UserCheck aria-hidden />, "status")}
         {perms.changeEmail && key(t("changeEmail"), "text-primary", <Mail aria-hidden />, "email")}
         {perms.resetPassword && key(t("setPassword"), "text-success", <KeyRound aria-hidden />, "password")}
         {perms.remove && key(t("delete"), "text-danger", <Trash2 aria-hidden />, "delete")}
       </div>
+
+      <ConfirmDialog
+        open={open === "status"}
+        onOpenChange={close}
+        title={t(deactivating ? "confirm.suspend.title" : "confirm.reactivate.title")}
+        description={t(deactivating ? "confirm.suspend.body" : "confirm.reactivate.body", { email: user.full_name || user.email || "" })}
+        confirmLabel={t(deactivating ? "suspend" : "reactivate")}
+        cancelLabel={tc("cancel")}
+        destructive={deactivating}
+        loading={busy}
+        onConfirm={() =>
+          run(() => userStatusAction({ userId: user.user_id, action: deactivating ? "suspend" : "reactivate" }), t(deactivating ? "done.suspend" : "done.reactivate"))
+        }
+      >
+        <FormError error={error} />
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={open === "email"}

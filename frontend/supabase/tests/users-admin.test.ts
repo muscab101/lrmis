@@ -57,6 +57,17 @@ describe("Users page: password and delete", () => {
   });
 });
 
+describe("Users page: deactivate someone who left the job", () => {
+  it("an admin deactivates a staff member (signed out, can't sign in) and can activate them again", async () => {
+    const u = await createStaff(db, boss, "leaver@gmail.com", ["cashier"], [hodan]);
+    await act(admin, u, "suspend");
+    expect((await profile(u)).status).toBe("suspended");
+    await act(admin, u, "reactivate");
+    expect((await profile(u)).status).toBe("active");
+    await expectError(act(admin, u, "reactivate"), "CONFLICT");
+  });
+});
+
 describe("every working permission has a role", () => {
   it("shift approval, certificate cancel and transfer cancel belong to the roles that do that work", async () => {
     const has = (role: string, perm: string) =>

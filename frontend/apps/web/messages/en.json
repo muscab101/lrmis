@@ -87,7 +87,7 @@
   "status": {
     "active": "Active",
     "invited": "Invited",
-    "suspended": "Suspended",
+    "suspended": "Deactivated",
     "deleted": "Deleted"
   },
   "errors": {
@@ -114,7 +114,7 @@
       "DUPLICATE_SUBMISSION": "This form is already being saved. Please wait a moment.",
       "RATE_LIMITED": "Too many attempts. Please wait a minute and try again.",
       "ACCOUNT_LOCKED": "Too many failed sign-ins. This account is locked for {minutes} minutes.",
-      "ACCOUNT_SUSPENDED": "This account is suspended. Contact your administrator.",
+      "ACCOUNT_SUSPENDED": "This account is deactivated. Contact your administrator.",
       "INVALID_CREDENTIALS": "Email or password is not correct. {remaining, plural, =0 {The account is now locked for 15 minutes.} one {# attempt left before a 15-minute lock.} other {# attempts left before a 15-minute lock.}}",
       "PASSWORD_WEAK": "That password is too weak. Use at least 10 characters with a mix of letters, numbers or symbols.",
       "PASSWORD_BREACHED": "That password has appeared in a data breach. Choose a different one.",
@@ -125,7 +125,7 @@
       "PROTECTED_ROLE": "The Super Admin role is protected and can't be changed or deleted.",
       "ROLE_IN_USE": "This role still has {detail} user(s). Move them to another role first.",
       "SYSTEM_ROLE": "System roles can be edited but not deleted. Use \"Reset to default\" instead.",
-      "HAS_RECORDS": "This user has legal or financial records, so they can only be suspended or soft-deleted.",
+      "HAS_RECORDS": "This user has legal or financial records, so they can only be deactivated or removed, not deleted for good.",
       "DISTRICT_OUT_OF_SCOPE": "You can only assign districts you manage yourself.",
       "SETUP_ALREADY_DONE": "Setup is already complete. Sign in instead.",
       "GOOGLE_NO_STAFF_ACCOUNT": "There's no staff account for this Google email. Ask an administrator to create one.",
@@ -697,7 +697,7 @@
       "export": "Export CSV",
       "kpiActive": "Active",
       "kpiInvited": "Invited",
-      "kpiSuspended": "Suspended",
+      "kpiSuspended": "Deactivated",
       "searchPlaceholder": "Search name, email or phone",
       "anyStatus": "Any status (not deleted)",
       "anyRole": "Any role",
@@ -784,12 +784,12 @@
         "signoutTitle": "Sessions",
         "signoutBody": "Sign the user out of every device now.",
         "signout": "Force sign-out",
-        "suspendTitle": "Suspend account",
-        "suspendBody": "Blocks sign-in immediately. History is kept and the account can be reactivated.",
-        "suspend": "Suspend",
-        "reactivateTitle": "Reactivate account",
-        "reactivateBody": "Allow this user to sign in again.",
-        "reactivate": "Reactivate",
+        "suspendTitle": "Deactivate account",
+        "suspendBody": "For someone who left the job. They can't sign in from now on; everything they did stays in the records, and the account can be activated again.",
+        "suspend": "Deactivate",
+        "reactivateTitle": "Activate account",
+        "reactivateBody": "Let this person sign in again.",
+        "reactivate": "Activate",
         "deleteTitle": "Delete account",
         "deleteBody": "Soft delete keeps history. Hard delete is only possible without legal or financial records.",
         "delete": "Delete",
@@ -804,8 +804,8 @@
         "deletedTitle": "This account is deleted",
         "deletedBody": "It can't sign in. History is kept in the audit log.",
         "done": {
-          "suspend": "User suspended",
-          "reactivate": "User reactivated",
+          "suspend": "User deactivated",
+          "reactivate": "User activated",
           "force_signout": "User signed out everywhere",
           "reset_2fa": "2FA reset. The user will set it up again at next sign-in.",
           "send_reset_link": "Reset link sent",
@@ -816,12 +816,12 @@
         },
         "confirm": {
           "suspend": {
-            "title": "Suspend this user?",
-            "body": "{email} will be signed out and blocked from signing in."
+            "title": "Deactivate this user?",
+            "body": "{email} is signed out and can't sign in again until the account is activated. Their work stays in the records."
           },
           "reactivate": {
-            "title": "Reactivate this user?",
-            "body": "{email} will be able to sign in again."
+            "title": "Activate this user?",
+            "body": "{email} can sign in again with their roles and districts."
           },
           "force_signout": {
             "title": "Sign out everywhere?",
@@ -1106,7 +1106,7 @@
       "payments_refund": "Refund",
       "certificates_reprint": "Reprint",
       "map_edit_geometry": "Edit geometry",
-      "users_manage": "Suspend / reactivate",
+      "users_manage": "Deactivate / activate",
       "users_reset_2fa": "Reset 2FA",
       "users_reset_password": "Reset password",
       "users_force_signout": "Force sign-out",
@@ -1264,7 +1264,7 @@
         "update": "Edit staff accounts: name, roles, districts and cash desk.",
         "delete": "Remove staff accounts.",
         "export": "Download the list of users.",
-        "manage": "Suspend and reactivate staff accounts.",
+        "manage": "Deactivate staff who left the job, and activate them again.",
         "reset_password": "Set a new password or send a reset link.",
         "reset_2fa": "Reset a user's two-step sign-in.",
         "force_signout": "Sign a user out everywhere."

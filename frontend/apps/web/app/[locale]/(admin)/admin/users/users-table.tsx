@@ -43,7 +43,7 @@ export function UsersTable({ rows, total, query, roles, districts, perms, me }: 
 
   const roleMap = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles]);
   // No actions on your own account or on one already deleted.
-  const canAct = (u: UserRow) => u.user_id !== me && u.status !== "deleted" && (perms.changeEmail || perms.resetPassword || perms.remove);
+  const canAct = (u: UserRow) => u.user_id !== me && u.status !== "deleted" && (perms.changeEmail || perms.resetPassword || perms.remove || perms.manage);
   const districtMap = useMemo(() => new Map(districts.map((d) => [d.id, locale === "so" ? d.name_so : d.name_en])), [districts, locale]);
 
   function setParams(patch: Record<string, string | number | null>) {
