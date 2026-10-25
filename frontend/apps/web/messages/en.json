@@ -82,7 +82,8 @@
       "pointsOfSale": "Points of sale",
       "yetToRegister": "Yet to register",
       "idCards": "ID cards",
-      "collections": "Collections"
+      "collections": "Collections",
+      "incomplete": "Incomplete"
     }
   },
   "status": {
@@ -4264,5 +4265,34 @@
     "deleteBody": "“{title}” and all its messages are deleted. This can't be undone.",
     "deleteFailed": "The chat couldn't be deleted.",
     "loadFailed": "The chat couldn't be opened."
+  },
+  "incomplete": {
+    "title": "Incomplete",
+    "subtitle": "Everything still unfinished in your districts, so nothing is forgotten. Open an item to finish it.",
+    "allDone": "Nothing is unfinished. Well done!",
+    "openList": "Open list",
+    "andMore": "and {count} more",
+    "groups": {
+      "owners": "Owners in draft",
+      "parcels": "Yet to register",
+      "invoices": "Unpaid invoices",
+      "certificates": "No certificate yet",
+      "transfers": "Transfers waiting",
+      "surveys": "Open surveys",
+      "siteChecks": "Site checks waiting",
+      "disputes": "Open disputes",
+      "permits": "Permits waiting"
+    },
+    "hints": {
+      "owners": "Saved but not registered yet.",
+      "parcels": "Land saved but not registered yet.",
+      "invoices": "Still owed, oldest due first.",
+      "certificates": "Registered land waiting for its certificate (usually still unpaid).",
+      "transfers": "Drafts and transfers waiting for approval.",
+      "surveys": "Assigned, in progress or sent back.",
+      "siteChecks": "A surveyor still has to check the land exists.",
+      "disputes": "Disputes not yet resolved.",
+      "permits": "Drafts and permits waiting for a decision."
+    }
   }
 }

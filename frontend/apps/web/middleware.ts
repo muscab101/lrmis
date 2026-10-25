@@ -13,7 +13,7 @@ const AUTH_FLOW = [/^\/mfa$/, /^\/change-password$/, /^\/reset-password$/];
 const CITIZEN = [/^\/portal(\/|$)/];
 /** Top-level staff sections. Anything else is unknown and gets the 404 page, not a sign-in prompt. */
 const STAFF =
-  /^\/(dashboard|map|applications|parcels|owners|surveys|valuation|billing|invoices|payments|collections|cashier|points-of-sale|accounting|transfers|disputes|permits|documents|reports|assistant|messages|locations|audit|admin)(\/|$)/;
+  /^\/(dashboard|incomplete|map|applications|parcels|owners|surveys|valuation|billing|invoices|payments|collections|cashier|points-of-sale|accounting|transfers|disputes|permits|documents|reports|assistant|messages|locations|audit|admin)(\/|$)/;
 
 const IDLE_COOKIE = "dhulka_last_seen";
 const IDLE_MINUTES = Number(process.env.SESSION_IDLE_MINUTES ?? 30);

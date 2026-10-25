@@ -82,7 +82,8 @@
       "pointsOfSale": "Goobaha lacag bixinta",
       "yetToRegister": "Weli lama diiwaangelin",
       "idCards": "Kaararka aqoonsiga",
-      "collections": "Ururinta lacagta"
+      "collections": "Ururinta lacagta",
+      "incomplete": "Aan dhammaystirnayn"
     }
   },
   "status": {
@@ -4264,5 +4265,34 @@
     "deleteBody": "“{title}” iyo dhammaan fariimihiisa waa la tirtirayaa. Dib looma soo celin karo.",
     "deleteFailed": "Wada-hadalka lama tirtiri karin.",
     "loadFailed": "Wada-hadalka lama furi karin."
+  },
+  "incomplete": {
+    "title": "Aan dhammaystirnayn",
+    "subtitle": "Wax kasta oo aan weli dhammaan degmooyinkaaga, si aan waxba loo illaawin. Fur shay si aad u dhammaystirto.",
+    "allDone": "Wax aan dhammaystirnayn ma jiraan. Mahadsanid!",
+    "openList": "Fur liiska",
+    "andMore": "iyo {count} kale",
+    "groups": {
+      "owners": "Masuuliyiin qabyo ah",
+      "parcels": "Weli lama diiwaangelin",
+      "invoices": "Biilal aan la bixin",
+      "certificates": "Weli shahaado ma leh",
+      "transfers": "Wareejinno sugaya",
+      "surveys": "Sahanno furan",
+      "siteChecks": "Hubin goob oo sugaysa",
+      "disputes": "Muranno furan",
+      "permits": "Ogolaansho sugaya"
+    },
+    "hints": {
+      "owners": "La kaydiyay laakiin weli lama diiwaangelin.",
+      "parcels": "Dhul la kaydiyay oo weli aan la diiwaangelin.",
+      "invoices": "Weli lagu leeyahay, kuwa ugu horreeya.",
+      "certificates": "Dhul la diiwaangeliyay oo sugaya shahaadadiisa (badanaa weli lama bixin).",
+      "transfers": "Qabyo iyo wareejinno sugaya ansixin.",
+      "surveys": "La qoondeeyay, socda ama dib loo celiyay.",
+      "siteChecks": "Sahamiye weli waa inuu hubiyaa in dhulku jiro.",
+      "disputes": "Muranno weli aan la xallin.",
+      "permits": "Qabyo iyo ogolaansho sugaya go'aan."
+    }
   }
 }
