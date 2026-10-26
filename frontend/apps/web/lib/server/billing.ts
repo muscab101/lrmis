@@ -85,7 +85,8 @@ export async function listInvoices(opts: { filter: InvoiceFilter; q: string; run
     }
   }
   const page = opts.page ?? 1;
-  const res = await req.order("issue_date", { ascending: false }).order("number", { ascending: false }).range((page - 1) * 50, page * 50 - 1);
+  // A tax bill and its service charge share a number: keep them together, INV before SV.
+  const res = await req.order("number_key", { ascending: false }).order("number", { ascending: true }).range((page - 1) * 50, page * 50 - 1);
   return { rows: unwrap(res, "invoices") as unknown as InvoiceRow[], total: res.count ?? 0 };
 }
 
