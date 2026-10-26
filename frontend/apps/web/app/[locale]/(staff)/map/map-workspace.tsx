@@ -32,14 +32,12 @@ export function MapWorkspace({
   canEditLocations,
   canViewParcels,
   districts,
-  pins,
 }: {
   initialView: MapView | undefined;
   extent: [number, number, number, number] | null;
   canEditLocations: boolean;
   canViewParcels: boolean;
   districts: { id: string; code: string; name_so: string; name_en: string; has_geom: boolean | null }[];
-  pins: GeoJSON.FeatureCollection | null;
 }) {
   const t = useTranslations("map");
   const tc = useTranslations("common");
@@ -47,7 +45,7 @@ export function MapWorkspace({
   const mapRef = useRef<DhulkaMapHandle>(null);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [selected, setSelected] = useState<{ layer: string; props: Record<string, unknown>; sectors?: Record<string, unknown>[] } | null>(null);
+  const [selected, setSelected] = useState<{ layer: string; props: Record<string, unknown> } | null>(null);
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null);
   const [zoom, setZoom] = useState(initialView?.zoom ?? 12);
   const [search, setSearch] = useState<ComboOption[]>([]);
@@ -92,23 +90,10 @@ export function MapWorkspace({
   const onFeatureClick = useCallback(
     (f: MapGeoJSONFeature | null, lngLat: { lng: number; lat: number }) => {
       setCursor(lngLat);
-      if (f?.source === "pins") {
-        // A section pin, or the ring of sectors that share its point: show the section and its sectors.
-        const p = f.properties;
-        const sectionId = p.level === "section" ? p.id : p.inherited ? p.section_id : null;
-        const section = sectionId ? pins?.features.find((x) => x.properties?.level === "section" && x.properties.id === sectionId) : undefined;
-        if (section?.properties) {
-          const sectors = (pins?.features ?? []).filter((x) => x.properties?.level === "sector" && x.properties.section_id === sectionId).map((x) => x.properties!);
-          setSelected({ layer: "sections", props: section.properties, sectors });
-          return;
-        }
-        setSelected({ layer: p.level === "sector" ? "sectors" : "sections", props: p });
-        return;
-      }
       const layer = f?.sourceLayer ?? f?.layer.id;
       setSelected(f && layer ? { layer, props: f.properties } : null);
     },
-    [pins],
+    [],
   );
 
   const searchNeighbourhoods = useCallback(
@@ -146,7 +131,6 @@ export function MapWorkspace({
         onFeatureClick={onFeatureClick}
         onViewChange={onViewChange}
         parcels={canViewParcels}
-        pins={pins}
       />
 
       {/* Search */}
@@ -283,21 +267,6 @@ export function MapWorkspace({
                 <dd>{t(`pin_${String(selected.props.confidence)}`)}</dd>
                 <dt className="text-muted-foreground">{t("pinSource")}</dt>
                 <dd className="text-xs text-muted-foreground">{String(selected.props.source ?? "—")}</dd>
-              </>
-            )}
-            {selected.sectors && selected.sectors.length > 0 && (
-              <>
-                <dt className="text-muted-foreground">{t("pinSectors", { count: selected.sectors.length })}</dt>
-                <dd>
-                  <ul className="max-h-32 space-y-0.5 overflow-y-auto text-xs">
-                    {selected.sectors.map((s) => (
-                      <li key={String(s.id)}>
-                        {name(s)}
-                        {!s.inherited && <span className="text-muted-foreground"> · {t("pinOwnPoint")}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
               </>
             )}
             {selected.props.kind !== undefined && (

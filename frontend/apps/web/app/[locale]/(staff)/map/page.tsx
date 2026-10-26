@@ -25,10 +25,9 @@ export default async function MapPage({
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "map.view");
   const supabase = await createClient();
-  const [{ data: extent }, { data: districts }, { data: pins }] = await Promise.all([
+  const [{ data: extent }, { data: districts }] = await Promise.all([
     supabase.rpc("locations_extent"),
     supabase.from("districts").select("id, code, name_so, name_en, has_geom").is("deleted_at", null).order("code"),
-    supabase.rpc("location_pins"),
   ]);
   const { c } = await searchParams;
   return (
@@ -38,7 +37,6 @@ export default async function MapPage({
       canEditLocations={viewer.can("locations.update")}
       canViewParcels={viewer.can("parcels.view")}
       districts={districts ?? []}
-      pins={(pins as GeoJSON.FeatureCollection | null) ?? null}
     />
   );
 }

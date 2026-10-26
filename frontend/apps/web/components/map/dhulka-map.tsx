@@ -32,15 +32,13 @@ interface Props {
   interactive?: boolean;
   /** Staff maps also show parcels (tiles honour the user's districts). */
   parcels?: boolean;
-  /** Section/sector pins (public.location_pins). */
-  pins?: GeoJSON.FeatureCollection | null;
 }
 
-const CLICKABLE = ["section-pins", "sector-pins", "facilities-circle", "parcels-fill", "neighbourhoods-fill"];
+const CLICKABLE = ["facilities-circle", "parcels-fill", "neighbourhoods-fill"];
 
 /** MapLibre map with Dhulka base maps and PostGIS boundary tiles. */
 export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
-  { className, initialView, initialBounds, base = "streets", visible, onFeatureClick, onViewChange, interactive = true, parcels = false, pins },
+  { className, initialView, initialBounds, base = "streets", visible, onFeatureClick, onViewChange, interactive = true, parcels = false },
   ref,
 ) {
   const locale = useLocale() as "so" | "en";
@@ -115,10 +113,6 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
       hovered = f?.id;
       if (hovered !== undefined) m.setFeatureState({ source: "neighbourhoods", sourceLayer: "neighbourhoods", id: hovered }, { hover: true });
     });
-    for (const id of ["section-pins", "sector-pins"]) {
-      m.on("mouseenter", id, () => (m.getCanvas().style.cursor = "pointer"));
-      m.on("mouseleave", id, () => (m.getCanvas().style.cursor = ""));
-    }
     m.on("mouseleave", "neighbourhoods-fill", () => {
       m.getCanvas().style.cursor = "";
       if (hovered !== undefined) m.setFeatureState({ source: "neighbourhoods", sourceLayer: "neighbourhoods", id: hovered }, { hover: false });
@@ -159,14 +153,6 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     else m.once("load", apply);
   }, [base, visible]);
 
-  // Pins (re)applied once the style is ready; the map is recreated on locale change.
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !pins) return;
-    const apply = () => (m.getSource("pins") as maplibregl.GeoJSONSource | undefined)?.setData(pins);
-    if (loaded.current) apply();
-    else m.once("load", apply);
-  }, [pins, locale, parcels]);
 
   // MapLibre's CSS sets `.maplibregl-map { position: relative }`, so it gets its own inner
   // element; the wrapper keeps whatever positioning the caller gives it.
