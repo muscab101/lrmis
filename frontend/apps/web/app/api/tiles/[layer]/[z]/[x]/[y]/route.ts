@@ -33,18 +33,19 @@ export async function GET(
       "content-type": "application/json",
     },
     body: JSON.stringify({ p_layer: layer, p_z: zi, p_x: xi, p_y: yi }),
-    next: { revalidate: 300 },
+    next: { revalidate: 60 },
   });
   if (!res.ok) return new NextResponse(null, { status: 502 });
 
   // PostgREST returns bytea as a JSON string of hex ("\\x1a2b…").
   const hex = (await res.json()) as string | null;
   const body = Buffer.from((hex ?? "").replace(/^\\x/, ""), "hex");
-  if (body.byteLength === 0) return new NextResponse(null, { status: 204, headers: { "cache-control": "public, max-age=300" } });
+  if (body.byteLength === 0) return new NextResponse(null, { status: 204, headers: { "cache-control": "public, max-age=60" } });
   return new NextResponse(body, {
     headers: {
       "content-type": "application/vnd.mapbox-vector-tile",
-      "cache-control": "public, max-age=300, s-maxage=600, stale-while-revalidate=3600",
+      // Short: an edited boundary shows within a minute or two (a long stale window kept old borders for an hour).
+      "cache-control": "public, max-age=60, s-maxage=120, stale-while-revalidate=60",
     },
   });
 }
