@@ -31,7 +31,7 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
         {collapsed ? <BrandMark title={tc("appShortName")} /> : <BrandLockup name={tc("appShortName")} sub={tc("orgName")} inverted />}
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-2.5 py-5">
+      <div className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-2.5 py-5">
         {groups.map((group) => (
           <div key={group.key}>
             {!collapsed && (

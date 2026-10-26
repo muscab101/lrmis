@@ -5,3 +5,11 @@
 @source "../../../packages/ui/src";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Scrolls, but shows no scroll bar (the sidebar menu). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
