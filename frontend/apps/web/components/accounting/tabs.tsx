@@ -6,6 +6,13 @@ import { ArrowDownLeft, ArrowUpRight, Building2, Landmark, PiggyBank, Scale } fr
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { AssetActions, AssetButton, DepreciateButton } from "@/components/accounting/asset-forms";
 import {
+  PayoutButton,
+  PayoutDecide,
+  RuleActions,
+  RuleButton,
+  type FeeTypeLite,
+} from "@/components/accounting/commission-forms";
+import {
   MovementActions,
   MovementButton,
   type Acct,
@@ -15,6 +22,13 @@ import {
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Link } from "@/i18n/navigation";
 import type { Viewer } from "@/lib/server/auth";
+import {
+  commissionSummary,
+  generalLedger,
+  listCommissionRules,
+  listPayouts,
+} from "@/lib/server/finance";
+import { createClient } from "@/lib/supabase/server";
 import {
   accountingDistricts,
   accountingOverview,
@@ -699,6 +713,368 @@ export async function AssetsTab({
           </Table>
         )}
       </div>
+    </div>
+  );
+}
+
+const RULE_TONE: Record<string, StatusTone> = {
+  draft: "draft",
+  approved: "approved",
+  retired: "partial",
+};
+const PAYOUT_TONE: Record<string, StatusTone> = {
+  pending: "pending",
+  paid: "approved",
+  rejected: "rejected",
+};
+
+/** Commission and revenue-sharing rules, what each party has earned and is owed, and payouts. */
+export async function CommissionsTab({
+  from,
+  to,
+  viewer,
+  accounts,
+  districts,
+}: {
+  from: string;
+  to: string;
+  viewer: Viewer;
+  accounts: Acct[];
+  districts: Dist[];
+}) {
+  const { t, usd, name, day } = await tools();
+  const supabase = await createClient();
+  const [rules, summary, payouts, { data: fees }] = await Promise.all([
+    listCommissionRules(),
+    commissionSummary(from, to),
+    listPayouts(),
+    supabase.from("fee_types").select("id, name_so, name_en").eq("active", true).order("name_en"),
+  ]);
+  const feeTypes = (fees ?? []) as FeeTypeLite[];
+  const me = viewer.user.id;
+  const can = { edit: viewer.can("accounting.update"), approve: viewer.can("payments.approve") };
+  const which = (r: (typeof rules)[number]) =>
+    [
+      r.method ? t(`rules.methods.${r.method}`) : null,
+      r.wallet ? t(`channels.${r.wallet}`) : null,
+      r.fee_type_id ? name(feeTypes.find((f) => f.id === r.fee_type_id)) : null,
+      r.district_id ? name(districts.find((d) => d.id === r.district_id)) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || t("rules.allPayments");
+  const rate = (r: (typeof rules)[number]) =>
+    [r.pct > 0 ? `${r.pct}%` : null, r.fixed_amount > 0 ? usd(r.fixed_amount) : null]
+      .filter(Boolean)
+      .join(" + ");
+
+  return (
+    <div className="space-y-4">
+      <Panel
+        title={t("rules.title")}
+        action={can.edit ? <RuleButton feeTypes={feeTypes} districts={districts} /> : undefined}
+      >
+        <p className="text-muted-foreground -mt-2 mb-3 text-sm">{t("rules.help")}</p>
+        {rules.length === 0 ? (
+          <p className="text-muted-foreground text-sm">{t("rules.empty")}</p>
+        ) : (
+          <div className="-mx-4 overflow-x-auto sm:-mx-5">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("rules.name")}</TableHead>
+                  <TableHead>{t("rules.party")}</TableHead>
+                  <TableHead>{t("rules.which")}</TableHead>
+                  <TableHead className="text-end">{t("rules.rate")}</TableHead>
+                  <TableHead>{t("rules.period")}</TableHead>
+                  <TableHead>{t("statusLabel")}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rules.map((r) => (
+                  <TableRow
+                    key={r.id}
+                    className={r.status === "retired" ? "text-muted-foreground" : ""}
+                  >
+                    <TableCell className="text-sm">
+                      <span className="font-medium">{r.name}</span>
+                      <span className="text-muted-foreground block text-xs">
+                        <Mono>{r.code}</Mono> v{r.version} · {t(`rules.kinds.${r.kind}`)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm">{r.party}</TableCell>
+                    <TableCell className="text-sm">{which(r)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-end text-sm font-medium tabular-nums">
+                      {rate(r)}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      {day(r.effective_from)} –{" "}
+                      {r.effective_to ? day(r.effective_to) : t("rules.open")}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge tone={RULE_TONE[r.status] ?? "draft"}>
+                        {t(`rules.status.${r.status}`)}
+                      </StatusBadge>
+                      {r.status === "draft" && r.created_by === me && can.approve && (
+                        <span className="text-muted-foreground block text-xs">
+                          {t("rules.needsOther")}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RuleActions
+                        row={r}
+                        me={me}
+                        feeTypes={feeTypes}
+                        districts={districts}
+                        can={can}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Panel>
+
+      <Panel title={t("payouts.summaryTitle")}>
+        {summary.length === 0 ? (
+          <p className="text-muted-foreground text-sm">{t("payouts.nothing")}</p>
+        ) : (
+          <div className="-mx-4 overflow-x-auto sm:-mx-5">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("rules.party")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.payments")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.base")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.accrued")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.reversed")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.paid")}</TableHead>
+                  <TableHead className="text-end">{t("payouts.cols.payable")}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {summary.map((s) => (
+                  <TableRow key={`${s.party}|${s.payable_account}`}>
+                    <TableCell className="text-sm font-medium">
+                      {s.party}
+                      <span className="text-muted-foreground block text-xs">
+                        {t(`rules.kinds.${s.kind}`)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{s.payments}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{usd(s.base)}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">
+                      {usd(s.accrued)}
+                    </TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">
+                      {usd(s.reversed)}
+                    </TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">{usd(s.paid)}</TableCell>
+                    <TableCell className="text-end text-sm font-semibold tabular-nums">
+                      {usd(s.payable)}
+                      {s.in_payout > 0 && (
+                        <span className="text-muted-foreground block text-xs font-normal">
+                          {t("payouts.inPayout", { amount: usd(s.in_payout) })}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {viewer.can("accounting.create") && s.payable - s.in_payout > 0 && (
+                        <PayoutButton
+                          party={s.party}
+                          payable={s.payable_account}
+                          amount={s.payable - s.in_payout}
+                          accounts={accounts}
+                        />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Panel>
+
+      {payouts.length > 0 && (
+        <Panel title={t("payouts.title")}>
+          <div className="-mx-4 overflow-x-auto sm:-mx-5">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("movement.number")}</TableHead>
+                  <TableHead>{t("rules.party")}</TableHead>
+                  <TableHead>{t("payouts.upto")}</TableHead>
+                  <TableHead className="text-end">{t("movement.amount")}</TableHead>
+                  <TableHead>{t("statusLabel")}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payouts.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="text-sm">
+                      <Mono>{p.number}</Mono>
+                      {p.reference && (
+                        <span className="text-muted-foreground block text-xs">{p.reference}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">{p.party}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">{day(p.upto)}</TableCell>
+                    <TableCell className="text-end text-sm font-medium tabular-nums">
+                      {usd(p.amount)}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge tone={PAYOUT_TONE[p.status] ?? "draft"}>
+                        {t(`payouts.status.${p.status}`)}
+                      </StatusBadge>
+                      {p.decision_note && (
+                        <span className="text-muted-foreground block max-w-48 truncate text-xs">
+                          {p.decision_note}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {p.status === "pending" &&
+                        viewer.can("payments.approve") &&
+                        p.created_by !== me && <PayoutDecide id={p.id} number={p.number} />}
+                      {p.status === "pending" && p.created_by === me && (
+                        <span className="text-muted-foreground text-xs">
+                          {t("payouts.waiting")}
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Panel>
+      )}
+    </div>
+  );
+}
+
+/** One account over the period: opening balance, every posting with the balance after it, closing balance. */
+export async function LedgerTab({
+  account,
+  from,
+  to,
+  districtId,
+  accounts,
+  districts,
+}: {
+  account: string;
+  from: string;
+  to: string;
+  districtId: string;
+  accounts: Acct[];
+  districts: Dist[];
+}) {
+  const { t, usd, name, day } = await tools();
+  const gl = await generalLedger(account, from, to, districtId || null);
+  const closing = gl.lines.at(-1)?.balance ?? gl.opening;
+  const districtName = (id: string | null) => (id ? name(districts.find((d) => d.id === id)) : "");
+  return (
+    <div className="bg-card overflow-hidden rounded-xl border">
+      <form className="flex flex-wrap items-end gap-2 border-b p-3 text-sm">
+        <input type="hidden" name="tab" value="ledger" />
+        <input type="hidden" name="from" value={from} />
+        <input type="hidden" name="to" value={to} />
+        <label className="space-y-1">
+          <span className="text-muted-foreground block text-xs">{t("account")}</span>
+          <select
+            name="account"
+            defaultValue={account}
+            className="bg-background h-9 rounded-md border px-2 text-sm"
+          >
+            {accounts.map((a) => (
+              <option key={a.code} value={a.code}>
+                {a.code} · {name(a)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-1">
+          <span className="text-muted-foreground block text-xs">{t("district")}</span>
+          <select
+            name="district"
+            defaultValue={districtId}
+            className="bg-background h-9 rounded-md border px-2 text-sm"
+          >
+            <option value="">{t("ledger.allDistricts")}</option>
+            {districts.map((d) => (
+              <option key={d.id} value={d.id}>
+                {name(d)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="hover:bg-muted h-9 rounded-md border px-3 text-sm">
+          {t("show")}
+        </button>
+        <span className="ms-auto flex flex-wrap gap-x-5 text-sm">
+          <span>{t("ledger.opening", { amount: usd(gl.opening) })}</span>
+          <span>{t("ledger.movement", { debit: usd(gl.debit), credit: usd(gl.credit) })}</span>
+          <span className="font-semibold">{t("ledger.closing", { amount: usd(closing) })}</span>
+        </span>
+      </form>
+      {gl.lines.length === 0 ? (
+        <p className="text-muted-foreground p-6 text-center text-sm">{t("ledger.empty")}</p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("date")}</TableHead>
+              <TableHead>{t("ledger.entry")}</TableHead>
+              <TableHead>{t("memo")}</TableHead>
+              <TableHead className="text-end">{t("debit")}</TableHead>
+              <TableHead className="text-end">{t("credit")}</TableHead>
+              <TableHead className="text-end">{t("balance")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow className="text-muted-foreground">
+              <TableCell className="text-sm" colSpan={5}>
+                {t("ledger.openingRow", { date: day(from) })}
+              </TableCell>
+              <TableCell className="text-end text-sm tabular-nums">{usd(gl.opening)}</TableCell>
+            </TableRow>
+            {gl.lines.map((l, i) => (
+              <TableRow key={`${l.entry_id}-${i}`}>
+                <TableCell className="whitespace-nowrap text-sm">{day(l.date)}</TableCell>
+                <TableCell className="text-sm">
+                  <Mono className="text-xs">{l.number}</Mono>
+                  <span className="text-muted-foreground block text-xs">
+                    {t.has(`sources.${l.source}`) ? t(`sources.${l.source}`) : l.source}
+                  </span>
+                </TableCell>
+                <TableCell className="text-sm">
+                  {l.memo}
+                  {l.district_id && !districtId && (
+                    <span className="text-muted-foreground block text-xs">
+                      {districtName(l.district_id)}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-end text-sm tabular-nums">
+                  {l.debit > 0 ? usd(l.debit) : ""}
+                </TableCell>
+                <TableCell className="text-end text-sm tabular-nums">
+                  {l.credit > 0 ? usd(l.credit) : ""}
+                </TableCell>
+                <TableCell className="text-end text-sm font-medium tabular-nums">
+                  {usd(l.balance)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }

@@ -41,8 +41,8 @@ describe("catalog", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.permissions`)).toBe(217);
   });
 
-  it("seeds the 23 default roles with a protected Super Admin", async () => {
-    expect(await scalar<number>(db, `select count(*)::int from public.roles where is_system`)).toBe(23);
+  it("seeds the 24 default roles with a protected Super Admin", async () => {
+    expect(await scalar<number>(db, `select count(*)::int from public.roles where is_system`)).toBe(24);
     const sa = await db.query<{ is_protected: boolean; grants_all: boolean }>(
       `select is_protected, grants_all from public.roles where key = 'super_admin'`,
     );

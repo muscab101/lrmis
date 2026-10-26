@@ -4,11 +4,23 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Banknote } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import { BankPaymentButton, ProviderToggles, ReconcileButton, ReversalQueue, ShiftApprovals, UnmatchedList } from "@/components/payments/queues";
-import { Link } from "@/i18n/navigation";
+import {
+  BankPaymentButton,
+  ProviderToggles,
+  ReversalQueue,
+  ShiftApprovals,
+  UnmatchedList,
+} from "@/components/payments/queues";
+import { Link, redirect } from "@/i18n/navigation";
 import { PaymentActions } from "@/components/payments/payment-actions";
 import { requirePermission } from "@/lib/server/auth";
-import { listPayments, listProviders, listReconBatches, listReversals, listShifts, paymentsCounts, reconLines } from "@/lib/server/payments";
+import {
+  listPayments,
+  listProviders,
+  listReversals,
+  listShifts,
+  paymentsCounts,
+} from "@/lib/server/payments";
 import { getProvider } from "@/lib/server/providers";
 
 export async function generateMetadata() {
@@ -16,92 +28,75 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const TABS = ["payments", "unmatched", "reversals", "shifts", "reconciliation", "providers"] as const;
+const TABS = ["payments", "unmatched", "reversals", "shifts", "providers"] as const;
 type Tab = (typeof TABS)[number];
 
-export default async function PaymentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
+export default async function PaymentsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "payments.view");
   const t = await getTranslations("payments");
   const format = await getFormatter();
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "payments";
+  // Statements are worked, explained and approved in Collections now.
+  if (sp.tab === "reconciliation")
+    redirect({
+      href: `/collections?tab=statements${sp.batch ? `&batch=${sp.batch}` : ""}`,
+      locale,
+    });
+  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "")
+    ? (sp.tab as Tab)
+    : "payments";
   const counts = await paymentsCounts();
-  const usd = (n: number | null) => (n == null ? "—" : format.number(Number(n), { style: "currency", currency: "USD" }));
-  const badge: Partial<Record<Tab, number>> = { unmatched: counts.unmatched, reversals: counts.reversals_pending, shifts: counts.shifts_to_approve };
+  const usd = (n: number | null) =>
+    n == null ? "—" : format.number(Number(n), { style: "currency", currency: "USD" });
+  const badge: Partial<Record<Tab, number>> = {
+    unmatched: counts.unmatched,
+    reversals: counts.reversals_pending,
+    shifts: counts.shifts_to_approve,
+  };
 
   let body: React.ReactNode;
-  if (tab === "unmatched") body = <UnmatchedList rows={await listPayments({ status: "unmatched" })} canMatch={viewer.can("payments.approve")} />;
-  else if (tab === "reversals") body = <ReversalQueue rows={await listReversals(sp.all === "1" ? "any" : "pending")} me={viewer.user.id} canDecide={viewer.can("payments.approve")} />;
-  else if (tab === "shifts") body = <ShiftApprovals rows={await listShifts(sp.all === "1" ? "any" : "closed")} me={viewer.user.id} canApprove={viewer.can("payments.approve")} />;
+  if (tab === "unmatched")
+    body = (
+      <UnmatchedList
+        rows={await listPayments({ status: "unmatched" })}
+        canMatch={viewer.can("payments.approve")}
+      />
+    );
+  else if (tab === "reversals")
+    body = (
+      <ReversalQueue
+        rows={await listReversals(sp.all === "1" ? "any" : "pending")}
+        me={viewer.user.id}
+        canDecide={viewer.can("payments.approve")}
+      />
+    );
+  else if (tab === "shifts")
+    body = (
+      <ShiftApprovals
+        rows={await listShifts(sp.all === "1" ? "any" : "closed")}
+        me={viewer.user.id}
+        canApprove={viewer.can("payments.approve")}
+      />
+    );
   else if (tab === "providers") {
     const providers = await listProviders();
-    const configured = Object.fromEntries(providers.map((p) => [p.code, getProvider(p.code)?.configured() as boolean | undefined]));
-    body = <ProviderToggles providers={providers} configured={configured} canEdit={viewer.can("settings.update")} />;
-  } else if (tab === "reconciliation") {
-    const [batches, providers] = await Promise.all([listReconBatches(), listProviders()]);
-    const batchId = sp.batch && /^[0-9a-f-]{36}$/i.test(sp.batch) ? sp.batch : batches[0]?.id;
-    const lines = batchId ? await reconLines(batchId) : [];
+    const configured = Object.fromEntries(
+      providers.map((p) => [p.code, getProvider(p.code)?.configured() as boolean | undefined]),
+    );
     body = (
-      <>
-        <div className="flex justify-end border-b p-3">{viewer.can("reconciliation.create") && <ReconcileButton providers={providers.filter((p) => p.code !== "cash")} />}</div>
-        {batches.length === 0 ? (
-          <EmptyState icon={<Banknote />} title={t("noReconciliations")} description={t("noReconciliationsBody")} />
-        ) : (
-          <div className="grid gap-0 md:grid-cols-[18rem_1fr]">
-            <ul className="divide-y border-e">
-              {batches.map((b) => (
-                <li key={b.id}>
-                  <Link href={`/payments?tab=reconciliation&batch=${b.id}`} className={`block px-4 py-3 text-sm hover:bg-muted/50 ${b.id === batchId ? "bg-muted" : ""}`}>
-                    <Mono>{b.number}</Mono> · {b.provider}
-                    <span className="block text-xs text-muted-foreground">
-                      {b.date_from} – {b.date_to}
-                    </span>
-                    <span className="mt-1 block text-xs">
-                      {Object.entries(b.summary)
-                        .map(([k, n]) => `${t(`recon.${k}`)}: ${n}`)
-                        .join(" · ")}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {lines.length === 0 ? (
-              <EmptyState icon={<Banknote />} title={t("allMatched")} description={t("allMatchedBody")} />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("providerRef")}</TableHead>
-                    <TableHead className="text-end">{t("reportAmount")}</TableHead>
-                    <TableHead className="text-end">{t("systemAmount")}</TableHead>
-                    <TableHead>{t("statusLabel")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {lines.map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell>
-                        {l.payment_id ? (
-                          <Link href={`/payments/${l.payment_id}`} className="hover:text-primary">
-                            <Mono>{l.provider_ref}</Mono>
-                          </Link>
-                        ) : (
-                          <Mono>{l.provider_ref}</Mono>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-end text-sm tabular-nums">{usd(l.amount)}</TableCell>
-                      <TableCell className="text-end text-sm tabular-nums">{usd(l.system_amount)}</TableCell>
-                      <TableCell className="text-sm font-medium text-status-rejected">{t(`recon.${l.status}`)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
-        )}
-      </>
+      <ProviderToggles
+        providers={providers}
+        configured={configured}
+        canEdit={viewer.can("settings.update")}
+      />
     );
   } else {
     const rows = await listPayments({ status: "any", q: (sp.q ?? "").slice(0, 40) });
@@ -109,7 +104,13 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
       <>
         <div className="flex flex-wrap items-center gap-2 border-b p-3">
           <form role="search">
-            <Input name="q" defaultValue={sp.q ?? ""} placeholder={t("searchPayments")} aria-label={t("searchPayments")} className="w-72" />
+            <Input
+              name="q"
+              defaultValue={sp.q ?? ""}
+              placeholder={t("searchPayments")}
+              aria-label={t("searchPayments")}
+              className="w-72"
+            />
           </form>
           {viewer.can("payments.approve") && (
             <span className="ms-auto">
@@ -118,7 +119,11 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
           )}
         </div>
         {rows.length === 0 ? (
-          <EmptyState icon={<Banknote />} title={t("noPayments")} description={t("noPaymentsBody")} />
+          <EmptyState
+            icon={<Banknote />}
+            title={t("noPayments")}
+            description={t("noPaymentsBody")}
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -145,18 +150,32 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
                   </TableCell>
                   <TableCell className="text-sm">
                     {t(`methods.${p.method}`)}
-                    {p.currency !== "USD" && <span className="ms-1 text-xs text-muted-foreground">{format.number(Number(p.amount))} {p.currency}</span>}
+                    {p.currency !== "USD" && (
+                      <span className="text-muted-foreground ms-1 text-xs">
+                        {format.number(Number(p.amount))} {p.currency}
+                      </span>
+                    )}
                   </TableCell>
-                  <TableCell className="text-end text-sm tabular-nums">{usd(p.amount_base)}</TableCell>
+                  <TableCell className="text-end text-sm tabular-nums">
+                    {usd(p.amount_base)}
+                  </TableCell>
                   <TableCell className="text-sm">{t(`status.${p.status}`)}</TableCell>
-                  <TableCell className="text-end text-xs text-muted-foreground">{format.dateTime(new Date(p.received_at), { dateStyle: "medium", timeStyle: "short" })}</TableCell>
+                  <TableCell className="text-muted-foreground text-end text-xs">
+                    {format.dateTime(new Date(p.received_at), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </TableCell>
                   <TableCell>
                     <PaymentActions
                       compact
                       id={p.id}
                       status={p.status}
                       unallocated={Number(p.unallocated)}
-                      can={{ reverse: viewer.can("payments.refund"), applyCredit: viewer.can("payments.create") }}
+                      can={{
+                        reverse: viewer.can("payments.refund"),
+                        applyCredit: viewer.can("payments.create"),
+                      }}
                     />
                   </TableCell>
                 </TableRow>
@@ -176,10 +195,12 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
             <Link
               key={k}
               href={`/payments?tab=${k}`}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${tab === k ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
             >
               {t(`tabs.${k}`)}
-              {badge[k] !== undefined && <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{badge[k]}</span>}
+              {badge[k] !== undefined && (
+                <span className="bg-muted rounded-sm px-1.5 font-mono text-[11px]">{badge[k]}</span>
+              )}
             </Link>
           ))}
         </nav>
@@ -194,7 +215,10 @@ export default async function PaymentsPage({ params, searchParams }: { params: P
       <Card className="overflow-hidden">{body}</Card>
       {(tab === "reversals" || tab === "shifts") && (
         <p className="mt-3 text-sm">
-          <Link href={`/payments?tab=${tab}${sp.all === "1" ? "" : "&all=1"}`} className="text-primary hover:underline">
+          <Link
+            href={`/payments?tab=${tab}${sp.all === "1" ? "" : "&all=1"}`}
+            className="text-primary hover:underline"
+          >
             {sp.all === "1" ? t("showPendingOnly") : t("showAll")}
           </Link>
         </p>

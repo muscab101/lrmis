@@ -8,7 +8,14 @@ import {
   AccountDelete,
   JournalReverseButton,
 } from "@/components/accounting/account-forms";
-import { AssetsTab, DistrictsTab, MovementsTab, OverviewTab } from "@/components/accounting/tabs";
+import {
+  AssetsTab,
+  CommissionsTab,
+  DistrictsTab,
+  LedgerTab,
+  MovementsTab,
+  OverviewTab,
+} from "@/components/accounting/tabs";
 import {
   FxRateButton,
   ManualJournalButton,
@@ -37,14 +44,16 @@ const TABS = [
   "deposits",
   "cashbook",
   "assets",
+  "commissions",
   "trial",
   "journal",
+  "ledger",
   "accounts",
   "rates",
   "periods",
 ] as const;
 type Tab = (typeof TABS)[number];
-const DATED: Tab[] = ["overview", "districts", "trial"];
+const DATED: Tab[] = ["overview", "districts", "commissions", "trial", "ledger"];
 const STATUSES: MovementStatus[] = ["pending", "confirmed", "rejected", "cancelled"];
 // Accounts the system posts to by itself (kept in step with private.system_account).
 const SYSTEM = [
@@ -107,6 +116,10 @@ export default async function AccountingPage({
   const periodFilter = (
     <form className="flex flex-wrap items-end gap-2 text-sm">
       <input type="hidden" name="tab" value={tab} />
+      {tab === "ledger" && sp.account && <input type="hidden" name="account" value={sp.account} />}
+      {tab === "ledger" && sp.district && (
+        <input type="hidden" name="district" value={sp.district} />
+      )}
       <label className="space-y-1">
         <span className="text-muted-foreground block text-xs">{t("from")}</span>
         <Input type="date" name="from" defaultValue={from} />
@@ -122,7 +135,7 @@ export default async function AccountingPage({
         {quick.map((q) => (
           <Link
             key={q.key}
-            href={`/accounting?tab=${tab}&from=${q.from}&to=${iso(now)}`}
+            href={`/accounting?tab=${tab}&from=${q.from}&to=${iso(now)}${tab === "ledger" && sp.account ? `&account=${sp.account}` : ""}`}
             className={`rounded-full border px-3 py-1 text-xs ${from === q.from && to === iso(now) ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted"}`}
           >
             {t(`quick.${q.key}`)}
@@ -151,6 +164,29 @@ export default async function AccountingPage({
     );
   } else if (tab === "assets") {
     body = <AssetsTab viewer={viewer} accounts={accounts} districts={districts} />;
+  } else if (tab === "commissions") {
+    body = (
+      <CommissionsTab
+        from={from}
+        to={to}
+        viewer={viewer}
+        accounts={accounts}
+        districts={districts}
+      />
+    );
+  } else if (tab === "ledger") {
+    const account = accounts.some((a) => a.code === sp.account) ? sp.account! : "1130";
+    const districtId = districts.some((d) => d.id === sp.district) ? sp.district! : "";
+    body = (
+      <LedgerTab
+        account={account}
+        from={from}
+        to={to}
+        districtId={districtId}
+        accounts={accounts}
+        districts={districts}
+      />
+    );
   } else if (tab === "trial") {
     const rows = await trialBalance(from, to);
     const dr = rows.reduce((s, r) => s + Number(r.debit), 0);

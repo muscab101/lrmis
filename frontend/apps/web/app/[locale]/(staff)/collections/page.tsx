@@ -10,9 +10,18 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { CorrectionsList } from "@/components/collections/corrections-list";
+import { ChannelsTab, HandoversTab, StatementsTab } from "@/components/collections/finance-tabs";
 import { CollectionsDashboardView } from "@/components/collections/dashboard";
 import { VerifyTable } from "@/components/collections/verify-table";
-import { collectionsDashboard, listCashierDays, listCorrections, listDuplicates, listQueue, VERIFY_STATUSES, type VerifyStatus } from "@/lib/server/collections";
+import {
+  collectionsDashboard,
+  listCashierDays,
+  listCorrections,
+  listDuplicates,
+  listQueue,
+  VERIFY_STATUSES,
+  type VerifyStatus,
+} from "@/lib/server/collections";
 import { type CollectionsCashierRow, type CollectionsRow, runReport } from "@/lib/server/reports";
 
 export async function generateMetadata() {
@@ -20,7 +29,16 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const TABS = ["dashboard", "verify", "reconcile", "corrections", "duplicates"] as const;
+const TABS = [
+  "dashboard",
+  "channels",
+  "verify",
+  "statements",
+  "reconcile",
+  "handovers",
+  "corrections",
+  "duplicates",
+] as const;
 type Tab = (typeof TABS)[number];
 
 /** ?from=&to= (ISO dates); by default the last 30 days. */
@@ -33,7 +51,13 @@ function range(sp: Record<string, string | undefined>) {
   return from <= to ? { from, to } : { from: to, to: from };
 }
 
-export default async function CollectionsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
+export default async function CollectionsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "reconciliation.view");
@@ -44,18 +68,24 @@ export default async function CollectionsPage({ params, searchParams }: { params
   const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : TABS[0];
   const { from, to } = range(sp);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
-  const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
-  const how = (method: string, wallet: string | null) => (wallet && tp.has(`wallets.${wallet}`) ? tp(`wallets.${wallet}`) : tp.has(`methods.${method}`) ? tp(`methods.${method}`) : method);
+  const dt = (s: string) =>
+    format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
+  const how = (method: string, wallet: string | null) =>
+    wallet && tp.has(`wallets.${wallet}`)
+      ? tp(`wallets.${wallet}`)
+      : tp.has(`methods.${method}`)
+        ? tp(`methods.${method}`)
+        : method;
 
   const periodForm = (
     <form className="flex flex-wrap items-end gap-3 p-3 text-sm">
       <input type="hidden" name="tab" value={tab} />
       <label className="grid gap-1">
-        <span className="text-xs text-muted-foreground">{t("from")}</span>
+        <span className="text-muted-foreground text-xs">{t("from")}</span>
         <Input type="date" name="from" defaultValue={from} className="w-40" />
       </label>
       <label className="grid gap-1">
-        <span className="text-xs text-muted-foreground">{t("to")}</span>
+        <span className="text-muted-foreground text-xs">{t("to")}</span>
         <Input type="date" name="to" defaultValue={to} className="w-40" />
       </label>
       <Button type="submit" size="sm" variant="outline">
@@ -70,13 +100,51 @@ export default async function CollectionsPage({ params, searchParams }: { params
     const d = await collectionsDashboard();
     // This month by cashier and by day, counting everything recorded (the checked part shows beside it).
     const month = { from: d.month_from, to: d.as_of, basis: "all" as const };
-    const [cashiers, days] = await Promise.all([runReport("collectionsCashier", month), runReport("collections", { ...month, by: "day" })]);
-    dashboard = <CollectionsDashboardView d={d} cashiers={cashiers as CollectionsCashierRow[]} days={days as CollectionsRow[]} />;
+    const [cashiers, days] = await Promise.all([
+      runReport("collectionsCashier", month),
+      runReport("collections", { ...month, by: "day" }),
+    ]);
+    dashboard = (
+      <CollectionsDashboardView
+        d={d}
+        cashiers={cashiers as CollectionsCashierRow[]}
+        days={days as CollectionsRow[]}
+      />
+    );
+  } else if (tab === "channels") {
+    body = (
+      <>
+        {periodForm}
+        <div className="border-t">
+          <ChannelsTab from={from} to={to} />
+        </div>
+      </>
+    );
+  } else if (tab === "statements") {
+    const batch = sp.batch && /^[0-9a-f-]{36}$/i.test(sp.batch) ? sp.batch : undefined;
+    const status = ["open", "submitted", "approved", "rejected"].includes(sp.status ?? "")
+      ? (sp.status as "open")
+      : null;
+    body = <StatementsTab batchId={batch} status={status} viewer={viewer} />;
+  } else if (tab === "handovers") {
+    const status = ["pending", "received", "disputed", "cancelled"].includes(sp.status ?? "")
+      ? sp.status!
+      : null;
+    body = <HandoversTab viewer={viewer} status={status} />;
   } else if (tab === "verify") {
     // Status: pending by default; "all" shows every state.
-    const status: VerifyStatus | null = sp.status === "all" ? null : VERIFY_STATUSES.includes(sp.status as VerifyStatus) ? (sp.status as VerifyStatus) : "pending";
+    const status: VerifyStatus | null =
+      sp.status === "all"
+        ? null
+        : VERIFY_STATUSES.includes(sp.status as VerifyStatus)
+          ? (sp.status as VerifyStatus)
+          : "pending";
     const all = await listQueue({ status, from, to });
-    const cashiers = [...new Map(all.filter((r) => r.cashier_id).map((r) => [r.cashier_id!, r.cashier ?? "—"])).entries()];
+    const cashiers = [
+      ...new Map(
+        all.filter((r) => r.cashier_id).map((r) => [r.cashier_id!, r.cashier ?? "—"]),
+      ).entries(),
+    ];
     const cashier = cashiers.some(([id]) => id === sp.cashier) ? sp.cashier! : "";
     const rows = cashier ? all.filter((r) => r.cashier_id === cashier) : all;
     body = (
@@ -84,7 +152,7 @@ export default async function CollectionsPage({ params, searchParams }: { params
         <form className="flex flex-wrap items-end gap-3 p-3 text-sm">
           <input type="hidden" name="tab" value="verify" />
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">{t("statusLabel")}</span>
+            <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
             <NativeSelect name="status" defaultValue={status ?? "all"} className="w-auto min-w-36">
               {VERIFY_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -95,7 +163,7 @@ export default async function CollectionsPage({ params, searchParams }: { params
             </NativeSelect>
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">{t("cashier")}</span>
+            <span className="text-muted-foreground text-xs">{t("cashier")}</span>
             <NativeSelect name="cashier" defaultValue={cashier} className="w-auto min-w-40">
               <option value="">{t("allCashiers")}</option>
               {cashiers.map(([id, name]) => (
@@ -106,11 +174,11 @@ export default async function CollectionsPage({ params, searchParams }: { params
             </NativeSelect>
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">{t("from")}</span>
+            <span className="text-muted-foreground text-xs">{t("from")}</span>
             <Input type="date" name="from" defaultValue={from} className="w-40" />
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">{t("to")}</span>
+            <span className="text-muted-foreground text-xs">{t("to")}</span>
             <Input type="date" name="to" defaultValue={to} className="w-40" />
           </label>
           <Button type="submit" size="sm" variant="outline">
@@ -118,9 +186,17 @@ export default async function CollectionsPage({ params, searchParams }: { params
           </Button>
         </form>
         {rows.length === 0 ? (
-          <EmptyState icon={<CopyCheck />} title={t("verify.none")} description={t("verify.noneBody")} />
+          <EmptyState
+            icon={<CopyCheck />}
+            title={t("verify.none")}
+            description={t("verify.noneBody")}
+          />
         ) : (
-          <VerifyTable rows={rows} canVerify={viewer.can("reconciliation.update")} me={viewer.user.id} />
+          <VerifyTable
+            rows={rows}
+            canVerify={viewer.can("reconciliation.update")}
+            me={viewer.user.id}
+          />
         )}
       </>
     );
@@ -130,9 +206,17 @@ export default async function CollectionsPage({ params, searchParams }: { params
     body = (
       <>
         {periodForm}
-        {pendingApproval > 0 && <p className="border-t px-4 py-2 text-sm text-status-pending">{t("recon.waiting", { count: pendingApproval })}</p>}
+        {pendingApproval > 0 && (
+          <p className="text-status-pending border-t px-4 py-2 text-sm">
+            {t("recon.waiting", { count: pendingApproval })}
+          </p>
+        )}
         {days.length === 0 ? (
-          <EmptyState icon={<CopyCheck />} title={t("recon.noDays")} description={t("recon.noDaysBody")} />
+          <EmptyState
+            icon={<CopyCheck />}
+            title={t("recon.noDays")}
+            description={t("recon.noDaysBody")}
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -153,23 +237,39 @@ export default async function CollectionsPage({ params, searchParams }: { params
                 const st = d.status === "rejected" ? null : d.status;
                 return (
                   <TableRow key={`${d.cashier_id}-${d.business_date}`}>
-                    <TableCell className="text-sm whitespace-nowrap">{format.dateTime(new Date(`${d.business_date}T00:00:00`), { dateStyle: "medium" })}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      {format.dateTime(new Date(`${d.business_date}T00:00:00`), {
+                        dateStyle: "medium",
+                      })}
+                    </TableCell>
                     <TableCell className="text-sm">{d.cashier ?? "—"}</TableCell>
                     <TableCell className="text-end text-sm tabular-nums">{d.payments}</TableCell>
-                    <TableCell className="text-end text-sm tabular-nums">{usd(d.recorded)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{t("recon.checkedLine", { verified: d.verified, pending: d.pending, disputed: d.disputed })}</TableCell>
+                    <TableCell className="text-end text-sm tabular-nums">
+                      {usd(d.recorded)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {t("recon.checkedLine", {
+                        verified: d.verified,
+                        pending: d.pending,
+                        disputed: d.disputed,
+                      })}
+                    </TableCell>
                     <TableCell>
                       {st ? (
-                        <StatusBadge tone={st === "approved" ? "approved" : "pending"}>{t(`recon.status.${st}`)}</StatusBadge>
+                        <StatusBadge tone={st === "approved" ? "approved" : "pending"}>
+                          {t(`recon.status.${st}`)}
+                        </StatusBadge>
                       ) : (
                         <StatusBadge tone="draft">{t("recon.status.none")}</StatusBadge>
                       )}
                     </TableCell>
-                    <TableCell className={`text-end text-sm tabular-nums ${st && d.difference ? (d.difference < 0 ? "text-status-rejected" : "text-status-pending") : ""}`}>
+                    <TableCell
+                      className={`text-end text-sm tabular-nums ${st && d.difference ? (d.difference < 0 ? "text-status-rejected" : "text-status-pending") : ""}`}
+                    >
                       {st && d.difference !== null ? usd(d.difference) : "—"}
                     </TableCell>
                     <TableCell className="text-end">
-                      <Link href={href} className="text-sm text-primary hover:underline">
+                      <Link href={href} className="text-primary text-sm hover:underline">
                         {st ? t("recon.open") : t("recon.reconcile")}
                       </Link>
                     </TableCell>
@@ -186,22 +286,40 @@ export default async function CollectionsPage({ params, searchParams }: { params
     body = (
       <>
         <p className="border-b px-4 py-2 text-sm">
-          <Link href={`/collections?tab=corrections${sp.all === "1" ? "" : "&all=1"}`} className="text-primary hover:underline">
+          <Link
+            href={`/collections?tab=corrections${sp.all === "1" ? "" : "&all=1"}`}
+            className="text-primary hover:underline"
+          >
             {sp.all === "1" ? t("corrections.showPending") : t("corrections.showAll")}
           </Link>
         </p>
-        <CorrectionsList rows={rows} canDecide={viewer.can("payments.approve")} me={viewer.user.id} />
+        <CorrectionsList
+          rows={rows}
+          canDecide={viewer.can("payments.approve")}
+          me={viewer.user.id}
+        />
       </>
     );
   } else if (tab === "duplicates") {
     const rows = await listDuplicates(from, to);
     // Rows come grouped: one group per reference, or per payer + amount + day.
-    const groups = [...new Map(rows.map((r) => [`${r.kind}|${r.key}`, rows.filter((x) => x.kind === r.kind && x.key === r.key)])).entries()];
+    const groups = [
+      ...new Map(
+        rows.map((r) => [
+          `${r.kind}|${r.key}`,
+          rows.filter((x) => x.kind === r.kind && x.key === r.key),
+        ]),
+      ).entries(),
+    ];
     body = (
       <>
         {periodForm}
         {groups.length === 0 ? (
-          <EmptyState icon={<CopyCheck />} title={t("duplicates.none")} description={t("duplicates.noneBody")} />
+          <EmptyState
+            icon={<CopyCheck />}
+            title={t("duplicates.none")}
+            description={t("duplicates.noneBody")}
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -220,13 +338,18 @@ export default async function CollectionsPage({ params, searchParams }: { params
               {groups.flatMap(([key, list], gi) =>
                 list.map((r, i) => (
                   <TableRow key={`${key}-${r.payment_id}`} className={gi % 2 ? "bg-muted/30" : ""}>
-                    <TableCell className="text-sm">{i === 0 ? t(`duplicates.kinds.${r.kind}`) : ""}</TableCell>
+                    <TableCell className="text-sm">
+                      {i === 0 ? t(`duplicates.kinds.${r.kind}`) : ""}
+                    </TableCell>
                     <TableCell>
-                      <Link href={`/payments/${r.payment_id}`} className="text-primary hover:underline">
+                      <Link
+                        href={`/payments/${r.payment_id}`}
+                        className="text-primary hover:underline"
+                      >
                         <Mono>{r.receipt_no}</Mono>
                       </Link>
                     </TableCell>
-                    <TableCell className="text-sm whitespace-nowrap">{dt(r.received_at)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">{dt(r.received_at)}</TableCell>
                     <TableCell className="text-sm">{how(r.method, r.wallet)}</TableCell>
                     <TableCell className="font-mono text-xs">{r.reference ?? "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{r.pun ?? "—"}</TableCell>
@@ -250,7 +373,7 @@ export default async function CollectionsPage({ params, searchParams }: { params
             <Link
               key={k}
               href={`/collections?tab=${k}`}
-              className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${tab === k ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`-mb-px whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
             >
               {t(`tabs.${k}`)}
             </Link>

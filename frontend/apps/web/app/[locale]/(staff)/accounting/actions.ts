@@ -319,3 +319,162 @@ export const reverseJournalAction = defineAction(
     return done(null);
   },
 );
+
+// ---- Commission and revenue sharing ----
+const RULE_FIELDS: Record<string, string> = {
+  code: "code",
+  name: "name",
+  party: "party",
+  pct: "pct",
+  effective_from: "effectiveFrom",
+  effective_to: "effectiveTo",
+  method: "method",
+  kind: "kind",
+};
+
+export const saveRuleAction = defineAction(
+  "accounting.rule_save",
+  z.object({
+    id: z.uuid().nullable().default(null),
+    fromRule: z.uuid().nullable().default(null),
+    code: z.string().trim().max(40).default(""),
+    name: z.string().trim().min(2, "validation.acct_name").max(120, "validation.too_long"),
+    kind: z.enum(["commission", "revenue_share", "fee"]),
+    party: z.string().trim().min(2, "validation.acct_party").max(120, "validation.too_long"),
+    method: z.enum(["", "cash", "cheque", "mobile_money", "card", "bank_transfer"]).default(""),
+    wallet: z.enum(["", "evc_plus", "edahab", "zaad"]).default(""),
+    feeTypeId: optUuid,
+    districtId: optUuid,
+    pct: z.coerce.number().min(0, "validation.acct_pct").max(100, "validation.acct_pct").default(0),
+    fixedAmount: z.coerce
+      .number()
+      .min(0, "validation.acct_pct")
+      .max(1_000_000, "validation.acct_pct")
+      .default(0),
+    effectiveFrom: isoDate,
+    effectiveTo: z.union([isoDate, z.literal("")]).default(""),
+    note: optText(500),
+  }),
+  async (v, ctx) => {
+    try {
+      const id = unwrap(
+        await ctx.supabase.rpc("commission_rule_save", {
+          p_id: v.id,
+          p_from_rule: v.fromRule,
+          p: {
+            code: v.code,
+            name: v.name,
+            kind: v.kind,
+            party: v.party,
+            method: v.method,
+            wallet: v.method === "mobile_money" ? v.wallet : "",
+            fee_type_id: v.feeTypeId,
+            district_id: v.districtId,
+            pct: v.pct,
+            fixed_amount: v.fixedAmount,
+            effective_from: v.effectiveFrom,
+            effective_to: v.effectiveTo,
+            note: v.note,
+          },
+        }),
+        "rule save",
+      ) as string;
+      return done({ id });
+    } catch (err) {
+      if (
+        err instanceof AppFailure &&
+        err.code === "CONFLICT" &&
+        err.values?.detail === "code_taken"
+      )
+        throw new AppFailure("VALIDATION", err.values, { code: ["validation.code_taken"] });
+      field(err, RULE_FIELDS);
+    }
+  },
+);
+
+export const approveRuleAction = defineAction(
+  "accounting.rule_approve",
+  z.object({ id: z.uuid() }),
+  async (v, ctx) =>
+    done(
+      unwrap(
+        await ctx.supabase.rpc("commission_rule_approve", { p_id: v.id }),
+        "rule approve",
+      ) as number,
+    ),
+);
+
+export const retireRuleAction = defineAction(
+  "accounting.rule_retire",
+  z.object({ id: z.uuid(), to: isoDate }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("commission_rule_retire", { p_id: v.id, p_to: v.to }),
+        "rule retire",
+      );
+      return done(null);
+    } catch (err) {
+      field(err, { effective_to: "to" });
+    }
+  },
+);
+
+export const deleteRuleAction = defineAction(
+  "accounting.rule_delete",
+  z.object({ id: z.uuid() }),
+  async (v, ctx) => {
+    unwrap(await ctx.supabase.rpc("commission_rule_delete", { p_id: v.id }), "rule delete");
+    return done(null);
+  },
+);
+
+export const createPayoutAction = defineAction(
+  "accounting.payout_create",
+  z.object({
+    party: z.string().min(1).max(120),
+    payable: account,
+    upto: isoDate,
+    paidFrom: account,
+    reference: optText(100),
+  }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("commission_payout_create", {
+          p_party: v.party,
+          p_payable: v.payable,
+          p_upto: v.upto,
+          p_paid_from: v.paidFrom,
+          p_reference: v.reference || null,
+        }),
+        "payout",
+      );
+      return done(null);
+    } catch (err) {
+      field(err, { paid_from: "paidFrom", upto: "upto" });
+    }
+  },
+);
+
+export const decidePayoutAction = defineAction(
+  "accounting.payout_decide",
+  z.object({ id: z.uuid(), approve: z.boolean(), note: optText(500) }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("commission_payout_decide", {
+          p_id: v.id,
+          p_approve: v.approve,
+          p_note: v.note || null,
+        }),
+        "payout decide",
+      );
+      return done(null);
+    } catch (err) {
+      if (err instanceof AppFailure && err.values?.detail === "note_required")
+        throw new AppFailure("VALIDATION", err.values, { note: ["validation.note_required"] });
+      throw err;
+    }
+  },
+);
