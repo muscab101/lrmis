@@ -149,7 +149,7 @@ export async function reportXlsx(table: ReportTable, meta: ReportMeta): Promise<
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
-/** The report as an A4 PDF: the Banadir emblem centred over the title, a barcode of its reference, numbered rows. */
+/** The report as an A4 PDF: Banadir emblem and title, the meta lines, a barcode of its reference, numbered rows. */
 export async function reportPdf(table: ReportTable, meta: ReportMeta): Promise<ArrayBuffer> {
   const doc = new jsPDF({
     orientation: table.columns.length > 6 ? "landscape" : "portrait",
@@ -158,22 +158,21 @@ export async function reportPdf(table: ReportTable, meta: ReportMeta): Promise<A
   });
   const margin = 36;
   const { width: pageW } = doc.internal.pageSize;
-  const centre = pageW / 2;
   const ref = reportReference();
   const logo = await banadirEmblem();
 
-  // The emblem, the authority and the title, centred.
-  const logoSize = 72;
-  if (logo) doc.addImage(logo, "PNG", centre - logoSize / 2, margin - 8, logoSize, logoSize);
-  const authorityY = margin - 8 + (logo ? logoSize : 0) + 14;
+  // Emblem, authority and title on the left.
+  const logoSize = 46;
+  const textX = logo ? margin + logoSize + 10 : margin;
+  if (logo) doc.addImage(logo, "PNG", margin, margin - 6, logoSize, logoSize);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(90);
-  doc.text(AUTHORITY, centre, authorityY, { align: "center" });
+  doc.text(AUTHORITY, textX, margin + 4);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
+  doc.setFontSize(15);
   doc.setTextColor(0);
-  doc.text(table.title, centre, authorityY + 20, { align: "center" });
+  doc.text(table.title, textX, margin + 22);
 
   // The reference as a barcode, top right.
   const bars = code128(ref);
@@ -182,7 +181,7 @@ export async function reportPdf(table: ReportTable, meta: ReportMeta): Promise<A
   const unit = barW / modules;
   const barX = pageW - margin - barW;
   const barY = margin - 4;
-  const barH = 34;
+  const barH = 30;
   doc.setFillColor(0, 0, 0);
   let x = barX;
   bars.forEach((w, i) => {
@@ -194,7 +193,7 @@ export async function reportPdf(table: ReportTable, meta: ReportMeta): Promise<A
   doc.text(ref, barX + barW / 2, barY + barH + 10, { align: "center" });
 
   // Period, district, who and when.
-  const linesY = authorityY + 42;
+  const linesY = margin + logoSize + 8;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(100);
