@@ -39,13 +39,23 @@ const RUN_COLUMNS =
 
 export async function listRuns() {
   const supabase = await createClient();
-  return unwrap(await supabase.from("billing_runs").select(RUN_COLUMNS).order("created_at", { ascending: false }).limit(100), "runs") as unknown as RunRow[];
+  return unwrap(
+    await supabase
+      .from("billing_runs")
+      .select(RUN_COLUMNS)
+      .order("created_at", { ascending: false })
+      .limit(100),
+    "runs",
+  ) as unknown as RunRow[];
 }
 
 export async function getRun(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const supabase = await createClient();
-  return unwrap(await supabase.from("billing_runs").select(RUN_COLUMNS).eq("id", id).maybeSingle(), "run") as unknown as RunRow | null;
+  return unwrap(
+    await supabase.from("billing_runs").select(RUN_COLUMNS).eq("id", id).maybeSingle(),
+    "run",
+  ) as unknown as RunRow | null;
 }
 
 export interface InvoiceRow {
@@ -63,31 +73,122 @@ export interface InvoiceRow {
   fee_type: { code: string; name_so: string; name_en: string } | null;
 }
 
-const INVOICE_COLUMNS = "id, number, period, issue_date, due_date, total, paid, credited, balance, status, parcel:parcels(id, pun), fee_type:fee_types(code, name_so, name_en)";
+
+/** A row of the Invoices table: the invoice plus the land's account and receipt numbers and the owner's phone. */
+export interface InvoiceListRow extends InvoiceRow {
+  created_at: string;
+  account_no: string | null;
+  govt_receipt_no: string | null;
+  phone: string | null;
+}
+const LIST_COLUMNS =
+  "id, number, period, issue_date, due_date, total, paid, credited, balance, status, created_at, fee_type:fee_types(code, name_so, name_en), " +
+  "parcel:parcels(id, pun, account_no, govt_receipt_no, owners:parcel_owners(valid_to, party:parties(phone)))";
+export const INVOICE_SORTS = ["number", "issue_date", "due_date", "total", "paid"] as const;
+export type InvoiceSort = (typeof INVOICE_SORTS)[number];
 export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
 
-export async function listInvoices(opts: { filter: InvoiceFilter; q: string; runId?: string; parcelId?: string; page?: number }) {
+export async function listInvoices(opts: {
+  filter: InvoiceFilter;
+  q: string;
+  runId?: string;
+  parcelId?: string;
+  page?: number;
+  pageSize?: number;
+  sort?: InvoiceSort;
+  dir?: "asc" | "desc";
+  from?: string;
+  to?: string;
+  feeCode?: string;
+}) {
   const supabase = await createClient();
-  let req = supabase.from("invoices").select(INVOICE_COLUMNS, { count: "exact" });
+  let req = supabase.from("invoices").select(LIST_COLUMNS, { count: "exact" });
+  if (opts.from) req = req.gte("issue_date", opts.from);
+  if (opts.to) req = req.lte("issue_date", opts.to);
+  if (opts.feeCode) {
+    const { data: fee } = await supabase
+      .from("fee_types")
+      .select("id")
+      .eq("code", opts.feeCode)
+      .maybeSingle();
+    req = req.eq(
+      "fee_type_id",
+      (fee as { id: string } | null)?.id ?? "00000000-0000-0000-0000-000000000000",
+    );
+  }
   const today = new Date().toISOString().slice(0, 10);
   if (opts.filter === "open") req = req.in("status", ["issued", "partially_paid"]);
-  else if (opts.filter === "overdue") req = req.in("status", ["issued", "partially_paid"]).lt("due_date", today);
+  else if (opts.filter === "overdue")
+    req = req.in("status", ["issued", "partially_paid"]).lt("due_date", today);
   else if (opts.filter !== "any") req = req.eq("status", opts.filter);
   if (opts.runId) req = req.eq("run_id", opts.runId);
   if (opts.parcelId) req = req.eq("parcel_id", opts.parcelId);
   const term = opts.q.replace(/[,()*%\\]/g, " ").trim();
   if (term) {
-    if (/^inv/i.test(term)) req = req.ilike("number", `%${term}%`);
+    if (/^(inv|scin)/i.test(term)) req = req.ilike("number", `%${term}%`);
     else {
-      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term.replace(/-/g, "")}%`).limit(50);
-      const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
+      // PUN, account number or government receipt number of the land, or the owner's phone.
+      const like = `%${term.replace(/-/g, "")}%`;
+      const { data } = await supabase
+        .from("parcels")
+        .select("id")
+        .or(`pun.ilike.${like},account_no.ilike.${like},govt_receipt_no.ilike.${like}`)
+        .limit(200);
+      const { data: byPhone } = /^\+?\d{5,}$/.test(term)
+        ? await supabase
+            .from("parcel_owners")
+            .select("parcel_id, party:parties!inner(phone)")
+            .is("valid_to", null)
+            .ilike("party.phone", `%${term.replace(/^\+/, "")}%`)
+            .limit(200)
+        : { data: [] };
+      const ids = [
+        ...new Set([
+          ...((data ?? []) as { id: string }[]).map((p) => p.id),
+          ...((byPhone ?? []) as { parcel_id: string }[]).map((o) => o.parcel_id),
+        ]),
+      ];
       req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     }
   }
   const page = opts.page ?? 1;
-  // A tax bill and its service charge share a number: keep them together, INV before SV.
-  const res = await req.order("number_key", { ascending: false }).order("number", { ascending: true }).range((page - 1) * 50, page * 50 - 1);
+  const size = opts.pageSize ?? 50;
+  const asc = opts.dir === "asc";
+  // By default (and when sorting by number) a tax bill and its service charge stay together: INV before SCIN.
+  if (!opts.sort || opts.sort === "number")
+    req = req.order("number_key", { ascending: asc }).order("number", { ascending: true });
+  else
+    req = req
+      .order(opts.sort, { ascending: asc })
+      .order("number_key", { ascending: false })
+      .order("number", { ascending: true });
+  const res = await req.range((page - 1) * size, page * size - 1);
   return { rows: unwrap(res, "invoices") as unknown as InvoiceRow[], total: res.count ?? 0 };
+}
+
+/** Rows for the Invoices table: listInvoices plus the land's numbers and the current owner's phone. */
+export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0]) {
+  const { rows, total } = await listInvoices(opts);
+  type Raw = InvoiceRow & {
+    created_at: string;
+    parcel:
+      | (InvoiceRow["parcel"] & {
+          account_no: string | null;
+          govt_receipt_no: string | null;
+          owners?: { valid_to: string | null; party: { phone: string | null } | null }[];
+        })
+      | null;
+  };
+  return {
+    total,
+    rows: (rows as Raw[]).map((r): InvoiceListRow => ({
+      ...r,
+      parcel: r.parcel ? { id: r.parcel.id, pun: r.parcel.pun } : null,
+      account_no: r.parcel?.account_no ?? null,
+      govt_receipt_no: r.parcel?.govt_receipt_no ?? null,
+      phone: r.parcel?.owners?.find((o) => !o.valid_to && o.party?.phone)?.party?.phone ?? null,
+    })),
+  };
 }
 
 export interface InvoiceDetail extends InvoiceRow {
@@ -100,9 +201,32 @@ export interface InvoiceDetail extends InvoiceRow {
   cancel_reason: string | null;
   created_by: string | null;
   penalty_applied_at: string | null;
-  parcel: { id: string; pun: string | null; account_no: string | null; area_m2: number | null; land_use: string; neighbourhood: { name_so: string; name_en: string } | null; district: { name_so: string; name_en: string } | null } | null;
-  invoice_lines: { id: string; kind: string; description: string; amount: number; created_at: string }[];
-  credit_notes: { id: string; number: string; amount: number; reason: string; status: "pending" | "approved" | "rejected"; requested_by: string | null; requested_at: string; decision_note: string | null }[];
+  parcel: {
+    id: string;
+    pun: string | null;
+    account_no: string | null;
+    area_m2: number | null;
+    land_use: string;
+    neighbourhood: { name_so: string; name_en: string } | null;
+    district: { name_so: string; name_en: string } | null;
+  } | null;
+  invoice_lines: {
+    id: string;
+    kind: string;
+    description: string;
+    amount: number;
+    created_at: string;
+  }[];
+  credit_notes: {
+    id: string;
+    number: string;
+    amount: number;
+    reason: string;
+    status: "pending" | "approved" | "rejected";
+    requested_by: string | null;
+    requested_at: string;
+    decision_note: string | null;
+  }[];
   run: { id: string; number: string } | null;
 }
 
@@ -134,8 +258,15 @@ export async function getPayLink(id: string) {
 
 export async function parcelOwnersFor(parcelId: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("parcel_owners").select("share_pct, party:parties(full_name, phone)").eq("parcel_id", parcelId).is("valid_to", null);
-  return (data ?? []) as unknown as { share_pct: number | null; party: { full_name: string; phone: string | null } | null }[];
+  const { data } = await supabase
+    .from("parcel_owners")
+    .select("share_pct, party:parties(full_name, phone)")
+    .eq("parcel_id", parcelId)
+    .is("valid_to", null);
+  return (data ?? []) as unknown as {
+    share_pct: number | null;
+    party: { full_name: string; phone: string | null } | null;
+  }[];
 }
 
 export interface PlanRow {
@@ -157,10 +288,15 @@ export async function listPlans(opts: { status: "pending" | "any"; parcelId?: st
   const supabase = await createClient();
   let req = supabase
     .from("payment_plans")
-    .select("id, number, total, instalments, start_date, status, note, requested_by, requested_at, decision_note, parcel:parcels(id, pun), payment_plan_installments(seq, due_date, amount, paid)");
+    .select(
+      "id, number, total, instalments, start_date, status, note, requested_by, requested_at, decision_note, parcel:parcels(id, pun), payment_plan_installments(seq, due_date, amount, paid)",
+    );
   if (opts.status === "pending") req = req.eq("status", "pending");
   if (opts.parcelId) req = req.eq("parcel_id", opts.parcelId);
-  const rows = unwrap(await req.order("requested_at", { ascending: false }).limit(100), "plans") as unknown as PlanRow[];
+  const rows = unwrap(
+    await req.order("requested_at", { ascending: false }).limit(100),
+    "plans",
+  ) as unknown as PlanRow[];
   for (const r of rows) r.payment_plan_installments.sort((a, b) => a.seq - b.seq);
   return rows;
 }
@@ -174,20 +310,39 @@ export interface CreditNoteRow {
   requested_by: string | null;
   requested_at: string;
   decision_note: string | null;
-  invoice: { id: string; number: string; balance: number; parcel: { pun: string | null } | null } | null;
+  invoice: {
+    id: string;
+    number: string;
+    balance: number;
+    parcel: { pun: string | null } | null;
+  } | null;
 }
 
 export async function listCreditNotes(status: "pending" | "any") {
   const supabase = await createClient();
-  let req = supabase.from("credit_notes").select("id, number, amount, reason, status, requested_by, requested_at, decision_note, invoice:invoices(id, number, balance, parcel:parcels(pun))");
+  let req = supabase
+    .from("credit_notes")
+    .select(
+      "id, number, amount, reason, status, requested_by, requested_at, decision_note, invoice:invoices(id, number, balance, parcel:parcels(pun))",
+    );
   if (status === "pending") req = req.eq("status", "pending");
-  return unwrap(await req.order("requested_at", { ascending: false }).limit(100), "credit notes") as unknown as CreditNoteRow[];
+  return unwrap(
+    await req.order("requested_at", { ascending: false }).limit(100),
+    "credit notes",
+  ) as unknown as CreditNoteRow[];
 }
 
 export async function billingCounts() {
   const supabase = await createClient();
   const { data } = await supabase.rpc("billing_counts");
-  return (data ?? { runs_waiting: 0, invoices_open: 0, invoices_overdue: 0, outstanding: 0, credit_notes_pending: 0, plans_pending: 0 }) as {
+  return (data ?? {
+    runs_waiting: 0,
+    invoices_open: 0,
+    invoices_overdue: 0,
+    outstanding: 0,
+    credit_notes_pending: 0,
+    plans_pending: 0,
+  }) as {
     runs_waiting: number;
     invoices_open: number;
     invoices_overdue: number;
@@ -199,6 +354,17 @@ export async function billingCounts() {
 
 export async function recurringFeeTypes() {
   const supabase = await createClient();
-  const { data } = await supabase.from("fee_types").select("id, code, name_so, name_en, interval, amount").eq("active", true).order("sort");
-  return (data ?? []) as { id: string; code: string; name_so: string; name_en: string; interval: string; amount: number }[];
+  const { data } = await supabase
+    .from("fee_types")
+    .select("id, code, name_so, name_en, interval, amount")
+    .eq("active", true)
+    .order("sort");
+  return (data ?? []) as {
+    id: string;
+    code: string;
+    name_so: string;
+    name_en: string;
+    interval: string;
+    amount: number;
+  }[];
 }
