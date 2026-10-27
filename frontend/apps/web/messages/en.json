@@ -4127,7 +4127,28 @@
     "thisPeriod": "This period",
     "previousPeriod": "Previous period",
     "change": "Change",
-    "allPos": "All points of sale"
+    "allPos": "All points of sale",
+    "received": "Received",
+    "payer": "Payer",
+    "checkStatusLabel": "Payment status",
+    "billStatusLabel": "Bill status",
+    "viewLabel": "Show",
+    "allStatuses": "All",
+    "checkStatus": {
+      "verified": "Verified",
+      "reconciled": "Reconciled",
+      "pending": "Not checked",
+      "disputed": "Disputed"
+    },
+    "billStatus": {
+      "paid": "Paid",
+      "partially_paid": "Part paid",
+      "issued": "Unpaid"
+    },
+    "views": {
+      "summary": "Summary",
+      "detail": "Every payment"
+    }
   },
   "messages": {
     "title": "Messages",

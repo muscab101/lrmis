@@ -18,7 +18,13 @@ import {
   accountTotals,
   AREA_REPORTS,
   BASIS_REPORTS,
+  BILL_STATUSES,
+  billStatus as parseBillStatus,
+  CHECK_STATUSES,
+  checkStatus as parseCheckStatus,
   COLLECTION_BASIS,
+  REVENUE_VIEWS,
+  revenueView,
   COLLECTION_BY,
   collectionBasis,
   collectionBy,
@@ -61,7 +67,13 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-export default async function ReportsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
+export default async function ReportsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "reports.view");
@@ -70,17 +82,26 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const report = (REPORTS as readonly string[]).includes(sp.r ?? "") ? (sp.r as ReportName) : "revenue";
+  const report = (REPORTS as readonly string[]).includes(sp.r ?? "")
+    ? (sp.r as ReportName)
+    : "revenue";
   const { from, to } = reportRange(sp);
   // Only the districts (and desks) the user covers are offered; the figures are limited by the database anyway.
   const districts = await myDistricts();
   const places = await zonePlaces(districts.map((d) => d.id));
   // Each level must sit inside the one above it; anything else is dropped.
   const a = reportArea(sp);
-  const district = districts.length === 1 ? districts[0]!.id : districts.some((d) => d.id === a.district) ? a.district! : "";
-  const section = places.sections.find((x) => x.id === a.section && x.parent === district)?.id ?? "";
+  const district =
+    districts.length === 1
+      ? districts[0]!.id
+      : districts.some((d) => d.id === a.district)
+        ? a.district!
+        : "";
+  const section =
+    places.sections.find((x) => x.id === a.section && x.parent === district)?.id ?? "";
   const sector = places.sectors.find((x) => x.id === a.sector && x.parent === section)?.id ?? "";
-  const nbhd = places.neighbourhoods.find((x) => x.id === a.neighbourhood && x.parent === sector)?.id ?? "";
+  const nbhd =
+    places.neighbourhoods.find((x) => x.id === a.neighbourhood && x.parent === sector)?.id ?? "";
   const kind = parcelKind(sp.kind);
   // Payments: by way of paying and by fee type.
   const method = report === "payments" ? paymentMethod(sp.method) : null;
@@ -105,6 +126,10 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             : "";
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
+  const isRevenue = report === "revenue";
+  const checkSt = isRevenue ? parseCheckStatus(sp.check) : null;
+  const billSt = isRevenue ? parseBillStatus(sp.bill) : null;
+  const view = isRevenue ? revenueView(sp.view) : "summary";
   const usesArea = AREA_REPORTS.includes(report);
   const rows = await runReport(report, {
     from,
@@ -116,11 +141,19 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     by,
     basis,
     pos: pos || null,
-    ...(usesArea ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null } : {}),
+    checkStatus: checkSt,
+    billStatus: billSt,
+    view,
+    ...(usesArea
+      ? { section: section || null, sector: sector || null, neighbourhood: nbhd || null }
+      : {}),
   });
-  const usd = (n: number | string) => format.number(Number(n), { style: "currency", currency: "USD" });
-  const usd0 = (n: number) => format.number(n, { style: "currency", currency: "USD", notation: "compact" });
-  const name = (r: { district_so: string; district_en: string }) => (lang === "so" ? r.district_so : r.district_en);
+  const usd = (n: number | string) =>
+    format.number(Number(n), { style: "currency", currency: "USD" });
+  const usd0 = (n: number) =>
+    format.number(n, { style: "currency", currency: "USD", notation: "compact" });
+  const name = (r: { district_so: string; district_en: string }) =>
+    lang === "so" ? r.district_so : r.district_en;
   const usesRange = !SNAPSHOT_REPORTS.includes(report);
   const usesDistrict = DISTRICT_REPORTS.includes(report);
   const qs = new URLSearchParams({
@@ -136,10 +169,25 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     ...(report === "collections" ? { by } : {}),
     ...(usesPos ? { pos: pos || "all" } : {}),
     ...(BASIS_REPORTS.includes(report) ? { basis } : {}),
+    ...(checkSt ? { check: checkSt } : {}),
+    ...(billSt ? { bill: billSt } : {}),
+    ...(isRevenue && view === "detail" ? { view } : {}),
   }).toString();
-  const areaArgs = { from, to, district: district || null, basis, pos: pos || null, section: section || null, sector: sector || null, neighbourhood: nbhd || null };
+  const areaArgs = {
+    from,
+    to,
+    district: district || null,
+    basis,
+    pos: pos || null,
+    section: section || null,
+    sector: sector || null,
+    neighbourhood: nbhd || null,
+  };
   const [compare, status] = FINANCE_REPORTS.includes(report)
-    ? await Promise.all([BASIS_REPORTS.includes(report) ? collectionsCompare(areaArgs) : Promise.resolve(null), collectionsStatus(areaArgs)])
+    ? await Promise.all([
+        BASIS_REPORTS.includes(report) ? collectionsCompare(areaArgs) : Promise.resolve(null),
+        collectionsStatus(areaArgs),
+      ])
     : [null, null];
   /** The same filters on another report, so moving between related reports keeps the place and the period. */
   const reportHref = (r: ReportName, over: Record<string, string> = {}) =>
@@ -155,7 +203,10 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     }).toString()}`;
   /** A district row opens that district's bills for the same period. */
   const districtBills = (id: string, label: string) => (
-    <Link href={reportHref("invoices", { district: id, section: "", sector: "", nbhd: "" })} className="underline-offset-2 hover:underline">
+    <Link
+      href={reportHref("invoices", { district: id, section: "", sector: "", nbhd: "" })}
+      className="underline-offset-2 hover:underline"
+    >
       {label}
     </Link>
   );
@@ -173,11 +224,16 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               : String(v);
   const right = (k: CellKind) => k === "money" || k === "int" || k === "num" || k === "pct";
   const PAGE_ROWS = 500;
-  const monthLabel = (m: string) => format.dateTime(new Date(`${m}-01T00:00:00`), { month: "short", year: "2-digit" });
+  const monthLabel = (m: string) =>
+    format.dateTime(new Date(`${m}-01T00:00:00`), { month: "short", year: "2-digit" });
 
   let body: React.ReactNode;
-  if (rows.length === 0) body = <EmptyState icon={<BarChart3 />} title={t("empty")} description={t("emptyBody")} />;
-  else if (!["revenue", "income", "arrears", "collection", "registrations", "cashiers"].includes(report)) {
+  if (rows.length === 0)
+    body = <EmptyState icon={<BarChart3 />} title={t("empty")} description={t("emptyBody")} />;
+  else if (
+    (report === "revenue" && view === "detail") ||
+    !["revenue", "income", "arrears", "collection", "registrations", "cashiers"].includes(report)
+  ) {
     // The listing reports draw straight from the same table the PDF and Excel files use.
     const table = await reportTable(report, rows, lang, reportHref);
     const shown = table.rows.slice(0, PAGE_ROWS);
@@ -191,8 +247,14 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             format={usd0}
             data={
               report === "collections"
-                ? (r as CollectionsRow[]).map((x, i) => ({ label: String(table.rows[i]?.[0] ?? x.period), value: Number(x.total) }))
-                : CHANNELS.map((c) => ({ label: tc(`channels.${c}`), value: r.reduce((sum, x) => sum + Number(x[c]), 0) }))
+                ? (r as CollectionsRow[]).map((x, i) => ({
+                    label: String(table.rows[i]?.[0] ?? x.period),
+                    value: Number(x.total),
+                  }))
+                : CHANNELS.map((c) => ({
+                    label: tc(`channels.${c}`),
+                    value: r.reduce((sum, x) => sum + Number(x[c]), 0),
+                  }))
             }
           />
         </CardContent>
@@ -201,7 +263,8 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     if (report === "billing") {
       const r = rows as BillingRow[];
       const months = [...new Set(r.map((x) => x.month))];
-      const sumBy = (m: string, k: "billed" | "collected" | "outstanding") => r.filter((x) => x.month === m).reduce((s, x) => s + Number(x[k]), 0);
+      const sumBy = (m: string, k: "billed" | "collected" | "outstanding") =>
+        r.filter((x) => x.month === m).reduce((s, x) => s + Number(x[k]), 0);
       chart = (
         <CardContent className="pt-5">
           <GroupedBars
@@ -210,8 +273,16 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             categories={months.map(monthLabel)}
             series={[
               { label: t("billed"), values: months.map((m) => sumBy(m, "billed")) },
-              { label: t("collected"), values: months.map((m) => sumBy(m, "collected")), color: "var(--color-status-approved)" },
-              { label: t("outstanding"), values: months.map((m) => sumBy(m, "outstanding")), color: "var(--color-status-pending)" },
+              {
+                label: t("collected"),
+                values: months.map((m) => sumBy(m, "collected")),
+                color: "var(--color-status-approved)",
+              },
+              {
+                label: t("outstanding"),
+                values: months.map((m) => sumBy(m, "outstanding")),
+                color: "var(--color-status-pending)",
+              },
             ]}
           />
         </CardContent>
@@ -237,9 +308,15 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   const k = table.columns[j]!.kind;
                   const href = table.links[i]?.[j];
                   return (
-                    <TableCell key={j} className={`text-sm ${right(k) ? "text-end tabular-nums" : ""} ${k === "mono" ? "font-mono text-xs whitespace-nowrap" : ""}`}>
+                    <TableCell
+                      key={j}
+                      className={`text-sm ${right(k) ? "text-end tabular-nums" : ""} ${k === "mono" ? "whitespace-nowrap font-mono text-xs" : ""}`}
+                    >
                       {href && v !== null && v !== "" ? (
-                        <Link href={href} className="text-primary underline-offset-2 hover:underline">
+                        <Link
+                          href={href}
+                          className="text-primary underline-offset-2 hover:underline"
+                        >
                           {cell(v, k)}
                         </Link>
                       ) : (
@@ -253,16 +330,25 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {table.totals && (
               <TableRow>
                 {table.totals.map((v, j) => (
-                  <TableCell key={j} className={`font-medium ${right(table.columns[j]!.kind) ? "text-end tabular-nums" : ""}`}>
-                    {v === null ? "" : j === 0 && !table.columns[0]!.sum ? String(v) : cell(v, table.columns[j]!.kind)}
+                  <TableCell
+                    key={j}
+                    className={`font-medium ${right(table.columns[j]!.kind) ? "text-end tabular-nums" : ""}`}
+                  >
+                    {v === null
+                      ? ""
+                      : j === 0 && !table.columns[0]!.sum
+                        ? String(v)
+                        : cell(v, table.columns[j]!.kind)}
                   </TableCell>
                 ))}
               </TableRow>
             )}
           </TableBody>
         </Table>
-        <p className="border-t px-4 py-2 text-xs text-muted-foreground">
-          {table.rows.length > PAGE_ROWS ? t("showing", { shown: PAGE_ROWS, count: table.rows.length }) : t("rowsCount", { count: table.rows.length })}
+        <p className="text-muted-foreground border-t px-4 py-2 text-xs">
+          {table.rows.length > PAGE_ROWS
+            ? t("showing", { shown: PAGE_ROWS, count: table.rows.length })
+            : t("rowsCount", { count: table.rows.length })}
         </p>
       </>
     );
@@ -272,7 +358,14 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     body = (
       <>
         <CardContent className="pt-5">
-          <BarChart label={t("names.revenue")} format={usd0} data={months.map((m) => ({ label: monthLabel(m), value: r.filter((x) => x.month === m).reduce((s, x) => s + Number(x.amount), 0) }))} />
+          <BarChart
+            label={t("names.revenue")}
+            format={usd0}
+            data={months.map((m) => ({
+              label: monthLabel(m),
+              value: r.filter((x) => x.month === m).reduce((s, x) => s + Number(x.amount), 0),
+            }))}
+          />
         </CardContent>
         <Table>
           <TableHeader>
@@ -287,7 +380,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {r.map((x) => (
               <TableRow key={x.month + x.fee_type}>
                 <TableCell className="font-mono text-sm">{x.month}</TableCell>
-                <TableCell className="text-sm">{lang === "so" ? x.fee_name_so : x.fee_name_en}</TableCell>
+                <TableCell className="text-sm">
+                  {lang === "so" ? x.fee_name_so : x.fee_name_en}
+                </TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{x.payments}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{usd(x.amount)}</TableCell>
               </TableRow>
@@ -296,7 +391,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <TableCell colSpan={3} className="font-medium">
                 {t("total")}
               </TableCell>
-              <TableCell className="text-end font-medium tabular-nums">{usd(r.reduce((s, x) => s + Number(x.amount), 0))}</TableCell>
+              <TableCell className="text-end font-medium tabular-nums">
+                {usd(r.reduce((s, x) => s + Number(x.amount), 0))}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -304,7 +401,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     );
   } else if (report === "income") {
     const r = rows as IncomeRow[];
-    const accounts = (await accountTotals(from, to)).filter((a) => Number(a.debit) !== 0 || Number(a.credit) !== 0);
+    const accounts = (await accountTotals(from, to)).filter(
+      (a) => Number(a.debit) !== 0 || Number(a.credit) !== 0,
+    );
     const sum = (k: keyof IncomeRow) => r.reduce((s2, x) => s2 + Number(x[k]), 0);
     body = (
       <>
@@ -316,8 +415,16 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               format={usd0}
               categories={r.map((x) => monthLabel(x.month))}
               series={[
-                { label: t("cashIn"), values: r.map((x) => Number(x.cash_in)), color: "var(--color-status-approved)" },
-                { label: t("cashOut"), values: r.map((x) => Number(x.cash_out)), color: "var(--color-status-rejected)" },
+                {
+                  label: t("cashIn"),
+                  values: r.map((x) => Number(x.cash_in)),
+                  color: "var(--color-status-approved)",
+                },
+                {
+                  label: t("cashOut"),
+                  values: r.map((x) => Number(x.cash_out)),
+                  color: "var(--color-status-rejected)",
+                },
               ]}
             />
           </div>
@@ -329,7 +436,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               categories={r.map((x) => monthLabel(x.month))}
               series={[
                 { label: t("incomeLabel"), values: r.map((x) => Number(x.income)) },
-                { label: t("expensesLabel"), values: r.map((x) => Number(x.expenses)), color: "var(--color-status-pending)" },
+                {
+                  label: t("expensesLabel"),
+                  values: r.map((x) => Number(x.expenses)),
+                  color: "var(--color-status-pending)",
+                },
               ]}
             />
           </div>
@@ -353,7 +464,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 <TableCell className="text-end text-sm tabular-nums">{usd(x.expenses)}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{usd(x.cash_in)}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{usd(x.cash_out)}</TableCell>
-                <TableCell className="text-end text-sm font-medium tabular-nums">{usd(x.net)}</TableCell>
+                <TableCell className="text-end text-sm font-medium tabular-nums">
+                  {usd(x.net)}
+                </TableCell>
               </TableRow>
             ))}
             <TableRow>
@@ -387,7 +500,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                     </TableCell>
                     <TableCell className="text-end text-sm tabular-nums">{usd(a.debit)}</TableCell>
                     <TableCell className="text-end text-sm tabular-nums">{usd(a.credit)}</TableCell>
-                    <TableCell className="text-end text-sm font-medium tabular-nums">{usd(a.net)}</TableCell>
+                    <TableCell className="text-end text-sm font-medium tabular-nums">
+                      {usd(a.net)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -402,7 +517,16 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     body = (
       <>
         <CardContent className="pt-5">
-          <BarChart label={t("names.arrears")} format={usd0} data={cols.slice(0, 5).map((c) => ({ label: t(`buckets.${c}`), value: r.reduce((s, x) => s + Number(x[c]), 0) }))} />
+          <BarChart
+            label={t("names.arrears")}
+            format={usd0}
+            data={cols
+              .slice(0, 5)
+              .map((c) => ({
+                label: t(`buckets.${c}`),
+                value: r.reduce((s, x) => s + Number(x[c]), 0),
+              }))}
+          />
         </CardContent>
         <Table>
           <TableHeader>
@@ -422,7 +546,10 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 <TableCell className="text-sm">{districtBills(x.district_id, name(x))}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{x.invoices}</TableCell>
                 {cols.map((c) => (
-                  <TableCell key={c} className={`text-end text-sm tabular-nums ${c === "total" ? "font-medium" : ""}`}>
+                  <TableCell
+                    key={c}
+                    className={`text-end text-sm tabular-nums ${c === "total" ? "font-medium" : ""}`}
+                  >
                     {usd(x[c])}
                   </TableCell>
                 ))}
@@ -456,7 +583,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <TableCell className="text-end text-sm tabular-nums">{usd(x.collected)}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{usd(x.credited)}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{usd(x.outstanding)}</TableCell>
-              <TableCell className="text-end text-sm font-medium tabular-nums">{x.rate} %</TableCell>
+              <TableCell className="text-end text-sm font-medium tabular-nums">
+                {x.rate} %
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -467,7 +596,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
     body = (
       <>
         <CardContent className="pt-5">
-          <BarChart label={t("names.registrations")} format={(n) => String(n)} data={r.map((x) => ({ label: monthLabel(x.month), value: Number(x.registered) }))} />
+          <BarChart
+            label={t("names.registrations")}
+            format={(n) => String(n)}
+            data={r.map((x) => ({ label: monthLabel(x.month), value: Number(x.registered) }))}
+          />
         </CardContent>
         <Table>
           <TableHeader>
@@ -486,7 +619,9 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 <TableCell className="text-end text-sm tabular-nums">{x.submitted}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{x.registered}</TableCell>
                 <TableCell className="text-end text-sm tabular-nums">{x.rejected}</TableCell>
-                <TableCell className="text-end text-sm tabular-nums">{x.median_days ?? "—"}</TableCell>
+                <TableCell className="text-end text-sm tabular-nums">
+                  {x.median_days ?? "—"}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -513,7 +648,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
               <TableCell className="text-end text-sm tabular-nums">{x.shifts}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{x.payments}</TableCell>
               <TableCell className="text-end text-sm tabular-nums">{usd(x.amount)}</TableCell>
-              <TableCell className={`text-end text-sm tabular-nums ${Number(x.difference) !== 0 ? "text-status-rejected" : ""}`}>{usd(x.difference)}</TableCell>
+              <TableCell
+                className={`text-end text-sm tabular-nums ${Number(x.difference) !== 0 ? "text-status-rejected" : ""}`}
+              >
+                {usd(x.difference)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -529,7 +668,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           current={report}
           groups={REPORT_GROUPS.map((g) => ({
             label: t(`groups.${g.key}`),
-            reports: g.reports.map((r) => ({ value: r, label: t(`names.${r}`), href: reportHref(r) })),
+            reports: g.reports.map((r) => ({
+              value: r,
+              label: t(`names.${r}`),
+              href: reportHref(r),
+            })),
           }))}
         />
       </PageHeader>
@@ -540,11 +683,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {usesRange && (
               <>
                 <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">{t("from")}</span>
+                  <span className="text-muted-foreground text-xs">{t("from")}</span>
                   <Input type="date" name="from" defaultValue={from} className="w-40" />
                 </label>
                 <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">{t("to")}</span>
+                  <span className="text-muted-foreground text-xs">{t("to")}</span>
                   <Input type="date" name="to" defaultValue={to} className="w-40" />
                 </label>
               </>
@@ -561,7 +704,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             )}
             {usesDistrict && !usesArea && districts.length > 1 && (
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("district")}</span>
+                <span className="text-muted-foreground text-xs">{t("district")}</span>
                 <NativeSelect name="district" defaultValue={district} className="w-auto min-w-44">
                   <option value="">{t("allDistricts")}</option>
                   {districts.map((d) => (
@@ -574,7 +717,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             )}
             {usesPos && desks.length > 0 && (
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("pos")}</span>
+                <span className="text-muted-foreground text-xs">{t("pos")}</span>
                 <NativeSelect name="pos" defaultValue={pos || "all"} className="w-auto min-w-44">
                   {!locked && <option value="all">{t("allPos")}</option>}
                   {desks.map((p) => (
@@ -585,9 +728,49 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                 </NativeSelect>
               </label>
             )}
+            {isRevenue && (
+              <>
+                <label className="grid gap-1">
+                  <span className="text-muted-foreground text-xs">{t("checkStatusLabel")}</span>
+                  <NativeSelect
+                    name="check"
+                    defaultValue={checkSt ?? ""}
+                    className="w-auto min-w-40"
+                  >
+                    <option value="">{t("allStatuses")}</option>
+                    {CHECK_STATUSES.map((k) => (
+                      <option key={k} value={k}>
+                        {t(`checkStatus.${k}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-muted-foreground text-xs">{t("billStatusLabel")}</span>
+                  <NativeSelect name="bill" defaultValue={billSt ?? ""} className="w-auto min-w-40">
+                    <option value="">{t("allStatuses")}</option>
+                    {BILL_STATUSES.map((k) => (
+                      <option key={k} value={k}>
+                        {t(`billStatus.${k}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </label>
+                <label className="grid gap-1">
+                  <span className="text-muted-foreground text-xs">{t("viewLabel")}</span>
+                  <NativeSelect name="view" defaultValue={view} className="w-auto min-w-36">
+                    {REVENUE_VIEWS.map((k) => (
+                      <option key={k} value={k}>
+                        {t(`views.${k}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </label>
+              </>
+            )}
             {report === "collections" && (
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("groupBy")}</span>
+                <span className="text-muted-foreground text-xs">{t("groupBy")}</span>
                 <NativeSelect name="by" defaultValue={by} className="w-auto min-w-36">
                   {COLLECTION_BY.map((b) => (
                     <option key={b} value={b}>
@@ -599,7 +782,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             )}
             {BASIS_REPORTS.includes(report) && (
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("basisLabel")}</span>
+                <span className="text-muted-foreground text-xs">{t("basisLabel")}</span>
                 <NativeSelect name="basis" defaultValue={basis} className="w-auto min-w-44">
                   {COLLECTION_BASIS.map((b) => (
                     <option key={b} value={b}>
@@ -612,8 +795,12 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             {report === "payments" && (
               <>
                 <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">{t("method")}</span>
-                  <NativeSelect name="method" defaultValue={method ?? ""} className="w-auto min-w-44">
+                  <span className="text-muted-foreground text-xs">{t("method")}</span>
+                  <NativeSelect
+                    name="method"
+                    defaultValue={method ?? ""}
+                    className="w-auto min-w-44"
+                  >
                     <option value="">{t("allMethods")}</option>
                     {PAYMENT_METHODS.map((m) => (
                       <option key={m} value={m}>
@@ -623,7 +810,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   </NativeSelect>
                 </label>
                 <label className="grid gap-1">
-                  <span className="text-xs text-muted-foreground">{t("feeType")}</span>
+                  <span className="text-muted-foreground text-xs">{t("feeType")}</span>
                   <NativeSelect name="fee" defaultValue={fee ?? ""} className="w-auto min-w-44">
                     <option value="">{t("allFeeTypes")}</option>
                     {feeTypes.map((f) => (
@@ -638,7 +825,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             )}
             {report === "parcels" && (
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("kind")}</span>
+                <span className="text-muted-foreground text-xs">{t("kind")}</span>
                 <NativeSelect name="kind" defaultValue={kind} className="w-auto min-w-44">
                   {PARCEL_KINDS.map((k) => (
                     <option key={k} value={k}>
@@ -677,7 +864,11 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">{t("related")}</span>
             {RELATED_REPORTS[report].map((r) => (
-              <Link key={r} href={reportHref(r)} className="rounded-full border px-2.5 py-0.5 hover:bg-muted">
+              <Link
+                key={r}
+                href={reportHref(r)}
+                className="hover:bg-muted rounded-full border px-2.5 py-0.5"
+              >
                 {t(`names.${r}`)}
               </Link>
             ))}
@@ -690,19 +881,29 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                   <ul className="grid grid-cols-2 gap-2">
                     {(["reconciled", "verified", "pending", "disputed"] as const).map((k) => (
                       <li key={k} className="rounded-md border px-3 py-2">
-                        <span className="block text-xs text-muted-foreground">{tc(`status.${k}`)}</span>
-                        <span className="font-medium tabular-nums">{usd(status[k].amount)}</span> <span className="text-xs text-muted-foreground">· {status[k].n}</span>
+                        <span className="text-muted-foreground block text-xs">
+                          {tc(`status.${k}`)}
+                        </span>
+                        <span className="font-medium tabular-nums">{usd(status[k].amount)}</span>{" "}
+                        <span className="text-muted-foreground text-xs">· {status[k].n}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {t("approvalsLine", { approved: status.approved, waiting: status.waiting })}
-                    {status.approvers ? ` · ${t("approvedByLine", { names: status.approvers })}` : ""}
+                    {status.approvers
+                      ? ` · ${t("approvedByLine", { names: status.approvers })}`
+                      : ""}
                   </p>
                 </div>
                 {compare && (
                   <div className="text-sm">
-                    <p className="mb-2 font-medium">{t("compareTitle", { from: compare[0]!.previous_from, to: compare[0]!.previous_to })}</p>
+                    <p className="mb-2 font-medium">
+                      {t("compareTitle", {
+                        from: compare[0]!.previous_from,
+                        to: compare[0]!.previous_to,
+                      })}
+                    </p>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -713,15 +914,39 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {[...compare.filter((c) => c.current_amount || c.previous_amount), { channel: "total", current_amount: compare.reduce((s, c) => s + c.current_amount, 0), previous_amount: compare.reduce((s, c) => s + c.previous_amount, 0) }].map((c) => {
-                          const change = c.previous_amount ? ((c.current_amount - c.previous_amount) / c.previous_amount) * 100 : null;
+                        {[
+                          ...compare.filter((c) => c.current_amount || c.previous_amount),
+                          {
+                            channel: "total",
+                            current_amount: compare.reduce((s, c) => s + c.current_amount, 0),
+                            previous_amount: compare.reduce((s, c) => s + c.previous_amount, 0),
+                          },
+                        ].map((c) => {
+                          const change = c.previous_amount
+                            ? ((c.current_amount - c.previous_amount) / c.previous_amount) * 100
+                            : null;
                           return (
-                            <TableRow key={c.channel} className={c.channel === "total" ? "font-medium" : ""}>
-                              <TableCell>{c.channel === "total" ? t("grandTotal") : tc(`channels.${c.channel}`)}</TableCell>
-                              <TableCell className="text-end tabular-nums">{usd(c.current_amount)}</TableCell>
-                              <TableCell className="text-end tabular-nums">{usd(c.previous_amount)}</TableCell>
-                              <TableCell className={`text-end tabular-nums ${change === null ? "" : change < 0 ? "text-status-rejected" : "text-status-approved"}`}>
-                                {change === null ? "—" : `${change > 0 ? "+" : ""}${format.number(change, { maximumFractionDigits: 1 })} %`}
+                            <TableRow
+                              key={c.channel}
+                              className={c.channel === "total" ? "font-medium" : ""}
+                            >
+                              <TableCell>
+                                {c.channel === "total"
+                                  ? t("grandTotal")
+                                  : tc(`channels.${c.channel}`)}
+                              </TableCell>
+                              <TableCell className="text-end tabular-nums">
+                                {usd(c.current_amount)}
+                              </TableCell>
+                              <TableCell className="text-end tabular-nums">
+                                {usd(c.previous_amount)}
+                              </TableCell>
+                              <TableCell
+                                className={`text-end tabular-nums ${change === null ? "" : change < 0 ? "text-status-rejected" : "text-status-approved"}`}
+                              >
+                                {change === null
+                                  ? "—"
+                                  : `${change > 0 ? "+" : ""}${format.number(change, { maximumFractionDigits: 1 })} %`}
                               </TableCell>
                             </TableRow>
                           );
@@ -734,7 +959,7 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
             </Card>
           )}
           <Card className="overflow-hidden">{body}</Card>
-          <p className="text-xs text-muted-foreground">{t(`notes.${report}`)}</p>
+          <p className="text-muted-foreground text-xs">{t(`notes.${report}`)}</p>
         </div>
         {viewer.can("reports.assistant") && <AssistantPanel />}
       </div>

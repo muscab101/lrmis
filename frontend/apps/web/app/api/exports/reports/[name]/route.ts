@@ -7,7 +7,10 @@ import { reportTable } from "@/lib/server/report-table";
 import {
   AREA_REPORTS,
   BASIS_REPORTS,
+  billStatus as parseBillStatus,
+  checkStatus as parseCheckStatus,
   collectionBasis,
+  revenueView,
   collectionBy,
   collectionsCompare,
   collectionsStatus,
@@ -80,6 +83,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     POS_REPORTS.includes(report) && /^[0-9a-f-]{36}$/i.test(sp.pos ?? "") ? sp.pos! : null;
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
+  const isRevenue = report === "revenue";
+  const checkSt = isRevenue ? parseCheckStatus(sp.check) : null;
+  const billSt = isRevenue ? parseBillStatus(sp.bill) : null;
+  const view = isRevenue ? revenueView(sp.view) : "summary";
   const format = sp.format === "pdf" || sp.format === "xlsx" ? sp.format : "csv";
   const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "")
     ? sp.lang!
@@ -89,7 +96,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     : {};
   const rows = (await runReport(
     report,
-    { from, to, district, kind, method, feeType: fee, by, basis, pos, ...place },
+    {
+      from,
+      to,
+      district,
+      kind,
+      method,
+      feeType: fee,
+      by,
+      basis,
+      pos,
+      checkStatus: checkSt,
+      billStatus: billSt,
+      view,
+      ...place,
+    },
     supabase,
   )) as unknown[];
   const snapshot = SNAPSHOT_REPORTS.includes(report);
@@ -193,6 +214,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ...(method ? [`${t("method")}: ${t(`methods.${method}`)}`] : []),
     ...(pos ? [`${t("pos")}: ${await posName(supabase, pos)}`] : []),
     ...(fee ? [`${t("feeType")}: ${fee === "credit" ? t("unallocated") : (feeName ?? fee)}`] : []),
+    ...(checkSt ? [`${t("checkStatusLabel")}: ${t(`checkStatus.${checkSt}`)}`] : []),
+    ...(billSt ? [`${t("billStatusLabel")}: ${t(`billStatus.${billSt}`)}`] : []),
+    ...(isRevenue ? [`${t("viewLabel")}: ${t(`views.${view}`)}`] : []),
     ...(await financeLines()),
     t("generated", {
       at: cellText(new Date().toISOString(), "datetime"),

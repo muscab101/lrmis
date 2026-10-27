@@ -19,6 +19,7 @@ import type {
   UnreconciledRow,
   RegistrationRow,
   ReportName,
+  RevenueDetailRow,
   RevenueRow,
 } from "./reports";
 
@@ -43,7 +44,15 @@ export interface ReportTable {
   links: (string | null)[][];
 }
 
-const CHANNEL_COLUMNS = ["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"] as const;
+const CHANNEL_COLUMNS = [
+  "cash",
+  "evc_plus",
+  "edahab",
+  "zaad",
+  "bank_transfer",
+  "card",
+  "other",
+] as const;
 
 const num = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
 
@@ -60,12 +69,18 @@ export async function reportTable(
   const t = await getTranslations({ locale, namespace: "reports" });
   const all = await getTranslations({ locale });
   const so = locale === "so";
-  const pick = (r: Record<string, unknown>, base: string) => ((so ? r[`${base}_so`] : r[`${base}_en`]) as string | null) ?? null;
+  const pick = (r: Record<string, unknown>, base: string) =>
+    ((so ? r[`${base}_so`] : r[`${base}_en`]) as string | null) ?? null;
   /** A value label from an existing catalog section, or the raw value when there is none. */
-  const label = (ns: string, v: string | null) => (v === null ? null : all.has(`${ns}.${v}`) ? all(`${ns}.${v}`) : v);
+  const label = (ns: string, v: string | null) =>
+    v === null ? null : all.has(`${ns}.${v}`) ? all(`${ns}.${v}`) : v;
   const yesNo = (v: boolean | null) => (v === null ? null : v ? t("yes") : t("no"));
   // Cash, EVC Plus, eDahab, ZAAD, Bank transfer, Visa / Mastercard, Other: the columns of every collections report.
-  const channelColumns: Column[] = CHANNEL_COLUMNS.map((c) => ({ label: all(`collections.channels.${c}`), kind: "money", sum: true }));
+  const channelColumns: Column[] = CHANNEL_COLUMNS.map((c) => ({
+    label: all(`collections.channels.${c}`),
+    kind: "money",
+    sum: true,
+  }));
 
   let columns: Column[];
   let rows: Cell[][];
@@ -73,13 +88,46 @@ export async function reportTable(
   const to = (base: string, id: string | null | undefined) => (id ? `/${base}/${id}` : null);
   switch (name) {
     case "revenue": {
+      // One line per payment (the detail view) or one per month and fee.
+      if (data.length && "receipt_no" in (data[0] as object)) {
+        columns = [
+          { label: t("received"), kind: "datetime" },
+          { label: t("receipt"), kind: "mono" },
+          { label: t("pun"), kind: "mono" },
+          { label: t("payer"), kind: "text" },
+          { label: t("feeType"), kind: "text" },
+          { label: t("invoice"), kind: "mono" },
+          { label: t("billStatusLabel"), kind: "text" },
+          { label: t("checkStatusLabel"), kind: "text" },
+          { label: t("method"), kind: "text" },
+          { label: t("amount"), kind: "money", sum: true },
+        ];
+        rows = (data as RevenueDetailRow[]).map((r) => [
+          r.received_at,
+          r.receipt_no,
+          r.pun,
+          r.payer,
+          so ? r.fee_name_so : r.fee_name_en,
+          r.invoice_number,
+          r.bill_status ? t(`billStatus.${r.bill_status}`) : null,
+          t(`checkStatus.${r.check_status}`),
+          label("collections.channels", r.channel),
+          num(r.amount),
+        ]);
+        break;
+      }
       columns = [
         { label: t("month"), kind: "mono" },
         { label: t("feeType"), kind: "text" },
         { label: t("payments"), kind: "int", sum: true },
         { label: t("amount"), kind: "money", sum: true },
       ];
-      rows = (data as RevenueRow[]).map((r) => [r.month, so ? r.fee_name_so : r.fee_name_en, num(r.payments), num(r.amount)]);
+      rows = (data as RevenueRow[]).map((r) => [
+        r.month,
+        so ? r.fee_name_so : r.fee_name_en,
+        num(r.payments),
+        num(r.amount),
+      ]);
       break;
     }
     case "billing": {
@@ -114,7 +162,14 @@ export async function reportTable(
         { label: t("cashOut"), kind: "money", sum: true },
         { label: t("netCash"), kind: "money", sum: true },
       ];
-      rows = (data as IncomeRow[]).map((r) => [r.month, num(r.income), num(r.expenses), num(r.cash_in), num(r.cash_out), num(r.net)]);
+      rows = (data as IncomeRow[]).map((r) => [
+        r.month,
+        num(r.income),
+        num(r.expenses),
+        num(r.cash_in),
+        num(r.cash_out),
+        num(r.net),
+      ]);
       break;
     }
     case "arrears": {
@@ -124,7 +179,11 @@ export async function reportTable(
         { label: t("invoices"), kind: "int", sum: true },
         ...buckets.map((b) => ({ label: t(`buckets.${b}`), kind: "money" as const, sum: true })),
       ];
-      rows = (data as ArrearsRow[]).map((r) => [pick(r as never, "district"), num(r.invoices), ...buckets.map((b) => num(r[b]))]);
+      rows = (data as ArrearsRow[]).map((r) => [
+        pick(r as never, "district"),
+        num(r.invoices),
+        ...buckets.map((b) => num(r[b])),
+      ]);
       break;
     }
     case "collection": {
@@ -156,7 +215,13 @@ export async function reportTable(
         { label: t("rejected"), kind: "int", sum: true },
         { label: t("medianDays"), kind: "num" },
       ];
-      rows = (data as RegistrationRow[]).map((r) => [r.month, num(r.submitted), num(r.registered), num(r.rejected), num(r.median_days)]);
+      rows = (data as RegistrationRow[]).map((r) => [
+        r.month,
+        num(r.submitted),
+        num(r.registered),
+        num(r.rejected),
+        num(r.median_days),
+      ]);
       break;
     }
     case "cashiers": {
@@ -167,7 +232,13 @@ export async function reportTable(
         { label: t("amount"), kind: "money", sum: true },
         { label: t("difference"), kind: "money", sum: true },
       ];
-      rows = (data as CashierRow[]).map((r) => [r.cashier_name, num(r.shifts), num(r.payments), num(r.amount), num(r.difference)]);
+      rows = (data as CashierRow[]).map((r) => [
+        r.cashier_name,
+        num(r.shifts),
+        num(r.payments),
+        num(r.amount),
+        num(r.difference),
+      ]);
       break;
     }
     case "invoices": {
@@ -195,7 +266,10 @@ export async function reportTable(
         num(r.balance),
         label("billing.invoiceStatus", r.status),
       ]);
-      links = (data as InvoiceRow[]).map((r) => [to("invoices", r.invoice_id), to("parcels", r.parcel_id)]);
+      links = (data as InvoiceRow[]).map((r) => [
+        to("invoices", r.invoice_id),
+        to("parcels", r.parcel_id),
+      ]);
       break;
     }
     case "payments": {
@@ -223,7 +297,11 @@ export async function reportTable(
         num(r.amount),
         label("payments.status", r.status),
       ]);
-      links = (data as PaymentRow[]).map((r) => [to("payments", r.payment_id), null, to("parcels", r.parcel_id)]);
+      links = (data as PaymentRow[]).map((r) => [
+        to("payments", r.payment_id),
+        null,
+        to("parcels", r.parcel_id),
+      ]);
       break;
     }
     case "paymentTypes": {
@@ -234,26 +312,37 @@ export async function reportTable(
         ...channelColumns,
         { label: t("grandTotal"), kind: "money", sum: true },
       ];
-      rows = (data as PaymentTypeRow[]).map((r) => [pick(r as never, "fee_name"), num(r.payments), ...methods.map((m) => num(r[m])), num(r.total)]);
+      rows = (data as PaymentTypeRow[]).map((r) => [
+        pick(r as never, "fee_name"),
+        num(r.payments),
+        ...methods.map((m) => num(r[m])),
+        num(r.total),
+      ]);
       // A fee type opens its payments; an amount opens the payments of that fee type made that way.
       links = drill
         ? (data as PaymentTypeRow[]).map((r) => [
             drill("payments", { fee: r.fee_type }),
             null,
-            ...methods.map((m) => (Number(r[m]) ? drill("payments", { fee: r.fee_type, method: m }) : null)),
+            ...methods.map((m) =>
+              Number(r[m]) ? drill("payments", { fee: r.fee_type, method: m }) : null,
+            ),
             drill("payments", { fee: r.fee_type }),
           ])
         : [];
       break;
     }
     case "collections": {
-      const fmt = (d: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(so ? "so" : "en-GB", { timeZone: "UTC", ...opts }).format(new Date(`${String(d).slice(0, 10)}T00:00:00Z`));
+      const fmt = (d: string, opts: Intl.DateTimeFormatOptions) =>
+        new Intl.DateTimeFormat(so ? "so" : "en-GB", { timeZone: "UTC", ...opts }).format(
+          new Date(`${String(d).slice(0, 10)}T00:00:00Z`),
+        );
       // Days by date, weeks by their Monday–Sunday range, months by name.
       const periodLabel = (r: CollectionsRow) => {
         const a = String(r.period).slice(0, 10);
         const b = String(r.period_end).slice(0, 10);
         if (a === b) return fmt(a, { day: "2-digit", month: "short", year: "numeric" });
-        if (a.slice(8) === "01" && (b.slice(0, 7) === a.slice(0, 7))) return fmt(a, { month: "long", year: "numeric" });
+        if (a.slice(8) === "01" && b.slice(0, 7) === a.slice(0, 7))
+          return fmt(a, { month: "long", year: "numeric" });
         return `${fmt(a, { day: "2-digit", month: "short" })} – ${fmt(b, { day: "2-digit", month: "short", year: "numeric" })}`;
       };
       columns = [
@@ -262,7 +351,12 @@ export async function reportTable(
         ...channelColumns,
         { label: t("grandTotal"), kind: "money", sum: true },
       ];
-      rows = (data as CollectionsRow[]).map((r) => [periodLabel(r), num(r.payments), ...CHANNEL_COLUMNS.map((c) => num(r[c])), num(r.total)]);
+      rows = (data as CollectionsRow[]).map((r) => [
+        periodLabel(r),
+        num(r.payments),
+        ...CHANNEL_COLUMNS.map((c) => num(r[c])),
+        num(r.total),
+      ]);
       break;
     }
     case "collectionsCashier": {
@@ -286,7 +380,11 @@ export async function reportTable(
         num(r.shortage),
         num(r.excess),
       ]);
-      links = drill ? (data as CollectionsCashierRow[]).map((r) => [r.cashier_id ? `/collections?tab=verify&status=all&cashier=${r.cashier_id}` : null]) : [];
+      links = drill
+        ? (data as CollectionsCashierRow[]).map((r) => [
+            r.cashier_id ? `/collections?tab=verify&status=all&cashier=${r.cashier_id}` : null,
+          ])
+        : [];
       break;
     }
     case "shortages": {
@@ -296,7 +394,11 @@ export async function reportTable(
         { label: t("number"), kind: "mono" },
         { label: t("recordedLabel"), kind: "money", sum: true },
         { label: t("actualLabel"), kind: "money", sum: true },
-        ...CHANNEL_COLUMNS.map((c) => ({ label: `${all(`collections.channels.${c}`)} ±`, kind: "money" as const, sum: true })),
+        ...CHANNEL_COLUMNS.map((c) => ({
+          label: `${all(`collections.channels.${c}`)} ±`,
+          kind: "money" as const,
+          sum: true,
+        })),
         { label: t("differenceLabel"), kind: "money", sum: true },
         { label: t("shortage"), kind: "money", sum: true },
         { label: t("excess"), kind: "money", sum: true },
@@ -318,7 +420,11 @@ export async function reportTable(
         r.prepared_by,
         r.approved_by,
       ]);
-      links = (data as ShortageRow[]).map((r) => [null, null, `/collections/reconcile?cashier=${r.cashier_id}&date=${String(r.business_date).slice(0, 10)}`]);
+      links = (data as ShortageRow[]).map((r) => [
+        null,
+        null,
+        `/collections/reconcile?cashier=${r.cashier_id}&date=${String(r.business_date).slice(0, 10)}`,
+      ]);
       break;
     }
     case "unreconciled": {
@@ -346,7 +452,14 @@ export async function reportTable(
         num(r.age_days),
         r.dispute_reason,
       ]);
-      links = (data as UnreconciledRow[]).map((r) => [to("payments", r.payment_id), null, null, null, null, to("parcels", r.parcel_id)]);
+      links = (data as UnreconciledRow[]).map((r) => [
+        to("payments", r.payment_id),
+        null,
+        null,
+        null,
+        null,
+        to("parcels", r.parcel_id),
+      ]);
       break;
     }
     case "certificates": {
@@ -370,7 +483,11 @@ export async function reportTable(
         r.issued_by,
         label("documents.status", r.status),
       ]);
-      links = (data as CertificateRow[]).map((r) => [to("documents", r.document_id), null, to("parcels", r.parcel_id)]);
+      links = (data as CertificateRow[]).map((r) => [
+        to("documents", r.document_id),
+        null,
+        to("parcels", r.parcel_id),
+      ]);
       break;
     }
     case "parcels": {
@@ -393,7 +510,9 @@ export async function reportTable(
         num(r.area_m2),
         label("stage.landUses", r.land_use),
         pick(r as never, "grade"),
-        r.status === "registered" ? label("stage.parcelStatus", r.status) : `${label("stage.parcelStatus", r.status)} · ${t("partialShort")}`,
+        r.status === "registered"
+          ? label("stage.parcelStatus", r.status)
+          : `${label("stage.parcelStatus", r.status)} · ${t("partialShort")}`,
         r.owners,
       ]);
       links = (data as ParcelRow[]).map((r) => [to("parcels", r.parcel_id)]);
@@ -447,7 +566,14 @@ export async function reportTable(
         num(r.area_m2),
         label("stage.parcelStatus", r.status),
       ]);
-      links = (data as OwnerRow[]).map((r) => [to("owners", r.party_id), null, null, null, null, to("parcels", r.parcel_id)]);
+      links = (data as OwnerRow[]).map((r) => [
+        to("owners", r.party_id),
+        null,
+        null,
+        null,
+        null,
+        to("parcels", r.parcel_id),
+      ]);
       break;
     }
   }
@@ -455,7 +581,13 @@ export async function reportTable(
   const hasSum = columns.some((c) => c.sum);
   const totals: Cell[] | null =
     hasSum && rows.length > 0
-      ? columns.map((c, i) => (c.sum ? Math.round(rows.reduce((s, r) => s + (Number(r[i]) || 0), 0) * 100) / 100 : i === 0 ? t("total") : null))
+      ? columns.map((c, i) =>
+          c.sum
+            ? Math.round(rows.reduce((s, r) => s + (Number(r[i]) || 0), 0) * 100) / 100
+            : i === 0
+              ? t("total")
+              : null,
+        )
       : null;
   return { title: t(`names.${name}`), columns, rows, totals, links };
 }

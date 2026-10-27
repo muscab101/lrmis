@@ -147,6 +147,16 @@ describe("messages and reports (Phase 10)", () => {
     expect(Number(arrears.rows[0]!.d31_90)).toBe(60);
     const rev = await asUser(db, exec, (tx) => tx.query<{ fee_type: string; amount: string }>(`select * from public.report_revenue(current_date - 30, current_date)`));
     expect(rev.rows.find((r) => r.fee_type === "property_tax")?.amount).toBe("40.00");
+    // Status filters: the 40 paid is on a bill still part paid (60 open), and nobody has checked the payment yet.
+    const sum = async (sql: string) => (await asUser(db, exec, (tx) => tx.query<{ amount: string }>(sql))).rows.reduce((t, r) => t + Number(r.amount), 0);
+    expect(await sum(`select * from public.report_revenue(current_date - 30, current_date, p_bill_status => 'partially_paid')`)).toBe(40);
+    expect(await sum(`select * from public.report_revenue(current_date - 30, current_date, p_bill_status => 'paid')`)).toBe(0);
+    expect(await sum(`select * from public.report_revenue(current_date - 30, current_date, p_check_status => 'verified')`)).toBe(0);
+    // The detail view lists each payment and adds up to the same total.
+    const detail = await asUser(db, exec, (tx) => tx.query<{ receipt_no: string; amount: string; bill_status: string }>(`select * from public.report_revenue_detail(current_date - 30, current_date)`));
+    expect(detail.rows.length).toBeGreaterThan(0);
+    expect(detail.rows.every((r) => r.receipt_no)).toBe(true);
+    expect(detail.rows.reduce((t, r) => t + Number(r.amount), 0)).toBe(await sum(`select * from public.report_revenue(current_date - 30, current_date)`));
     const col = await asUser(db, exec, (tx) => tx.query<{ rate: string }>(`select * from public.report_collection(current_date - 365, current_date)`));
     expect(Number(col.rows[0]!.rate)).toBe(40);
     const reg = await asUser(db, exec, (tx) => tx.query<{ registered: string }>(`select * from public.report_registrations(current_date - 30, current_date)`));

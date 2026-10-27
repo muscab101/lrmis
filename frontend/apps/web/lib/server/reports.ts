@@ -15,7 +15,10 @@ export interface Kpis {
     paid_year: number;
     trend: { month: string; amount: number }[];
   };
-  tasks: Record<"surveys" | "transfers" | "permits" | "changes" | "disputes" | "campaigns" | "messages_failed", number>;
+  tasks: Record<
+    "surveys" | "transfers" | "permits" | "changes" | "disputes" | "campaigns" | "messages_failed",
+    number
+  >;
 }
 
 export async function dashboardKpis(): Promise<Kpis> {
@@ -36,7 +39,15 @@ export interface DashboardPeriod {
   prev_to: string;
   applications?: PeriodPair;
   weekday?: number[];
-  recent?: { id: string; number: string; status: string; created_at: string; district_en: string | null; district_so: string | null; owners: string | null }[];
+  recent?: {
+    id: string;
+    number: string;
+    status: string;
+    created_at: string;
+    district_en: string | null;
+    district_so: string | null;
+    owners: string | null;
+  }[];
   registered?: PeriodPair & { total: number };
   owners?: PeriodPair & { total: number };
   collected?: PeriodPair;
@@ -49,7 +60,10 @@ export interface DashboardPeriod {
 /** The dashboard's figures for the last `days` days next to the same length before. */
 export async function dashboardPeriod(days: number): Promise<DashboardPeriod> {
   const supabase = await createClient();
-  return unwrap(await supabase.rpc("dashboard_period", { p_days: days }), "dashboard period") as DashboardPeriod;
+  return unwrap(
+    await supabase.rpc("dashboard_period", { p_days: days }),
+    "dashboard period",
+  ) as DashboardPeriod;
 }
 
 export const REPORTS = [
@@ -92,29 +106,75 @@ export interface ReportArgs {
   basis?: CollectionBasis;
   /** Money reports (POS_REPORTS): one point of sale. */
   pos?: string | null;
+  /** Revenue: the payments' check status and the bills' status; summary (month × fee) or one line per payment. */
+  checkStatus?: CheckStatus | null;
+  billStatus?: BillStatus | null;
+  view?: RevenueView;
 }
 
 /** Reports that can be narrowed to one point of sale. */
-export const POS_REPORTS: readonly ReportName[] = ["payments", "collections", "collectionsCashier", "unreconciled"];
+export const POS_REPORTS: readonly ReportName[] = [
+  "payments",
+  "collections",
+  "collectionsCashier",
+  "unreconciled",
+];
 
 export const COLLECTION_BY = ["day", "week", "month"] as const;
 export type CollectionBy = (typeof COLLECTION_BY)[number];
 export const COLLECTION_BASIS = ["verified", "all"] as const;
 export type CollectionBasis = (typeof COLLECTION_BASIS)[number];
 /** Reports that count verified payments by default (or all recorded ones). */
-export const BASIS_REPORTS: readonly ReportName[] = ["collections", "collectionsCashier", "paymentTypes"];
+export const BASIS_REPORTS: readonly ReportName[] = [
+  "collections",
+  "collectionsCashier",
+  "paymentTypes",
+];
 /** Reports that carry the verification and approval facts and the previous-period comparison. */
-export const FINANCE_REPORTS: readonly ReportName[] = ["collections", "collectionsCashier", "paymentTypes", "shortages", "unreconciled"];
+export const FINANCE_REPORTS: readonly ReportName[] = [
+  "collections",
+  "collectionsCashier",
+  "paymentTypes",
+  "shortages",
+  "unreconciled",
+];
 
-export const collectionBy = (v: string | undefined): CollectionBy => ((COLLECTION_BY as readonly string[]).includes(v ?? "") ? (v as CollectionBy) : "day");
-export const collectionBasis = (v: string | undefined): CollectionBasis => (v === "all" ? "all" : "verified");
+export const collectionBy = (v: string | undefined): CollectionBy =>
+  (COLLECTION_BY as readonly string[]).includes(v ?? "") ? (v as CollectionBy) : "day";
+export const collectionBasis = (v: string | undefined): CollectionBasis =>
+  v === "all" ? "all" : "verified";
+
+/** Revenue report filters: a payment's check state, a bill's state, and summary or detail. */
+export const CHECK_STATUSES = ["verified", "reconciled", "pending", "disputed"] as const;
+export type CheckStatus = (typeof CHECK_STATUSES)[number];
+export const BILL_STATUSES = ["paid", "partially_paid", "issued"] as const;
+export type BillStatus = (typeof BILL_STATUSES)[number];
+export const REVENUE_VIEWS = ["summary", "detail"] as const;
+export type RevenueView = (typeof REVENUE_VIEWS)[number];
+export const checkStatus = (v: string | undefined): CheckStatus | null =>
+  (CHECK_STATUSES as readonly string[]).includes(v ?? "") ? (v as CheckStatus) : null;
+export const billStatus = (v: string | undefined): BillStatus | null =>
+  (BILL_STATUSES as readonly string[]).includes(v ?? "") ? (v as BillStatus) : null;
+export const revenueView = (v: string | undefined): RevenueView =>
+  v === "detail" ? "detail" : "summary";
 
 /** Ways of paying the Payments report filters by; mobile money is any wallet; "other" is cheques and the rest. Card is Visa / Mastercard. */
-export const PAYMENT_METHODS = ["cash", "evc_plus", "edahab", "zaad", "mobile_money", "bank_transfer", "card", "other"] as const;
+export const PAYMENT_METHODS = [
+  "cash",
+  "evc_plus",
+  "edahab",
+  "zaad",
+  "mobile_money",
+  "bank_transfer",
+  "card",
+  "other",
+] as const;
 export type PaymentMethodFilter = (typeof PAYMENT_METHODS)[number];
 
 export function paymentMethod(v: string | undefined): PaymentMethodFilter | null {
-  return (PAYMENT_METHODS as readonly string[]).includes(v ?? "") ? (v as PaymentMethodFilter) : null;
+  return (PAYMENT_METHODS as readonly string[]).includes(v ?? "")
+    ? (v as PaymentMethodFilter)
+    : null;
 }
 
 /** A fee type code from ?fee= (letters, digits and underscores). */
@@ -126,7 +186,12 @@ export const PARCEL_KINDS = ["all", "registered", "partial"] as const;
 export type ParcelKind = (typeof PARCEL_KINDS)[number];
 
 /** Reports that list what exists now rather than what happened in a period. */
-export const SNAPSHOT_REPORTS: readonly ReportName[] = ["arrears", "parcels", "owners", "locations"];
+export const SNAPSHOT_REPORTS: readonly ReportName[] = [
+  "arrears",
+  "parcels",
+  "owners",
+  "locations",
+];
 /** Reports that take a district filter. */
 export const DISTRICT_REPORTS: readonly ReportName[] = [
   "revenue",
@@ -148,12 +213,32 @@ export const DISTRICT_REPORTS: readonly ReportName[] = [
   "unreconciled",
 ];
 /** Reports that also take a section, sector and neighbourhood filter. */
-export const AREA_REPORTS: readonly ReportName[] = DISTRICT_REPORTS.filter((r) => r !== "income" && r !== "shortages");
+export const AREA_REPORTS: readonly ReportName[] = DISTRICT_REPORTS.filter(
+  (r) => r !== "income" && r !== "shortages",
+);
 
 /** Reports grouped by what they are about, in the order the page shows them. */
-export const REPORT_GROUPS: { key: "collections" | "money" | "land" | "documents"; reports: ReportName[] }[] = [
-  { key: "collections", reports: ["collections", "collectionsCashier", "paymentTypes", "shortages", "unreconciled"] },
-  { key: "money", reports: ["revenue", "billing", "invoices", "payments", "arrears", "collection", "income", "cashiers"] },
+export const REPORT_GROUPS: {
+  key: "collections" | "money" | "land" | "documents";
+  reports: ReportName[];
+}[] = [
+  {
+    key: "collections",
+    reports: ["collections", "collectionsCashier", "paymentTypes", "shortages", "unreconciled"],
+  },
+  {
+    key: "money",
+    reports: [
+      "revenue",
+      "billing",
+      "invoices",
+      "payments",
+      "arrears",
+      "collection",
+      "income",
+      "cashiers",
+    ],
+  },
   { key: "land", reports: ["parcels", "owners", "locations", "registrations"] },
   { key: "documents", reports: ["certificates"] },
 ];
@@ -184,76 +269,396 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** District, section, sector and neighbourhood from ?district=&section=&sector=&nbhd= (ids only). */
 export function reportArea(sp: Record<string, string | undefined>) {
   const id = (v: string | undefined) => (v && UUID.test(v) ? v : null);
-  return { district: id(sp.district), section: id(sp.section), sector: id(sp.sector), neighbourhood: id(sp.nbhd) };
+  return {
+    district: id(sp.district),
+    section: id(sp.section),
+    sector: id(sp.sector),
+    neighbourhood: id(sp.nbhd),
+  };
 }
 
 /** Runs one report RPC. The functions check `reports.view` and district access themselves. */
 export async function runReport(name: ReportName, args: ReportArgs, client?: SupabaseClient) {
   const supabase = client ?? (await createClient());
   const d = args.district || null;
-  const area = { p_section: args.section || null, p_sector: args.sector || null, p_neighbourhood: args.neighbourhood || null };
+  const area = {
+    p_section: args.section || null,
+    p_sector: args.sector || null,
+    p_neighbourhood: args.neighbourhood || null,
+  };
   switch (name) {
-    case "revenue":
-      return unwrap(await supabase.rpc("report_revenue", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as RevenueRow[];
+    case "revenue": {
+      const status = {
+        p_check_status: args.checkStatus ?? null,
+        p_bill_status: args.billStatus ?? null,
+      };
+      if (args.view === "detail")
+        return unwrap(
+          await supabase.rpc("report_revenue_detail", {
+            p_from: args.from,
+            p_to: args.to,
+            p_district: d,
+            ...area,
+            ...status,
+          }),
+          "report",
+        ) as RevenueDetailRow[];
+      return unwrap(
+        await supabase.rpc("report_revenue", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+          ...status,
+        }),
+        "report",
+      ) as RevenueRow[];
+    }
     case "arrears":
-      return unwrap(await supabase.rpc("report_arrears", { p_district: d, ...area }), "report") as ArrearsRow[];
+      return unwrap(
+        await supabase.rpc("report_arrears", { p_district: d, ...area }),
+        "report",
+      ) as ArrearsRow[];
     case "collection":
-      return unwrap(await supabase.rpc("report_collection", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as CollectionRow[];
+      return unwrap(
+        await supabase.rpc("report_collection", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+        }),
+        "report",
+      ) as CollectionRow[];
     case "registrations":
-      return unwrap(await supabase.rpc("report_registrations", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as RegistrationRow[];
+      return unwrap(
+        await supabase.rpc("report_registrations", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+        }),
+        "report",
+      ) as RegistrationRow[];
     case "income":
-      return unwrap(await supabase.rpc("report_income_expense", { p_from: args.from, p_to: args.to, p_district: d }), "report") as IncomeRow[];
+      return unwrap(
+        await supabase.rpc("report_income_expense", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+        }),
+        "report",
+      ) as IncomeRow[];
     case "cashiers":
-      return unwrap(await supabase.rpc("report_cashiers", { p_from: args.from, p_to: args.to }), "report") as CashierRow[];
+      return unwrap(
+        await supabase.rpc("report_cashiers", { p_from: args.from, p_to: args.to }),
+        "report",
+      ) as CashierRow[];
     case "billing":
-      return unwrap(await supabase.rpc("report_billing", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as BillingRow[];
+      return unwrap(
+        await supabase.rpc("report_billing", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+        }),
+        "report",
+      ) as BillingRow[];
     case "invoices":
-      return unwrap(await supabase.rpc("report_invoices", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as InvoiceRow[];
+      return unwrap(
+        await supabase.rpc("report_invoices", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+        }),
+        "report",
+      ) as InvoiceRow[];
     case "payments":
       return unwrap(
-        await supabase.rpc("report_payments", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_method: args.method ?? null, p_fee_type: args.feeType ?? null, p_pos: args.pos ?? null }),
+        await supabase.rpc("report_payments", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+          p_method: args.method ?? null,
+          p_fee_type: args.feeType ?? null,
+          p_pos: args.pos ?? null,
+        }),
         "report",
       ) as PaymentRow[];
     case "paymentTypes":
-      return unwrap(await supabase.rpc("report_payment_types", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_basis: args.basis ?? "verified" }), "report") as PaymentTypeRow[];
+      return unwrap(
+        await supabase.rpc("report_payment_types", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+          p_basis: args.basis ?? "verified",
+        }),
+        "report",
+      ) as PaymentTypeRow[];
     case "collections":
       return unwrap(
-        await supabase.rpc("report_collections", { p_from: args.from, p_to: args.to, p_by: args.by ?? "day", p_basis: args.basis ?? "verified", p_district: d, ...area, p_pos: args.pos ?? null }),
+        await supabase.rpc("report_collections", {
+          p_from: args.from,
+          p_to: args.to,
+          p_by: args.by ?? "day",
+          p_basis: args.basis ?? "verified",
+          p_district: d,
+          ...area,
+          p_pos: args.pos ?? null,
+        }),
         "report",
       ) as CollectionsRow[];
     case "collectionsCashier":
-      return unwrap(await supabase.rpc("report_collections_cashier", { p_from: args.from, p_to: args.to, p_basis: args.basis ?? "verified", p_district: d, ...area, p_pos: args.pos ?? null }), "report") as CollectionsCashierRow[];
+      return unwrap(
+        await supabase.rpc("report_collections_cashier", {
+          p_from: args.from,
+          p_to: args.to,
+          p_basis: args.basis ?? "verified",
+          p_district: d,
+          ...area,
+          p_pos: args.pos ?? null,
+        }),
+        "report",
+      ) as CollectionsCashierRow[];
     case "shortages":
-      return unwrap(await supabase.rpc("report_cashier_shortages", { p_from: args.from, p_to: args.to, p_district: d }), "report") as ShortageRow[];
+      return unwrap(
+        await supabase.rpc("report_cashier_shortages", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+        }),
+        "report",
+      ) as ShortageRow[];
     case "unreconciled":
-      return unwrap(await supabase.rpc("report_unreconciled", { p_from: args.from, p_to: args.to, p_district: d, ...area, p_pos: args.pos ?? null }), "report") as UnreconciledRow[];
+      return unwrap(
+        await supabase.rpc("report_unreconciled", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+          p_pos: args.pos ?? null,
+        }),
+        "report",
+      ) as UnreconciledRow[];
     case "certificates":
-      return unwrap(await supabase.rpc("report_certificates", { p_from: args.from, p_to: args.to, p_district: d, ...area }), "report") as CertificateRow[];
+      return unwrap(
+        await supabase.rpc("report_certificates", {
+          p_from: args.from,
+          p_to: args.to,
+          p_district: d,
+          ...area,
+        }),
+        "report",
+      ) as CertificateRow[];
     case "parcels":
-      return unwrap(await supabase.rpc("report_parcels", { p_district: d, p_kind: args.kind ?? "all", ...area }), "report") as ParcelRow[];
+      return unwrap(
+        await supabase.rpc("report_parcels", {
+          p_district: d,
+          p_kind: args.kind ?? "all",
+          ...area,
+        }),
+        "report",
+      ) as ParcelRow[];
     case "owners":
-      return unwrap(await supabase.rpc("report_owners", { p_district: d, ...area }), "report") as OwnerRow[];
+      return unwrap(
+        await supabase.rpc("report_owners", { p_district: d, ...area }),
+        "report",
+      ) as OwnerRow[];
     case "locations":
-      return unwrap(await supabase.rpc("report_locations", { p_district: d, ...area }), "report") as LocationRow[];
+      return unwrap(
+        await supabase.rpc("report_locations", { p_district: d, ...area }),
+        "report",
+      ) as LocationRow[];
   }
 }
 
-export interface RevenueRow { month: string; fee_type: string; fee_name_so: string; fee_name_en: string; amount: number; payments: number }
-export interface ArrearsRow { district_id: string; district_so: string; district_en: string; invoices: number; not_due: number; d1_30: number; d31_90: number; d91_180: number; d180: number; total: number }
-export interface CollectionRow { district_id: string; district_so: string; district_en: string; invoices: number; billed: number; collected: number; credited: number; outstanding: number; rate: number }
-export interface RegistrationRow { month: string; submitted: number; registered: number; rejected: number; median_days: number | null }
-export interface IncomeRow { month: string; income: number; expenses: number; cash_in: number; cash_out: number; net: number }
-export interface BillingRow { month: string; district_id: string; district_so: string; district_en: string; fee_type: string; fee_name_so: string; fee_name_en: string; invoices: number; billed: number; collected: number; credited: number; outstanding: number }
-export interface InvoiceRow { invoice_id: string; parcel_id: string | null; number: string; pun: string | null; district_so: string; district_en: string; fee_name_so: string; fee_name_en: string; period: string | null; issue_date: string; due_date: string; total: number; paid: number; balance: number; status: string }
-export interface PaymentRow { payment_id: string; parcel_id: string | null; receipt_no: string; received_at: string; pun: string | null; invoices: string | null; fee_types_so: string | null; fee_types_en: string | null; method: string; cashier: string | null; point_of_sale: string | null; payer: string | null; amount: number; status: string }
-type ChannelAmounts = { cash: number; evc_plus: number; edahab: number; zaad: number; bank_transfer: number; card: number; other: number; total: number };
-export interface PaymentTypeRow extends ChannelAmounts { fee_type: string; fee_name_so: string; fee_name_en: string; payments: number }
-export interface CollectionsRow extends ChannelAmounts { period: string; period_end: string; payments: number }
-export interface CollectionsCashierRow extends ChannelAmounts { cashier_id: string | null; cashier: string; payments: number; unchecked: number; days: number; reconciled_days: number; shortage: number; excess: number }
-export interface ShortageRow { reconciliation_id: string; number: string; business_date: string; cashier_id: string; cashier: string | null; recorded: number; actual: number; cash: number; evc_plus: number; edahab: number; zaad: number; bank_transfer: number; card: number; other: number; difference: number; shortage: number; excess: number; status: string; prepared_by: string | null; approved_by: string | null; decided_at: string | null }
-export interface UnreconciledRow { payment_id: string; parcel_id: string | null; receipt_no: string; received_at: string; cashier: string; channel: string; reference: string | null; pun: string | null; amount: number; verify_status: string; age_days: number; dispute_reason: string | null }
+export interface RevenueRow {
+  month: string;
+  fee_type: string;
+  fee_name_so: string;
+  fee_name_en: string;
+  amount: number;
+  payments: number;
+}
+export interface RevenueDetailRow {
+  received_at: string;
+  receipt_no: string;
+  pun: string | null;
+  payer: string | null;
+  fee_type: string;
+  fee_name_so: string;
+  fee_name_en: string;
+  invoice_number: string | null;
+  bill_status: string | null;
+  check_status: string;
+  channel: string;
+  amount: number;
+}
+export interface ArrearsRow {
+  district_id: string;
+  district_so: string;
+  district_en: string;
+  invoices: number;
+  not_due: number;
+  d1_30: number;
+  d31_90: number;
+  d91_180: number;
+  d180: number;
+  total: number;
+}
+export interface CollectionRow {
+  district_id: string;
+  district_so: string;
+  district_en: string;
+  invoices: number;
+  billed: number;
+  collected: number;
+  credited: number;
+  outstanding: number;
+  rate: number;
+}
+export interface RegistrationRow {
+  month: string;
+  submitted: number;
+  registered: number;
+  rejected: number;
+  median_days: number | null;
+}
+export interface IncomeRow {
+  month: string;
+  income: number;
+  expenses: number;
+  cash_in: number;
+  cash_out: number;
+  net: number;
+}
+export interface BillingRow {
+  month: string;
+  district_id: string;
+  district_so: string;
+  district_en: string;
+  fee_type: string;
+  fee_name_so: string;
+  fee_name_en: string;
+  invoices: number;
+  billed: number;
+  collected: number;
+  credited: number;
+  outstanding: number;
+}
+export interface InvoiceRow {
+  invoice_id: string;
+  parcel_id: string | null;
+  number: string;
+  pun: string | null;
+  district_so: string;
+  district_en: string;
+  fee_name_so: string;
+  fee_name_en: string;
+  period: string | null;
+  issue_date: string;
+  due_date: string;
+  total: number;
+  paid: number;
+  balance: number;
+  status: string;
+}
+export interface PaymentRow {
+  payment_id: string;
+  parcel_id: string | null;
+  receipt_no: string;
+  received_at: string;
+  pun: string | null;
+  invoices: string | null;
+  fee_types_so: string | null;
+  fee_types_en: string | null;
+  method: string;
+  cashier: string | null;
+  point_of_sale: string | null;
+  payer: string | null;
+  amount: number;
+  status: string;
+}
+type ChannelAmounts = {
+  cash: number;
+  evc_plus: number;
+  edahab: number;
+  zaad: number;
+  bank_transfer: number;
+  card: number;
+  other: number;
+  total: number;
+};
+export interface PaymentTypeRow extends ChannelAmounts {
+  fee_type: string;
+  fee_name_so: string;
+  fee_name_en: string;
+  payments: number;
+}
+export interface CollectionsRow extends ChannelAmounts {
+  period: string;
+  period_end: string;
+  payments: number;
+}
+export interface CollectionsCashierRow extends ChannelAmounts {
+  cashier_id: string | null;
+  cashier: string;
+  payments: number;
+  unchecked: number;
+  days: number;
+  reconciled_days: number;
+  shortage: number;
+  excess: number;
+}
+export interface ShortageRow {
+  reconciliation_id: string;
+  number: string;
+  business_date: string;
+  cashier_id: string;
+  cashier: string | null;
+  recorded: number;
+  actual: number;
+  cash: number;
+  evc_plus: number;
+  edahab: number;
+  zaad: number;
+  bank_transfer: number;
+  card: number;
+  other: number;
+  difference: number;
+  shortage: number;
+  excess: number;
+  status: string;
+  prepared_by: string | null;
+  approved_by: string | null;
+  decided_at: string | null;
+}
+export interface UnreconciledRow {
+  payment_id: string;
+  parcel_id: string | null;
+  receipt_no: string;
+  received_at: string;
+  cashier: string;
+  channel: string;
+  reference: string | null;
+  pun: string | null;
+  amount: number;
+  verify_status: string;
+  age_days: number;
+  dispute_reason: string | null;
+}
 
-export interface CollectionsCompareRow { channel: string; current_amount: number; previous_amount: number; current_count: number; previous_count: number; previous_from: string; previous_to: string }
+export interface CollectionsCompareRow {
+  channel: string;
+  current_amount: number;
+  previous_amount: number;
+  current_count: number;
+  previous_count: number;
+  previous_from: string;
+  previous_to: string;
+}
 export interface CollectionsStatus {
   pending: { n: number; amount: number };
   verified: { n: number; amount: number };
@@ -281,7 +686,13 @@ export async function collectionsCompare(args: ReportArgs, client?: SupabaseClie
     }),
     "compare",
   ) as CollectionsCompareRow[];
-  return rows.map((r) => ({ ...r, current_amount: Number(r.current_amount), previous_amount: Number(r.previous_amount), current_count: Number(r.current_count), previous_count: Number(r.previous_count) }));
+  return rows.map((r) => ({
+    ...r,
+    current_amount: Number(r.current_amount),
+    previous_amount: Number(r.previous_amount),
+    current_count: Number(r.current_count),
+    previous_count: Number(r.previous_count),
+  }));
 }
 
 /** How much of the period is verified, pending, disputed or reconciled, and the reconciliation approvals. */
@@ -300,18 +711,92 @@ export async function collectionsStatus(args: ReportArgs, client?: SupabaseClien
     "collections status",
   ) as CollectionsStatus;
 }
-export interface CertificateRow { document_id: string; parcel_id: string | null; serial: string; type: string; pun: string | null; owner: string | null; district_so: string | null; district_en: string | null; issued_at: string; issued_by: string | null; status: string }
-export interface ParcelRow { parcel_id: string; pun: string | null; district_so: string; district_en: string; neighbourhood_so: string | null; neighbourhood_en: string | null; house_no: string | null; area_m2: number | null; land_use: string | null; grade_so: string | null; grade_en: string | null; status: string; provisional: boolean; owners: string | null; registered_at: string | null; created_at: string }
-export interface LocationRow { level: "district" | "section" | "sector" | "neighbourhood"; code: string; name_so: string; name_en: string; district_so: string; district_en: string; parcels: number; registered: number; partial: number; has_boundary: boolean }
-export interface OwnerRow { party_id: string; parcel_id: string; owner: string; phone: string | null; id_type: string | null; id_number: string | null; role: string; share_pct: number | null; pun: string | null; district_so: string; district_en: string; neighbourhood_so: string | null; neighbourhood_en: string | null; area_m2: number | null; status: string }
-export interface AccountRow { code: string; name_so: string; name_en: string; type: string; debit: number; credit: number; net: number }
+export interface CertificateRow {
+  document_id: string;
+  parcel_id: string | null;
+  serial: string;
+  type: string;
+  pun: string | null;
+  owner: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  issued_at: string;
+  issued_by: string | null;
+  status: string;
+}
+export interface ParcelRow {
+  parcel_id: string;
+  pun: string | null;
+  district_so: string;
+  district_en: string;
+  neighbourhood_so: string | null;
+  neighbourhood_en: string | null;
+  house_no: string | null;
+  area_m2: number | null;
+  land_use: string | null;
+  grade_so: string | null;
+  grade_en: string | null;
+  status: string;
+  provisional: boolean;
+  owners: string | null;
+  registered_at: string | null;
+  created_at: string;
+}
+export interface LocationRow {
+  level: "district" | "section" | "sector" | "neighbourhood";
+  code: string;
+  name_so: string;
+  name_en: string;
+  district_so: string;
+  district_en: string;
+  parcels: number;
+  registered: number;
+  partial: number;
+  has_boundary: boolean;
+}
+export interface OwnerRow {
+  party_id: string;
+  parcel_id: string;
+  owner: string;
+  phone: string | null;
+  id_type: string | null;
+  id_number: string | null;
+  role: string;
+  share_pct: number | null;
+  pun: string | null;
+  district_so: string;
+  district_en: string;
+  neighbourhood_so: string | null;
+  neighbourhood_en: string | null;
+  area_m2: number | null;
+  status: string;
+}
+export interface AccountRow {
+  code: string;
+  name_so: string;
+  name_en: string;
+  type: string;
+  debit: number;
+  credit: number;
+  net: number;
+}
 
 export async function accountTotals(from: string, to: string, client?: SupabaseClient) {
   const supabase = client ?? (await createClient());
-  return unwrap(await supabase.rpc("report_accounts", { p_from: from, p_to: to }), "report") as AccountRow[];
+  return unwrap(
+    await supabase.rpc("report_accounts", { p_from: from, p_to: to }),
+    "report",
+  ) as AccountRow[];
 }
 
-export interface CashierRow { cashier_id: string; cashier_name: string; shifts: number; payments: number; amount: number; difference: number }
+export interface CashierRow {
+  cashier_id: string;
+  cashier_name: string;
+  shifts: number;
+  payments: number;
+  amount: number;
+  difference: number;
+}
 
 /** Default range: the current year to date. Accepts ?from=&to= in ISO dates. */
 export function reportRange(sp: Record<string, string | undefined>) {
