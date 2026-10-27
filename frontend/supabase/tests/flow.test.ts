@@ -67,7 +67,7 @@ describe("the flow as drawn (0061)", () => {
       ["service_charge", 12],
     ]);
     expect(await scalar<string>(db, `select name_en from public.fee_types where code = 'property_bill'`)).toBe("Tax bill");
-    // The service charge is SV- with the tax bill's number, and no INV number is skipped.
+    // The service charge is SCIN- with the tax bill's number, and no INV number is skipped.
     const nums = await db.query<{ code: string; number: string }>(
       `select f.code, i.number from public.invoices i join public.fee_types f on f.id = i.fee_type_id
         where i.parcel_id = (select parcel_id from public.applications where id = $1) order by f.code`,
@@ -75,7 +75,7 @@ describe("the flow as drawn (0061)", () => {
     );
     const tax = nums.rows.find((r) => r.code === "property_bill")!.number;
     expect(tax).toMatch(/^INV-\d{4}-\d{6}$/);
-    expect(nums.rows.find((r) => r.code === "service_charge")!.number).toBe(`SV-${tax.slice(4)}`);
+    expect(nums.rows.find((r) => r.code === "service_charge")!.number).toBe(`SCIN-${tax.slice(4)}`);
     const last = await scalar<number>(db, `select last_serial from public.serial_counters where scope = $1`, [`INV-${tax.slice(4, 8)}`]);
     expect(last).toBe(Number(tax.slice(-6)));
   });

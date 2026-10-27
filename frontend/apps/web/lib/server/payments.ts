@@ -355,7 +355,7 @@ export async function listPeriods() {
 
 /** Open invoices of a parcel found by PUN (for the cashier). */
 /**
- * The parcel the cashier takes money for, found by PUN, invoice number (INV-… or SV-…) or application
+ * The parcel the cashier takes money for, found by PUN, invoice number (INV-… or SCIN-…) or application
  * number (APP-…). Before registration a parcel has no PUN, so the application fee is found by
  * its invoice or application number.
  */
@@ -365,7 +365,7 @@ export async function parcelForCashier(term: string) {
   const cols =
     "id, pun, account_no, district_id, application:applications!parcels_application_id_fkey(number)";
   let parcelId: string | null = null;
-  if (key.startsWith("INV-") || key.startsWith("SV-")) {
+  if (key.startsWith("INV-") || key.startsWith("SCIN-")) {
     const { data } = await supabase
       .from("invoices")
       .select("parcel_id")
