@@ -103,12 +103,14 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
       return setError(res.error);
     }
     setFound(res.data);
-    // Searched by invoice number: that invoice is the one being paid.
-    const chosen = res.data.invoices.find((i) => i.number === pun.trim().toUpperCase());
+    // Everything owed is taken at once (the tax bill and its service charge together), even when one bill's number was searched.
+    // The payer starts as the land's owner (name and phone), still editable when someone else pays.
     setV((s) => ({
       ...s,
-      invoiceId: chosen?.id ?? "",
-      amount: String(chosen ? Number(chosen.balance) : res.data.invoices.reduce((a, i) => a + Number(i.balance), 0) || ""),
+      payerName: res.data.payer.name,
+      payerPhone: res.data.payer.phone,
+      invoiceId: "",
+      amount: String(Math.round(res.data.invoices.reduce((a, i) => a + Number(i.balance), 0) * 100) / 100 || ""),
     }));
   }
 

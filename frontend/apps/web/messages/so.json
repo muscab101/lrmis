@@ -2950,7 +2950,7 @@
     "discountUntil": "{pct}% dhimis haddii hadda la bixiyo oo dhan",
     "payFirst": "Marka hore bixi biilkan",
     "payFirstHint": "Haddii kale biilka ugu horreeya ayaa marka hore la bixinayaa.",
-    "oldestFirst": "Kan ugu horreeya marka hore",
+    "oldestFirst": "Biilasha oo dhan (kan ugu horreeya marka hore)",
     "referenceOptional": "Tixraac (ikhtiyaari)",
     "takePayment": "Qaado lacagta",
     "paymentTaken": "Lacagta waa la qaaday: {receipt}",

@@ -2950,7 +2950,7 @@
     "discountUntil": "{pct}% off if paid in full now",
     "payFirst": "Pay this invoice first",
     "payFirstHint": "Otherwise the oldest invoice is paid first.",
-    "oldestFirst": "Oldest first",
+    "oldestFirst": "All bills (oldest first)",
     "referenceOptional": "Reference (optional)",
     "takePayment": "Take payment",
     "paymentTaken": "Payment taken: {receipt}",

@@ -400,15 +400,27 @@ export async function parcelForCashier(term: string) {
       .order("due_date"),
     supabase
       .from("parcel_owners")
-      .select("party:parties(full_name)")
+      .select("role, party:parties(full_name, phone)")
       .eq("parcel_id", parcel.id)
       .is("valid_to", null),
   ]);
+  type Person = { role: string; party: { full_name: string; phone: string | null } | null };
+  let people = (owners ?? []) as unknown as Person[];
+  // Not registered yet: the owners named on the application.
+  if (people.length === 0 && parcel.application) {
+    const { data: app } = await supabase
+      .from("applications")
+      .select("application_parties(role, party:parties(full_name, phone))")
+      .eq("number", parcel.application.number)
+      .maybeSingle();
+    people = ((app as { application_parties?: Person[] } | null)?.application_parties ?? []).filter((x) => x.role !== "witness");
+  }
+  // The payer the cashier starts with: the main owner (the first co-owner when there is none).
+  const main = people.find((x) => x.role === "owner" && x.party) ?? people.find((x) => x.party);
   return {
     parcel,
-    owners: ((owners ?? []) as unknown as { party: { full_name: string } | null }[])
-      .map((o) => o.party?.full_name)
-      .filter(Boolean) as string[],
+    owners: people.map((o) => o.party?.full_name).filter(Boolean) as string[],
+    payer: { name: main?.party?.full_name ?? "", phone: main?.party?.phone ?? "" },
     invoices: (inv ?? []) as {
       id: string;
       number: string;
