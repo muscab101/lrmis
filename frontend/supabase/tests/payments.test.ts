@@ -278,4 +278,18 @@ describe("payments and accounting (Phase 7)", () => {
     );
     await asUser(db, accountant, (tx) => tx.query(`select public.period_set($1, $2, false)`, [today.getFullYear(), today.getMonth() + 1]));
   });
+  // Last, as it adds a payment: the cases above count on their own amounts.
+  it("receipts count per prefix: renaming a desk's code doesn't restart its numbers", async () => {
+    const before = await scalar<number>(db, `select count(*)::int from public.payments where receipt_no like 'HDN1-2026-%'`);
+    await db.query(`update public.points_of_sale set code = 'HDNX' where id = $1`, [pos]);
+    const open = await scalar<string>(db, `select id from public.cashier_shifts where pos_id = $1 and status = 'open' limit 1`, [pos]).catch(() => null);
+    const s = open ?? (await asUser(db, cashier, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos])));
+    const out = await asUser(db, cashier, (tx) =>
+      scalar<{ receipt_no: string }>(tx, `select public.cashier_take_payment($1, $2)`, [
+        s,
+        JSON.stringify({ parcel_id: parcelB, amount: 1, currency: "USD", method: "cash", payer_name: "Xasan", confirm_duplicate: true }),
+      ]),
+    );
+    expect(out.receipt_no).toBe(`HDN1-2026-${String(before + 1).padStart(6, "0")}`);
+  });
 });
