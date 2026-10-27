@@ -2368,7 +2368,8 @@
     "split_all": "Dhammaan",
     "split_paid": "La bixiyay",
     "split_owing": "Aan la bixin",
-    "paySplit": "Biilasha"
+    "paySplit": "Biilasha",
+    "accountNo": "Lambarka xisaabta"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

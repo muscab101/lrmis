@@ -17,6 +17,7 @@ export interface ParcelListRow {
   created_at: string;
   house_no: string | null;
   govt_receipt_no: string | null;
+  account_no?: string | null;
   /** The latest open invoice (else the latest paid one) and what's still owed. */
   invoice: string | null;
   balance: number;
@@ -50,7 +51,14 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
   if (stage === "paid") req = req.lte("balance", 0);
   if (stage === "owing") req = req.gt("balance", 0);
   const res = await req.limit(100);
-  return unwrap(res, "parcels") as ParcelListRow[];
+  const rows = unwrap(res, "parcels") as ParcelListRow[];
+  // The account number isn't in search_parcels: one lookup for the rows shown.
+  if (rows.length) {
+    const { data } = await supabase.from("parcels").select("id, account_no").in("id", rows.map((r) => r.id));
+    const acct = new Map(((data ?? []) as { id: string; account_no: string | null }[]).map((a) => [a.id, a.account_no]));
+    for (const r of rows) r.account_no = acct.get(r.id) ?? null;
+  }
+  return rows;
 }
 
 export interface ParcelDetail {

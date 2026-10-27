@@ -95,6 +95,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               <TableRow>
                 <TableHead className="hidden md:table-cell">{t("dateCreated")}</TableHead>
                 <TableHead>{t("pun")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("accountNo")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
                 <TableHead className="hidden xl:table-cell">{t("govtReceipt")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("neighbourhood")}</TableHead>
@@ -124,6 +125,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
                     </div>
                   </TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{p.account_no ? <Mono className="text-xs">{p.account_no}</Mono> : "—"}</TableCell>
                   {showInvoices && (
                     <TableCell className="hidden text-sm md:table-cell">
                       {p.invoice ? <Mono className="text-xs whitespace-nowrap">{p.invoice}</Mono> : "—"}
