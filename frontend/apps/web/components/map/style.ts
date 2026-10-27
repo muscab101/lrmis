@@ -272,7 +272,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         id: "districts-label",
         type: "symbol",
         source: "districts",
-        "source-layer": "districts",
+        // One point per district (public.districts.label_point), so a name is drawn once, not once per tile.
+        "source-layer": "district_labels",
         maxzoom: 13,
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 14, "text-transform": "uppercase" },
         paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 2 },
