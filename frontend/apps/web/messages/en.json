@@ -4847,7 +4847,9 @@
       "surveys": "Open surveys",
       "siteChecks": "Site checks waiting",
       "disputes": "Open disputes",
-      "permits": "Permits waiting"
+      "permits": "Permits waiting",
+      "zones": "Survey zones open",
+      "places": "Neighbourhoods waiting"
     },
     "hints": {
       "owners": "Saved but not registered yet.",
@@ -4858,7 +4860,9 @@
       "surveys": "Assigned, in progress or sent back.",
       "siteChecks": "A surveyor still has to check the land exists.",
       "disputes": "Disputes not yet resolved.",
-      "permits": "Drafts and permits waiting for a decision."
+      "permits": "Drafts and permits waiting for a decision.",
+      "zones": "Zones a surveyor is working through: surveyor, land recorded out of the target, district.",
+      "places": "Neighbourhoods with land not registered yet: land half-registered / applications still open."
     }
   }
 }

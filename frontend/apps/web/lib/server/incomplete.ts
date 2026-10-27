@@ -1,6 +1,8 @@
 import "server-only";
 import type { Viewer } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
+import { neighbourhoodStatus } from "./parcels";
+import { listZones } from "./zones";
 
 /** One unfinished item: what it is, a short detail, when, and where to finish it. */
 export interface IncompleteRow {
@@ -15,7 +17,7 @@ export interface IncompleteRow {
 }
 
 export interface IncompleteGroup {
-  key: "owners" | "parcels" | "invoices" | "certificates" | "transfers" | "surveys" | "siteChecks" | "disputes" | "permits";
+  key: "owners" | "parcels" | "zones" | "places" | "invoices" | "certificates" | "transfers" | "surveys" | "siteChecks" | "disputes" | "permits";
   count: number;
   rows: IncompleteRow[];
   /** The page with the full list. */
@@ -80,6 +82,51 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
             status: r.status as string,
             at: r.created_at as string,
             href: `/parcels/${r.id}`,
+          })),
+        };
+      })(),
+    );
+  }
+
+  // Yet to register: survey zones still open (a surveyor sees their own), and neighbourhoods with land still waiting.
+  if (can("surveys.view")) {
+    jobs.push(
+      (async () => {
+        const zones = await listZones(!can("surveys.approve"), "open");
+        return {
+          key: "zones",
+          count: zones.length,
+          href: "/parcels/yet-to-register?tab=zones",
+          rows: zones.slice(0, LIMIT).map((z) => ({
+            id: z.id,
+            title: `${lang === "so" ? z.name_so : z.name_en} · ${z.code}`,
+            detail: [z.surveyor, `${z.recorded}/${z.target}`, lang === "so" ? z.district_so : z.district_en].filter(Boolean).join(" · "),
+            status: null,
+            at: z.assigned_at,
+            href: "/parcels/yet-to-register?tab=zones",
+          })),
+        };
+      })(),
+    );
+  }
+
+  if (can("parcels.yet_to_register")) {
+    jobs.push(
+      (async () => {
+        const places = (await neighbourhoodStatus(null))
+          .filter((r) => r.partial > 0 || r.open_applications > 0)
+          .sort((a, b) => b.partial + b.open_applications - (a.partial + a.open_applications));
+        return {
+          key: "places",
+          count: places.length,
+          href: "/parcels/yet-to-register?tab=waiting",
+          rows: places.slice(0, LIMIT).map((r) => ({
+            id: r.id,
+            title: `${lang === "so" ? r.name_so : r.name_en} · ${r.code}`,
+            detail: `${lang === "so" ? r.district_so : r.district_en} · ${r.partial} / ${r.open_applications}`,
+            status: null,
+            at: null,
+            href: `/parcels?${new URLSearchParams({ stage: "draft", nbhd: r.id })}`,
           })),
         };
       })(),

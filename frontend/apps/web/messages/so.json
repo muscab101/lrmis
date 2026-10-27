@@ -4847,7 +4847,9 @@
       "surveys": "Sahanno furan",
       "siteChecks": "Hubin goob oo sugaysa",
       "disputes": "Muranno furan",
-      "permits": "Ogolaansho sugaya"
+      "permits": "Ogolaansho sugaya",
+      "zones": "Aagagga sahanka ee furan",
+      "places": "Xaafadaha sugaya"
     },
     "hints": {
       "owners": "La kaydiyay laakiin weli lama diiwaangelin.",
@@ -4858,7 +4860,9 @@
       "surveys": "La qoondeeyay, socda ama dib loo celiyay.",
       "siteChecks": "Sahamiye weli waa inuu hubiyaa in dhulku jiro.",
       "disputes": "Muranno weli aan la xallin.",
-      "permits": "Qabyo iyo ogolaansho sugaya go'aan."
+      "permits": "Qabyo iyo ogolaansho sugaya go'aan.",
+      "zones": "Aagag uu sahamiye ka shaqaynayo: sahamiyaha, dhulka la diiwaangeliyay ee hadafka, degmada.",
+      "places": "Xaafado leh dhul aan weli la diiwaangelin: dhul qayb la diiwaangeliyay / codsiyo weli furan."
     }
   }
 }

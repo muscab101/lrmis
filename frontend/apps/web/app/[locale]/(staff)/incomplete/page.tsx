@@ -1,6 +1,6 @@
 import { cn } from "@dhulka/ui/lib/cn";
 import { Mono, PageHeader } from "@dhulka/ui/misc";
-import { ArrowRightLeft, BadgeCheck, Building2, CheckCircle2, CircleHelp, Gavel, MapPinned, Receipt, Ruler, Users } from "lucide-react";
+import { ArrowRightLeft, BadgeCheck, Building2, CheckCircle2, CircleHelp, Gavel, Map as MapIcon, MapPin, MapPinned, Receipt, Ruler, Users } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -14,6 +14,8 @@ export async function generateMetadata() {
 const ICONS: Record<IncompleteGroup["key"], React.ReactNode> = {
   owners: <Users />,
   parcels: <MapPinned />,
+  zones: <MapIcon />,
+  places: <MapPin />,
   invoices: <Receipt />,
   certificates: <BadgeCheck />,
   transfers: <ArrowRightLeft />,
