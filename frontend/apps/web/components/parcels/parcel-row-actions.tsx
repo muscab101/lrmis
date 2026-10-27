@@ -153,9 +153,6 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
               <Input value={v.houseNo} maxLength={40} onChange={(e) => setV({ ...v, houseNo: e.target.value })} />
             </Field>
-            <Field id={`receipt-${parcel.id}`} label={t("govtReceipt")} error={fe("govtReceiptNo")}>
-              <Input value={v.govtReceiptNo} maxLength={60} onChange={(e) => setV({ ...v, govtReceiptNo: e.target.value })} />
-            </Field>
             <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")} className="sm:col-span-2">
               <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
             </Field>

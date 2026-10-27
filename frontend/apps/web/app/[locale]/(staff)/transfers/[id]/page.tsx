@@ -46,7 +46,6 @@ export default async function TransferPage({ params }: { params: Promise<{ local
         [ta("plotNo"), land.plot_no ?? "—"],
         [tp("houseNo"), land.house_no ?? "—"],
         ...(land.flat_no ? [[ta("flatNo"), land.flat_no] as [string, string]] : []),
-        [ta("govtReceiptNo"), land.govt_receipt_no ?? "—"],
         [tp("registeredOn"), land.registered_at ? format.dateTime(new Date(land.registered_at), { dateStyle: "medium" }) : "—"],
       ]
     : [];

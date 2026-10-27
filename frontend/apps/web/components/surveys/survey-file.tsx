@@ -49,7 +49,6 @@ export async function SurveyFileCards({
     [ta("plotNo"), file.plot_no],
     [ta("houseNo"), file.house_no && [nm(file.neighbourhood), file.house_no].filter(Boolean).join(" · ")],
     [ta("flatNo"), file.flat_no],
-    [ta("govtReceiptNo"), file.govt_receipt_no && <Mono key="gr">{file.govt_receipt_no}</Mono>],
     [ta("oldDeedNo"), file.old_deed_no],
     [ta("govtFileNo"), file.govt_file_no],
     [ta("addressNote"), file.address_note || null],

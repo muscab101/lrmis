@@ -85,9 +85,6 @@ export function SurveyDetailsEdit({
                 <Input value={v.flatNo} maxLength={20} onChange={(e) => setV({ ...v, flatNo: e.target.value })} />
               </Field>
             )}
-            <Field id="sd-receipt" label={ta("govtReceiptNo")} error={fe("govtReceiptNo")} className="sm:col-span-2">
-              <Input value={v.govtReceiptNo} maxLength={60} onChange={(e) => setV({ ...v, govtReceiptNo: e.target.value })} />
-            </Field>
             <Field id="sd-type" label={ta("propertyType")} className="sm:col-span-2">
               <NativeSelect value={v.propertyType} onChange={(e) => setV({ ...v, propertyType: e.target.value })}>
                 <option value="">{ta("choose")}</option>

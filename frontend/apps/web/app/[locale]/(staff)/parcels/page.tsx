@@ -97,7 +97,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                 <TableHead>{t("pun")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("accountNo")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
-                <TableHead className="hidden xl:table-cell">{t("govtReceipt")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("neighbourhood")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
                 <TableHead>{t("ownerName")}</TableHead>
@@ -131,7 +130,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.invoice ? <Mono className="text-xs whitespace-nowrap">{p.invoice}</Mono> : "—"}
                     </TableCell>
                   )}
-                  <TableCell className="hidden text-sm xl:table-cell">{p.govt_receipt_no ? <Mono className="text-xs">{p.govt_receipt_no}</Mono> : "—"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">
                     {nbhd ?? "—"}
                     <div className="text-muted-foreground text-xs">{district}</div>

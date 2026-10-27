@@ -78,12 +78,11 @@ export interface InvoiceRow {
 export interface InvoiceListRow extends InvoiceRow {
   created_at: string;
   account_no: string | null;
-  govt_receipt_no: string | null;
   phone: string | null;
 }
 const LIST_COLUMNS =
   "id, number, period, issue_date, due_date, total, paid, credited, balance, status, created_at, fee_type:fee_types(code, name_so, name_en), " +
-  "parcel:parcels(id, pun, account_no, govt_receipt_no, owners:parcel_owners(valid_to, party:parties(phone)))";
+  "parcel:parcels(id, pun, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
 export const INVOICE_SORTS = ["number", "issue_date", "due_date", "total", "paid"] as const;
 export type InvoiceSort = (typeof INVOICE_SORTS)[number];
 export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
@@ -127,12 +126,12 @@ export async function listInvoices(opts: {
   if (term) {
     if (/^(inv|scin)/i.test(term)) req = req.ilike("number", `%${term}%`);
     else {
-      // PUN, account number or government receipt number of the land, or the owner's phone.
+      // PUN or account number of the land, or the owner's phone.
       const like = `%${term.replace(/-/g, "")}%`;
       const { data } = await supabase
         .from("parcels")
         .select("id")
-        .or(`pun.ilike.${like},account_no.ilike.${like},govt_receipt_no.ilike.${like}`)
+        .or(`pun.ilike.${like},account_no.ilike.${like}`)
         .limit(200);
       const { data: byPhone } = /^\+?\d{5,}$/.test(term)
         ? await supabase
@@ -174,7 +173,6 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
     parcel:
       | (InvoiceRow["parcel"] & {
           account_no: string | null;
-          govt_receipt_no: string | null;
           owners?: { valid_to: string | null; party: { phone: string | null } | null }[];
         })
       | null;
@@ -185,7 +183,6 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
       ...r,
       parcel: r.parcel ? { id: r.parcel.id, pun: r.parcel.pun } : null,
       account_no: r.parcel?.account_no ?? null,
-      govt_receipt_no: r.parcel?.govt_receipt_no ?? null,
       phone: r.parcel?.owners?.find((o) => !o.valid_to && o.party?.phone)?.party?.phone ?? null,
     })),
   };

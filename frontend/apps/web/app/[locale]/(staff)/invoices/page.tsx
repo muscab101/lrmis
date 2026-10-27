@@ -262,7 +262,6 @@ export default async function InvoicesPage({
                   <Sort by="due_date">{t("table.dateDue")}</Sort>
                 </TableHead>
                 <TableHead>{t("table.pun")}</TableHead>
-                <TableHead>{t("table.govtReceipt")}</TableHead>
                 <TableHead>{t("table.accountNo")}</TableHead>
                 <TableHead>
                   <Sort by="number">{t("table.reference")}</Sort>
@@ -300,9 +299,6 @@ export default async function InvoicesPage({
                     ) : (
                       "—"
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Mono className="text-xs">{i.govt_receipt_no ?? "—"}</Mono>
                   </TableCell>
                   <TableCell>
                     <Mono className="text-xs">{i.account_no ?? "—"}</Mono>
