@@ -17,7 +17,8 @@ import {
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
 import { CreditNoteQueue, PlanQueue } from "@/components/billing/queues";
-import { EntriesSelect, PAGE_SIZES } from "@/components/billing/table-controls";
+import { PAGE_SIZES } from "@/components/billing/page-sizes";
+import { EntriesSelect } from "@/components/billing/table-controls";
 import { InvoiceStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";

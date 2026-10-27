@@ -2,8 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-
-export const PAGE_SIZES = [10, 25, 50, 100] as const;
+import { PAGE_SIZES } from "./page-sizes";
 
 /** "Show [10] entries": changing it goes back to page 1 with the new size. */
 export function EntriesSelect({ size, query }: { size: number; query: Record<string, string> }) {
