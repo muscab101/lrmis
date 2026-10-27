@@ -15,18 +15,37 @@ import {
   feeTypeCode,
   POS_REPORTS,
   parcelKind,
-  paymentMethod, REPORTS, reportArea, reportRange, runReport, SNAPSHOT_REPORTS, type ReportName } from "@/lib/server/reports";
+  paymentMethod,
+  REPORTS,
+  reportArea,
+  reportRange,
+  runReport,
+  SNAPSHOT_REPORTS,
+  type ReportName,
+} from "@/lib/server/reports";
 import { listDistricts } from "@/lib/server/users";
 import { zonePlaces } from "@/lib/server/zones";
 import { createClient } from "@/lib/supabase/server";
 
 async function posName(supabase: Awaited<ReturnType<typeof createClient>>, id: string) {
-  const { data } = await supabase.from("points_of_sale").select("code, name").eq("id", id).maybeSingle();
+  const { data } = await supabase
+    .from("points_of_sale")
+    .select("code, name")
+    .eq("id", id)
+    .maybeSingle();
   return data ? `${data.code} · ${data.name}` : id;
 }
 
-async function feeTypeName(supabase: Awaited<ReturnType<typeof createClient>>, code: string, locale: string) {
-  const { data } = await supabase.from("fee_types").select("name_so, name_en").eq("code", code).maybeSingle();
+async function feeTypeName(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  code: string,
+  locale: string,
+) {
+  const { data } = await supabase
+    .from("fee_types")
+    .select("name_so, name_en")
+    .eq("code", code)
+    .maybeSingle();
   return data ? (locale === "so" ? data.name_so : data.name_en) : null;
 }
 
@@ -43,7 +62,8 @@ function csvCell(value: unknown): string {
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
-  if (!(REPORTS as readonly string[]).includes(name)) return NextResponse.json({ code: "NOT_FOUND" }, { status: 404 });
+  if (!(REPORTS as readonly string[]).includes(name))
+    return NextResponse.json({ code: "NOT_FOUND" }, { status: 404 });
   const report = name as ReportName;
   const supabase = await createClient();
   const { data: allowed } = await supabase.rpc("has_permission", { p_key: "reports.export" });
@@ -56,13 +76,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const kind = parcelKind(sp.kind);
   const method = report === "payments" ? paymentMethod(sp.method) : null;
   const fee = report === "payments" ? feeTypeCode(sp.fee) : null;
-  const pos = POS_REPORTS.includes(report) && /^[0-9a-f-]{36}$/i.test(sp.pos ?? "") ? sp.pos! : null;
+  const pos =
+    POS_REPORTS.includes(report) && /^[0-9a-f-]{36}$/i.test(sp.pos ?? "") ? sp.pos! : null;
   const by = collectionBy(sp.by);
   const basis = collectionBasis(sp.basis);
   const format = sp.format === "pdf" || sp.format === "xlsx" ? sp.format : "csv";
-  const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "") ? sp.lang! : routing.defaultLocale;
-  const place = usesArea ? { section: area.section, sector: area.sector, neighbourhood: area.neighbourhood } : {};
-  const rows = (await runReport(report, { from, to, district, kind, method, feeType: fee, by, basis, pos, ...place }, supabase)) as unknown[];
+  const locale = (routing.locales as readonly string[]).includes(sp.lang ?? "")
+    ? sp.lang!
+    : routing.defaultLocale;
+  const place = usesArea
+    ? { section: area.section, sector: area.sector, neighbourhood: area.neighbourhood }
+    : {};
+  const rows = (await runReport(
+    report,
+    { from, to, district, kind, method, feeType: fee, by, basis, pos, ...place },
+    supabase,
+  )) as unknown[];
   const snapshot = SNAPSHOT_REPORTS.includes(report);
   const stamp = snapshot ? new Date().toISOString().slice(0, 10) : `${from}-${to}`;
   const file = `lrmis-${report}${report === "parcels" && kind !== "all" ? `-${kind}` : ""}${method ? `-${method}` : ""}${fee ? `-${fee}` : ""}${report === "collections" ? `-${by}` : ""}-${stamp}`;
@@ -75,16 +104,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (format === "csv") {
     const raw = rows as Record<string, unknown>[];
     const cols = raw[0] ? Object.keys(raw[0]).filter((k) => !k.endsWith("_id")) : [];
-    const body = "﻿" + [cols.map(csvCell).join(","), ...raw.map((r) => cols.map((c) => csvCell(r[c])).join(","))].join("\r\n");
+    const body =
+      "﻿" +
+      [
+        cols.map(csvCell).join(","),
+        ...raw.map((r) => cols.map((c) => csvCell(r[c])).join(",")),
+      ].join("\r\n");
     return new NextResponse(body, { headers: headers("text/csv; charset=utf-8", "csv") });
   }
 
   const t = await getTranslations({ locale, namespace: "reports" });
-  const [table, viewer, districts] = await Promise.all([reportTable(report, rows, locale), getViewer(), listDistricts()]);
+  const [table, viewer, districts] = await Promise.all([
+    reportTable(report, rows, locale),
+    getViewer(),
+    listDistricts(),
+  ]);
   const d = districts.find((x) => x.id === district);
-  const nm = (o: { name_so: string; name_en: string; code?: string }) => `${o.code ? `${o.code} · ` : ""}${locale === "so" ? o.name_so : o.name_en}`;
+  const nm = (o: { name_so: string; name_en: string; code?: string }) =>
+    `${o.code ? `${o.code} · ` : ""}${locale === "so" ? o.name_so : o.name_en}`;
   // Name the section, sector and neighbourhood the file is narrowed to.
-  const places = usesArea && d && (area.section || area.sector || area.neighbourhood) ? await zonePlaces([d.id]) : null;
+  const places =
+    usesArea && d && (area.section || area.sector || area.neighbourhood)
+      ? await zonePlaces([d.id])
+      : null;
   const found = places && {
     section: places.sections.find((x) => x.id === area.section),
     sector: places.sectors.find((x) => x.id === area.sector),
@@ -95,33 +137,54 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   async function financeLines() {
     if (!FINANCE_REPORTS.includes(report)) return [];
     const tc = await getTranslations({ locale, namespace: "collections" });
-    const money = (n: number) => new Intl.NumberFormat(locale === "so" ? "so" : "en-US", { style: "currency", currency: "USD" }).format(n);
+    const money = (n: number) =>
+      new Intl.NumberFormat(locale === "so" ? "so" : "en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(n);
     const args = { from, to, district, basis, pos, ...place };
-    const [st, cmp] = await Promise.all([collectionsStatus(args, supabase), BASIS_REPORTS.includes(report) ? collectionsCompare(args, supabase) : Promise.resolve(null)]);
+    const [st, cmp] = await Promise.all([
+      collectionsStatus(args, supabase),
+      BASIS_REPORTS.includes(report) ? collectionsCompare(args, supabase) : Promise.resolve(null),
+    ]);
     const out: string[] = [];
     if (report === "collections") out.push(`${t("groupBy")}: ${t(`by.${by}`)}`);
     if (BASIS_REPORTS.includes(report)) out.push(`${t("basisLabel")}: ${t(`basis.${basis}`)}`);
     out.push(
       `${t("verificationTitle")}: ` +
-        (["reconciled", "verified", "pending", "disputed"] as const).map((k) => `${tc(`status.${k}`)} ${money(Number(st[k].amount))} (${st[k].n})`).join(" · "),
+        (["reconciled", "verified", "pending", "disputed"] as const)
+          .map((k) => `${tc(`status.${k}`)} ${money(Number(st[k].amount))} (${st[k].n})`)
+          .join(" · "),
     );
-    out.push(t("approvalsLine", { approved: st.approved, waiting: st.waiting }) + (st.approvers ? ` · ${t("approvedByLine", { names: st.approvers })}` : ""));
+    out.push(
+      t("approvalsLine", { approved: st.approved, waiting: st.waiting }) +
+        (st.approvers ? ` · ${t("approvedByLine", { names: st.approvers })}` : ""),
+    );
     if (cmp) {
       const now = cmp.reduce((a, c) => a + c.current_amount, 0);
       const before = cmp.reduce((a, c) => a + c.previous_amount, 0);
-      const pct = before ? ` (${now >= before ? "+" : ""}${(((now - before) / before) * 100).toFixed(1)} %)` : "";
-      out.push(`${t("compareTitle", { from: cmp[0]!.previous_from, to: cmp[0]!.previous_to })}: ${money(before)} → ${money(now)}${pct}`);
+      const pct = before
+        ? ` (${now >= before ? "+" : ""}${(((now - before) / before) * 100).toFixed(1)} %)`
+        : "";
+      out.push(
+        `${t("compareTitle", { from: cmp[0]!.previous_from, to: cmp[0]!.previous_to })}: ${money(before)} → ${money(now)}${pct}`,
+      );
       out.push(
         cmp
           .filter((c) => c.current_amount || c.previous_amount)
-          .map((c) => `${tc(`channels.${c.channel}`)} ${money(c.previous_amount)} → ${money(c.current_amount)}`)
+          .map(
+            (c) =>
+              `${tc(`channels.${c.channel}`)} ${money(c.previous_amount)} → ${money(c.current_amount)}`,
+          )
           .join(" · "),
       );
     }
     return out;
   }
   const lines = [
-    snapshot ? t("asOf", { date: new Date().toISOString().slice(0, 10) }) : t("period", { from, to }),
+    snapshot
+      ? t("asOf", { date: new Date().toISOString().slice(0, 10) })
+      : t("period", { from, to }),
     `${t("district")}: ${d ? nm({ name_so: d.name_so, name_en: d.name_en }) : t("allDistricts")}`,
     ...(found?.section ? [`${t("section")}: ${nm(found.section)}`] : []),
     ...(found?.sector ? [`${t("sector")}: ${nm(found.sector)}`] : []),
@@ -131,12 +194,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ...(pos ? [`${t("pos")}: ${await posName(supabase, pos)}`] : []),
     ...(fee ? [`${t("feeType")}: ${fee === "credit" ? t("unallocated") : (feeName ?? fee)}`] : []),
     ...(await financeLines()),
-    t("generated", { at: cellText(new Date().toISOString(), "datetime"), by: viewer?.profile.full_name ?? "" }),
+    t("generated", {
+      at: cellText(new Date().toISOString(), "datetime"),
+      by: viewer?.profile.full_name ?? "",
+    }),
     t("rowsCount", { count: table.rows.length }),
   ];
   if (format === "xlsx") {
     const buf = await reportXlsx(table, { lines });
-    return new NextResponse(new Uint8Array(buf), { headers: headers("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx") });
+    return new NextResponse(new Uint8Array(buf), {
+      headers: headers("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"),
+    });
   }
-  return new NextResponse(reportPdf(table, { lines }), { headers: headers("application/pdf", "pdf") });
+  return new NextResponse(await reportPdf(table, { lines }), {
+    headers: headers("application/pdf", "pdf"),
+  });
 }
