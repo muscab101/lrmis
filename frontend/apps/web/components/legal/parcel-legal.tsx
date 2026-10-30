@@ -103,34 +103,6 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
                 <Button size="sm" variant="outline" onClick={() => open("use")}>
                   {t("changeUse")}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setF({ plot: parcel.plot_no ?? "", deed: parcel.deed_no ?? "", file: parcel.govt_file_no ?? "", own: parcel.ownership, dev: parcel.developed ? "yes" : "no" });
-                    setDialog("correct");
-                  }}
-                >
-                  {t("dataCorrection")}
-                </Button>
-              </>
-            )}
-            {can.permit && (
-              <Button size="sm" variant="outline" onClick={() => open("permit")}>
-                {t("applyPermit")}
-              </Button>
-            )}
-            {can.legal && (
-              <>
-                <Button size="sm" variant="outline" onClick={() => open("dispute")}>
-                  {t("openDispute")}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => open("lien")}>
-                  {t("registerLien")}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => open("order")}>
-                  {t("addOrder")}
-                </Button>
               </>
             )}
             {can.lease && parcel.ownership === "public" && !data.leases.some((l) => l.status === "active") && (
