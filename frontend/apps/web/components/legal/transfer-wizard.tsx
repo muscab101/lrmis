@@ -4,7 +4,7 @@ import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
-import { Input, Textarea } from "@dhulka/ui/input";
+import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { ArrowRightLeft, Trash2, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,7 +24,7 @@ function equalShares(n: number): number[] {
   return Array.from({ length: n }, (_, i) => (i === n - 1 ? Math.round((100 - each * (n - 1)) * 100) / 100 : each));
 }
 
-/** Start a transfer: kind, declared value (or court order), and the new owners (who share the land equally). */
+/** Start a transfer: kind (or court order), and the new owners (who share the land equally). */
 export function TransferWizard({
   parcelId,
   transferOrders,
@@ -40,7 +40,6 @@ export function TransferWizard({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<Kind>("sale");
-  const [value, setValue] = useState("");
   const [orderId, setOrderId] = useState(transferOrders[0]?.id ?? "");
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
@@ -80,7 +79,7 @@ export function TransferWizard({
           createTransferAction({
             parcelId,
             kind,
-            value: kind === "sale" || kind === "gift" ? value : null,
+            value: null,
             courtOrderId: kind === "court_order" ? orderId || null : null,
             owners: people.map((p, i) => ({ partyId: p.party.value, role: p.role, share: equalShares(people.length)[i]! })),
             note,
@@ -101,11 +100,6 @@ export function TransferWizard({
                   ))}
                 </NativeSelect>
               </Field>
-              {(kind === "sale" || kind === "gift") && (
-                <Field id="value" label={t("declaredValue")} hint={t("declaredValueHint")} error={fe("value")} required>
-                  <Input type="number" min={0} step="0.01" value={value} onChange={(e) => setValue(e.target.value)} />
-                </Field>
-              )}
               {kind === "court_order" && (
                 <Field id="order" label={t("courtOrder")} error={fe("courtOrderId")} required>
                   <NativeSelect value={orderId} onChange={(e) => setOrderId(e.target.value)}>
