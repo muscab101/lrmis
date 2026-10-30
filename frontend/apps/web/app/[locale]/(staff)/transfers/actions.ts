@@ -114,6 +114,8 @@ export const requestChangeAction = defineAction(
     otherPuns: z.array(z.string().trim().max(40)).default([]),
     landUse: z.enum(["residential", "commercial", "state", "mixed", "agricultural", "other"]).nullable().default(null),
     children: z.array(z.object({ type: z.literal("Polygon"), coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))) })).default([]),
+    /** Subdivide: the owners of each new parcel, in the same order as children (an empty list keeps the current owners). */
+    childOwners: z.array(z.array(id).max(20)).default([]),
     correction: z
       .object({
         plot_no: z.string().trim().max(40).optional(),
@@ -135,7 +137,7 @@ export const requestChangeAction = defineAction(
       ids = [...ids, ...found.map((p) => p.id)];
     }
     const payload =
-      v.kind === "change_of_use" ? { land_use: v.landUse } : v.kind === "subdivide" ? { children: v.children } : v.kind === "correction" ? v.correction : {};
+      v.kind === "change_of_use" ? { land_use: v.landUse } : v.kind === "subdivide" ? { children: v.children, ...(v.childOwners.length ? { owners: v.childOwners } : {}) } : v.kind === "correction" ? v.correction : {};
     return rpc(ctx, "parcel_change_request", { p_kind: v.kind, p_parcels: ids, p_payload: payload, p_reason: v.reason }, {
       land_use: "landUse",
       merge_owners: "otherPuns",
@@ -146,6 +148,8 @@ export const requestChangeAction = defineAction(
       child_outside: "children",
       child_invalid: "children",
       children: "children",
+      child_owners: "children",
+      pun_taken: "children",
       correction_empty: "correction",
       still_overlapping: "children",
       outside_neighbourhood: "children",

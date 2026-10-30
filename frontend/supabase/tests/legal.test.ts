@@ -171,17 +171,34 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
     );
   });
 
-  it("subdivides into new registered parcels with new PUNs; the parent is archived", async () => {
-    const id = await asUser(db, gis, (tx) => scalar<string>(tx, `select public.parcel_change_request('subdivide', $1, $2, 'Split for two heirs')`, [[parcel], JSON.stringify({ children: [half(true), half(false)] })]));
+  it("subdivides into the parent's PUN with A and B, owned by the people chosen; the parent is archived", async () => {
+    await expectError(
+      asUser(db, gis, (tx) => tx.query(`select public.parcel_change_request('subdivide', $1, $2, 'Split for two heirs')`, [[parcel], JSON.stringify({ children: [half(true), half(false)], owners: [[buyerA]] })])),
+      "VALIDATION: child_owners",
+    );
+    const parentPun = await scalar<string>(db, `select pun from public.parcels where id = $1`, [parcel]);
+    await db.query(`update public.parcels set house_no = '07' where id = $1`, [parcel]);
+    const id = await asUser(db, gis, (tx) =>
+      scalar<string>(tx, `select public.parcel_change_request('subdivide', $1, $2, 'Split for two heirs')`, [[parcel], JSON.stringify({ children: [half(true), half(false)], owners: [[buyerA, buyerB], [buyerA, buyerB]] })]),
+    );
     await expectError(asUser(db, gis, (tx) => tx.query(`select public.permit_apply($1, '{}')`, [parcel])), "PERMISSION_DENIED");
     const out = await asUser(db, registrar, (tx) => scalar<{ new_parcels: string[] }>(tx, `select public.parcel_change_decide($1, true, 'Checked on the map')`, [id]));
     children = out.new_parcels;
     expect(children).toHaveLength(2);
     const rows = await db.query<{ pun: string; status: string }>(`select pun, status::text from public.parcels where id = any ($1) order by pun`, [children]);
-    expect(rows.rows.map((r) => r.pun)).toEqual(["BNHDN01203", "BNHDN01204"]);
+    expect(rows.rows.map((r) => r.pun)).toEqual([`${parentPun}A`, `${parentPun}B`]);
+    expect((await db.query<{ house_no: string }>(`select house_no from public.parcels where id = any ($1) order by pun`, [children])).rows.map((r) => r.house_no)).toEqual(["07A", "07B"]);
     expect(rows.rows.every((r) => r.status === "registered")).toBe(true);
     expect(await scalar<string>(db, `select status::text from public.parcels where id = $1`, [parcel])).toBe("archived");
     expect(await owners(children[0]!)).toHaveLength(2);
+    const first = await db.query<{ party_id: string; role: string; share_pct: string }>(
+      `select party_id, role::text, share_pct from public.parcel_owners where parcel_id = $1 and valid_to is null order by role::text desc`,
+      [children[0]],
+    );
+    expect(first.rows.map((r) => [r.party_id, r.role, Number(r.share_pct)])).toEqual([
+      [buyerA, "owner", 50],
+      [buyerB, "co_owner", 50],
+    ]);
   });
 
   it("merges adjacent parcels with the same owners back into one", async () => {
@@ -215,5 +232,13 @@ describe("transfer approval without a second person (0109)", () => {
     const src = await scalar<string>(db, `select prosrc from pg_proc where proname = 'transfer_decide'`);
     expect(src).not.toContain("assert_maker_checker");
     expect(src).toContain("assert_permission('transfers.approve')");
+  });
+});
+
+describe("parcel change approval without a second person (0128)", () => {
+  it("the person who requested a parcel change may approve it", async () => {
+    const src = await scalar<string>(db, `select prosrc from pg_proc where proname = 'parcel_change_decide'`);
+    expect(src).not.toContain("assert_maker_checker");
+    expect(src).toContain("assert_permission('parcels.approve')");
   });
 });

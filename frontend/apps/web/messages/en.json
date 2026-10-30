@@ -2219,6 +2219,10 @@
     "sourceApplication": "Application",
     "noOwners": "No owners recorded yet.",
     "history": "History",
+    "historyFromTo": "From {from} to {to}",
+    "historyFrom": "From",
+    "historyInto": "Became",
+    "historyLandUse": "Now {use}",
     "events": {
       "survey_submitted": "Survey submitted",
       "survey_overlap_review": "Survey sent to overlap review",
@@ -3869,6 +3873,7 @@
     "childrenArea": "New parcels total",
     "noChildren": "No parcels drawn yet. Draw at least two.",
     "childN": "Parcel {n}",
+    "childKeepsOwners": "Keeps the current owners: {names}. Add people to choose different owners.",
     "splitByNumbers": "Split by numbers",
     "splitParts": "Parcels",
     "splitDirection": "Cut",
@@ -3914,10 +3919,12 @@
     "newOwnerTitle": "Register a new owner",
     "newOwnerBody": "For someone not on the register yet. When saved, they're added to the new owners of this transfer.",
     "newOwnerSave": "Save and add to transfer",
+    "newOwnerSaveChild": "Save and add to this parcel",
     "newOwnerAdded": "{name} was registered and added",
     "landTitle": "Land",
     "openParcel": "Open parcel",
     "transferHistory": "Transfer history",
+    "changeChildrenPending": "{n} new parcels once approved",
     "transferredTo": "transferred to"
   },
   "reports": {

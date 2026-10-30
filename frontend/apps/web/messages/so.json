@@ -2219,6 +2219,10 @@
     "sourceApplication": "Codsiga",
     "noOwners": "Weli milkiile lama diiwaangelin.",
     "history": "Taariikhda",
+    "historyFromTo": "Laga wareejiyay {from} loona wareejiyay {to}",
+    "historyFrom": "Laga keenay",
+    "historyInto": "Wuxuu noqday",
+    "historyLandUse": "Hadda {use}",
     "events": {
       "survey_submitted": "Sahanka waa la gudbiyay",
       "survey_overlap_review": "Sahanka waxaa loo diray dib-u-eegis isdul-fuul",
@@ -3869,6 +3873,7 @@
     "childrenArea": "Wadarta dhulalka cusub",
     "noChildren": "Weli dhul lama sawirin. Sawir ugu yaraan laba.",
     "childN": "Dhul {n}",
+    "childKeepsOwners": "Waxay haysaa milkiilayaasha hadda: {names}. Ku dar dad si aad milkiilayaal kale u doorato.",
     "splitByNumbers": "Ku qaybi tiro",
     "splitParts": "Dhulal",
     "splitDirection": "Goyn",
@@ -3914,10 +3919,12 @@
     "newOwnerTitle": "Diiwaangeli masuul cusub",
     "newOwnerBody": "Qof aan weli diiwaanka ku jirin. Marka la kaydiyo, waxaa lagu darayaa masuuliyiinta cusub ee wareejintan.",
     "newOwnerSave": "Kaydi oo ku dar wareejinta",
+    "newOwnerSaveChild": "Kaydi oo ku dar dhulkan",
     "newOwnerAdded": "{name} waa la diiwaangeliyay oo waa lagu daray",
     "landTitle": "Dhulka",
     "openParcel": "Fur dhulka",
     "transferHistory": "Taariikhda wareejinta",
+    "changeChildrenPending": "{n} dhul oo cusub marka la ansixiyo",
     "transferredTo": "loo wareejiyay"
   },
   "reports": {
