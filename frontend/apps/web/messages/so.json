@@ -2333,7 +2333,9 @@
       "register": "Diiwaangeli",
       "registerTitle": "Diiwaangeli dhulkan?",
       "registerBody": "{land} wuxuu helayaa PUN iyo lambar xisaab, waxaa loo samaynayaa biilka canshuurta iyo khidmadda adeegga, milkiilayaashiisana waa la diiwaangelinayaa. Khasnajiyada waa la ogeysiinayaa; shahaadadu waxay imanaysaa marka biilasha la bixiyo.",
-      "registered": "Dhulka waa la diiwaangeliyay"
+      "registered": "Dhulka waa la diiwaangeliyay",
+      "houseNoPickPlace": "Marka hore calaamadi meesha ama dooro xaafadda.",
+      "houseNoFull": "Lambar kasta oo guri xaafaddan waa la qaatay."
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",

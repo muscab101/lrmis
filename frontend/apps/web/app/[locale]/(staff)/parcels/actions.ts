@@ -36,27 +36,44 @@ export const updateParcelDetailsAction = defineAction(
   },
 );
 
-export const lockParcelAction = defineAction("parcels.lock", z.object({ id: z.uuid(), reason }), async (v, ctx) => {
-  try {
-    unwrap(await ctx.supabase.rpc("parcel_lock", { p_id: v.id, p_reason: v.reason }), "lock parcel");
-  } catch (err) {
-    reasonError(err);
-  }
-  refresh();
-  return null;
-});
+export const lockParcelAction = defineAction(
+  "parcels.lock",
+  z.object({ id: z.uuid(), reason }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("parcel_lock", { p_id: v.id, p_reason: v.reason }),
+        "lock parcel",
+      );
+    } catch (err) {
+      reasonError(err);
+    }
+    refresh();
+    return null;
+  },
+);
 
-export const unlockParcelAction = defineAction("parcels.unlock", z.object({ id: z.uuid(), reason }), async (v, ctx) => {
-  try {
-    unwrap(await ctx.supabase.rpc("parcel_unlock", { p_id: v.id, p_reason: v.reason }), "unlock parcel");
-  } catch (err) {
-    reasonError(err);
-  }
-  refresh();
-  return null;
-});
+export const unlockParcelAction = defineAction(
+  "parcels.unlock",
+  z.object({ id: z.uuid(), reason }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("parcel_unlock", { p_id: v.id, p_reason: v.reason }),
+        "unlock parcel",
+      );
+    } catch (err) {
+      reasonError(err);
+    }
+    refresh();
+    return null;
+  },
+);
 
-const size = z.number({ error: "validation.plot_size" }).gt(0, "validation.plot_size").max(5000, "validation.plot_size");
+const size = z
+  .number({ error: "validation.plot_size" })
+  .gt(0, "validation.plot_size")
+  .max(5000, "validation.plot_size");
 
 /** A surveyor adds land found in the field: it goes to Parcels → Partial registration (no application yet). */
 export const addFieldLandAction = defineAction(
@@ -80,7 +97,8 @@ export const addFieldLandAction = defineAction(
   }),
   async (v, ctx) => {
     // Without an owner from the owner form, a name is needed.
-    if (v.ownerId === null && v.ownerName.length < 3) throw new AppFailure("VALIDATION", undefined, { ownerName: ["validation.owner_name"] });
+    if (v.ownerId === null && v.ownerName.length < 3)
+      throw new AppFailure("VALIDATION", undefined, { ownerName: ["validation.owner_name"] });
     try {
       const out = unwrap(
         await ctx.supabase.rpc("field_land_create", {
@@ -107,12 +125,22 @@ export const addFieldLandAction = defineAction(
       return out;
     } catch (err) {
       // Location and House No errors from the DB go under their fields.
-      if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
+      if (
+        err instanceof AppFailure &&
+        err.code === "CONFLICT" &&
+        err.values?.detail === "house_no_taken"
+      ) {
         throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
       }
       if (err instanceof AppFailure && err.code === "VALIDATION") {
         const detail = String(err.values?.detail ?? "");
-        const field = detail.startsWith("pin") ? "pin" : detail.startsWith("neighbourhood") ? "neighbourhoodId" : detail === "plot_size" ? "plotWidthM" : "districtId";
+        const field = detail.startsWith("pin")
+          ? "pin"
+          : detail.startsWith("neighbourhood")
+            ? "neighbourhoodId"
+            : detail === "plot_size"
+              ? "plotWidthM"
+              : "districtId";
         throw new AppFailure("VALIDATION", err.values, { [field]: [`validation.${detail}`] });
       }
       throw err;
@@ -120,28 +148,76 @@ export const addFieldLandAction = defineAction(
   },
 );
 
+/** The House No choices for a neighbourhood: its capacity (01 to capacity) and the numbers other land already has. */
+export const houseNumberChoicesAction = defineAction(
+  "parcels.house_numbers",
+  z.object({ neighbourhoodId: z.uuid() }),
+  async ({ neighbourhoodId }, ctx) => {
+    const [{ data: n }, taken] = await Promise.all([
+      ctx.supabase
+        .from("neighbourhoods")
+        .select("code, capacity")
+        .eq("id", neighbourhoodId)
+        .maybeSingle(),
+      ctx.supabase.rpc("house_numbers_taken", {
+        p_neighbourhood: neighbourhoodId,
+        p_application: null,
+      }),
+    ]);
+    const nb = n as { code: string; capacity: number | null } | null;
+    // Some land stores the number with the neighbourhood code in front (KRWJXL0102): count it as 02.
+    const plain = (no: string) => {
+      const rest =
+        nb?.code && no.toUpperCase().startsWith(nb.code.toUpperCase())
+          ? no.slice(nb.code.length)
+          : no;
+      return /^\d+$/.test(rest) ? rest.padStart(2, "0") : rest;
+    };
+    return {
+      capacity: Math.max(1, Number(nb?.capacity ?? 50) || 50),
+      taken: (
+        (unwrap(taken, "house numbers") as { house_no: string; apartment: boolean }[]) ?? []
+      ).map((x) => ({ ...x, house_no: plain(x.house_no) })),
+    };
+  },
+);
+
 /** Register partial land straight from the parcel: PUN, bills, owners. */
-export const registerParcelAction = defineAction("parcels.register", z.object({ parcelId: z.uuid() }), async ({ parcelId }, ctx) => {
-  const out = unwrap(await ctx.supabase.rpc("parcel_register", { p_parcel: parcelId }), "register parcel") as { pun: string; parcel_id: string };
-  refresh();
-  revalidatePath("/[locale]/surveys", "layout");
-  revalidatePath("/[locale]/cashier", "page");
-  return out;
-});
+export const registerParcelAction = defineAction(
+  "parcels.register",
+  z.object({ parcelId: z.uuid() }),
+  async ({ parcelId }, ctx) => {
+    const out = unwrap(
+      await ctx.supabase.rpc("parcel_register", { p_parcel: parcelId }),
+      "register parcel",
+    ) as { pun: string; parcel_id: string };
+    refresh();
+    revalidatePath("/[locale]/surveys", "layout");
+    revalidatePath("/[locale]/cashier", "page");
+    return out;
+  },
+);
 
 /** Delete land (kept in the history with its reason): partial land, or registered land for admins. */
-export const deleteParcelAction = defineAction("parcels.delete", z.object({ id: z.uuid(), reason }), async ({ id, reason: why }, ctx) => {
-  unwrap(await ctx.supabase.rpc("parcel_delete", { p_id: id, p_reason: why }), "delete parcel");
-  refresh();
-  return null;
-});
+export const deleteParcelAction = defineAction(
+  "parcels.delete",
+  z.object({ id: z.uuid(), reason }),
+  async ({ id, reason: why }, ctx) => {
+    unwrap(await ctx.supabase.rpc("parcel_delete", { p_id: id, p_reason: why }), "delete parcel");
+    refresh();
+    return null;
+  },
+);
 
 /** Check if it exists: send a district surveyor to confirm the house is there. */
 export const requestParcelCheckAction = defineAction(
   "parcels.site_check",
   z.object({ id: z.uuid(), note: z.string().trim().max(500).default("") }),
   async ({ id, note }, ctx) => {
-    unwrap(await ctx.supabase.rpc("parcel_request_site_check", { p_id: id, p_note: note || null }), "request site check");
+    unwrap(
+      await ctx.supabase.rpc("parcel_request_site_check", { p_id: id, p_note: note || null }),
+      "request site check",
+    );
     refresh();
     revalidatePath("/[locale]/surveys", "layout");
     return null;
@@ -153,7 +229,14 @@ export const confirmParcelSiteAction = defineAction(
   "parcels.site_confirm",
   z.object({ id: z.uuid(), exists: z.boolean(), note: z.string().trim().max(500).default("") }),
   async ({ id, exists, note }, ctx) => {
-    unwrap(await ctx.supabase.rpc("parcel_confirm_site", { p_id: id, p_exists: exists, p_note: note || null }), "confirm site");
+    unwrap(
+      await ctx.supabase.rpc("parcel_confirm_site", {
+        p_id: id,
+        p_exists: exists,
+        p_note: note || null,
+      }),
+      "confirm site",
+    );
     refresh();
     revalidatePath("/[locale]/surveys", "layout");
     return null;

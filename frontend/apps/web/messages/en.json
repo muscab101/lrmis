@@ -2333,7 +2333,9 @@
       "register": "Register",
       "registerTitle": "Register this land?",
       "registerBody": "{land} gets its PUN and account number, its tax bill and service charge are raised, and its owners are registered. The cashiers are told; the certificate comes once the bills are paid.",
-      "registered": "Land registered"
+      "registered": "Land registered",
+      "houseNoPickPlace": "Drop the pin or pick the neighbourhood first.",
+      "houseNoFull": "Every house number in this neighbourhood is taken."
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",

@@ -12,18 +12,32 @@ import { MapPinPlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { nearbyPinsAction } from "@/app/[locale]/(staff)/applications/actions";
-import { getGeometryAction, locatePointAction, searchNeighbourhoodsAction } from "@/app/[locale]/(staff)/locations/actions";
-import { addFieldLandAction } from "@/app/[locale]/(staff)/parcels/actions";
+import {
+  getGeometryAction,
+  locatePointAction,
+  searchNeighbourhoodsAction,
+} from "@/app/[locale]/(staff)/locations/actions";
+import {
+  addFieldLandAction,
+  houseNumberChoicesAction,
+} from "@/app/[locale]/(staff)/parcels/actions";
 import { PinPicker, type Pin } from "@/components/applications/pin-picker";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
+import { isApartmentType } from "@/lib/apartment";
 import { useValidationMessage } from "@/lib/client/errors";
 
 interface Props {
   districts: { id: string; name_so: string; name_en: string }[];
   grades: { code: string; name_so: string; name_en: string; active: boolean }[];
   /** Opened from a survey zone: its neighbourhood. */
-  start?: { id: string; district_id: string; code: string; name_so: string; name_en: string } | null;
+  start?: {
+    id: string;
+    district_id: string;
+    code: string;
+    name_so: string;
+    name_en: string;
+  } | null;
   /** Where to go after saving (the survey zone it came from); else Parcels → Partial registration. */
   returnTo?: string;
   /** The owner just entered with the full owner form: the land is theirs. */
@@ -39,34 +53,94 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
   const locale = useLocale();
   const vm = useValidationMessage();
   const router = useRouter();
-  const [districtId, setDistrictId] = useState(start?.district_id ?? (districts.length === 1 ? districts[0]!.id : ""));
+  const [districtId, setDistrictId] = useState(
+    start?.district_id ?? (districts.length === 1 ? districts[0]!.id : ""),
+  );
   const [neighbourhood, setNeighbourhood] = useState<ComboOption | null>(
-    start ? { value: start.id, label: locale === "so" ? start.name_so : start.name_en, hint: start.code } : null,
+    start
+      ? {
+          value: start.id,
+          label: locale === "so" ? start.name_so : start.name_en,
+          hint: start.code,
+        }
+      : null,
   );
   const [pin, setPin] = useState<Pin | null>(null);
   const [pinPlace, setPinPlace] = useState<string | null>(null);
-  const [outline, setOutline] = useState<{ geometry: GeoJSON.Geometry; bbox: [number, number, number, number] } | null>(null);
+  const [outline, setOutline] = useState<{
+    geometry: GeoJSON.Geometry;
+    bbox: [number, number, number, number];
+  } | null>(null);
   const [nearby, setNearby] = useState<string | null>(null);
-  const [f, setF] = useState({ width: "", length: "", houseNo: "", grade: "", landUse: "residential", ownerName: "", ownerPhone: "", note: "" });
+  const [f, setF] = useState({
+    width: "",
+    length: "",
+    houseNo: "",
+    grade: "",
+    landUse: "residential",
+    ownerName: "",
+    ownerPhone: "",
+    note: "",
+  });
   const [error, setError] = useState<AppError | null>(null);
   const [saving, setSaving] = useState(false);
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const set = (k: keyof typeof f) => (e: { target: { value: string } }) =>
+    setF((p) => ({ ...p, [k]: e.target.value }));
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
-  const name = (o: { name_so: string; name_en: string }) => (locale === "so" ? o.name_so : o.name_en);
+  const name = (o: { name_so: string; name_en: string }) =>
+    locale === "so" ? o.name_so : o.name_en;
 
   const searchNeighbourhoods = useCallback(
     async (q: string): Promise<ComboOption[]> => {
       const res = await searchNeighbourhoodsAction({ q, districtId: districtId || null });
       if (!res.ok) return [];
-      return res.data.map((n) => ({ value: n.id, label: locale === "so" ? n.name_so : n.name_en, hint: `${n.district_code}-${n.code}` }));
+      return res.data.map((n) => ({
+        value: n.id,
+        label: locale === "so" ? n.name_so : n.name_en,
+        hint: `${n.district_code}-${n.code}`,
+      }));
     },
     [districtId, locale],
   );
 
   useEffect(() => {
     if (!neighbourhood) return setOutline(null);
-    void getGeometryAction({ level: "neighbourhoods", id: neighbourhood.value }).then((r) => setOutline(r.ok ? r.data : null));
+    void getGeometryAction({ level: "neighbourhoods", id: neighbourhood.value }).then((r) =>
+      setOutline(r.ok ? r.data : null),
+    );
   }, [neighbourhood]);
+
+  // House No: 01 up to the neighbourhood's capacity, without the numbers other land there already has
+  // (flats in one block may share a number).
+  const [houseChoices, setHouseChoices] = useState<{
+    capacity: number;
+    taken: { house_no: string; apartment: boolean }[];
+  } | null>(null);
+  useEffect(() => {
+    setHouseChoices(null);
+    if (!neighbourhood) return;
+    void houseNumberChoicesAction({ neighbourhoodId: neighbourhood.value }).then((r) =>
+      setHouseChoices(r.ok ? (r.data ?? null) : null),
+    );
+  }, [neighbourhood]);
+  const apartment = isApartmentType(
+    f.grade,
+    grades.map((g) => ({ code: g.code, name_en: g.name_en })),
+  );
+  const houseNumbers = houseChoices
+    ? Array.from({ length: houseChoices.capacity }, (_, i) =>
+        String(i + 1).padStart(2, "0"),
+      ).filter((no) => {
+        const hit = houseChoices.taken.find((x) => x.house_no === no);
+        return !hit || (hit.apartment && apartment);
+      })
+    : [];
+  // A number that became unavailable (other neighbourhood, taken meanwhile) is cleared.
+  useEffect(() => {
+    if (f.houseNo && houseChoices && !houseNumbers.includes(f.houseNo))
+      setF((p) => ({ ...p, houseNo: "" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [houseChoices, apartment]);
 
   // Dropping a pin fills in the neighbourhood and district, and warns about land already registered close by.
   const onPin = async (p: Pin) => {
@@ -74,7 +148,10 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     void nearbyPinsAction({ lon: p.lon, lat: p.lat, excludeId: null }).then((r) =>
       setNearby(
         r.ok && r.data.count > 0
-          ? [...(r.data.parcels ?? []).map((x) => `${x.pun} (${x.metres} m)`), ...(r.data.applications ?? []).map((x) => `${x.number} (${x.metres} m)`)].join(", ")
+          ? [
+              ...(r.data.parcels ?? []).map((x) => `${x.pun} (${x.metres} m)`),
+              ...(r.data.applications ?? []).map((x) => `${x.number} (${x.metres} m)`),
+            ].join(", ")
           : null,
       ),
     );
@@ -82,9 +159,15 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     if (!res.ok) return;
     if (!res.data) return setPinPlace(ta("pinNoNeighbourhood"));
     const n = res.data;
-    setPinPlace(`${locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en} · ${n.district_name_so}`);
+    setPinPlace(
+      `${locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en} · ${n.district_name_so}`,
+    );
     setDistrictId(n.district_id);
-    setNeighbourhood({ value: n.neighbourhood_id, label: locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en, hint: `${n.district_code}-${n.neighbourhood_code}` });
+    setNeighbourhood({
+      value: n.neighbourhood_id,
+      label: locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en,
+      hint: `${n.district_code}-${n.neighbourhood_code}`,
+    });
   };
 
   const num = (x: string) => (x.trim() === "" ? Number.NaN : Number(x));
@@ -134,7 +217,12 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             ))}
           </NativeSelect>
         </Field>
-        <Field id="neighbourhoodId" label={ta("neighbourhood")} error={fe("neighbourhoodId")} hint={ta("neighbourhoodHint")}>
+        <Field
+          id="neighbourhoodId"
+          label={ta("neighbourhood")}
+          error={fe("neighbourhoodId")}
+          hint={ta("neighbourhoodHint")}
+        >
           <AsyncCombobox
             search={searchNeighbourhoods}
             value={neighbourhood ? [neighbourhood] : []}
@@ -147,11 +235,25 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         </Field>
       </div>
 
-      <Field id="pin" label={ta("pinLabel")} hint={pinPlace ?? t("pinHint")} error={fe("pin") ?? fe("pinLon")} required>
+      <Field
+        id="pin"
+        label={ta("pinLabel")}
+        hint={pinPlace ?? t("pinHint")}
+        error={fe("pin") ?? fe("pinLon")}
+        required
+      >
         <div>
-          <PinPicker value={pin} onChange={(p) => void onPin(p)} outline={outline?.geometry ?? null} outlineBbox={outline?.bbox ?? null} />
+          <PinPicker
+            value={pin}
+            onChange={(p) => void onPin(p)}
+            outline={outline?.geometry ?? null}
+            outlineBbox={outline?.bbox ?? null}
+          />
           {nearby && (
-            <p role="alert" className="mt-2 rounded-md border border-status-rejected/40 bg-status-rejected/10 px-3 py-2 text-xs">
+            <p
+              role="alert"
+              className="border-status-rejected/40 bg-status-rejected/10 mt-2 rounded-md border px-3 py-2 text-xs"
+            >
               {t("nearby")} {nearby}
             </p>
           )}
@@ -160,19 +262,58 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field id="plotWidthM" label={ta("plotWidth")} error={fe("plotWidthM")} required>
-          <Input type="number" inputMode="decimal" min={0} step="0.1" value={f.width} onChange={set("width")} />
+          <Input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.1"
+            value={f.width}
+            onChange={set("width")}
+          />
         </Field>
         <Field id="plotLengthM" label={ta("plotLength")} error={fe("plotLengthM")} required>
-          <Input type="number" inputMode="decimal" min={0} step="0.1" value={f.length} onChange={set("length")} />
+          <Input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.1"
+            value={f.length}
+            onChange={set("length")}
+          />
         </Field>
         <Field id="area" label={t("area")}>
-          <Input readOnly value={Number.isFinite(area) && area > 0 ? `${Math.round(area * 100) / 100} m²` : "—"} />
+          <Input
+            readOnly
+            value={Number.isFinite(area) && area > 0 ? `${Math.round(area * 100) / 100} m²` : "—"}
+          />
         </Field>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Field id="houseNo" label={ta("houseNo")} error={fe("houseNo")}>
-          <Input value={f.houseNo} onChange={set("houseNo")} />
+        <Field
+          id="houseNo"
+          label={ta("houseNo")}
+          error={fe("houseNo")}
+          hint={
+            !neighbourhood
+              ? t("houseNoPickPlace")
+              : houseChoices && houseNumbers.length === 0
+                ? t("houseNoFull")
+                : undefined
+          }
+        >
+          <NativeSelect
+            value={f.houseNo}
+            onChange={set("houseNo")}
+            disabled={!neighbourhood || !houseChoices}
+          >
+            <option value="">{ta("choose")}</option>
+            {houseNumbers.map((no) => (
+              <option key={no} value={no}>
+                {no}
+              </option>
+            ))}
+          </NativeSelect>
         </Field>
         <Field id="propertyType" label={t("grade")} error={fe("propertyType")}>
           <NativeSelect value={f.grade} onChange={set("grade")}>
@@ -198,17 +339,31 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
       </div>
 
       {owner ? (
-        <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{t("ownerName")}:</span> <span className="font-medium">{owner.full_name}</span>
-          {owner.phone && <span className="ms-2 font-mono text-xs text-muted-foreground">{owner.phone}</span>}
+        <div className="bg-muted/40 rounded-md border px-3 py-2 text-sm">
+          <span className="text-muted-foreground">{t("ownerName")}:</span>{" "}
+          <span className="font-medium">{owner.full_name}</span>
+          {owner.phone && (
+            <span className="text-muted-foreground ms-2 font-mono text-xs">{owner.phone}</span>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="ownerName" label={t("ownerName")} error={fe("ownerName")} required>
             <Input value={f.ownerName} onChange={set("ownerName")} autoComplete="off" />
           </Field>
-          <Field id="ownerPhone" label={t("ownerPhone")} hint={t("ownerPhoneHint")} error={fe("ownerPhone")}>
-            <Input type="tel" value={f.ownerPhone} onChange={set("ownerPhone")} placeholder="+252 61 123 4567" autoComplete="off" />
+          <Field
+            id="ownerPhone"
+            label={t("ownerPhone")}
+            hint={t("ownerPhoneHint")}
+            error={fe("ownerPhone")}
+          >
+            <Input
+              type="tel"
+              value={f.ownerPhone}
+              onChange={set("ownerPhone")}
+              placeholder="+252 61 123 4567"
+              autoComplete="off"
+            />
           </Field>
         </div>
       )}
