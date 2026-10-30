@@ -3619,12 +3619,13 @@
     "certificateView": "Eeg shahaadada",
     "actions": "Ficillo",
     "cardPayOpen": "Lacag ayaa loo baahan yahay: biilka daabacaadda {number} weli lama bixin. Khasnajigu ha qaado lacagta, kadib kaarka waa la daabici karaa.",
-    "cardPayNone": "Lacag ayaa loo baahan yahay: kaarkan weli biil daabacaad ma laha. Khasnajigu ha sameeyo (Khasnajiga → Daabacaadda kaarka) oo marka hore ha qaado lacagta.",
+    "cardPayNone": "Lacag ayaa loo baahan yahay: kaarkan weli biil daabacaad ma laha. U dir lacag-hayaha; waa la daabacayaa marka lacagta la bixiyo.",
     "batchUnpaid": "{count, plural, =1 {1 kaar aqoonsi ayaa sugaya} other {# kaar aqoonsi ayaa sugaya}} in biilkooda daabacaadda la bixiyo:",
     "payPaid": "Daabacaadda waa la bixiyay",
     "payOpen": "Biilka {number} lama bixin",
     "payNone": "Biil lama samayn",
-    "holderPhoto": "Sawirka haystaha"
+    "holderPhoto": "Sawirka haystaha",
+    "cardSendToCashier": "U dir lacag-hayaha"
   },
   "verify": {
     "title": "Hubi shahaado",

@@ -3619,12 +3619,13 @@
     "certificateView": "View certificate",
     "actions": "Actions",
     "cardPayOpen": "Payment needed: the print bill {number} isn't paid yet. The cashier takes the payment, then the card can be printed.",
-    "cardPayNone": "Payment needed: this card has no print bill yet. The cashier creates it (Cashier → ID card print) and takes the payment first.",
+    "cardPayNone": "Payment needed: this card has no print bill yet. Send it to the cashier; it prints once the charge is paid.",
     "batchUnpaid": "{count, plural, =1 {1 ID card waits} other {# ID cards wait}} for its print bill to be paid:",
     "payPaid": "Print paid",
     "payOpen": "Bill {number} unpaid",
     "payNone": "Not billed",
-    "holderPhoto": "Holder's photo"
+    "holderPhoto": "Holder's photo",
+    "cardSendToCashier": "Send to cashier"
   },
   "verify": {
     "title": "Verify a certificate",

@@ -75,3 +75,10 @@ export const issueBulkAction = defineAction("certificates.issue_bulk", z.object(
 export const printBulkAction = defineAction("certificates.print_bulk", z.object({ ids: z.array(z.uuid()).min(1).max(100) }), async ({ ids }, ctx) =>
   done(unwrap(await ctx.supabase.rpc("document_print_bulk", { p_ids: ids }), "print") as { printed: string[]; failed: { id: string; serial: string | null; error: string }[] }),
 );
+
+/** Send an ID card's print bill to the district's cashier (raised at the fixed fee if missing). */
+export const sendCardToCashierAction = defineAction("documents.card_to_cashier", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const number = unwrap(await ctx.supabase.rpc("card_send_to_cashier", { p_card: id }), "card to cashier") as string;
+  revalidatePath("/[locale]/documents", "layout");
+  return number;
+});

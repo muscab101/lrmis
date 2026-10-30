@@ -75,4 +75,13 @@ describe("ID card print fee", () => {
     await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[1]]));
     await expectError(asUser(db, cashier, (tx) => tx.query(`select public.card_print_bill($1)`, [cards[1]])), "CONFLICT: already_printed");
   });
+  it("print staff send a card made before the fee to the cashier: the bill is raised and the cashier is told", async () => {
+    await db.query(`update public.fee_types set active = true, amount = 5 where code = 'id_card_print'`);
+    const card = cards[2] ?? cards[0]!;
+    await db.query(`update public.issued_documents set print_fee_invoice_id = null, print_count = 0 where id = $1`, [card]);
+    const n = await asUser(db, printer, (tx) => scalar<string>(tx, `select public.card_send_to_cashier($1)`, [card]));
+    expect(n).toMatch(/^INV-/);
+    expect(await asUser(db, printer, (tx) => scalar<string>(tx, `select public.card_send_to_cashier($1)`, [card]))).toBe(n);
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where kind = 'card.print_bill' and user_id = $1`, [cashier])).toBeGreaterThan(0);
+  });
 });

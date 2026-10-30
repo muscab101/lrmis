@@ -3,10 +3,10 @@
 import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
 import { Alert } from "@dhulka/ui/misc";
-import { Printer } from "lucide-react";
+import { Printer, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { printBulkAction, printDocumentAction } from "@/app/[locale]/(staff)/documents/actions";
+import { printBulkAction, printDocumentAction, sendCardToCashierAction } from "@/app/[locale]/(staff)/documents/actions";
 import { FormError } from "@/components/forms/form-error";
 
 /**
@@ -33,6 +33,9 @@ export function PrintControls({
   const [official, setOfficial] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
+  // The bill number once sent to the cashier from here.
+  const [sent, setSent] = useState<string | null>(null);
+  const billNumber = sent ?? payment?.invoiceNumber ?? null;
   const blocked =
     status !== "valid"
       ? t("printCancelled")
@@ -41,15 +44,37 @@ export function PrintControls({
         : !canPrint
           ? t("printNoPermission")
           : payment
-            ? payment.invoiceNumber
-              ? t("cardPayOpen", { number: payment.invoiceNumber })
+            ? billNumber
+              ? t("cardPayOpen", { number: billNumber })
               : t("cardPayNone")
             : null;
   return (
     <>
       <div className="mx-auto mb-4 flex max-w-[210mm] flex-wrap items-center justify-end gap-3 print:hidden">
         {blocked ? (
-          <Alert tone="warning" title={blocked} className="w-full" />
+          <>
+            <Alert tone="warning" title={blocked} className="w-full" />
+            {/* No print bill yet: send it to the district's cashier; printing waits until it is paid. */}
+            {payment && !billNumber && status === "valid" && !printed && canPrint && (
+              <>
+                <FormError error={error} />
+                <Button
+                  loading={busy}
+                  onClick={async () => {
+                    setBusy(true);
+                    setError(null);
+                    const res = await sendCardToCashierAction({ id });
+                    setBusy(false);
+                    if (!res.ok) return setError(res.error);
+                    setSent(res.data ?? null);
+                  }}
+                >
+                  <Send aria-hidden />
+                  {t("cardSendToCashier")}
+                </Button>
+              </>
+            )}
+          </>
         ) : (
           <>
             <FormError error={error} />
