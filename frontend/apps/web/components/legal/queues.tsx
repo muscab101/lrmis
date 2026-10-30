@@ -283,15 +283,7 @@ type Change = {
   result_puns: string[];
 };
 
-export function ChangeTable({
-  rows,
-  me,
-  canDecide,
-}: {
-  rows: Change[];
-  me: string;
-  canDecide: boolean;
-}) {
+export function ChangeTable({ rows, canDecide }: { rows: Change[]; canDecide: boolean }) {
   const t = useTranslations("legal");
   const ts = useTranslations("stage");
   const format = useFormatter();
@@ -347,7 +339,7 @@ export function ChangeTable({
               <span className="inline-flex items-center justify-end gap-1.5">
                 {canDecide && (
                   <>
-                    {c.status === "submitted" && c.requested_by !== me && (
+                    {c.status === "submitted" && (
                       <DecideButtons
                         decide={(v) =>
                           decideChangeAction({ id: c.id, approve: v.approve, note: v.note })

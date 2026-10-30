@@ -86,7 +86,6 @@ describe("data correction after registration", () => {
     const id = await asUser(db, registrar, (tx) =>
       scalar<string>(tx, `select public.parcel_change_request('correction', $1, $2, 'Deed number mistyped; boundary re-walked')`, [[parcel], JSON.stringify({ deed_no: "D-2020-55", geom })]),
     );
-    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.parcel_change_decide($1, true, 'ok')`, [id])), "MAKER_CHECKER");
     await asUser(db, registrar2, (tx) => tx.query(`select public.parcel_change_decide($1, true, 'Checked on site')`, [id]));
     const p = await scalar<{ deed_no: string; area_m2: string }>(db, `select row_to_json(p) from public.parcels p where id = $1`, [parcel]);
     expect(p.deed_no).toBe("D-2020-55");

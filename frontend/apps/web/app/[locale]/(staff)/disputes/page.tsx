@@ -28,7 +28,7 @@ export default async function DisputesPage({ params, searchParams }: { params: P
   let body: React.ReactNode;
   if (section === "liens") body = <LienTable rows={await listActiveLiens()} me={me} canDecide={viewer.can("disputes.approve")} />;
   else if (section === "orders") body = <OrderTable rows={await listActiveOrders()} me={me} canDecide={viewer.can("disputes.approve")} />;
-  else if (section === "changes") body = <ChangeTable rows={await listChanges(all ? "any" : "submitted")} me={me} canDecide={viewer.can("parcels.approve")} />;
+  else if (section === "changes") body = <ChangeTable rows={await listChanges(all ? "any" : "submitted")} canDecide={viewer.can("parcels.approve")} />;
   else body = <DisputeTable rows={await listDisputes(all ? "any" : "open")} me={me} canDecide={viewer.can("disputes.approve")} />;
 
   return (
