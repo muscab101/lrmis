@@ -252,11 +252,11 @@ export function SubdivideEditor({
               ))}
             </ol>
           )}
-          <Field id="reason" label={t("reason")} error={error?.fieldErrors?.reason?.[0] ? vm(error.fieldErrors.reason[0]) : undefined} required>
+          <Field id="reason" label={t("reason")} hint={reason.trim().length < 5 ? t("reasonMin") : undefined} error={error?.fieldErrors?.reason?.[0] ? vm(error.fieldErrors.reason[0]) : undefined} required>
             <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>
           {error && <FormError error={error} />}
-          <Button className="w-full" disabled={busy || children.length < (correct ? 1 : 2) || blockers.length > 0} onClick={submit}>
+          <Button className="w-full" disabled={busy || children.length < (correct ? 1 : 2) || blockers.length > 0 || reason.trim().length < 5} onClick={submit}>
             {busy && <Loader2 className="animate-spin" aria-hidden />}
             {t("submitRequest")}
           </Button>

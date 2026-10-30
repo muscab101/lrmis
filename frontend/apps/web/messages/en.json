@@ -3775,6 +3775,7 @@
     "rejectTitle": "Reject this request?",
     "decided": "Decision recorded",
     "reason": "Reason",
+    "reasonMin": "Write at least 5 letters, for example: Sold half to a neighbour.",
     "conditions": "Conditions (optional)",
     "cardTitle": "Legal",
     "cardHelp": "Transfers, encumbrances, changes and permits on this parcel.",
