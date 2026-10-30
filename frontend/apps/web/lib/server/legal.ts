@@ -97,11 +97,13 @@ export async function listActiveOrders() {
   return (data ?? []) as unknown as WithParcel<ParcelLegal["orders"][number]>[];
 }
 
-export async function listChanges(status: "submitted" | "any") {
+/** Parcel changes, newest first; with a parcel, only those it was part of or came out of. */
+export async function listChanges(status: "submitted" | "any", parcelId?: string) {
   const supabase = await createClient();
-  let req = supabase.from("parcel_changes").select("id, number, kind, status, reason, payload, parcel_ids, requested_by, requested_at, result_parcel_ids");
+  let req = supabase.from("parcel_changes").select("id, number, kind, status, reason, payload, parcel_ids, requested_by, requested_at, decided_at, result_parcel_ids");
   if (status === "submitted") req = req.eq("status", "submitted");
-  const rows = unwrap(await req.order("requested_at", { ascending: false }).limit(100), "changes") as { id: string; number: string; kind: string; status: string; reason: string; payload: { land_use?: string; children?: unknown[] } & Record<string, unknown>; parcel_ids: string[]; requested_by: string | null; requested_at: string; result_parcel_ids: string[] }[];
+  if (parcelId) req = req.or(`parcel_ids.cs.{${parcelId}},result_parcel_ids.cs.{${parcelId}}`);
+  const rows = unwrap(await req.order("requested_at", { ascending: false }).limit(100), "changes") as { id: string; number: string; kind: string; status: string; reason: string; payload: { land_use?: string; children?: unknown[] } & Record<string, unknown>; parcel_ids: string[]; requested_by: string | null; requested_at: string; decided_at: string | null; result_parcel_ids: string[] }[];
   const ids = [...new Set(rows.flatMap((r) => [...r.parcel_ids, ...r.result_parcel_ids]))];
   const { data } = ids.length ? await supabase.from("parcels").select("id, pun").in("id", ids) : { data: [] };
   const pun = new Map(((data ?? []) as { id: string; pun: string | null }[]).map((p) => [p.id, p.pun]));

@@ -93,8 +93,21 @@ export interface ParcelDetail {
   district: { code: string; name_so: string; name_en: string } | null;
   neighbourhood: { code: string; name_so: string; name_en: string } | null;
   parcel_owners: { id: string; role: string; share_pct: number | null; valid_from: string; valid_to: string | null; party: PartyRow }[];
-  parcel_history: { id: number; action: string; note: string | null; at: string }[];
+  parcel_history: HistoryEntry[];
 }
+
+/** What a history line was about: the transfer or parcel change behind it, who it went from and to, and other PUNs. */
+export interface HistoryDetail {
+  transferKind?: string;
+  changeKind?: string;
+  number?: string;
+  from?: string[];
+  to?: string[];
+  /** Created from: the parcel it came from. Subdivided / merged: the parcels it became. */
+  puns?: string[];
+  landUse?: string;
+}
+type HistoryEntry = { id: number; action: string; note: string | null; data?: Record<string, unknown>; at: string; detail?: HistoryDetail };
 
 export async function getParcel(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
@@ -107,14 +120,72 @@ export async function getParcel(id: string) {
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),
-       parcel_history(id, action, note, at)`,
+       parcel_history(id, action, note, data, at)`,
     )
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
   const parcel = unwrap(res, "parcel") as unknown as ParcelDetail | null;
-  if (parcel) parcel.parcel_history.sort((a, b) => b.id - a.id);
+  if (parcel) {
+    parcel.parcel_history.sort((a, b) => b.id - a.id);
+    await describeHistory(supabase, parcel.parcel_history);
+  }
   return parcel;
+}
+
+/** Fill in each history line's detail: the kind and number of the transfer or change, the people, the other PUNs. */
+async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>>, rows: HistoryEntry[]) {
+  const str = (v: unknown) => (typeof v === "string" ? v : null);
+  const transferIds = new Set<string>();
+  const changeIds = new Set<string>();
+  const changeNumbers = new Set<string>();
+  const parcelIds = new Set<string>();
+  for (const h of rows) {
+    const d = h.data ?? {};
+    if (str(d.transfer_id)) transferIds.add(str(d.transfer_id)!);
+    if (str(d.change_id)) changeIds.add(str(d.change_id)!);
+    if (h.action === "created_from" && h.note?.startsWith("PCH")) changeNumbers.add(h.note);
+    if (str(d.source_parcel)) parcelIds.add(str(d.source_parcel)!);
+    if (Array.isArray(d.new_parcels)) for (const p of d.new_parcels) if (str(p)) parcelIds.add(p as string);
+  }
+  const [transfers, changes, byNumber, parcels] = await Promise.all([
+    transferIds.size ? supabase.from("transfers").select("id, number, kind, from_owners, to_owners").in("id", [...transferIds]) : null,
+    changeIds.size ? supabase.from("parcel_changes").select("id, number, kind").in("id", [...changeIds]) : null,
+    changeNumbers.size ? supabase.from("parcel_changes").select("id, number, kind").in("number", [...changeNumbers]) : null,
+    parcelIds.size ? supabase.from("parcels").select("id, pun").in("id", [...parcelIds]) : null,
+  ]);
+  type Owner = { full_name?: string };
+  const tr = new Map(((transfers?.data ?? []) as { id: string; number: string; kind: string; from_owners: Owner[]; to_owners: Owner[] }[]).map((x) => [x.id, x]));
+  const ch = new Map(((changes?.data ?? []) as { id: string; number: string; kind: string }[]).map((x) => [x.id, x]));
+  const chNo = new Map(((byNumber?.data ?? []) as { id: string; number: string; kind: string }[]).map((x) => [x.number, x]));
+  const pun = new Map(((parcels?.data ?? []) as { id: string; pun: string | null }[]).map((x) => [x.id, x.pun]));
+  const names = (o: unknown) => (Array.isArray(o) ? (o as Owner[]).map((x) => x.full_name ?? "").filter(Boolean) : []);
+  for (const h of rows) {
+    const d = h.data ?? {};
+    const detail: HistoryDetail = {};
+    const t = str(d.transfer_id) ? tr.get(str(d.transfer_id)!) : undefined;
+    if (t) {
+      detail.transferKind = t.kind;
+      detail.number = t.number;
+      if (h.action === "transferred") {
+        detail.from = names(d.from ?? t.from_owners);
+        detail.to = names(d.to ?? t.to_owners);
+      }
+    } else if (str(d.kind) && h.action.startsWith("transfer")) detail.transferKind = str(d.kind)!;
+    const c = str(d.change_id) ? ch.get(str(d.change_id)!) : h.action === "created_from" && h.note ? chNo.get(h.note) : undefined;
+    if (c) {
+      detail.changeKind = c.kind;
+      detail.number = c.number;
+    } else if (h.action === "created_from" && str(d.kind)) detail.changeKind = str(d.kind)!;
+    if (h.action === "created_from") {
+      const from = str(d.pun) ?? (str(d.source_parcel) ? pun.get(str(d.source_parcel)!) : null);
+      if (from) detail.puns = [from];
+    }
+    if (Array.isArray(d.new_parcels)) detail.puns = (d.new_parcels as string[]).map((p) => pun.get(p)).filter((x): x is string => !!x);
+    if (h.action === "use_changed" && str(d.land_use)) detail.landUse = str(d.land_use)!;
+    if (Object.keys(detail).length) h.detail = detail;
+    delete h.data;
+  }
 }
 
 /** Parcel counts for the stage tabs (RLS: only districts the viewer can see). */

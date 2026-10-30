@@ -33,6 +33,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const viewer = await requirePermission(locale, "parcels.view");
   const t = await getTranslations("parcels");
   const ts = await getTranslations("stage");
+  const tl = await getTranslations("legal");
   const ta = await getTranslations("applications");
   const format = await getFormatter();
   const lang = await getLocale();
@@ -166,8 +167,23 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               {p.parcel_history.map((h) => (
                 <li key={h.id}>
                   <span className="font-medium">{t.has(`events.${h.action}`) ? t(`events.${h.action}`) : h.action}</span>
+                  {(h.detail?.transferKind || h.detail?.changeKind) && (
+                    <span className="ms-1.5 rounded-sm bg-muted px-1.5 py-0.5 text-xs">
+                      {h.detail.transferKind ? tl(`transferKinds.${h.detail.transferKind}`) : tl(`changeKinds.${h.detail.changeKind}`)}
+                    </span>
+                  )}
+                  {h.detail?.number && <Mono className="ms-1.5 text-xs">{h.detail.number}</Mono>}
                   <span className="ms-2 text-xs text-muted-foreground">{format.dateTime(new Date(h.at), { dateStyle: "medium", timeStyle: "short" })}</span>
-                  {h.note && <p className="text-muted-foreground">{h.note}</p>}
+                  {h.detail?.from && h.detail.to && (
+                    <p className="text-muted-foreground">{t("historyFromTo", { from: h.detail.from.join(", ") || "—", to: h.detail.to.join(", ") || "—" })}</p>
+                  )}
+                  {h.detail?.puns && h.detail.puns.length > 0 && (
+                    <p className="text-muted-foreground">
+                      {h.action === "created_from" ? t("historyFrom") : t("historyInto")} <Mono>{h.detail.puns.join(", ")}</Mono>
+                    </p>
+                  )}
+                  {h.detail?.landUse && <p className="text-muted-foreground">{t("historyLandUse", { use: ts(`landUses.${h.detail.landUse}`) })}</p>}
+                  {h.note && h.note !== h.detail?.number && <p className="text-muted-foreground">{h.note}</p>}
                 </li>
               ))}
             </ol>
