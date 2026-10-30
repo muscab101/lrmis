@@ -59,7 +59,8 @@ describe("field land", () => {
       `select row_to_json(p) from public.parcels p where id = $1`,
       [parcel],
     );
-    expect(p).toMatchObject({ status: "draft", application_id: null, geom_provisional: true, house_no: "7", pun: null });
+    expect(p).toMatchObject({ status: "draft", application_id: null, geom_provisional: true, house_no: "7" });
+    expect(p.pun).toBeTruthy(); // the PUN is given when the land is saved
     expect(Number(p.area_m2)).toBe(120);
     const owner = await scalar<{ full_name: string; phone: string }>(
       db,
@@ -140,5 +141,22 @@ describe("field land", () => {
     // A surveyor without a zone there sees only the land they recorded themselves.
     const mine = await asUser(db, surveyor, (tx) => scalar<number>(tx, `select count(*)::int from public.parcels where id = $1`, [out.parcel_id]));
     expect(mine).toBe(0);
+  });
+  it("saving field land raises its tax bill and service charge straight away", async () => {
+    await db.query(`update public.property_grades set amount = 0.5, active = true where code = 'villa'`);
+    await db.query(`update public.fee_types set amount = 12, active = true where code = 'service_charge'`);
+    const out = await asUser(db, surveyor, (tx) => scalar<{ parcel_id: string; bills: number }>(tx, `select public.field_land_create($1)`, [land({ house_no: "44" })]));
+    expect(out.bills).toBe(2);
+    const bills = await db.query<{ code: string; total: string; number: string }>(
+      `select f.code, i.total, i.number from public.invoices i join public.fee_types f on f.id = i.fee_type_id where i.parcel_id = $1 order by f.code`,
+      [out.parcel_id],
+    );
+    expect(bills.rows.map((b) => [b.code, Number(b.total)])).toEqual([
+      ["property_bill", 60], // 12 m × 10 m × 0.50
+      ["service_charge", 12],
+    ]);
+    expect(bills.rows[1]!.number).toBe(`SCIN-${bills.rows[0]!.number.slice(4)}`);
+    // Billing again (as registration does) adds nothing.
+    expect(await scalar<number>(db, `select private.parcel_bill($1)`, [out.parcel_id])).toBe(0);
   });
 });
