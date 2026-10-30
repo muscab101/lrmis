@@ -84,4 +84,8 @@ describe("ID card print fee", () => {
     expect(await asUser(db, printer, (tx) => scalar<string>(tx, `select public.card_send_to_cashier($1)`, [card]))).toBe(n);
     expect(await scalar<number>(db, `select count(*)::int from public.notifications where kind = 'card.print_bill' and user_id = $1`, [cashier])).toBeGreaterThan(0);
   });
+
+  it("a new card is not billed by itself (0131): the bill comes only when someone sends it to the cashier", async () => {
+    expect(await scalar<number>(db, `select count(*)::int from pg_trigger where tgname = 'card_bill_on_issue'`)).toBe(0);
+  });
 });
