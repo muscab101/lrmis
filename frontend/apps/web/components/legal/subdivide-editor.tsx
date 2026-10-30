@@ -4,11 +4,12 @@ import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Field } from "@dhulka/ui/field";
-import { Textarea } from "@dhulka/ui/input";
+import { NativeSelect } from "@dhulka/ui/form-controls";
+import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
 import { area as turfArea } from "@turf/area";
-import { Loader2, MousePointer2, PenLine, Trash2 } from "lucide-react";
+import { Loader2, MousePointer2, PenLine, Scissors, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } from "terra-draw";
@@ -18,6 +19,7 @@ import { FormError } from "@/components/forms/form-error";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
 import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
+import { splitPolygon } from "@/lib/split-polygon";
 
 type Polygon = GeoJSON.Polygon;
 
@@ -50,6 +52,22 @@ export function SubdivideEditor({
   const sum = children.reduce((s, c) => s + turfArea({ type: "Feature", geometry: c.geom, properties: {} }), 0);
   const diffPct = parentArea ? ((sum - parentArea) / parentArea) * 100 : 0;
   const m2 = (n: number) => `${format.number(n, { maximumFractionDigits: 1 })} m²`;
+
+  // Split by numbers: how many parcels, which way the cuts run, and each one's size (the last takes what is left).
+  const single: Polygon | null = parent.type === "Polygon" ? parent : parent.coordinates.length === 1 ? { type: "Polygon", coordinates: parent.coordinates[0]! } : null;
+  const [direction, setDirection] = useState<"across" | "along">("across");
+  const equal = (n: number) => Array.from({ length: n - 1 }, () => (Math.floor((parentArea / n) * 10) / 10).toString());
+  const [sizes, setSizes] = useState<string[]>(() => equal(2));
+  const given = sizes.map((x) => Number(x));
+  const rest = parentArea - given.reduce((s, a) => s + (a || 0), 0);
+  const sizesOk = given.every((a) => a > 0) && rest > 0.5;
+  const splitByNumbers = () => {
+    const d = draw.current;
+    if (!d || !single || !sizesOk) return;
+    d.clear();
+    d.addFeatures(splitPolygon(single, [...given, rest], direction).map((geometry) => ({ type: "Feature", id: crypto.randomUUID(), geometry, properties: { mode: "polygon" } })));
+    setDrawMode("select");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -182,6 +200,38 @@ export function SubdivideEditor({
               {m2(sum)} {children.length > 0 && <span className="text-xs">({diffPct >= 0 ? "+" : ""}{format.number(diffPct, { maximumFractionDigits: 1 })}%)</span>}
             </dd>
           </dl>
+          {!correct && single && (
+            <div className="space-y-2 rounded-md border p-3">
+              <p className="font-medium">{t("splitByNumbers")}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Field id="split-parts" label={t("splitParts")}>
+                  <Input type="number" min={2} max={10} value={sizes.length + 1} onChange={(e) => setSizes(equal(Math.min(10, Math.max(2, Number(e.target.value) || 2))))} />
+                </Field>
+                <Field id="split-direction" label={t("splitDirection")}>
+                  <NativeSelect value={direction} onChange={(e) => setDirection(e.target.value as "across" | "along")}>
+                    <option value="across">{t("splitAcross")}</option>
+                    <option value="along">{t("splitAlong")}</option>
+                  </NativeSelect>
+                </Field>
+              </div>
+              {sizes.map((v, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-20 shrink-0">{t("childN", { n: i + 1 })}</span>
+                  <Input type="number" min={0} step="0.1" inputMode="decimal" value={v} aria-label={t("childN", { n: i + 1 })} onChange={(e) => setSizes(sizes.map((x, j) => (j === i ? e.target.value : x)))} />
+                  <span className="text-muted-foreground">m²</span>
+                </div>
+              ))}
+              <div className="flex items-center gap-2">
+                <span className="w-20 shrink-0">{t("childN", { n: sizes.length + 1 })}</span>
+                <span className={`tabular-nums ${rest > 0.5 ? "" : "text-status-rejected"}`}>{m2(Math.max(0, rest))}</span>
+                <span className="text-muted-foreground text-xs">{t("splitRest")}</span>
+              </div>
+              <Button size="sm" variant="outline" className="w-full" disabled={!sizesOk} onClick={splitByNumbers}>
+                <Scissors aria-hidden />
+                {t("splitButton")}
+              </Button>
+            </div>
+          )}
           {children.length === 0 ? (
             <p className="text-muted-foreground">{correct ? t("noBoundary") : t("noChildren")}</p>
           ) : (
