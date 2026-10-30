@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { deleteParcelAction, lockParcelAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { HouseNoSelect } from "@/components/parcels/house-no-select";
 import { Link, useRouter } from "@/i18n/navigation";
 
 export interface ParcelRowAbilities {
@@ -151,7 +152,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         {(fe) => (
           <div className="grid gap-3 sm:grid-cols-2">
             <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
-              <Input value={v.houseNo} maxLength={40} onChange={(e) => setV({ ...v, houseNo: e.target.value })} />
+              <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
             </Field>
             <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")} className="sm:col-span-2">
               <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />

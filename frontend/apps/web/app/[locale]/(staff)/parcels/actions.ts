@@ -148,36 +148,48 @@ export const addFieldLandAction = defineAction(
   },
 );
 
-/** The House No choices for a neighbourhood: its capacity (01 to capacity) and the numbers other land already has. */
+/**
+ * The House No choices: 01 up to the neighbourhood's capacity, and the numbers other land there already has. The
+ * neighbourhood comes from itself, a parcel being edited or a survey (its application); their own number is not taken.
+ */
 export const houseNumberChoicesAction = defineAction(
   "parcels.house_numbers",
-  z.object({ neighbourhoodId: z.uuid() }),
-  async ({ neighbourhoodId }, ctx) => {
+  z.object({ neighbourhoodId: z.uuid().nullable().default(null), parcelId: z.uuid().nullable().default(null), surveyId: z.uuid().nullable().default(null) }),
+  async (v, ctx) => {
+    let neighbourhoodId = v.neighbourhoodId;
+    let applicationId: string | null = null;
+    let own: string | null = null;
+    if (v.parcelId) {
+      const { data } = await ctx.supabase.from("parcels").select("neighbourhood_id, house_no, application_id").eq("id", v.parcelId).maybeSingle();
+      const p = data as { neighbourhood_id: string | null; house_no: string | null; application_id: string | null } | null;
+      neighbourhoodId = p?.neighbourhood_id ?? null;
+      applicationId = p?.application_id ?? null;
+      own = p?.house_no ?? null;
+    } else if (v.surveyId) {
+      const { data } = await ctx.supabase.from("surveys").select("application:applications(id, neighbourhood_id)").eq("id", v.surveyId).maybeSingle();
+      const a = (data as { application: { id: string; neighbourhood_id: string | null } | null } | null)?.application;
+      neighbourhoodId = a?.neighbourhood_id ?? null;
+      applicationId = a?.id ?? null;
+    }
+    if (!neighbourhoodId) return null;
     const [{ data: n }, taken] = await Promise.all([
-      ctx.supabase
-        .from("neighbourhoods")
-        .select("code, capacity")
-        .eq("id", neighbourhoodId)
-        .maybeSingle(),
-      ctx.supabase.rpc("house_numbers_taken", {
-        p_neighbourhood: neighbourhoodId,
-        p_application: null,
-      }),
+      ctx.supabase.from("neighbourhoods").select("code, capacity").eq("id", neighbourhoodId).maybeSingle(),
+      ctx.supabase.rpc("house_numbers_taken", { p_neighbourhood: neighbourhoodId, p_application: applicationId }),
     ]);
     const nb = n as { code: string; capacity: number | null } | null;
     // Some land stores the number with the neighbourhood code in front (KRWJXL0102): count it as 02.
     const plain = (no: string) => {
-      const rest =
-        nb?.code && no.toUpperCase().startsWith(nb.code.toUpperCase())
-          ? no.slice(nb.code.length)
-          : no;
+      const rest = nb?.code && no.toUpperCase().startsWith(nb.code.toUpperCase()) ? no.slice(nb.code.length) : no;
       return /^\d+$/.test(rest) ? rest.padStart(2, "0") : rest;
     };
+    const ownPlain = own ? plain(own) : null;
+    let skippedOwn = false;
     return {
       capacity: Math.max(1, Number(nb?.capacity ?? 50) || 50),
-      taken: (
-        (unwrap(taken, "house numbers") as { house_no: string; apartment: boolean }[]) ?? []
-      ).map((x) => ({ ...x, house_no: plain(x.house_no) })),
+      taken: ((unwrap(taken, "house numbers") as { house_no: string; apartment: boolean }[]) ?? [])
+        .map((x) => ({ ...x, house_no: plain(x.house_no) }))
+        // The parcel's own number once (another house with the same number still counts).
+        .filter((x) => (ownPlain && x.house_no === ownPlain && !skippedOwn ? !(skippedOwn = true) : true)),
     };
   },
 );

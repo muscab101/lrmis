@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { updateSurveyDetailsAction } from "@/app/[locale]/(staff)/surveys/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { HouseNoSelect } from "@/components/parcels/house-no-select";
 import { isApartmentType } from "@/lib/apartment";
 
 interface Details {
@@ -78,7 +79,7 @@ export function SurveyDetailsEdit({
               <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
             </Field>
             <Field id="sd-house" label={ta("houseNo")} error={fe("houseNo")}>
-              <Input value={v.houseNo} maxLength={40} onChange={(e) => setV({ ...v, houseNo: e.target.value })} />
+              <HouseNoSelect source={{ surveyId }} value={v.houseNo} apartment={isApartmentType(v.propertyType, propertyTypes)} onChange={(houseNo) => setV({ ...v, houseNo })} />
             </Field>
             {isApartmentType(v.propertyType, propertyTypes) && (
               <Field id="sd-flat" label={ta("flatNo")} error={fe("flatNo")}>
