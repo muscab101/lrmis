@@ -3,12 +3,11 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { FileStack } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { NewRunButton } from "@/components/billing/new-run-button";
 import { RunActions } from "@/components/billing/run-actions";
 import { RunStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { billingCounts, listRuns, recurringFeeTypes } from "@/lib/server/billing";
+import { billingCounts, listRuns } from "@/lib/server/billing";
 import { listDistricts } from "@/lib/server/users";
 
 export async function generateMetadata() {
@@ -23,13 +22,14 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ lo
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
-  const [runs, counts, districts, fees] = await Promise.all([listRuns(), billingCounts(), listDistricts(), recurringFeeTypes()]);
+  const [runs, counts, districts] = await Promise.all([listRuns(), billingCounts(), listDistricts()]);
   const dname = new Map(districts.map((d) => [d.id, lang === "so" ? d.name_so : d.name_en]));
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
-      <PageHeader title={t("runsTitle")} description={t("runsSubtitle")} actions={viewer.can("billing.create") && <NewRunButton districts={districts} feeTypes={fees} />} />
+      {/* Runs are made by the system every 1 January; there is no button to start one. */}
+      <PageHeader title={t("runsTitle")} description={t("runsSubtitle")} />
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         <KpiChip label={t("kpiWaiting")} value={format.number(counts.runs_waiting)} />
         <KpiChip label={t("kpiOpenInvoices")} value={format.number(counts.invoices_open)} />

@@ -2590,7 +2590,7 @@
   },
   "billing": {
     "runsTitle": "Billing runs",
-    "runsSubtitle": "Yearly property tax and recurring fees, billed in batches with a preview and finance approval.",
+    "runsSubtitle": "Every 1 January the system makes and issues each district's property tax run by itself. Open a run to see its bills in batches by neighbourhood.",
     "newRun": "New billing run",
     "newRunBody": "Choose the year, the fee and the districts. A preview with counts, totals and exceptions follows before anything is billed.",
     "preview": "Create and preview",
@@ -2604,7 +2604,7 @@
     "kpiOpenInvoices": "Open invoices",
     "kpiOutstanding": "Outstanding",
     "noRuns": "No billing runs yet",
-    "noRunsBody": "Start a run to bill a year's property tax for one or more districts.",
+    "noRunsBody": "The first runs are made automatically on 1 January.",
     "number": "Number",
     "period": "Period",
     "invoices": "Invoices",

@@ -2590,7 +2590,7 @@
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",
-    "runsSubtitle": "Canshuurta hantida sannadlaha ah iyo khidmadaha soo noqnoqda, oo lagu biilo kooxo leh horudhac iyo ansixinta maaliyadda.",
+    "runsSubtitle": "1da Janaayo kasta nidaamku wuxuu si toos ah u sameeyaa oo soo saaraa orodka canshuurta dhulka ee degmo kasta. Fur orod si aad u aragto biilashiisa oo xaafad-xaafad loo qaybiyay.",
     "newRun": "Biil-wareeg cusub",
     "newRunBody": "Dooro sannadka, khidmadda iyo degmooyinka. Horudhac leh tirada, wadarta iyo waxyaabaha ka reeban ayaa la arkayaa ka hor inta aan wax la biilin.",
     "preview": "Samee oo horudhac",
@@ -2604,7 +2604,7 @@
     "kpiOpenInvoices": "Biilal furan",
     "kpiOutstanding": "Lacagta lagu leeyahay",
     "noRuns": "Weli biil-wareeg ma jiro",
-    "noRunsBody": "Bilow wareeg si aad u biilato canshuurta hantida ee sannad hal degmo ama ka badan.",
+    "noRunsBody": "Orodyada ugu horreeya waxaa si toos ah loo sameeyaa 1da Janaayo.",
     "number": "Lambar",
     "period": "Muddo",
     "invoices": "Biilal",
