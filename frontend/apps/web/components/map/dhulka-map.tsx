@@ -34,7 +34,33 @@ interface Props {
   parcels?: boolean;
 }
 
-const CLICKABLE = ["facilities-circle", "parcels-fill", "neighbourhoods-fill"];
+const CLICKABLE = ["parcel-pins", "facilities-circle", "parcels-fill", "neighbourhoods-fill"];
+
+/** The pin drawn on registered houses: a blue map pin with a white dot, at twice the size for sharp screens. */
+function housePin(): { width: number; height: number; data: Uint8Array } | null {
+  const w = 48;
+  const h = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const c = canvas.getContext("2d");
+  if (!c) return null;
+  c.fillStyle = "#1d4ed8";
+  c.strokeStyle = "#ffffff";
+  c.lineWidth = 3;
+  c.beginPath();
+  c.arc(w / 2, 22, 19, Math.PI, 0);
+  c.bezierCurveTo(w / 2 + 19, 36, w / 2 + 6, 48, w / 2, h - 3);
+  c.bezierCurveTo(w / 2 - 6, 48, w / 2 - 19, 36, w / 2 - 19, 22);
+  c.closePath();
+  c.fill();
+  c.stroke();
+  c.fillStyle = "#ffffff";
+  c.beginPath();
+  c.arc(w / 2, 22, 7, 0, Math.PI * 2);
+  c.fill();
+  return { width: w, height: h, data: new Uint8Array(c.getImageData(0, 0, w, h).data.buffer) };
+}
 
 /** MapLibre map with Dhulka base maps and PostGIS boundary tiles. */
 export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
@@ -104,6 +130,14 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
         );
       }
     });
+
+    m.on("styleimagemissing", (e) => {
+      if (e.id !== "house-pin" || m.hasImage("house-pin")) return;
+      const img = housePin();
+      if (img) m.addImage("house-pin", img, { pixelRatio: 2 });
+    });
+    m.on("mouseenter", "parcel-pins", () => (m.getCanvas().style.cursor = "pointer"));
+    m.on("mouseleave", "parcel-pins", () => (m.getCanvas().style.cursor = ""));
 
     let hovered: string | number | undefined;
     m.on("mousemove", "neighbourhoods-fill", (e) => {

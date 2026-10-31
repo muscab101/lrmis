@@ -1491,7 +1491,13 @@
     "parcel_verified": "La hubiyay",
     "parcel_registered": "La diiwaangeliyay",
     "parcel_disputed": "Muran",
-    "parcel_archived": "Kayd"
+    "parcel_archived": "Kayd",
+    "houseNo": "Lambarka guriga",
+    "owners": "Milkiilayaasha",
+    "place": "Goobta",
+    "area": "Cabbirka",
+    "account": "Lambarka akoonka",
+    "status": "Xaalad"
   },
   "locations": {
     "title": "Goobaha",

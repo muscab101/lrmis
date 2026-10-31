@@ -244,3 +244,11 @@ describe("separation of duties", () => {
     await expect(as(db, "anon", {}, (tx) => tx.query(`select public.parcel_tile(14, 0, 0)`))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("map pins for registered houses (0133)", () => {
+  it("parcel tiles carry a pin layer for registered land from zoom 11", async () => {
+    const src = await scalar<string>(db, `select prosrc from pg_proc where proname = 'parcel_tile'`);
+    expect(src).toContain("'parcel_pins'");
+    expect(src).toContain("p.status = 'registered'");
+  });
+});

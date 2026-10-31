@@ -1491,7 +1491,13 @@
     "parcel_verified": "Verified",
     "parcel_registered": "Registered",
     "parcel_disputed": "Disputed",
-    "parcel_archived": "Archived"
+    "parcel_archived": "Archived",
+    "houseNo": "House No",
+    "owners": "Owners",
+    "place": "Place",
+    "area": "Size",
+    "account": "Account no.",
+    "status": "Status"
   },
   "locations": {
     "title": "Locations",

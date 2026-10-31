@@ -134,7 +134,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
             parcels: {
               type: "vector" as const,
               tiles: [`${origin}/api/parcel-tiles/{z}/{x}/{y}`],
-              minzoom: 13,
+              // Pins of registered houses come from zoom 11; the parcel shapes from 13.
+              minzoom: 11,
               maxzoom: 18,
               promoteId: "id",
             },
@@ -243,6 +244,19 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               minzoom: 17,
               layout: { "text-field": ["coalesce", ["get", "pun"], ""], "text-font": FONT, "text-size": 10 },
               paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 1.5 },
+            },
+            // A pin on every registered house ("house-pin" is drawn by DhulkaMap when the style asks for it).
+            {
+              id: "parcel-pins",
+              type: "symbol",
+              source: "parcels",
+              "source-layer": "parcel_pins",
+              layout: {
+                "icon-image": "house-pin",
+                "icon-anchor": "bottom",
+                "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.55, 16, 0.85, 19, 1],
+                "icon-allow-overlap": true,
+              },
             },
           ] as StyleSpecification["layers"])
         : []),

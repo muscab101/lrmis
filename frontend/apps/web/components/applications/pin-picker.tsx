@@ -58,13 +58,24 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     }
   }, [value, disabled, onChange]);
 
+  // Show the chosen neighbourhood and go to it, once the map has loaded (it may still be loading on a fresh page).
   useEffect(() => {
-    const h = setTimeout(() => {
+    let cancelled = false;
+    const show = () => {
+      if (cancelled) return;
       mapRef.current?.setHighlight(outline ?? null);
       if (value) mapRef.current?.flyTo([value.lon, value.lat], 17);
       else if (outlineBbox) mapRef.current?.fitBounds(outlineBbox, 16);
-    }, 300);
-    return () => clearTimeout(h);
+    };
+    // Go now, and again when the first load finishes in case the style wasn't ready yet.
+    const h = setTimeout(() => {
+      show();
+      mapRef.current?.getMap()?.once("load", show);
+    }, 50);
+    return () => {
+      cancelled = true;
+      clearTimeout(h);
+    };
     // Only when the outline changes; following the pin would fight the user's panning.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, outlineBbox]);
@@ -117,6 +128,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           className="absolute inset-0"
           initialView={value ? { center: [value.lon, value.lat], zoom: 17 } : undefined}
           visible={{ facilities: false, streets: false }}
+          parcels
           onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
         />
         {!value && !disabled && (

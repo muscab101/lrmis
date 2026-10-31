@@ -25,9 +25,23 @@ export default async function AddFieldLandPage({ params, searchParams }: { param
   const supabase = await createClient();
   const [all, { data: mine }, grades] = await Promise.all([listDistricts(), supabase.rpc("user_district_ids"), listPropertyTypes()]);
   const allowed = new Set((mine as string[] | null) ?? []);
-  // From a survey zone: start in its neighbourhood.
-  const start = nbhd && /^[0-9a-f-]{36}$/i.test(nbhd)
-    ? ((await supabase.from("neighbourhoods").select("id, district_id, code, name_so, name_en").eq("id", nbhd).maybeSingle()).data as
+  // From a survey zone: start in its neighbourhood. Otherwise a surveyor starts in the neighbourhood of their latest
+  // open survey zone, so the map opens right where they are working.
+  const zoneNbhd = !nbhd
+    ? ((
+        await supabase
+          .from("survey_zones")
+          .select("neighbourhood_id")
+          .eq("surveyor_id", viewer.user.id)
+          .eq("status", "open")
+          .order("assigned_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      ).data as { neighbourhood_id: string } | null)?.neighbourhood_id
+    : null;
+  const startId = nbhd ?? zoneNbhd;
+  const start = startId && /^[0-9a-f-]{36}$/i.test(startId)
+    ? ((await supabase.from("neighbourhoods").select("id, district_id, code, name_so, name_en").eq("id", startId).maybeSingle()).data as
         | { id: string; district_id: string; code: string; name_so: string; name_en: string }
         | null)
     : null;

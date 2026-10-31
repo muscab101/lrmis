@@ -148,6 +148,38 @@ export const addFieldLandAction = defineAction(
   },
 );
 
+/** What the map shows when a house pin is clicked: its numbers, owners and place. RLS limits it to the viewer's districts. */
+export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id: z.uuid() }), async (v, ctx) => {
+  const { data } = await ctx.supabase
+    .from("parcels")
+    .select(
+      "id, pun, account_no, house_no, flat_no, status, land_use, area_m2, registered_at, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), parcel_owners(role, valid_to, party:parties(full_name, phone))",
+    )
+    .eq("id", v.id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!data) return null;
+  const p = data as unknown as {
+    id: string;
+    pun: string | null;
+    account_no: string | null;
+    house_no: string | null;
+    flat_no: string | null;
+    status: string;
+    land_use: string | null;
+    area_m2: number | null;
+    registered_at: string | null;
+    district: { name_so: string; name_en: string } | null;
+    neighbourhood: { name_so: string; name_en: string } | null;
+    parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
+  };
+  const { parcel_owners, ...rest } = p;
+  return {
+    ...rest,
+    owners: parcel_owners.filter((o) => !o.valid_to && o.party).map((o) => ({ name: o.party!.full_name, phone: o.party!.phone, role: o.role })),
+  };
+});
+
 /**
  * The House No choices: 01 up to the neighbourhood's capacity, and the numbers other land there already has. The
  * neighbourhood comes from itself, a parcel being edited or a survey (its application); their own number is not taken.

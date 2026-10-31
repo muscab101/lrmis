@@ -13,6 +13,7 @@ import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/
 import { districtColourFor, LAYER_MINZOOM, LEGEND, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
+import { parcelSummaryAction } from "../parcels/actions";
 
 const PREFS_KEY = "dhulka.map.prefs";
 
@@ -55,7 +56,7 @@ export function MapWorkspace({
     const m = mapRef.current?.getMap();
     if (!m) return;
     const apply = () => {
-      for (const id of ["parcels-fill", "parcels-line", "parcels-label"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", showParcels ? "visible" : "none");
+      for (const id of ["parcels-fill", "parcels-line", "parcels-label", "parcel-pins"]) if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", showParcels ? "visible" : "none");
     };
     if (m.isStyleLoaded()) apply();
     else m.once("load", apply);
@@ -90,7 +91,9 @@ export function MapWorkspace({
   const onFeatureClick = useCallback(
     (f: MapGeoJSONFeature | null, lngLat: { lng: number; lat: number }) => {
       setCursor(lngLat);
-      const layer = f?.sourceLayer ?? f?.layer.id;
+      const raw = f?.sourceLayer ?? f?.layer.id;
+      // A house pin and the parcel shape open the same details.
+      const layer = raw === "parcel_pins" ? "parcels" : raw;
       setSelected(f && layer ? { layer, props: f.properties } : null);
     },
     [],
@@ -116,6 +119,20 @@ export function MapWorkspace({
       mapRef.current?.fitBounds(res.data.bbox);
     }
   }
+
+  // The details of a clicked house (pin or shape), loaded when it is picked.
+  type Summary = NonNullable<Extract<Awaited<ReturnType<typeof parcelSummaryAction>>, { ok: true }>["data"]>;
+  const [summary, setSummary] = useState<Summary | null | "loading">(null);
+  const parcelId = selected?.layer === "parcels" ? String(selected.props.id) : null;
+  useEffect(() => {
+    if (!parcelId) return setSummary(null);
+    setSummary("loading");
+    let live = true;
+    void parcelSummaryAction({ id: parcelId }).then((r) => live && setSummary(r.ok ? r.data : null));
+    return () => {
+      live = false;
+    };
+  }, [parcelId]);
 
   const name = (p: Record<string, unknown>) => String((locale === "so" ? p.name_so : p.name_en) || p.name_so || "");
 
@@ -277,10 +294,46 @@ export function MapWorkspace({
             )}
           </dl>
           {selected.layer === "parcels" && (
-            <div className="mt-2 space-y-3 text-sm">
+            <div className="mt-1 space-y-3 text-sm">
               <p>
-                <Mono>{String(selected.props.pun ?? t("noPun"))}</Mono> · {t(`parcel_${String(selected.props.status)}`)}
+                <Mono>{String(selected.props.pun ?? t("noPun"))}</Mono>
               </p>
+              {summary === "loading" ? (
+                <p className="text-muted-foreground">{tc("loading")}</p>
+              ) : summary ? (
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                  <dt className="text-muted-foreground">{t("houseNo")}</dt>
+                  <dd>{[summary.house_no, summary.flat_no].filter(Boolean).join(" / ") || "—"}</dd>
+                  <dt className="text-muted-foreground">{t("owners")}</dt>
+                  <dd>
+                    {summary.owners.length === 0
+                      ? "—"
+                      : summary.owners.map((o) => (
+                          <span key={o.name} className="block">
+                            {o.name}
+                            {o.phone && <span className="text-muted-foreground"> · {o.phone}</span>}
+                          </span>
+                        ))}
+                  </dd>
+                  <dt className="text-muted-foreground">{t("place")}</dt>
+                  <dd>
+                    {[summary.neighbourhood, summary.district]
+                      .map((x) => (x ? (locale === "so" ? x.name_so : x.name_en) : null))
+                      .filter(Boolean)
+                      .join(", ") || "—"}
+                  </dd>
+                  <dt className="text-muted-foreground">{t("area")}</dt>
+                  <dd className="tabular-nums">{summary.area_m2 != null ? `${summary.area_m2} m²` : "—"}</dd>
+                  <dt className="text-muted-foreground">{t("account")}</dt>
+                  <dd>
+                    <Mono>{summary.account_no ?? "—"}</Mono>
+                  </dd>
+                  <dt className="text-muted-foreground">{t("status")}</dt>
+                  <dd>{t(`parcel_${summary.status}`)}</dd>
+                </dl>
+              ) : (
+                <p className="text-muted-foreground">{t(`parcel_${String(selected.props.status ?? "registered")}`)}</p>
+              )}
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/parcels/${String(selected.props.id)}`}>{t("openParcel")}</Link>
               </Button>
