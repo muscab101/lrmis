@@ -20,6 +20,7 @@ import {
 import {
   addFieldLandAction,
   houseNumberChoicesAction,
+  neighbourhoodViewAction,
 } from "@/app/[locale]/(staff)/parcels/actions";
 import { PinPicker, type Pin } from "@/components/applications/pin-picker";
 import { FormError } from "@/components/forms/form-error";
@@ -103,16 +104,42 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     [districtId, locale],
   );
 
+  // The map goes to the neighbourhood: its boundary when drawn; otherwise its district's boundary, zoomed in on the
+  // neighbourhood's point when it has one. With only a district chosen, the district.
   useEffect(() => {
-    if (!neighbourhood) return setOutline(null);
-    void getGeometryAction({ level: "neighbourhoods", id: neighbourhood.value }).then((r) =>
-      setOutline(r.ok ? r.data : null),
-    );
-  }, [neighbourhood]);
+    let live = true;
+    if (neighbourhood) {
+      void neighbourhoodViewAction({ id: neighbourhood.value }).then((r) => {
+        if (!live) return;
+        const v = r.ok ? r.data : null;
+        if (v?.neighbourhood) return setOutline(v.neighbourhood);
+        const shape = v?.district ?? null;
+        if (v?.point) {
+          const [lon, lat] = v.point;
+          return setOutline({
+            geometry: shape?.geometry ?? { type: "Point", coordinates: v.point },
+            bbox: [lon - 0.004, lat - 0.003, lon + 0.004, lat + 0.003],
+          });
+        }
+        setOutline(shape);
+      });
+    } else if (districtId) {
+      void getGeometryAction({ level: "districts", id: districtId }).then(
+        (r) => live && setOutline(r.ok ? r.data : null),
+      );
+    } else setOutline(null);
+    return () => {
+      live = false;
+    };
+  }, [neighbourhood, districtId]);
+
+  // Opened for a survey zone: the surveyor records land in that neighbourhood only.
+  const locked = !!start;
 
   // House No: 01 up to the neighbourhood's capacity, without the numbers other land there already has
   // (flats in one block may share a number).
   const [houseChoices, setHouseChoices] = useState<{
+    code: string | null;
     capacity: number;
     taken: { house_no: string; apartment: boolean }[];
   } | null>(null);
@@ -159,9 +186,13 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     if (!res.ok) return;
     if (!res.data) return setPinPlace(ta("pinNoNeighbourhood"));
     const n = res.data;
-    setPinPlace(
-      `${locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en} · ${n.district_name_so}`,
-    );
+    const place = `${locale === "so" ? n.neighbourhood_name_so : n.neighbourhood_name_en} · ${n.district_name_so}`;
+    if (locked) {
+      // The neighbourhood stays the zone's; only say so when the pin falls somewhere else.
+      setPinPlace(n.neighbourhood_id === start!.id ? place : t("pinOutsideZone", { place }));
+      return;
+    }
+    setPinPlace(place);
     setDistrictId(n.district_id);
     setNeighbourhood({
       value: n.neighbourhood_id,
@@ -204,6 +235,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         <Field id="districtId" label={ta("district")} error={fe("districtId")} required>
           <NativeSelect
             value={districtId}
+            disabled={locked}
             onChange={(e) => {
               setDistrictId(e.target.value);
               setNeighbourhood(null);
@@ -221,17 +253,26 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
           id="neighbourhoodId"
           label={ta("neighbourhood")}
           error={fe("neighbourhoodId")}
-          hint={ta("neighbourhoodHint")}
+          hint={locked ? t("neighbourhoodLocked") : ta("neighbourhoodHint")}
         >
-          <AsyncCombobox
-            search={searchNeighbourhoods}
-            value={neighbourhood ? [neighbourhood] : []}
-            onChange={(o) => setNeighbourhood(o[0] ?? null)}
-            disabled={!districtId}
-            placeholder={ta("chooseNeighbourhood")}
-            searchPlaceholder={tc("search")}
-            emptyText={tc("noResults")}
-          />
+          {locked ? (
+            <Input
+              readOnly
+              value={[start!.code, locale === "so" ? start!.name_so : start!.name_en]
+                .filter((x, i, all) => x && all.indexOf(x) === i)
+                .join(" · ")}
+            />
+          ) : (
+            <AsyncCombobox
+              search={searchNeighbourhoods}
+              value={neighbourhood ? [neighbourhood] : []}
+              onChange={(o) => setNeighbourhood(o[0] ?? null)}
+              disabled={!districtId}
+              placeholder={ta("chooseNeighbourhood")}
+              searchPlaceholder={tc("search")}
+              emptyText={tc("noResults")}
+            />
+          )}
         </Field>
       </div>
 
@@ -302,18 +343,29 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
                 : undefined
           }
         >
-          <NativeSelect
-            value={f.houseNo}
-            onChange={set("houseNo")}
-            disabled={!neighbourhood || !houseChoices}
-          >
-            <option value="">{ta("choose")}</option>
-            {houseNumbers.map((no) => (
-              <option key={no} value={no}>
-                {no}
-              </option>
-            ))}
-          </NativeSelect>
+          {/* The neighbourhood code in front, the house number chosen after it: KRWJXL01 | 02. */}
+          <div className="flex">
+            {houseChoices?.code && (
+              <span className="bg-muted text-muted-foreground inline-flex shrink-0 items-center rounded-s-md border border-e-0 px-3 font-mono text-sm">
+                {houseChoices.code}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <NativeSelect
+                value={f.houseNo}
+                onChange={set("houseNo")}
+                disabled={!neighbourhood || !houseChoices}
+                className={houseChoices?.code ? "rounded-s-none" : undefined}
+              >
+                <option value="">{ta("choose")}</option>
+                {houseNumbers.map((no) => (
+                  <option key={no} value={no}>
+                    {no}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          </div>
         </Field>
         <Field id="propertyType" label={t("grade")} error={fe("propertyType")}>
           <NativeSelect value={f.grade} onChange={set("grade")}>

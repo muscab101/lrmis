@@ -22,19 +22,43 @@ function reasonError(err: unknown): never {
 
 export const updateParcelDetailsAction = defineAction(
   "parcels.details",
-  z.object({ id: z.uuid(), houseNo: text(40), govtReceiptNo: text(60), plotNo: text(40) }),
+  z.object({
+    id: z.uuid(),
+    houseNo: text(40),
+    govtReceiptNo: text(60),
+    plotNo: text(40),
+    /** Left out by forms that don't show them, so they stay as they are. */
+    propertyType: z.string().trim().max(40).optional(),
+    flatNo: z.string().trim().max(20, "validation.too_long").optional(),
+  }),
   async (v, ctx) => {
-    unwrap(
-      await ctx.supabase.rpc("parcel_update_details", {
-        p_id: v.id,
-        p: { house_no: v.houseNo, govt_receipt_no: v.govtReceiptNo, plot_no: v.plotNo },
-      }),
-      "parcel details",
-    );
+    const p: Record<string, string> = { house_no: v.houseNo, govt_receipt_no: v.govtReceiptNo, plot_no: v.plotNo };
+    if (v.propertyType !== undefined) p.property_type = v.propertyType;
+    if (v.flatNo !== undefined) p.flat_no = v.flatNo;
+    try {
+      unwrap(await ctx.supabase.rpc("parcel_update_details", { p_id: v.id, p }), "parcel details");
+    } catch (err) {
+      if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "property_type")
+        throw new AppFailure("VALIDATION", undefined, { propertyType: ["validation.required"] });
+      throw err;
+    }
     refresh();
     return null;
   },
 );
+
+/** For the parcel edit dialog: its property type and unit now, and the types to choose from. */
+export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({ id: z.uuid() }), async (v, ctx) => {
+  const [{ data: parcel }, { data: types }] = await Promise.all([
+    ctx.supabase.from("parcels").select("property_type, flat_no").eq("id", v.id).maybeSingle(),
+    ctx.supabase.from("property_grades").select("code, name_so, name_en, active").order("sort").order("name_en"),
+  ]);
+  return {
+    propertyType: (parcel as { property_type: string | null } | null)?.property_type ?? "",
+    flatNo: (parcel as { flat_no: string | null } | null)?.flat_no ?? "",
+    types: (types ?? []) as { code: string; name_so: string; name_en: string; active: boolean }[],
+  };
+});
 
 export const lockParcelAction = defineAction(
   "parcels.lock",
@@ -148,6 +172,17 @@ export const addFieldLandAction = defineAction(
   },
 );
 
+type Shape = { geometry: GeoJSON.Geometry; bbox: [number, number, number, number] };
+
+/** Where the Add land map goes for a neighbourhood: its boundary, else its point and its district's boundary. */
+export const neighbourhoodViewAction = defineAction("parcels.neighbourhood_view", z.object({ id: z.uuid() }), async (v, ctx) =>
+  unwrap(await ctx.supabase.rpc("neighbourhood_view", { p_id: v.id }), "neighbourhood view") as {
+    neighbourhood: Shape | null;
+    point: [number, number] | null;
+    district: Shape | null;
+  } | null,
+);
+
 /** What the map shows when a house pin is clicked: its numbers, owners and place. RLS limits it to the viewer's districts. */
 export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id: z.uuid() }), async (v, ctx) => {
   const { data } = await ctx.supabase
@@ -217,6 +252,8 @@ export const houseNumberChoicesAction = defineAction(
     const ownPlain = own ? plain(own) : null;
     let skippedOwn = false;
     return {
+      /** Shown in front of the number in the House No box. */
+      code: nb?.code ?? null,
       capacity: Math.max(1, Number(nb?.capacity ?? 50) || 50),
       taken: ((unwrap(taken, "house numbers") as { house_no: string; apartment: boolean }[]) ?? [])
         .map((x) => ({ ...x, house_no: plain(x.house_no) }))

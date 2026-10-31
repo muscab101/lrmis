@@ -3,15 +3,16 @@
 import { Button } from "@dhulka/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
 import { Field } from "@dhulka/ui/field";
-import { Tooltip } from "@dhulka/ui/form-controls";
+import { NativeSelect, Tooltip } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { deleteParcelAction, lockParcelAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { deleteParcelAction, lockParcelAction, parcelEditInfoAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { HouseNoSelect } from "@/components/parcels/house-no-select";
 import { Link, useRouter } from "@/i18n/navigation";
+import { isApartmentType } from "@/lib/apartment";
 
 export interface ParcelRowAbilities {
   update: boolean;
@@ -40,6 +41,16 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const [dialog, setDialog] = useState<"edit" | "lock" | "unlock" | "register" | "delete" | null>(null);
   const [v, setV] = useState({ houseNo: parcel.house_no ?? "", govtReceiptNo: parcel.govt_receipt_no ?? "", plotNo: parcel.plot_no ?? "" });
   const [reason, setReason] = useState("");
+  const ta = useTranslations("applications");
+  const locale = useLocale();
+  // The property type and unit are loaded when the edit opens (the tables don't carry them).
+  const [info, setInfo] = useState<{ propertyType: string; flatNo: string; types: { code: string; name_so: string; name_en: string; active: boolean }[] } | null>(null);
+  useEffect(() => {
+    if (dialog !== "edit") return;
+    setInfo(null);
+    void parcelEditInfoAction({ id: parcel.id }).then((r) => r.ok && setInfo(r.data));
+  }, [dialog, parcel.id]);
+  const apartment = !!info && isApartmentType(info.propertyType, info.types);
   const locked = !!parcel.locked_at;
   const partial = parcel.status === "draft" || parcel.status === "surveyed" || parcel.status === "verified";
   const canRegister = !!can.register && partial && !locked;
@@ -147,13 +158,36 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         description={t("editBody")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
-        submit={() => updateParcelDetailsAction({ id: parcel.id, ...v })}
+        submit={() =>
+          updateParcelDetailsAction({
+            id: parcel.id,
+            ...v,
+            ...(info ? { propertyType: info.propertyType, flatNo: apartment ? info.flatNo : "" } : {}),
+          })
+        }
       >
         {(fe) => (
           <div className="grid gap-3 sm:grid-cols-2">
             <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
               <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
             </Field>
+            <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")} className="sm:col-span-2">
+              <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
+                <option value="">{ta("choose")}</option>
+                {(info?.types ?? [])
+                  .filter((p) => p.active || p.code === info?.propertyType)
+                  .map((p) => (
+                    <option key={p.code} value={p.code}>
+                      {locale === "so" ? p.name_so : p.name_en}
+                    </option>
+                  ))}
+              </NativeSelect>
+            </Field>
+            {apartment && (
+              <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
+                <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
+              </Field>
+            )}
             <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")} className="sm:col-span-2">
               <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
             </Field>

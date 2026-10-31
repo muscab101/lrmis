@@ -2345,7 +2345,9 @@
       "registerBody": "{land} gets its PUN and account number, its tax bill and service charge are raised, and its owners are registered. The cashiers are told; the certificate comes once the bills are paid.",
       "registered": "Land registered",
       "houseNoPickPlace": "Drop the pin or pick the neighbourhood first.",
-      "houseNoFull": "Every house number in this neighbourhood is taken."
+      "houseNoFull": "Every house number in this neighbourhood is taken.",
+      "neighbourhoodLocked": "The neighbourhood of your survey zone.",
+      "pinOutsideZone": "The pin is in {place}, outside your zone's neighbourhood."
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",

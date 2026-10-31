@@ -104,6 +104,16 @@ describe("flat number", () => {
     expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
   });
 
+  it("the edit can change the property type and unit; only the keys sent change (0135)", async () => {
+    await asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"storey","flat_no":"4A"}')`, [parcel]));
+    const r = await db.query<{ property_type: string; flat_no: string; house_no: string; plot_no: string }>(
+      `select property_type, flat_no, house_no, plot_no from public.parcels where id = $1`,
+      [parcel],
+    );
+    expect(r.rows[0]).toEqual({ property_type: "storey", flat_no: "4A", house_no: "H-15", plot_no: "P9" });
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"castle"}')`, [parcel])), "VALIDATION");
+  });
+
   it("goes from the application to its parcel", async () => {
     const district = await scalar<string>(db, `select district_id from public.parcels where id = $1`, [parcel]);
     const nbhd = await scalar<string>(db, `select neighbourhood_id from public.parcels where id = $1`, [parcel]);
