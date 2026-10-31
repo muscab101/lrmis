@@ -33,7 +33,6 @@ export function StatCard({
   pct,
   previous,
   newLabel,
-  tone = "primary",
 }: {
   label: string;
   icon: React.ReactNode;
@@ -41,19 +40,14 @@ export function StatCard({
   pct: number | null;
   previous: string;
   newLabel: string;
+  /** Kept for callers; every icon is now the same plain colour. */
   tone?: "primary" | "accent" | "warning" | "flag";
 }) {
-  const toneClass = {
-    primary: "bg-primary-soft text-primary",
-    accent: "bg-accent-soft text-accent",
-    warning: "bg-warning/10 text-warning",
-    flag: "bg-flag/10 text-flag",
-  }[tone];
   return (
     <div className="bg-card rounded-xl border p-4 shadow-xs transition-shadow hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <p className="text-muted-foreground text-sm font-medium">{label}</p>
-        <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg [&_svg]:size-4", toneClass)}>{icon}</span>
+        <span className="text-primary shrink-0 [&_svg]:size-5">{icon}</span>
       </div>
       <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
       <p className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-1.5 text-xs">

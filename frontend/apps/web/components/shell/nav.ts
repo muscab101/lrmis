@@ -51,8 +51,8 @@ export const STAFF_NAV: NavGroup[] = [
     key: "overview",
     items: [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
-      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
       { key: "map", href: "/map", icon: Map, permission: "map.view" },
+      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
     ],
   },
   {
