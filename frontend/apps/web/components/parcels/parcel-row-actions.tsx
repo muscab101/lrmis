@@ -4,6 +4,7 @@ import { Button } from "@dhulka/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect, Tooltip } from "@dhulka/ui/form-controls";
+import { LAND_USES } from "@dhulka/core/schemas";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -44,7 +45,10 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const ta = useTranslations("applications");
   const locale = useLocale();
   // The property type and unit are loaded when the edit opens (the tables don't carry them).
-  const [info, setInfo] = useState<{ propertyType: string; flatNo: string; types: { code: string; name_so: string; name_en: string; active: boolean }[] } | null>(null);
+  type Info = Extract<Awaited<ReturnType<typeof parcelEditInfoAction>>, { ok: true }>["data"];
+  const [info, setInfo] = useState<Info | null>(null);
+  const ts = useTranslations("stage");
+  const tf = useTranslations("parcels.fieldLand");
   useEffect(() => {
     if (dialog !== "edit") return;
     setInfo(null);
@@ -162,7 +166,17 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
           updateParcelDetailsAction({
             id: parcel.id,
             ...v,
-            ...(info ? { propertyType: info.propertyType, flatNo: apartment ? info.flatNo : "" } : {}),
+            ...(info
+              ? {
+                  propertyType: info.propertyType,
+                  flatNo: apartment ? info.flatNo : "",
+                  widthM: info.widthM,
+                  lengthM: info.lengthM,
+                  landUse: info.landUse,
+                  units: info.units,
+                  ...(info.owner ? { ownerName: info.owner.name, ownerPhone: info.owner.phone } : {}),
+                }
+              : {}),
           })
         }
       >
@@ -187,6 +201,38 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
               <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
                 <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
               </Field>
+            )}
+            <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
+              <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
+            </Field>
+            <Field
+              id={`l-${parcel.id}`}
+              label={ta("plotLength")}
+              hint={info && Number(info.widthM) > 0 && Number(info.lengthM) > 0 ? `${tf("area")}: ${Math.round(Number(info.widthM) * Number(info.lengthM) * 10) / 10} m²` : undefined}
+            >
+              <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.lengthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, lengthM: e.target.value })} />
+            </Field>
+            <Field id={`use-${parcel.id}`} label={ts("landUse")}>
+              <NativeSelect value={info?.landUse ?? "residential"} disabled={!info} onChange={(e) => info && setInfo({ ...info, landUse: e.target.value as Info["landUse"] })}>
+                {LAND_USES.map((u) => (
+                  <option key={u} value={u}>
+                    {ts(`landUses.${u}`)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
+            <Field id={`units-${parcel.id}`} label={t("units")} hint={t("unitsHint")} error={fe("units")}>
+              <Input type="number" inputMode="numeric" min={1} max={500} value={info?.units ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, units: e.target.value })} />
+            </Field>
+            {info?.owner && (
+              <>
+                <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>
+                  <Input value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
+                </Field>
+                <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")}>
+                  <Input type="tel" value={info.owner.phone} maxLength={30} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, phone: e.target.value } })} />
+                </Field>
+              </>
             )}
             <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")} className="sm:col-span-2">
               <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />

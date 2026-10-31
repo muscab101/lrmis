@@ -6,6 +6,7 @@ let db: PGlite;
 let surveyor: string;
 let clerk: string;
 let printer: string;
+let entry: string;
 let otherSurveyor: string;
 let hodan: string;
 let nbhd: string;
@@ -48,6 +49,7 @@ beforeAll(async () => {
   otherSurveyor = await createStaff(db, admin, "surveyor2@gmail.com", ["surveyor"], [karaan]);
   clerk = await createStaff(db, admin, "desk@gmail.com", ["front_desk_clerk"], [hodan]);
   printer = await createStaff(db, admin, "printer@gmail.com", ["print_officer"], [hodan]);
+  entry = await createStaff(db, admin, "entry@gmail.com", ["data_entry_clerk"], [hodan]);
 });
 
 describe("field land", () => {
@@ -68,6 +70,21 @@ describe("field land", () => {
       [parcel],
     );
     expect(owner).toEqual({ full_name: "Xaawo Cali Nuur", phone: "+252615550123" });
+  });
+
+  it("the parcel edit fixes partial land's size and owner (0136)", async () => {
+    await asUser(db, entry, (tx) =>
+      tx.query(`select public.parcel_update_details($1, $2)`, [parcel, JSON.stringify({ plot_width_m: "10", plot_length_m: "15", owner_name: "Xaawo Cali Nuur Axmed", owner_phone: "+252615550124" })]),
+    );
+    expect(Number(await scalar<string>(db, `select area_m2 from public.parcels where id = $1`, [parcel]))).toBe(150);
+    const owner = await scalar<{ full_name: string; phone: string }>(
+      db,
+      `select row_to_json(x) from (select pa.full_name, pa.phone from public.parcel_owners po join public.parties pa on pa.id = po.party_id where po.parcel_id = $1) x`,
+      [parcel],
+    );
+    expect(owner).toEqual({ full_name: "Xaawo Cali Nuur Axmed", phone: "+252615550124" });
+    // Back to the size the next tests expect.
+    await asUser(db, entry, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_width_m":"12","plot_length_m":"10"}')`, [parcel]));
   });
 
   it("checks permission, district, pin, plot size and the house number", async () => {

@@ -30,16 +30,33 @@ export const updateParcelDetailsAction = defineAction(
     /** Left out by forms that don't show them, so they stay as they are. */
     propertyType: z.string().trim().max(40).optional(),
     flatNo: z.string().trim().max(20, "validation.too_long").optional(),
+    widthM: z.string().trim().max(10).optional(),
+    lengthM: z.string().trim().max(10).optional(),
+    landUse: z.enum(["residential", "commercial", "state", "mixed", "agricultural", "other"]).optional(),
+    units: z.string().trim().max(4).optional(),
+    /** Partial land only (registered land changes owners by transfer). */
+    ownerName: z.string().trim().max(120).optional(),
+    ownerPhone: z.string().trim().max(30).optional(),
   }),
   async (v, ctx) => {
     const p: Record<string, string> = { house_no: v.houseNo, govt_receipt_no: v.govtReceiptNo, plot_no: v.plotNo };
     if (v.propertyType !== undefined) p.property_type = v.propertyType;
     if (v.flatNo !== undefined) p.flat_no = v.flatNo;
+    if (v.widthM !== undefined && v.lengthM !== undefined && (v.widthM || v.lengthM)) {
+      p.plot_width_m = v.widthM;
+      p.plot_length_m = v.lengthM;
+    }
+    if (v.landUse !== undefined) p.land_use = v.landUse;
+    if (v.units !== undefined) p.units = v.units;
+    if (v.ownerName !== undefined) {
+      p.owner_name = v.ownerName;
+      p.owner_phone = v.ownerPhone ?? "";
+    }
     try {
       unwrap(await ctx.supabase.rpc("parcel_update_details", { p_id: v.id, p }), "parcel details");
     } catch (err) {
-      if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "property_type")
-        throw new AppFailure("VALIDATION", undefined, { propertyType: ["validation.required"] });
+      const field = { property_type: "propertyType", plot_size: "widthM", units: "units", owner_name: "ownerName" }[String(err instanceof AppFailure ? err.values?.detail : "")];
+      if (err instanceof AppFailure && err.code === "VALIDATION" && field) throw new AppFailure("VALIDATION", undefined, { [field]: ["validation.required"] });
       throw err;
     }
     refresh();
@@ -50,12 +67,33 @@ export const updateParcelDetailsAction = defineAction(
 /** For the parcel edit dialog: its property type and unit now, and the types to choose from. */
 export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({ id: z.uuid() }), async (v, ctx) => {
   const [{ data: parcel }, { data: types }] = await Promise.all([
-    ctx.supabase.from("parcels").select("property_type, flat_no").eq("id", v.id).maybeSingle(),
+    ctx.supabase
+      .from("parcels")
+      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parcel_owners(role, valid_to, party:parties(full_name, phone))")
+      .eq("id", v.id)
+      .maybeSingle(),
     ctx.supabase.from("property_grades").select("code, name_so, name_en, active").order("sort").order("name_en"),
   ]);
+  const p = parcel as {
+    property_type: string | null;
+    flat_no: string | null;
+    plot_width_m: number | null;
+    plot_length_m: number | null;
+    land_use: string;
+    units: number | null;
+    status: string;
+    parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
+  } | null;
+  const owner = p?.parcel_owners.filter((o) => !o.valid_to && o.party).sort((a, b) => Number(b.role === "owner") - Number(a.role === "owner"))[0]?.party ?? null;
   return {
-    propertyType: (parcel as { property_type: string | null } | null)?.property_type ?? "",
-    flatNo: (parcel as { flat_no: string | null } | null)?.flat_no ?? "",
+    propertyType: p?.property_type ?? "",
+    flatNo: p?.flat_no ?? "",
+    widthM: p?.plot_width_m != null ? String(p.plot_width_m) : "",
+    lengthM: p?.plot_length_m != null ? String(p.plot_length_m) : "",
+    landUse: (p?.land_use ?? "residential") as "residential" | "commercial" | "state" | "mixed" | "agricultural" | "other",
+    units: p?.units != null ? String(p.units) : "",
+    /** Partial land: its owner's name and phone can be fixed here. */
+    owner: p && ["draft", "surveyed", "verified"].includes(p.status) && owner ? { name: owner.full_name, phone: owner.phone ?? "" } : null,
     types: (types ?? []) as { code: string; name_so: string; name_en: string; active: boolean }[],
   };
 });

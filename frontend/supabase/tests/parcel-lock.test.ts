@@ -114,6 +114,19 @@ describe("flat number", () => {
     await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"castle"}')`, [parcel])), "VALIDATION");
   });
 
+  it("the edit can change size, land use and units (0136)", async () => {
+    await asUser(db, clerk, (tx) =>
+      tx.query(`select public.parcel_update_details($1, $2)`, [parcel, JSON.stringify({ plot_width_m: "12", plot_length_m: "15", land_use: "commercial", units: "4" })]),
+    );
+    const r = await db.query<{ w: string; l: string; land_use: string; units: number }>(
+      `select plot_width_m w, plot_length_m l, land_use::text, units from public.parcels where id = $1`,
+      [parcel],
+    );
+    expect([Number(r.rows[0]!.w), Number(r.rows[0]!.l), r.rows[0]!.land_use, r.rows[0]!.units]).toEqual([12, 15, "commercial", 4]);
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_width_m":"0","plot_length_m":"5"}')`, [parcel])), "VALIDATION");
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"units":"0"}')`, [parcel])), "VALIDATION");
+  });
+
   it("goes from the application to its parcel", async () => {
     const district = await scalar<string>(db, `select district_id from public.parcels where id = $1`, [parcel]);
     const nbhd = await scalar<string>(db, `select neighbourhood_id from public.parcels where id = $1`, [parcel]);
