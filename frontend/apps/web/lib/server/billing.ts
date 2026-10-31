@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
+import { normalizePun } from "@/lib/pun";
 
 export type RunStatus = "draft" | "submitted" | "approved" | "generating" | "issued" | "cancelled";
 export type InvoiceStatus = "issued" | "partially_paid" | "paid" | "cancelled";
@@ -127,7 +128,7 @@ export async function listInvoices(opts: {
     if (/^(inv|scin)/i.test(term)) req = req.ilike("number", `%${term}%`);
     else {
       // PUN or account number of the land, or the owner's phone.
-      const like = `%${term.replace(/-/g, "")}%`;
+      const like = `%${normalizePun(term)}%`;
       const { data } = await supabase
         .from("parcels")
         .select("id")

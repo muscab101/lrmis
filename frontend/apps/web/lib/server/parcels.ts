@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 import { PARTY_COLUMNS, type PartyRow, type SiteCheckStatus } from "./applications";
+import { normalizePun } from "@/lib/pun";
 
 export type ParcelStatus = "draft" | "surveyed" | "verified" | "registered" | "disputed" | "archived";
 
@@ -40,7 +41,9 @@ const PARTIAL = "(draft,surveyed,verified)";
 
 export async function searchParcels(q: string, stage: ParcelStage = "all", neighbourhoodId: string | null = null) {
   const supabase = await createClient();
-  let req = supabase.rpc("search_parcels", { p_q: q.replace(/[%\\]/g, " ").trim(), p_limit: 1000 });
+  // An old PUN typed off paper (BN34KRWJXL0107) finds the land by its PUN today.
+  const term = /^\s*BN[\w-]{4,}\s*$/i.test(q) ? normalizePun(q) : q;
+  let req = supabase.rpc("search_parcels", { p_q: term.replace(/[%\\]/g, " ").trim(), p_limit: 1000 });
   if (neighbourhoodId) {
     const { data } = await supabase.from("parcels").select("id").eq("neighbourhood_id", neighbourhoodId).is("deleted_at", null).limit(1000);
     const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);

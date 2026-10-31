@@ -12,6 +12,7 @@ import { legalCounts, listTransfers, parcelLegal, type RequestStatus } from "@/l
 import { getParcel } from "@/lib/server/parcels";
 import { createClient } from "@/lib/supabase/server";
 import { listDistricts } from "@/lib/server/users";
+import { normalizePun } from "@/lib/pun";
 
 export async function generateMetadata() {
   const t = await getTranslations("legal");
@@ -34,7 +35,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
   const names = (o: { full_name: string }[]) => o.map((x) => x.full_name).join(", ") || "—";
   // Legal work on one parcel (transfer, subdivide, merge, change of use, correction, permit, dispute, lien, court
   // order): find it by its PUN (dashes from an old printout are ignored).
-  const pun = (sp.pun ?? "").trim().toUpperCase().replace(/-/g, "").slice(0, 30);
+  const pun = normalizePun(sp.pun ?? "").slice(0, 30);
   const found = pun
     ? ((await (await createClient()).from("parcels").select("id").eq("pun", pun).is("deleted_at", null).maybeSingle()).data as { id: string } | null)
     : null;
@@ -52,7 +53,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
           <form className="flex flex-wrap items-end gap-2" role="search">
             <label className="grid min-w-60 flex-1 gap-1 text-sm">
               <span className="text-muted-foreground text-xs">{t("findParcel")}</span>
-              <Input name="pun" defaultValue={pun} placeholder="BN010101" className="font-mono" autoComplete="off" />
+              <Input name="pun" defaultValue={pun} placeholder="34KRWJXL0107" className="font-mono" autoComplete="off" />
             </label>
             <Button type="submit" variant="outline">
               <Search aria-hidden />

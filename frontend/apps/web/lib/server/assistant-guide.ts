@@ -16,7 +16,7 @@ sits in a neighbourhood. Staff are given one or more districts (or all districts
 and figures for those districts. Cashiers are also tied to one cash desk (point of sale) and only see that desk.
 
 Key words:
-- PUN: the parcel's unique number, given when the land is registered (e.g. BN010105).
+- PUN: the parcel's unique number, given when the land is registered (e.g. 34KRWJXL0107).
 - Partial registration: land that has been added but is not registered yet (draft, surveyed or verified).
 - Registered: land with a PUN on the official register.
 - Account number: given with the PUN; bills are raised against it.

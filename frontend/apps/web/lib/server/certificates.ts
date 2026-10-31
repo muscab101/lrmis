@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
+import { normalizePun } from "@/lib/pun";
 
 export interface Snapshot {
   pun: string;
@@ -52,7 +53,7 @@ export async function listDocuments(opts: { q: string; status: "valid" | "any"; 
   if (term) {
     // PUNs are BN… with no dashes; dashes typed from an older printout are ignored.
     if (/^bn/i.test(term)) {
-      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${term.replace(/-/g, "")}%`).limit(50);
+      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${normalizePun(term)}%`).limit(50);
       const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
       req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
     } else req = req.ilike("serial", `%${term}%`);

@@ -110,7 +110,7 @@ describe("register land straight from the parcel (no Applications page)", () => 
     );
     await expect(asUser(db, u.surveyor!, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]))).rejects.toThrow(/^PERMISSION_DENIED/);
     const r = await asUser(db, u.registrar!, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [land.parcel_id]));
-    expect(r.pun).toMatch(/^BN/);
+    expect(r.pun).toMatch(/^HDN/);
     const p = await scalar<{ status: string; pun: string }>(db, `select row_to_json(p) from public.parcels p where id = $1`, [land.parcel_id]);
     expect(p).toMatchObject({ status: "registered", pun: r.pun });
     const bills = await db.query<{ code: string; total: string }>(

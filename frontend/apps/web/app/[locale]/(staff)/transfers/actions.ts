@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
+import { normalizePun } from "@/lib/pun";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
 const note = z.string().max(1000).default("");
@@ -131,7 +132,7 @@ export const requestChangeAction = defineAction(
   async (v, ctx) => {
     let ids = v.parcelIds;
     if (v.kind === "merge" && v.otherPuns.length) {
-      const { data } = await ctx.supabase.from("parcels").select("id, pun").in("pun", v.otherPuns.filter(Boolean).map((p) => p.toUpperCase().replace(/-/g, "")));
+      const { data } = await ctx.supabase.from("parcels").select("id, pun").in("pun", v.otherPuns.filter(Boolean).map(normalizePun));
       const found = (data ?? []) as { id: string }[];
       if (found.length !== v.otherPuns.filter(Boolean).length) throw new AppFailure("VALIDATION", undefined, { otherPuns: ["validation.pun_not_found"] });
       ids = [...ids, ...found.map((p) => p.id)];

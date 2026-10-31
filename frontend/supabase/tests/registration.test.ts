@@ -150,7 +150,7 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
 
   it("the registrar registers: PUN + account number generated, owners recorded", async () => {
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string; account_no: string }>(tx, `select public.application_register($1, 'residential')`, [app]));
-    expect(r).toMatchObject({ pun: "BNHDN01201", account_no: "HDN0000001" });
+    expect(r).toMatchObject({ pun: "HDN01201", account_no: "HDN0000001" });
     expect(await status(app)).toBe("approved");
     const parcel = await db.query<{ status: string; owners: number }>(
       `select p.status::text, (select count(*)::int from public.parcel_owners po where po.parcel_id = p.id and po.valid_to is null) as owners
@@ -173,7 +173,7 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
     );
     await db.query(`update public.public_notices set ends_at = now() - interval '1 minute' where application_id = $1`, [second]);
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.application_register($1)`, [second]));
-    expect(r.pun).toBe("BNHDN01202");
+    expect(r.pun).toBe("HDN01202");
   });
 
   it("PUN numbers keep one leading zero at most and never cut longer numbers", async () => {
@@ -186,10 +186,10 @@ describe("§10 Golden Path steps 2–4: fee → survey → verify → notice →
     const zz = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'ZZ','Z','Z') returning id`, [region]);
     // Borrow a parcel to hold what serial 1 in the new district would produce, then give its PUN back.
     const held = await scalar<{ id: string; pun: string }>(db, `select row_to_json(p) from (select id, pun from public.parcels where pun is not null limit 1) p`);
-    await db.query(`update public.parcels set pun = 'BNZZ01' where id = $1`, [held.id]);
+    await db.query(`update public.parcels set pun = 'ZZ01' where id = $1`, [held.id]);
     const ids = await scalar<{ pun: string }>(db, `select row_to_json(x) from private.next_pun($1, null) x`, [zz]);
     await db.query(`update public.parcels set pun = $2 where id = $1`, [held.id, held.pun]);
-    expect(ids.pun).toBe("BNZZ02");
+    expect(ids.pun).toBe("ZZ02");
   });
 });
 
@@ -210,7 +210,7 @@ describe("GIS validation", () => {
     await asUser(db, surveyor, (tx) => tx.query(`select public.survey_save($1, $2)`, [s, JSON.stringify({ geojson: square(45.3002, 2.0402, 0.0002) })]));
     const out = await asUser(db, surveyor, (tx) => scalar<{ status: string; overlaps: { pun: string }[] }>(tx, `select public.survey_submit($1)`, [s]));
     expect(out.status).toBe("overlap_review");
-    expect(out.overlaps[0]?.pun).toBe("BNHDN01201");
+    expect(out.overlaps[0]?.pun).toBe("HDN01201");
     expect(await status(app)).toBe("in_survey");
 
     await expectError(asUser(db, gis, (tx) => tx.query(`select public.survey_gis_review($1, 'accept')`, [s])), "VALIDATION: still_overlapping");
