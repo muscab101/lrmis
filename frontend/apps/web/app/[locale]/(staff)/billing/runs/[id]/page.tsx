@@ -3,6 +3,7 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { PlaceFilter, type PlaceOption } from "@/components/billing/place-filter";
 import { RunActions } from "@/components/billing/run-actions";
 import { RunStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
@@ -15,10 +16,11 @@ export default async function RunPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ batch?: string }>;
+  searchParams: Promise<{ batch?: string; d?: string; s?: string; k?: string; n?: string }>;
 }) {
   const { locale, id } = await params;
-  const { batch } = await searchParams;
+  const sp = await searchParams;
+  const { batch } = sp;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "billing.view");
   const t = await getTranslations("billing");
@@ -28,14 +30,31 @@ export default async function RunPage({
   if (!run) notFound();
   // A batch is one neighbourhood ("none": land without one).
   const batchId = batch === "none" ? null : batch && /^[0-9a-f-]{36}$/i.test(batch) ? batch : undefined;
-  const [districts, places, batches, bills] = await Promise.all([
+  const [districts, places, allBatches, bills] = await Promise.all([
     listDistricts(),
     runPlaceNames(run, lang),
     run.status === "cancelled" ? [] : runBatches(run.id),
     batchId !== undefined && run.status !== "cancelled" ? runBatchBills(run.id, batchId) : null,
   ]);
   const nm = (so: string | null, en: string | null) => (lang === "so" ? so : en) ?? so ?? en ?? "—";
-  const shown = batchId !== undefined ? batches.find((b) => b.neighbourhood_id === batchId) : undefined;
+  // Filter the batches by place: district, then section, sector, neighbourhood (options come from the run's own land).
+  const label = (code: string | null, so: string | null, en: string | null) =>
+    [code, lang === "so" ? so : en].filter((x, i, all) => x && all.indexOf(x) === i).join(" · ") || "—";
+  const uniq = (items: { id: string | null; label: string }[]) =>
+    [...new Map(items.filter((o): o is PlaceOption => !!o.id).map((o) => [o.id, o])).values()].sort((a, b) => a.label.localeCompare(b.label));
+  const inD = allBatches.filter((b) => !sp.d || b.district_id === sp.d);
+  const inS = inD.filter((b) => !sp.s || b.section_id === sp.s);
+  const inK = inS.filter((b) => !sp.k || b.sector_id === sp.k);
+  const batches = inK.filter((b) => !sp.n || b.neighbourhood_id === sp.n);
+  const filterLevels = [
+    { key: "d" as const, options: uniq(allBatches.map((b) => ({ id: b.district_id, label: nm(b.district_so, b.district_en) }))) },
+    ...(sp.d ? [{ key: "s" as const, options: uniq(inD.map((b) => ({ id: b.section_id, label: label(b.section_code, b.section_so, b.section_en) }))) }] : []),
+    ...(sp.s ? [{ key: "k" as const, options: uniq(inS.map((b) => ({ id: b.sector_id, label: label(b.sector_code, b.sector_so, b.sector_en) }))) }] : []),
+    ...(sp.k ? [{ key: "n" as const, options: uniq(inK.map((b) => ({ id: b.neighbourhood_id, label: label(b.neighbourhood_code, b.neighbourhood_so, b.neighbourhood_en) }))) }] : []),
+  ];
+  const filterQuery = { d: sp.d, s: sp.s, k: sp.k, n: sp.n };
+  const keepFilter = new URLSearchParams(Object.entries(filterQuery).filter((e): e is [string, string] => !!e[1])).toString();
+  const shown = batchId !== undefined ? allBatches.find((b) => b.neighbourhood_id === batchId) : undefined;
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const p = run.preview;
   const ex = p.exceptions ?? { already_invoiced: 0, no_assessment: 0, zero_amount: 0 };
@@ -119,11 +138,14 @@ export default async function RunPage({
           </CardContent>
         </Card>
       </div>
-      {batches.length > 0 && (
+      {allBatches.length > 0 && (
         <Card className="mt-5 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-base">{t("batchesTitle")}</CardTitle>
-            <p className="text-sm text-muted-foreground">{t("batchesBody")}</p>
+          <CardHeader className="space-y-3">
+            <div>
+              <CardTitle className="text-base">{t("batchesTitle")}</CardTitle>
+              <p className="text-sm text-muted-foreground">{t("batchesBody")}</p>
+            </div>
+            <PlaceFilter levels={filterLevels} query={filterQuery} />
           </CardHeader>
           <Table>
             <TableHeader>
@@ -136,12 +158,19 @@ export default async function RunPage({
               </TableRow>
             </TableHeader>
             <TableBody>
+              {batches.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
+                    {t("noBatchesHere")}
+                  </TableCell>
+                </TableRow>
+              )}
               {batches.map((b) => {
                 const key = b.neighbourhood_id ?? "none";
                 return (
                   <TableRow key={key} className={batch === key ? "bg-muted/50" : undefined}>
                     <TableCell>
-                      <Link href={`/billing/runs/${run.id}?batch=${key}#bills`} className="text-primary hover:underline">
+                      <Link href={`/billing/runs/${run.id}?${keepFilter ? `${keepFilter}&` : ""}batch=${key}#bills`} className="text-primary hover:underline">
                         {b.neighbourhood_id ? [b.neighbourhood_code, nm(b.neighbourhood_so, b.neighbourhood_en)].filter((x, i, all) => x && all.indexOf(x) === i).join(" · ") : t("noNeighbourhood")}
                       </Link>
                     </TableCell>

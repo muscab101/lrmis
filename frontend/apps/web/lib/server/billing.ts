@@ -383,6 +383,13 @@ export interface RunBatch {
   bills: number;
   total: number;
   skipped: number;
+  district_id: string | null;
+  section_id: string | null;
+  section_code: string | null;
+  sector_id: string | null;
+  sector_code: string | null;
+  sector_so: string | null;
+  sector_en: string | null;
 }
 
 export async function runBatches(runId: string) {

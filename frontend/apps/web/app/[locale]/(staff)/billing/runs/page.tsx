@@ -3,6 +3,7 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { FileStack } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { PlaceFilter } from "@/components/billing/place-filter";
 import { RunActions } from "@/components/billing/run-actions";
 import { RunStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
@@ -15,14 +16,18 @@ export async function generateMetadata() {
   return { title: t("runsTitle") };
 }
 
-export default async function BillingRunsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function BillingRunsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ d?: string }> }) {
   const { locale } = await params;
+  const { d } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "billing.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
-  const [runs, counts, districts] = await Promise.all([listRuns(), billingCounts(), listDistricts()]);
+  const [allRuns, counts, districts] = await Promise.all([listRuns(), billingCounts(), listDistricts()]);
+  // Only the runs that cover the chosen district.
+  const runs = d ? allRuns.filter((r) => r.district_ids.includes(d)) : allRuns;
+  const runDistricts = [...new Set(allRuns.flatMap((r) => r.district_ids))];
   const dname = new Map(districts.map((d) => [d.id, lang === "so" ? d.name_so : d.name_en]));
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
@@ -35,6 +40,14 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ lo
         <KpiChip label={t("kpiOpenInvoices")} value={format.number(counts.invoices_open)} />
         <KpiChip label={t("kpiOutstanding")} value={usd(counts.outstanding)} />
       </div>
+      {runDistricts.length > 1 && (
+        <div className="mb-4">
+          <PlaceFilter
+            levels={[{ key: "d", options: runDistricts.map((id) => ({ id, label: dname.get(id) ?? "?" })).sort((x, y) => x.label.localeCompare(y.label)) }]}
+            query={{ d }}
+          />
+        </div>
+      )}
       <Card className="overflow-hidden">
         {runs.length === 0 ? (
           <EmptyState icon={<FileStack />} title={t("noRuns")} description={t("noRunsBody")} />

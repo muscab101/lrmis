@@ -235,6 +235,8 @@ describe("billing runs that work themselves out (0137)", () => {
     const b = await asUser(db, biller, (tx) => tx.query<{ bills: number; total: string; skipped: number }>(`select * from public.billing_run_batches($1)`, [run]));
     expect(b.rows).toHaveLength(1);
     expect([b.rows[0]!.bills, Number(b.rows[0]!.total), b.rows[0]!.skipped]).toEqual([1, 120 * price, 2]);
+    // Each batch names its district (and section and sector), for the place filter (0138).
+    expect((b.rows[0] as unknown as { district_id: string }).district_id).toBe(hodan);
     const bills = await asUser(db, biller, (tx) => tx.query<{ pun: string; exception: string | null }>(`select * from public.billing_run_batch_bills($1, $2)`, [run, nbhd]));
     expect(bills.rows[0]!.exception).toBeNull();
   });

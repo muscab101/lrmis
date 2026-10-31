@@ -2808,7 +2808,15 @@
     "houseNo": "Lambarka guriga",
     "owner": "Milkiile",
     "batchState": "Biil",
-    "willBeBilled": "Waa la biilayn doonaa"
+    "willBeBilled": "Waa la biilayn doonaa",
+    "placeFilter": {
+      "d": "Degmo",
+      "s": "Qayb",
+      "k": "Laan",
+      "n": "Xaafad",
+      "all": "Dhammaan"
+    },
+    "noBatchesHere": "Dufcado kuma jiraan goobtan."
   },
   "pay": {
     "title": "Bixi biilkaaga",

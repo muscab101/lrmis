@@ -2808,7 +2808,15 @@
     "houseNo": "House No",
     "owner": "Owner",
     "batchState": "Bill",
-    "willBeBilled": "Will be billed"
+    "willBeBilled": "Will be billed",
+    "placeFilter": {
+      "d": "District",
+      "s": "Section",
+      "k": "Sector",
+      "n": "Neighbourhood",
+      "all": "All"
+    },
+    "noBatchesHere": "No batches in this place."
   },
   "pay": {
     "title": "Pay your invoice",
