@@ -4,14 +4,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { RunActions } from "@/components/billing/run-actions";
-import { InvoiceStatusBadge, RunStatusBadge } from "@/components/billing/status";
+import { RunStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { getRun, listInvoices } from "@/lib/server/billing";
+import { getRun, runBatchBills, runBatches, runPlaceNames } from "@/lib/server/billing";
 import { listDistricts } from "@/lib/server/users";
 
-export default async function RunPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function RunPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ batch?: string }>;
+}) {
   const { locale, id } = await params;
+  const { batch } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "billing.view");
   const t = await getTranslations("billing");
@@ -19,7 +26,16 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
   const lang = await getLocale();
   const run = await getRun(id);
   if (!run) notFound();
-  const [districts, invoices] = await Promise.all([listDistricts(), run.status === "issued" ? listInvoices({ filter: "any", q: "", runId: run.id }) : null]);
+  // A batch is one neighbourhood ("none": land without one).
+  const batchId = batch === "none" ? null : batch && /^[0-9a-f-]{36}$/i.test(batch) ? batch : undefined;
+  const [districts, places, batches, bills] = await Promise.all([
+    listDistricts(),
+    runPlaceNames(run, lang),
+    run.status === "cancelled" ? [] : runBatches(run.id),
+    batchId !== undefined && run.status !== "cancelled" ? runBatchBills(run.id, batchId) : null,
+  ]);
+  const nm = (so: string | null, en: string | null) => (lang === "so" ? so : en) ?? so ?? en ?? "—";
+  const shown = batchId !== undefined ? batches.find((b) => b.neighbourhood_id === batchId) : undefined;
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const p = run.preview;
   const ex = p.exceptions ?? { already_invoiced: 0, no_assessment: 0, zero_amount: 0 };
@@ -28,6 +44,8 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
     [t("feeType"), run.fee_type ? (lang === "so" ? run.fee_type.name_so : run.fee_type.name_en) : "—"],
     [t("period"), run.period],
     [t("districts"), dnames.join(", ")],
+    ...(places.length ? ([[t("placesLabel"), places.join(", ")]] as [string, React.ReactNode][]) : []),
+    ...(run.automatic ? ([[t("madeBy"), t("automatic")]] as [string, React.ReactNode][]) : []),
     [t("dueDate"), format.dateTime(new Date(run.due_date), { dateStyle: "medium" })],
     [t("created"), format.dateTime(new Date(run.created_at), { dateStyle: "medium", timeStyle: "short" })],
   ];
@@ -101,33 +119,83 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
           </CardContent>
         </Card>
       </div>
-      {invoices && (
+      {batches.length > 0 && (
         <Card className="mt-5 overflow-hidden">
+          <CardHeader>
+            <CardTitle className="text-base">{t("batchesTitle")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("batchesBody")}</p>
+          </CardHeader>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("invoice")}</TableHead>
-                <TableHead>{t("parcel")}</TableHead>
+                <TableHead>{t("batchPlace")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("batchArea")}</TableHead>
+                <TableHead className="text-end">{t("invoices")}</TableHead>
                 <TableHead className="text-end">{t("total")}</TableHead>
-                <TableHead className="text-end">{t("balance")}</TableHead>
-                <TableHead>{t("statusLabel")}</TableHead>
+                <TableHead className="text-end">{t("batchSkipped")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.rows.map((i) => (
-                <TableRow key={i.id}>
+              {batches.map((b) => {
+                const key = b.neighbourhood_id ?? "none";
+                return (
+                  <TableRow key={key} className={batch === key ? "bg-muted/50" : undefined}>
+                    <TableCell>
+                      <Link href={`/billing/runs/${run.id}?batch=${key}#bills`} className="text-primary hover:underline">
+                        {b.neighbourhood_id ? [b.neighbourhood_code, nm(b.neighbourhood_so, b.neighbourhood_en)].filter((x, i, all) => x && all.indexOf(x) === i).join(" · ") : t("noNeighbourhood")}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
+                      {[nm(b.section_so, b.section_en), nm(b.district_so, b.district_en)].filter((x) => x !== "—").join(", ")}
+                    </TableCell>
+                    <TableCell className="text-end tabular-nums">{b.bills}</TableCell>
+                    <TableCell className="text-end tabular-nums">{usd(b.total)}</TableCell>
+                    <TableCell className={`text-end tabular-nums ${b.skipped ? "text-status-pending" : "text-muted-foreground"}`}>{b.skipped}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+      {bills && (
+        <Card id="bills" className="mt-5 scroll-mt-20 overflow-hidden">
+          <CardHeader>
+            <CardTitle className="text-base">
+              {t("batchBillsTitle", { place: shown?.neighbourhood_id ? [shown.neighbourhood_code, nm(shown.neighbourhood_so, shown.neighbourhood_en)].filter((x, i, all) => x && all.indexOf(x) === i).join(" · ") : t("noNeighbourhood") })}
+            </CardTitle>
+          </CardHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("parcel")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("houseNo")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("owner")}</TableHead>
+                <TableHead className="text-end">{t("total")}</TableHead>
+                <TableHead>{run.status === "issued" ? t("invoice") : t("batchState")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bills.map((r) => (
+                <TableRow key={r.parcel_id}>
                   <TableCell>
-                    <Link href={`/invoices/${i.id}`} className="hover:text-primary">
-                      <Mono>{i.number}</Mono>
+                    <Link href={`/parcels/${r.parcel_id}`} className="hover:text-primary">
+                      <Mono>{r.pun ?? "—"}</Mono>
                     </Link>
                   </TableCell>
-                  <TableCell>
-                    <Mono>{i.parcel?.pun}</Mono>
-                  </TableCell>
-                  <TableCell className="text-end text-sm tabular-nums">{usd(i.total)}</TableCell>
-                  <TableCell className="text-end text-sm tabular-nums">{usd(i.balance)}</TableCell>
-                  <TableCell>
-                    <InvoiceStatusBadge status={i.status} dueDate={i.due_date} />
+                  <TableCell className="hidden text-sm sm:table-cell">{r.house_no ?? "—"}</TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{r.owner ?? "—"}</TableCell>
+                  <TableCell className="text-end text-sm tabular-nums">{r.amount != null && !r.exception ? usd(r.amount) : "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.invoice_id ? (
+                      <Link href={`/invoices/${r.invoice_id}`} className="hover:text-primary">
+                        <Mono>{r.invoice_number}</Mono>
+                      </Link>
+                    ) : r.exception ? (
+                      <span className="text-status-pending">{t(`exceptions.${r.exception}`)}</span>
+                    ) : (
+                      <span className="text-muted-foreground">{t("willBeBilled")}</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

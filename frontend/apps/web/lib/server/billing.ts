@@ -21,7 +21,10 @@ export interface RunRow {
   period: string;
   status: RunStatus;
   district_ids: string[];
+  section_ids: string[];
+  sector_ids: string[];
   neighbourhood_ids: string[];
+  automatic: boolean;
   due_date: string;
   issue_date: string;
   preview: RunPreview;
@@ -36,7 +39,7 @@ export interface RunRow {
 }
 
 const RUN_COLUMNS =
-  "id, number, year, period, status, district_ids, neighbourhood_ids, due_date, issue_date, preview, invoice_count, total, note, created_at, created_by, approved_by, cancel_reason, fee_type:fee_types(code, name_so, name_en)";
+  "id, number, year, period, status, district_ids, section_ids, sector_ids, neighbourhood_ids, automatic, due_date, issue_date, preview, invoice_count, total, note, created_at, created_by, approved_by, cancel_reason, fee_type:fee_types(code, name_so, name_en)";
 
 export async function listRuns() {
   const supabase = await createClient();
@@ -365,4 +368,53 @@ export async function recurringFeeTypes() {
     interval: string;
     amount: number;
   }[];
+}
+
+/** One batch of a run: the land of one neighbourhood, with what is billed and what is skipped. */
+export interface RunBatch {
+  neighbourhood_id: string | null;
+  neighbourhood_code: string | null;
+  neighbourhood_so: string | null;
+  neighbourhood_en: string | null;
+  section_so: string | null;
+  section_en: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  bills: number;
+  total: number;
+  skipped: number;
+}
+
+export async function runBatches(runId: string) {
+  const supabase = await createClient();
+  return (unwrap(await supabase.rpc("billing_run_batches", { p_id: runId }), "run batches") as RunBatch[]).map((b) => ({ ...b, total: Number(b.total) }));
+}
+
+export interface BatchBill {
+  parcel_id: string;
+  pun: string | null;
+  house_no: string | null;
+  owner: string | null;
+  amount: number | null;
+  exception: string | null;
+  invoice_id: string | null;
+  invoice_number: string | null;
+  invoice_status: string | null;
+}
+
+export async function runBatchBills(runId: string, neighbourhoodId: string | null) {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc("billing_run_batch_bills", { p_id: runId, p_neighbourhood: neighbourhoodId }), "batch bills") as BatchBill[];
+}
+
+/** Names of the places a run was limited to. */
+export async function runPlaceNames(run: Pick<RunRow, "section_ids" | "sector_ids" | "neighbourhood_ids">, lang: string) {
+  const supabase = await createClient();
+  const names = async (table: "sections" | "sectors" | "neighbourhoods", ids: string[]) => {
+    if (!ids.length) return [];
+    const { data } = await supabase.from(table).select("code, name_so, name_en").in("id", ids);
+    return ((data ?? []) as { code: string; name_so: string; name_en: string }[]).map((x) => (lang === "so" ? x.name_so : x.name_en) || x.code);
+  };
+  const [sections, sectors, neighbourhoods] = await Promise.all([names("sections", run.section_ids), names("sectors", run.sector_ids), names("neighbourhoods", run.neighbourhood_ids)]);
+  return [...sections, ...sectors, ...neighbourhoods];
 }

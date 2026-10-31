@@ -2383,7 +2383,9 @@
     "split_paid": "Paid",
     "split_owing": "Not paid",
     "paySplit": "Bills",
-    "accountNo": "Account no."
+    "accountNo": "Account no.",
+    "units": "Number of units",
+    "unitsHint": "Flats or shops on this land."
   },
   "notices": {
     "eyebrow": "Public notice",
@@ -2637,7 +2639,11 @@
       "cancel": "Cancel run",
       "cancelTitle": "Cancel this billing run?",
       "cancelBody": "No invoices are created. Give the reason; it is recorded.",
-      "cancelDone": "Run cancelled."
+      "cancelDone": "Run cancelled.",
+      "issueNow": "Issue now",
+      "issueNowTitle": "Issue the bills now?",
+      "issueNowBody": "One bill is made for each land in the preview straight away, without waiting for approval, and the owners are sent an SMS.",
+      "issueNowDone": "Bills issued."
     },
     "needsSomeoneElse": "Another person approves",
     "reason": "Reason",
@@ -2647,7 +2653,7 @@
     "previewTitle": "Preview",
     "parcelsInScope": "Parcels in scope",
     "exceptions": {
-      "no_assessment": "No assessment for the year (skipped)",
+      "no_assessment": "No size or type to price it (skipped)",
       "already_invoiced": "Already invoiced for this period (skipped)",
       "zero_amount": "Nothing to pay (skipped)"
     },
@@ -2783,7 +2789,26 @@
       "pages": "Pages",
       "previous": "Previous",
       "next": "Next"
-    }
+    },
+    "placesLabel": "Places (optional)",
+    "placesHint": "Leave empty to bill the whole districts. Tick sections, then sectors, then neighbourhoods to bill only those.",
+    "placeSections": "Sections",
+    "placeSectors": "Sectors",
+    "placeNeighbourhoods": "Neighbourhoods",
+    "noPlaces": "None here.",
+    "madeBy": "Made",
+    "automatic": "Automatically on 1 January",
+    "batchesTitle": "Batches",
+    "batchesBody": "The run's land, one batch per neighbourhood. Open a batch to see its bills.",
+    "batchPlace": "Neighbourhood",
+    "batchArea": "Section, district",
+    "batchSkipped": "Skipped",
+    "noNeighbourhood": "No neighbourhood",
+    "batchBillsTitle": "Bills in {place}",
+    "houseNo": "House No",
+    "owner": "Owner",
+    "batchState": "Bill",
+    "willBeBilled": "Will be billed"
   },
   "pay": {
     "title": "Pay your invoice",

@@ -212,3 +212,51 @@ describe("billing (Phase 6)", () => {
     await asUser(db, biller2, (tx) => tx.query(`select public.billing_run_cancel($1, 'Duplicate of BR-2026-001')`, [draft.id]));
   });
 });
+
+describe("billing runs that work themselves out (0137)", () => {
+  let run: string;
+  let price: number;
+
+  it("prices land without an assessment from its size × its type's price, for the chosen places", async () => {
+    price = Number(await scalar<string>(db, `select amount from public.property_grades where code = 'villa'`));
+    await db.query(`update public.parcels set property_type = 'villa', plot_width_m = 10, plot_length_m = 12 where id = $1`, [parcelA]);
+    const section = await scalar<string>(db, `select sc.section_id from public.neighbourhoods n join public.sectors sc on sc.id = n.sector_id where n.id = $1`, [nbhd]);
+    const out = await asUser(db, biller, (tx) =>
+      scalar<{ id: string; preview: { count: number; total: number } }>(tx, `select public.billing_run_create($1)`, [
+        JSON.stringify({ year: 2030, fee_type_id: propertyTax, district_ids: [hodan], section_ids: [section], due_date: "2030-12-31" }),
+      ]),
+    );
+    run = out.id;
+    expect(out.preview.count).toBe(1);
+    expect(Number(out.preview.total)).toBe(120 * price);
+  });
+
+  it("shows the run in batches, one per neighbourhood, with what is billed and what is skipped", async () => {
+    const b = await asUser(db, biller, (tx) => tx.query<{ bills: number; total: string; skipped: number }>(`select * from public.billing_run_batches($1)`, [run]));
+    expect(b.rows).toHaveLength(1);
+    expect([b.rows[0]!.bills, Number(b.rows[0]!.total), b.rows[0]!.skipped]).toEqual([1, 120 * price, 2]);
+    const bills = await asUser(db, biller, (tx) => tx.query<{ pun: string; exception: string | null }>(`select * from public.billing_run_batch_bills($1, $2)`, [run, nbhd]));
+    expect(bills.rows[0]!.exception).toBeNull();
+  });
+
+  it("issues straight away without the approval step", async () => {
+    const r = await asUser(db, biller, (tx) => scalar<{ created: number }>(tx, `select public.billing_run_issue_now($1)`, [run]));
+    expect(r.created).toBe(1);
+    expect(await scalar<string>(db, `select status::text from public.billing_runs where id = $1`, [run])).toBe("issued");
+    const b = await asUser(db, biller, (tx) => tx.query<{ bills: number }>(`select * from public.billing_run_batches($1)`, [run]));
+    expect(b.rows[0]!.bills).toBe(1);
+  });
+
+  it("the yearly job makes no second run for a district that already has one", async () => {
+    const year = new Date().getFullYear();
+    const count = () =>
+      scalar<number>(db, `select count(*)::int from public.billing_runs where period = $1 and fee_type_id = $2 and $3 = any (district_ids) and status <> 'cancelled'`, [
+        String(year),
+        propertyTax,
+        hodan,
+      ]);
+    const before = await count();
+    await db.query(`select private.billing_auto_year()`);
+    expect(await count()).toBe(Math.max(before, 1));
+  });
+});

@@ -5,17 +5,17 @@ import { Field } from "@dhulka/ui/field";
 import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { Tooltip } from "@dhulka/ui/form-controls";
-import { Ban, CheckCircle2, Eye, FileOutput, RefreshCw, Send } from "lucide-react";
+import { Ban, CheckCircle2, Eye, FileOutput, RefreshCw, Send, Zap } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
-import { approveRunAction, cancelRunAction, generateRunAction, refreshRunAction, submitRunAction } from "@/app/[locale]/(staff)/billing/actions";
+import { approveRunAction, cancelRunAction, generateRunAction, issueNowRunAction, refreshRunAction, submitRunAction } from "@/app/[locale]/(staff)/billing/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link } from "@/i18n/navigation";
 import type { RunStatus } from "@/lib/server/billing";
 
-type Step = "refresh" | "submit" | "approve" | "generate" | "cancel";
+type Step = "refresh" | "issueNow" | "submit" | "approve" | "generate" | "cancel";
 
-const ICONS = { refresh: RefreshCw, submit: Send, approve: CheckCircle2, generate: FileOutput, cancel: Ban } as const;
+const ICONS = { refresh: RefreshCw, issueNow: Zap, submit: Send, approve: CheckCircle2, generate: FileOutput, cancel: Ban } as const;
 
 /** A billing run's next steps. `compact`: icon buttons for a list row, with View first. */
 export function RunActions({
@@ -37,12 +37,14 @@ export function RunActions({
   const [reason, setReason] = useState("");
   const steps: Step[] = [];
   if (["draft", "submitted", "approved"].includes(status)) steps.push("refresh");
+  // Bills out straight away, without waiting for approval.
+  if (["draft", "submitted", "approved"].includes(status) && can.create) steps.push("issueNow");
   if (status === "draft" && can.create) steps.push("submit");
   if (status === "submitted" && can.approve && !isCreator) steps.push("approve");
   if ((status === "approved" || status === "generating") && can.approve) steps.push("generate");
   if (["draft", "submitted", "approved"].includes(status) && (isCreator ? can.create : can.cancel)) steps.push("cancel");
   if (steps.length === 0 && !compact) return null;
-  const run = { refresh: refreshRunAction, submit: submitRunAction, approve: approveRunAction, generate: generateRunAction };
+  const run = { refresh: refreshRunAction, issueNow: issueNowRunAction, submit: submitRunAction, approve: approveRunAction, generate: generateRunAction };
 
   return (
     <div className={compact ? "flex justify-end gap-0.5" : "flex flex-wrap gap-2"}>
@@ -68,7 +70,7 @@ export function RunActions({
         </>
       ) : (
         steps.map((s) => (
-          <Button key={s} size="sm" variant={s === "cancel" ? "destructive" : s === "refresh" ? "outline" : "default"} onClick={() => setStep(s)}>
+          <Button key={s} size="sm" variant={s === "cancel" ? "destructive" : s === "refresh" || s === "submit" ? "outline" : "default"} onClick={() => setStep(s)}>
             {t(`steps.${s}`)}
           </Button>
         ))
@@ -88,7 +90,7 @@ export function RunActions({
         destructive={step === "cancel"}
         submit={() => (step === "cancel" ? cancelRunAction({ id, reason }) : run[step as Exclude<Step, "cancel">]({ id }))}
         onDone={(d) => {
-          if (step === "generate") {
+          if (step === "generate" || step === "issueNow") {
             const r = d as { created: number; total: number };
             toast.success(t("generated", { count: r.created, total: format.number(Number(r.total), { style: "currency", currency: "USD" }) }));
           } else toast.success(t(`steps.${step}Done`));

@@ -2383,7 +2383,9 @@
     "split_paid": "La bixiyay",
     "split_owing": "Aan la bixin",
     "paySplit": "Biilasha",
-    "accountNo": "Lambarka xisaabta"
+    "accountNo": "Lambarka xisaabta",
+    "units": "Tirada qaybaha",
+    "unitsHint": "Guryaha ama dukaamada dhulkan ku yaal."
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
@@ -2637,7 +2639,11 @@
       "cancel": "Jooji wareegga",
       "cancelTitle": "Ma la joojinayaa biil-wareegan?",
       "cancelBody": "Biil lama samaynayo. Qor sababta; waa la diiwaangelinayaa.",
-      "cancelDone": "Wareegga waa la joojiyay."
+      "cancelDone": "Wareegga waa la joojiyay.",
+      "issueNow": "Hadda soo saar",
+      "issueNowTitle": "Biilasha hadda ma la soo saaraa?",
+      "issueNowBody": "Biil ayaa isla markiiba loo sameynayaa dhul kasta oo ku jira horudhaca, iyadoon la sugin ansixin, milkiilayaashana SMS ayaa loo dirayaa.",
+      "issueNowDone": "Biilasha waa la soo saaray."
     },
     "needsSomeoneElse": "Qof kale ayaa ansixiya",
     "reason": "Sababta",
@@ -2647,7 +2653,7 @@
     "previewTitle": "Horudhac",
     "parcelsInScope": "Dhulalka ku jira",
     "exceptions": {
-      "no_assessment": "Qiimeyn sannadka ma leh (laga booday)",
+      "no_assessment": "Cabbir ama nooc lagu qiimeeyo ma leh (la dhaafay)",
       "already_invoiced": "Horey loogu biilay muddadan (laga booday)",
       "zero_amount": "Wax lagu bixiyo ma jiro (laga booday)"
     },
@@ -2783,7 +2789,26 @@
       "pages": "Bogagga",
       "previous": "Hore",
       "next": "Xiga"
-    }
+    },
+    "placesLabel": "Goobo (ikhtiyaari)",
+    "placesHint": "Banneeyso si degmooyinka oo dhan loo biileeyo. Calaamadee qaybaha, kadib laamaha, kadib xaafadaha si kuwaas oo keliya loo biileeyo.",
+    "placeSections": "Qaybaha",
+    "placeSectors": "Laamaha",
+    "placeNeighbourhoods": "Xaafadaha",
+    "noPlaces": "Halkan waxba ma jiraan.",
+    "madeBy": "La sameeyay",
+    "automatic": "Si toos ah 1da Janaayo",
+    "batchesTitle": "Dufcado",
+    "batchesBody": "Dhulka orodkan, dufcad kasta waa xaafad. Fur dufcad si aad u aragto biilasheeda.",
+    "batchPlace": "Xaafad",
+    "batchArea": "Qayb, degmo",
+    "batchSkipped": "La dhaafay",
+    "noNeighbourhood": "Xaafad la'aan",
+    "batchBillsTitle": "Biilasha {place}",
+    "houseNo": "Lambarka guriga",
+    "owner": "Milkiile",
+    "batchState": "Biil",
+    "willBeBilled": "Waa la biilayn doonaa"
   },
   "pay": {
     "title": "Bixi biilkaaga",
