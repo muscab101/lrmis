@@ -1,5 +1,4 @@
 import "server-only";
-import { getTranslations } from "next-intl/server";
 import type { Viewer } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { neighbourhoodStatus } from "./parcels";
@@ -18,18 +17,7 @@ export interface IncompleteRow {
 }
 
 export interface IncompleteGroup {
-  key:
-    | "owners"
-    | "parcels"
-    | "zones"
-    | "places"
-    | "invoices"
-    | "certificates"
-    | "transfers"
-    | "surveys"
-    | "siteChecks"
-    | "disputes"
-    | "permits";
+  key: "owners" | "parcels" | "zones" | "places" | "invoices" | "certificates" | "transfers" | "surveys" | "siteChecks" | "disputes" | "permits";
   count: number;
   rows: IncompleteRow[];
   /** The page with the full list. */
@@ -41,7 +29,7 @@ const LIMIT = 6;
 type Rec = Record<string, unknown>;
 const name = (v: unknown, lang: string) => {
   const o = v as { name_so?: string; name_en?: string } | null;
-  return o ? ((lang === "so" ? o.name_so : o.name_en) ?? null) : null;
+  return o ? (lang === "so" ? o.name_so : o.name_en) ?? null : null;
 };
 
 /**
@@ -50,7 +38,6 @@ const name = (v: unknown, lang: string) => {
  */
 export async function incompleteWork(viewer: Viewer, lang: string): Promise<IncompleteGroup[]> {
   const supabase = await createClient();
-  const t = await getTranslations("incomplete.detail");
   const can = (p: Parameters<Viewer["can"]>[0]) => viewer.can(p);
   const jobs: Promise<IncompleteGroup | null>[] = [];
 
@@ -68,14 +55,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           key: "owners",
           count: count ?? 0,
           href: "/owners",
-          rows: ((data ?? []) as Rec[]).map((r) => ({
-            id: r.id as string,
-            title: r.full_name as string,
-            detail: (r.phone as string | null) ?? null,
-            status: null,
-            at: r.created_at as string,
-            href: `/owners/${r.id}`,
-          })),
+          rows: ((data ?? []) as Rec[]).map((r) => ({ id: r.id as string, title: r.full_name as string, detail: (r.phone as string | null) ?? null, status: null, at: r.created_at as string, href: `/owners/${r.id}` })),
         };
       })(),
     );
@@ -86,10 +66,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("parcels")
-          .select(
-            "id, pun, house_no, status, created_at, neighbourhood:neighbourhoods(name_so, name_en)",
-            { count: "exact" },
-          )
+          .select("id, pun, house_no, status, created_at, neighbourhood:neighbourhoods(name_so, name_en)", { count: "exact" })
           .is("deleted_at", null)
           .in("status", ["draft", "surveyed", "verified"])
           .order("created_at", { ascending: false })
@@ -100,10 +77,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           href: "/parcels/yet-to-register",
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
-            title:
-              (r.pun as string | null) ??
-              [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ??
-              "—",
+            title: (r.pun as string | null) ?? [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ?? "—",
             detail: name(r.neighbourhood, lang),
             status: r.status as string,
             at: r.created_at as string,
@@ -126,13 +100,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           rows: zones.slice(0, LIMIT).map((z) => ({
             id: z.id,
             title: `${lang === "so" ? z.name_so : z.name_en} · ${z.code}`,
-            detail: [
-              z.surveyor ? t("surveyor", { name: z.surveyor }) : t("noSurveyor"),
-              t("recorded", { done: z.recorded, target: z.target }),
-              lang === "so" ? z.district_so : z.district_en,
-            ]
-              .filter(Boolean)
-              .join(" · "),
+            detail: [z.surveyor, `${z.recorded}/${z.target}`, lang === "so" ? z.district_so : z.district_en].filter(Boolean).join(" · "),
             status: null,
             at: z.assigned_at,
             href: "/parcels/yet-to-register?tab=zones",
@@ -155,15 +123,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           rows: places.slice(0, LIMIT).map((r) => ({
             id: r.id,
             title: `${lang === "so" ? r.name_so : r.name_en} · ${r.code}`,
-            detail: [
-              lang === "so" ? r.district_so : r.district_en,
-              r.partial > 0 ? t("notRegistered", { count: r.partial }) : null,
-              r.open_applications > 0
-                ? t("openApplications", { count: r.open_applications })
-                : null,
-            ]
-              .filter(Boolean)
-              .join(" · "),
+            detail: `${lang === "so" ? r.district_so : r.district_en} · ${r.partial} / ${r.open_applications}`,
             status: null,
             at: null,
             href: `/parcels?${new URLSearchParams({ stage: "draft", nbhd: r.id })}`,
@@ -178,10 +138,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("parcels")
-          .select(
-            "id, pun, house_no, site_check_requested_at, neighbourhood:neighbourhoods(name_so, name_en)",
-            { count: "exact" },
-          )
+          .select("id, pun, house_no, site_check_requested_at, neighbourhood:neighbourhoods(name_so, name_en)", { count: "exact" })
           .is("deleted_at", null)
           .eq("site_check_status", "pending")
           .order("site_check_requested_at", { ascending: false })
@@ -192,10 +149,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           href: "/surveys",
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
-            title:
-              (r.pun as string | null) ??
-              [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ??
-              "—",
+            title: (r.pun as string | null) ?? [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ?? "—",
             detail: name(r.neighbourhood, lang),
             status: null,
             at: r.site_check_requested_at as string | null,
@@ -211,10 +165,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("invoices")
-          .select(
-            "id, number, balance, due_date, status, parcel:parcels(pun), fee_type:fee_types(name_so, name_en)",
-            { count: "exact" },
-          )
+          .select("id, number, balance, due_date, status, parcel:parcels(pun), fee_type:fee_types(name_so, name_en)", { count: "exact" })
           .in("status", ["issued", "partially_paid"])
           .gt("balance", 0)
           .order("due_date", { ascending: true })
@@ -226,10 +177,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
             title: r.number as string,
-            detail:
-              [name(r.fee_type, lang), (r.parcel as { pun: string | null } | null)?.pun]
-                .filter(Boolean)
-                .join(" · ") || null,
+            detail: [name(r.fee_type, lang), (r.parcel as { pun: string | null } | null)?.pun].filter(Boolean).join(" · ") || null,
             status: r.status as string,
             amount: Number(r.balance),
             at: r.due_date as string,
@@ -245,19 +193,8 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         // Registered land that has no valid certificate yet (usually still unpaid).
         const [{ data: regs }, { data: certs }] = await Promise.all([
-          supabase
-            .from("parcels")
-            .select("id, pun, registered_at")
-            .is("deleted_at", null)
-            .eq("status", "registered")
-            .order("registered_at", { ascending: false })
-            .limit(500),
-          supabase
-            .from("issued_documents")
-            .select("parcel_id")
-            .eq("type", "certificate")
-            .eq("status", "valid")
-            .limit(2000),
+          supabase.from("parcels").select("id, pun, registered_at").is("deleted_at", null).eq("status", "registered").order("registered_at", { ascending: false }).limit(500),
+          supabase.from("issued_documents").select("parcel_id").eq("type", "certificate").eq("status", "valid").limit(2000),
         ]);
         const has = new Set(((certs ?? []) as Rec[]).map((c) => c.parcel_id as string));
         const missing = ((regs ?? []) as Rec[]).filter((p) => !has.has(p.id as string));
@@ -265,16 +202,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           key: "certificates",
           count: missing.length,
           href: "/documents/print",
-          rows: missing
-            .slice(0, LIMIT)
-            .map((r) => ({
-              id: r.id as string,
-              title: (r.pun as string) ?? "—",
-              detail: null,
-              status: null,
-              at: r.registered_at as string | null,
-              href: `/parcels/${r.id}`,
-            })),
+          rows: missing.slice(0, LIMIT).map((r) => ({ id: r.id as string, title: (r.pun as string) ?? "—", detail: null, status: null, at: r.registered_at as string | null, href: `/parcels/${r.id}` })),
         };
       })(),
     );
@@ -293,14 +221,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           key: "transfers",
           count: count ?? 0,
           href: "/transfers?f=submitted",
-          rows: ((data ?? []) as Rec[]).map((r) => ({
-            id: r.id as string,
-            title: r.number as string,
-            detail: (r.parcel as { pun: string | null } | null)?.pun ?? null,
-            status: r.status as string,
-            at: r.created_at as string,
-            href: `/transfers/${r.id}`,
-          })),
+          rows: ((data ?? []) as Rec[]).map((r) => ({ id: r.id as string, title: r.number as string, detail: (r.parcel as { pun: string | null } | null)?.pun ?? null, status: r.status as string, at: r.created_at as string, href: `/transfers/${r.id}` })),
         };
       })(),
     );
@@ -311,9 +232,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("surveys")
-          .select("id, status, due_date, created_at, application:applications(number)", {
-            count: "exact",
-          })
+          .select("id, status, due_date, created_at, application:applications(number)", { count: "exact" })
           .in("status", ["assigned", "in_progress", "returned", "overlap_review"])
           .order("created_at", { ascending: false })
           .limit(LIMIT);
@@ -350,10 +269,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
             title: r.number as string,
-            detail:
-              [(r.parcel as { pun: string | null } | null)?.pun, r.claimant_name]
-                .filter(Boolean)
-                .join(" · ") || null,
+            detail: [(r.parcel as { pun: string | null } | null)?.pun, r.claimant_name].filter(Boolean).join(" · ") || null,
             status: null,
             at: r.opened_at as string,
             href: "/disputes",
@@ -376,14 +292,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           key: "permits",
           count: count ?? 0,
           href: "/permits",
-          rows: ((data ?? []) as Rec[]).map((r) => ({
-            id: r.id as string,
-            title: r.number as string,
-            detail: (r.parcel as { pun: string | null } | null)?.pun ?? null,
-            status: r.status as string,
-            at: r.requested_at as string,
-            href: "/permits",
-          })),
+          rows: ((data ?? []) as Rec[]).map((r) => ({ id: r.id as string, title: r.number as string, detail: (r.parcel as { pun: string | null } | null)?.pun ?? null, status: r.status as string, at: r.requested_at as string, href: "/permits" })),
         };
       })(),
     );
