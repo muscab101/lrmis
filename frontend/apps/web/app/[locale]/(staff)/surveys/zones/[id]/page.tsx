@@ -65,7 +65,10 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                 </Link>
               </Button>
             )}
-            {open && <ZoneCloseButtons id={zone.id} name={name} canDone={mine || viewer.can("surveys.approve")} canCancel={viewer.can("surveys.approve")} />}
+            {/* Mark done only once every house is recorded (e.g. 50 of 50); zones are not cancelled from here. */}
+            {open && zone.recorded >= zone.target && (
+              <ZoneCloseButtons id={zone.id} name={name} canDone={mine || viewer.can("surveys.approve")} canCancel={false} />
+            )}
           </div>
         }
       />
