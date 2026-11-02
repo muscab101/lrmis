@@ -25,10 +25,12 @@ interface Props {
   children?: (fe: (name: string) => string | undefined) => React.ReactNode;
   /** Extra classes for the dialog panel (e.g. wider for a long form). */
   className?: string;
+  /** A dialog that only informs: just the one button. */
+  hideCancel?: boolean;
 }
 
 /** Confirm-style dialog around a server action: busy state, form-level error, field errors, refresh on success. */
-export function FormDialog({ open, onOpenChange, title, description, confirmLabel, destructive, submit, successMessage, onDone, children, className }: Props) {
+export function FormDialog({ open, onOpenChange, title, description, confirmLabel, destructive, submit, successMessage, onDone, children, className, hideCancel }: Props) {
   const tc = useTranslations("common");
   const vm = useValidationMessage();
   const router = useRouter();
@@ -46,7 +48,7 @@ export function FormDialog({ open, onOpenChange, title, description, confirmLabe
       title={title}
       description={description}
       confirmLabel={confirmLabel}
-      cancelLabel={tc("cancel")}
+      cancelLabel={hideCancel ? undefined : tc("cancel")}
       destructive={destructive}
       loading={busy}
       className={className}

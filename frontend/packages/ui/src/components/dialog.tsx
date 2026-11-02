@@ -85,7 +85,7 @@ export interface ConfirmDialogProps {
   title: React.ReactNode;
   description?: React.ReactNode;
   confirmLabel: React.ReactNode;
-  cancelLabel: React.ReactNode;
+  cancelLabel?: React.ReactNode;
   destructive?: boolean;
   loading?: boolean;
   onConfirm: () => void;
@@ -124,9 +124,11 @@ export function ConfirmDialog({
           )}
           {children}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <AlertPrimitive.Cancel className={buttonVariants({ variant: "outline" })} disabled={loading}>
-              {cancelLabel}
-            </AlertPrimitive.Cancel>
+            {cancelLabel && (
+              <AlertPrimitive.Cancel className={buttonVariants({ variant: "outline" })} disabled={loading}>
+                {cancelLabel}
+              </AlertPrimitive.Cancel>
+            )}
             <button
               type="button"
               className={buttonVariants({ variant: destructive ? "destructive" : "default" })}

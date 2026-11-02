@@ -284,6 +284,7 @@ export function PrinterRowActions({ printer }: { printer: PrinterRow }) {
         }}
         title={t("keyTitle", { code: printer.code })}
         confirmLabel={tc("close")}
+        hideCancel
         submit={async () => ({ ok: true as const, data: null })}
       >
         {() => key && <KeyShown value={key} />}

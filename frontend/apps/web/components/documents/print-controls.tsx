@@ -6,7 +6,7 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Alert } from "@dhulka/ui/misc";
 import { Printer, Send } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   printStatusAction,
   sendBulkToPrinterAction,
@@ -27,6 +27,10 @@ type JobState = {
 /** Follows the print queue for these documents until nothing is waiting. */
 function useQueue(ids: string[], started: number) {
   const router = useRouter();
+  // The router is a new object on every render: kept in a ref so it cannot restart the checks below.
+  const refresh = useRef(router.refresh);
+  refresh.current = router.refresh;
+  const printedBefore = useRef<Set<string> | null>(null);
   const [jobs, setJobs] = useState<JobState[]>([]);
   const key = ids.join(",");
   useEffect(() => {
@@ -36,27 +40,19 @@ function useQueue(ids: string[], started: number) {
     const check = async () => {
       const r = await printStatusAction({ ids: key.split(",") });
       if (!live || !r.ok) return;
-      setJobs((prev) => {
-        // Something just finished: the page reloads to show it as printed.
-        if (
-          prev.some(
-            (p) =>
-              p.status !== "printed" &&
-              r.data.some((n) => n.document_id === p.document_id && n.status === "printed"),
-          )
-        )
-          router.refresh();
-        return r.data;
-      });
-      if (r.data.some((j) => j.status === "queued" || j.status === "printing"))
-        timer = setTimeout(() => void check(), 3000);
+      setJobs(r.data);
+      // Something just finished: the page reloads to show it as printed.
+      const printed = new Set(r.data.filter((j) => j.status === "printed").map((j) => j.document_id));
+      if (printedBefore.current && [...printed].some((id) => !printedBefore.current!.has(id))) refresh.current();
+      printedBefore.current = printed;
+      if (r.data.some((j) => j.status === "queued" || j.status === "printing")) timer = setTimeout(() => void check(), 3000);
     };
     void check();
     return () => {
       live = false;
       clearTimeout(timer);
     };
-  }, [key, started, router]);
+  }, [key, started]);
   return jobs;
 }
 
