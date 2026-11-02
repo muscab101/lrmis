@@ -2297,7 +2297,23 @@
       "permit_rejected": "Ruqsadda waa la diiday",
       "lease_created": "Kiro ayaa la sameeyay",
       "lease_ended": "Kiradu way dhammaatay",
-      "corrected": "Diiwaanka waa la saxay"
+      "corrected": "Diiwaanka waa la saxay",
+      "card_print_billed": "Biilka daabacaadda kaarka waa la sameeyay",
+      "certificate_auto_issued": "Shahaadada si toos ah ayaa loo bixiyay",
+      "created_for_fee": "Loo sameeyay khidmaddiisa",
+      "details_updated": "Faahfaahinta waa la cusboonaysiiyay",
+      "field_land_created": "Dhul laga soo daray goobta",
+      "registration_started": "Diiwaangelinta waa la bilaabay",
+      "reprint_direct": "Dib ayaa loo daabacay",
+      "locked": "Waa la xiray",
+      "unlocked": "Waa la furay",
+      "reissue_requested": "Nuqul cusub ayaa la codsaday",
+      "site_check_requested": "Hubinta goobta waa la codsaday",
+      "deleted": "Waa la tirtiray",
+      "payment_corrected": "Lacag bixinta waa la saxay",
+      "appeal_deleted": "Racfaanka waa la tirtiray",
+      "assessment_deleted": "Qiimaynta waa la tirtiray",
+      "exemption_deleted": "Dhaafka waa la tirtiray"
     },
     "actions": "Ficillo",
     "actionView": "Eeg faahfaahinta",
@@ -2669,8 +2685,9 @@
     "parcelsInScope": "Dhulalka ku jira",
     "exceptions": {
       "no_assessment": "Cabbir ama nooc lagu qiimeeyo ma leh (la dhaafay)",
-      "already_invoiced": "Horey loogu biilay muddadan (laga booday)",
-      "zero_amount": "Wax lagu bixiyo ma jiro (laga booday)"
+      "already_invoiced": "Sannadkan horay ayaa loo biilay (la dhaafay)",
+      "zero_amount": "Wax lagu bixiyo ma jiro (laga booday)",
+      "not_registered_yet": "Sannadkaas weli lama diiwaangelin (la dhaafay)"
     },
     "previewAt": "La tiriyay {time}",
     "invoice": "Biil",

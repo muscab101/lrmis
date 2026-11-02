@@ -262,3 +262,45 @@ describe("billing runs that work themselves out (0137)", () => {
     expect(await count()).toBe(Math.max(before, 1));
   });
 });
+
+describe("billing runs never charge land twice (0141)", () => {
+  const parcelBill = async (year: number) => {
+    const bill = await scalar<string>(db, `select id from public.fee_types where code = 'property_bill'`);
+    await db.query(
+      `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, issue_date, due_date, total)
+       values ($1, $2, $3, $4, $5, $6, $6, 36)`,
+      [`INV-TEST-${year}`, parcelA, hodan, bill, `${year}-03-01/1`, `${year}-03-01`],
+    );
+  };
+  const preview = (year: number) =>
+    asUser(db, biller, (tx) =>
+      scalar<{ id: string; preview: { count: number; exceptions: Record<string, number> } }>(tx, `select public.billing_run_create($1)`, [
+        JSON.stringify({ year, fee_type_id: propertyTax, district_ids: [hodan], due_date: "2040-12-31" }),
+      ]),
+    );
+
+  it("land with a registration tax bill in the year is skipped for that year, and billed the next", async () => {
+    await parcelBill(2032);
+    const same = await preview(2032);
+    expect(same.preview.exceptions.already_invoiced).toBeGreaterThanOrEqual(1);
+    const bills = await asUser(db, biller, (tx) => tx.query<{ parcel_id: string; exception: string | null }>(`select * from public.billing_run_batch_bills($1, $2)`, [same.id, nbhd]));
+    expect(bills.rows.find((r) => r.parcel_id === parcelA)!.exception).toBe("already_invoiced");
+    const next = await asUser(db, biller, (tx) => scalar<{ id: string }>(tx, `select public.billing_run_create($1)`, [JSON.stringify({ year: 2033, fee_type_id: propertyTax, district_ids: [hodan], due_date: "2040-12-31" })]));
+    const later = await asUser(db, biller, (tx) => tx.query<{ parcel_id: string; exception: string | null }>(`select * from public.billing_run_batch_bills($1, $2)`, [next.id, nbhd]));
+    expect(later.rows.find((r) => r.parcel_id === parcelA)!.exception).toBeNull();
+  });
+
+  it("no tax for a year before the land was registered", async () => {
+    const old = await preview(2020);
+    expect(old.preview.exceptions.not_registered_yet).toBeGreaterThanOrEqual(1);
+    expect(old.preview.count).toBe(0);
+  });
+
+  it("land split from a parcel billed that year is not charged again for that year (0142)", async () => {
+    await db.query(`update public.parcels set property_type = 'villa', plot_width_m = 10, plot_length_m = 10 where id = $1`, [parcelB]);
+    await db.query(`insert into public.parcel_history (parcel_id, action, data) values ($1, 'created_from', $2)`, [parcelB, JSON.stringify({ source_parcel: parcelA })]);
+    const run = await preview(2032);
+    const bills = await asUser(db, biller, (tx) => tx.query<{ parcel_id: string; exception: string | null }>(`select * from public.billing_run_batch_bills($1, $2)`, [run.id, nbhd]));
+    expect(bills.rows.find((r) => r.parcel_id === parcelB)!.exception).toBe("already_invoiced");
+  });
+});

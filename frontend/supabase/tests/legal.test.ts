@@ -177,7 +177,7 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
       "VALIDATION: child_owners",
     );
     const parentPun = await scalar<string>(db, `select pun from public.parcels where id = $1`, [parcel]);
-    await db.query(`update public.parcels set house_no = '07' where id = $1`, [parcel]);
+    await db.query(`update public.parcels set house_no = '07', property_type = 'villa' where id = $1`, [parcel]);
     const id = await asUser(db, gis, (tx) =>
       scalar<string>(tx, `select public.parcel_change_request('subdivide', $1, $2, 'Split for two heirs')`, [[parcel], JSON.stringify({ children: [half(true), half(false)], owners: [[buyerA, buyerB], [buyerA, buyerB]] })]),
     );
@@ -188,6 +188,8 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
     const rows = await db.query<{ pun: string; status: string }>(`select pun, status::text from public.parcels where id = any ($1) order by pun`, [children]);
     expect(rows.rows.map((r) => r.pun)).toEqual([`${parentPun}A`, `${parentPun}B`]);
     expect((await db.query<{ house_no: string }>(`select house_no from public.parcels where id = any ($1) order by pun`, [children])).rows.map((r) => r.house_no)).toEqual(["07A", "07B"]);
+    // They keep the type, or billing runs could never price them (0142).
+    expect((await db.query<{ property_type: string }>(`select property_type from public.parcels where id = any ($1)`, [children])).rows.map((r) => r.property_type)).toEqual(["villa", "villa"]);
     expect(rows.rows.every((r) => r.status === "registered")).toBe(true);
     expect(await scalar<string>(db, `select status::text from public.parcels where id = $1`, [parcel])).toBe("archived");
     expect(await owners(children[0]!)).toHaveLength(2);

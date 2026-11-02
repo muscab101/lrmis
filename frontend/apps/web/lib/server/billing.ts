@@ -10,7 +10,7 @@ export interface RunPreview {
   parcels?: number;
   count?: number;
   total?: number;
-  exceptions?: { already_invoiced: number; no_assessment: number; zero_amount: number };
+  exceptions?: { already_invoiced: number; not_registered_yet?: number; no_assessment: number; zero_amount: number };
   at?: string;
 }
 

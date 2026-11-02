@@ -2297,7 +2297,23 @@
       "permit_rejected": "Permit rejected",
       "lease_created": "Lease created",
       "lease_ended": "Lease ended",
-      "corrected": "Record corrected"
+      "corrected": "Record corrected",
+      "card_print_billed": "ID card print bill raised",
+      "certificate_auto_issued": "Certificate issued automatically",
+      "created_for_fee": "Created for its fee",
+      "details_updated": "Details updated",
+      "field_land_created": "Land added from the field",
+      "registration_started": "Registration started",
+      "reprint_direct": "Reprinted",
+      "locked": "Locked",
+      "unlocked": "Unlocked",
+      "reissue_requested": "New copy requested",
+      "site_check_requested": "Site check requested",
+      "deleted": "Deleted",
+      "payment_corrected": "Payment corrected",
+      "appeal_deleted": "Appeal deleted",
+      "assessment_deleted": "Assessment deleted",
+      "exemption_deleted": "Exemption deleted"
     },
     "actions": "Actions",
     "actionView": "View details",
@@ -2669,8 +2685,9 @@
     "parcelsInScope": "Parcels in scope",
     "exceptions": {
       "no_assessment": "No size or type to price it (skipped)",
-      "already_invoiced": "Already invoiced for this period (skipped)",
-      "zero_amount": "Nothing to pay (skipped)"
+      "already_invoiced": "Already billed for this year (skipped)",
+      "zero_amount": "Nothing to pay (skipped)",
+      "not_registered_yet": "Not registered yet in that year (skipped)"
     },
     "previewAt": "Counted {time}",
     "invoice": "Invoice",

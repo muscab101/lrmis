@@ -57,7 +57,7 @@ export default async function RunPage({
   const shown = batchId !== undefined ? allBatches.find((b) => b.neighbourhood_id === batchId) : undefined;
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const p = run.preview;
-  const ex = p.exceptions ?? { already_invoiced: 0, no_assessment: 0, zero_amount: 0 };
+  const ex = { already_invoiced: 0, not_registered_yet: 0, no_assessment: 0, zero_amount: 0, ...p.exceptions };
   const dnames = run.district_ids.map((d) => districts.find((x) => x.id === d)).map((d) => (d ? (lang === "so" ? d.name_so : d.name_en) : "?"));
   const facts: [string, React.ReactNode][] = [
     [t("feeType"), run.fee_type ? (lang === "so" ? run.fee_type.name_so : run.fee_type.name_en) : "—"],
@@ -127,7 +127,7 @@ export default async function RunPage({
               </div>
             </div>
             <ul className="mt-4 space-y-1 text-sm">
-              {(["no_assessment", "already_invoiced", "zero_amount"] as const).map((k) => (
+              {(["no_assessment", "already_invoiced", "not_registered_yet", "zero_amount"] as const).map((k) => (
                 <li key={k} className="flex justify-between">
                   <span className="text-muted-foreground">{t(`exceptions.${k}`)}</span>
                   <span className={`tabular-nums ${ex[k] > 0 ? "font-medium text-status-pending" : ""}`}>{ex[k]}</span>
