@@ -91,7 +91,7 @@ export function RecordingPlayer({ id }: { id: string }) {
           {state === "loading" ? t("loading") : state === "short" ? t("tooShort") : t("loadFailed")}
         </p>
       )}
-      <div ref={box} className="mx-auto w-full max-w-[1200px]" />
+      <div ref={box} className="rr-block mx-auto w-full max-w-[1200px]" />
     </div>
   );
 }

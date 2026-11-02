@@ -107,3 +107,54 @@ export const recordingPiecesAction = defineAction(
     return (data ?? []).map((d) => d.signedUrl).filter((u): u is string => !!u);
   },
 );
+
+export interface LivePerson {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  roles_so: string[];
+  roles_en: string[];
+  page: string | null;
+}
+
+export const liveListAction = defineAction(
+  "activity.live_list",
+  z.object({}),
+  async (_v, ctx) =>
+    (unwrap(await ctx.supabase.rpc("staff_live_list"), "live list") ?? []) as LivePerson[],
+);
+
+/** The new pieces of what a person is doing right now, as short-lived links. */
+export const livePiecesAction = defineAction(
+  "activity.live_pieces",
+  z.object({ userId: z.uuid(), recording: z.uuid().nullable(), after: z.number().int() }),
+  async (v, ctx) => {
+    const data = unwrap(
+      await ctx.supabase.rpc("recording_live_pieces", {
+        p_user: v.userId,
+        p_recording: v.recording,
+        p_after: v.after,
+      }),
+      "live pieces",
+    ) as { recording: string | null; pieces: { seq: number; path: string }[] };
+    if (!data.pieces.length)
+      return { recording: data.recording, pieces: [] as { seq: number; url: string }[] };
+    const { data: links, error } = await (
+      await createAdminClient()
+    ).storage
+      .from(RECORDINGS_BUCKET)
+      .createSignedUrls(
+        data.pieces.map((p) => p.path),
+        120,
+      );
+    if (error) throw new AppFailure("UNKNOWN");
+    const url = new Map((links ?? []).map((l) => [l.path, l.signedUrl]));
+    return {
+      recording: data.recording,
+      pieces: data.pieces.flatMap((p) => {
+        const link = url.get(p.path);
+        return link ? [{ seq: p.seq, url: link }] : [];
+      }),
+    };
+  },
+);

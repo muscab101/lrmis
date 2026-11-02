@@ -41,7 +41,7 @@ export default async function StaffActivityPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "audit.view");
+  const viewer = await requirePermission(locale, "audit.view");
   const t = await getTranslations("staffActivity");
   const format = await getFormatter();
   const day = validDay((await searchParams).day);
@@ -54,7 +54,12 @@ export default async function StaffActivityPage({
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")}>
-        <form method="get" className="flex items-center gap-2">
+        <form method="get" className="flex flex-wrap items-center gap-2">
+          {viewer.isSuperAdmin && (
+            <Button asChild size="sm">
+              <Link href="/admin/activity/live">{t("live")}</Link>
+            </Button>
+          )}
           <Input
             type="date"
             name="day"

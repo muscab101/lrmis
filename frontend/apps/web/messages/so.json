@@ -5131,6 +5131,14 @@
     "signInNotice": "Shaqada LRMIS, oo ay ku jirto wada-hadalka shaqaalaha, waa la duubaa si maamulayaashu dib ugu eegaan. Furaha sirta ah waa la qariyaa. Duubista waxaa la tirtiraa 30 maalmood ka dib."
   },
   "staffActivity": {
+    "live": "Daawo toos ah",
+    "liveTitle": "Shaashadaha tooska ah",
+    "liveSubtitle": "Qof kasta oo hadda LRMIS furan yahay. Waxaa muuqda shaqadiisa gudaha LRMIS oo keliya, dhowr ilbiriqsi gadaal. Khariidaduhu ma muuqdaan. Daawasho kasta waa la diiwaangeliyaa.",
+    "nobodyOnline": "Hadda cid kale oo LRMIS furan ma jirto.",
+    "connecting": "Waa la xiriirayaa…",
+    "notOnline": "Qofkani hadda LRMIS ma furna.",
+    "closeLive": "Ku noqo dhammaan",
+    "watchPerson": "Si toos ah u daawo {name}",
     "title": "Shaqada shaqaalaha",
     "subtitle": "Waxa qof kastaa sameeyay iyo goorta. Fur qof si aad u aragto maalintiisa oo aad u daawato duubistiisa.",
     "day": "Maalinta",

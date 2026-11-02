@@ -5131,6 +5131,14 @@
     "signInNotice": "Work in LRMIS, including Staff chat, is recorded so administrators can review it. Passwords are hidden. Recordings are deleted after 30 days."
   },
   "staffActivity": {
+    "live": "Watch live",
+    "liveTitle": "Live screens",
+    "liveSubtitle": "Everyone with LRMIS open right now. Only their work inside LRMIS shows, a few seconds behind. Maps don't appear. Each watch is logged.",
+    "nobodyOnline": "Nobody else has LRMIS open right now.",
+    "connecting": "Connecting…",
+    "notOnline": "This person doesn't have LRMIS open right now.",
+    "closeLive": "Back to everyone",
+    "watchPerson": "Watch {name} live",
     "title": "Staff activity",
     "subtitle": "What each person did and when. Open a person to see their day and watch their recordings.",
     "day": "Day",

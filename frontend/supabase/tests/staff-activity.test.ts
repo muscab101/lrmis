@@ -32,6 +32,36 @@ describe("test login", () => {
   });
 });
 
+describe("watching live", () => {
+  const LIVE = "33333333-3333-4333-8333-333333333333";
+  it("only a super admin; it needs nothing from the person, tells their browser to send faster, and is logged", async () => {
+    await save(bashir, LIVE, 0, `${bashir}/${LIVE}/0.json.gz`);
+    await expectError(asUser(db, amina, (tx) => tx.query(`select * from public.staff_live_list()`)), "PERMISSION_DENIED");
+    await expectError(asUser(db, amina, (tx) => tx.query(`select public.recording_live_pieces($1)`, [bashir])), "PERMISSION_DENIED");
+    const online = await asUser(db, admin, (tx) => tx.query<{ user_id: string }>(`select * from public.staff_live_list()`));
+    expect(online.rows.map((r) => r.user_id)).toContain(bashir);
+    expect(await asUser(db, bashir, (tx) => scalar<boolean>(tx, `select public.recording_save($1, 1, null, 0, '[]')`, [LIVE]))).toBe(false);
+
+    const first = await asUser(db, admin, (tx) => scalar<{ recording: string; pieces: { seq: number; path: string }[] }>(tx, `select public.recording_live_pieces($1)`, [bashir]));
+    expect(first).toMatchObject({ recording: LIVE, pieces: [{ seq: 0, path: `${bashir}/${LIVE}/0.json.gz` }] });
+    expect(await asUser(db, bashir, (tx) => scalar<boolean>(tx, `select public.recording_save($1, 1, null, 0, '[]')`, [LIVE]))).toBe(true);
+
+    await save(bashir, LIVE, 1, `${bashir}/${LIVE}/1.json.gz`);
+    const next = await asUser(db, admin, (tx) => scalar<{ pieces: { seq: number }[] }>(tx, `select public.recording_live_pieces($1, $2, 0)`, [bashir, LIVE]));
+    expect(next.pieces.map((p) => p.seq)).toEqual([1]);
+    // One log entry for the watch, not one for each look.
+    expect(await scalar<number>(db, `select count(*)::int from public.audit_log where action = 'recording.watch_live' and record_id = $1`, [bashir])).toBe(1);
+    await db.query(`delete from public.staff_recordings where id = $1`, [LIVE]);
+  });
+
+  it("someone who left isn't listed", async () => {
+    const gone = await asUser(db, admin, (tx) => scalar<{ recording: string | null }>(tx, `select public.recording_live_pieces($1)`, [bashir]));
+    expect(gone.recording).toBeNull();
+    const online = await asUser(db, admin, (tx) => tx.query<{ user_id: string }>(`select * from public.staff_live_list()`));
+    expect(online.rows.map((r) => r.user_id)).not.toContain(bashir);
+  });
+});
+
 describe("work recording", () => {
   it("saves pieces only in the person's own folder, and only for their own recording", async () => {
     await save(amina, REC, 0, `${amina}/${REC}/0.json.gz`, [{ path: "/parcels", at: new Date().toISOString() }]);

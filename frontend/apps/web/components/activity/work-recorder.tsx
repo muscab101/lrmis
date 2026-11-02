@@ -6,6 +6,9 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 const SEND_EVERY_MS = 30_000;
+// While a super admin watches live: send what is new this often, and still check in now and then.
+const LIVE_LOOK_MS = 3_000;
+const LIVE_CHECK_MS = 10_000;
 const NEW_RECORDING_EVERY_MS = 30 * 60_000;
 const MAX_HELD_EVENTS = 20_000;
 
@@ -57,6 +60,8 @@ export function WorkRecorder({ userId }: { userId: string }) {
     let stop: (() => void) | undefined;
     let snapshot: (() => void) | undefined;
     let busy = false;
+    let live = false;
+    let lastSend = 0;
     const events: unknown[] = [];
     let session = loadSession(userId);
     saveSession(userId, session);
@@ -64,6 +69,7 @@ export function WorkRecorder({ userId }: { userId: string }) {
     const send = async (leaving = false) => {
       if (busy) return;
       busy = true;
+      lastSend = Date.now();
       if (Date.now() - session.started > NEW_RECORDING_EVERY_MS) {
         // Long days become several short recordings, each able to play by itself.
         session = { id: crypto.randomUUID(), seq: 0, started: Date.now() };
@@ -90,6 +96,7 @@ export function WorkRecorder({ userId }: { userId: string }) {
           session = { ...session, seq: session.seq + 1 };
           saveSession(userId, session);
         }
+        live = ((await res.json()) as { live?: boolean }).live === true;
       } catch {
         // Offline for now: try again with the next batch.
         if (events.length + batch.length <= MAX_HELD_EVENTS) events.unshift(...batch);
@@ -116,7 +123,11 @@ export function WorkRecorder({ userId }: { userId: string }) {
       snapshot = () => record.takeFullSnapshot(true);
     });
 
-    const timer = setInterval(() => void send(), SEND_EVERY_MS);
+    const timer = setInterval(() => {
+      const waited = Date.now() - lastSend;
+      if (live ? events.length > 0 || waited >= LIVE_CHECK_MS : waited >= SEND_EVERY_MS)
+        void send();
+    }, LIVE_LOOK_MS);
     const first = setTimeout(() => void send(), 5_000);
     const onLeave = () => void send(true);
     window.addEventListener("pagehide", onLeave);

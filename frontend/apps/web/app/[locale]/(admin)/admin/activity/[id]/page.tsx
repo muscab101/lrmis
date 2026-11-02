@@ -99,6 +99,11 @@ export default async function StaffActivityPersonPage({
             </Button>
           </form>
           {viewer.isSuperAdmin && id !== viewer.user.id && (
+            <Button asChild size="sm">
+              <Link href={`/admin/activity/live?u=${id}`}>{t("live")}</Link>
+            </Button>
+          )}
+          {viewer.isSuperAdmin && id !== viewer.user.id && (
             <TestLoginButton userId={id} name={name} size="sm" />
           )}
           <Button asChild variant="ghost" size="sm">

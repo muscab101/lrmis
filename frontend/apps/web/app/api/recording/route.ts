@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
   }
   const testing = await getImpersonation(user.id);
-  const { error } = await supabase.rpc("recording_save", {
+  const { data, error } = await supabase.rpc("recording_save", {
     p_recording: meta.recording,
     p_seq: meta.seq,
     p_path: path,
@@ -61,5 +61,5 @@ export async function POST(request: NextRequest) {
   });
   if (error) return new NextResponse(null, { status: 403 });
   if (Math.random() < 0.02) void removeExpiredRecordings();
-  return new NextResponse(null, { status: 204 });
+  return NextResponse.json({ live: data === true });
 }
