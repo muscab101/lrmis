@@ -30,13 +30,15 @@ import {
   Wallet,
   type LucideIcon,
   Printer,
+  MessagesSquare,
 } from "lucide-react";
 
 export interface NavItem {
   key: string;
   href: string;
   icon: LucideIcon;
-  permission: PermissionKey;
+  /** Left out: every staff member sees it. */
+  permission?: PermissionKey;
   /** Delivery phase that builds the page (§13). Items without it exist now. */
   phase?: number;
 }
@@ -53,6 +55,7 @@ export const STAFF_NAV: NavGroup[] = [
     items: [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
       { key: "map", href: "/map", icon: Map, permission: "map.view" },
+      { key: "chat", href: "/chat", icon: MessagesSquare },
       { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
     ],
   },
@@ -113,7 +116,7 @@ export const STAFF_NAV: NavGroup[] = [
 ];
 
 export function visibleNav(can: (p: PermissionKey) => boolean): NavGroup[] {
-  return STAFF_NAV.map((g) => ({ ...g, items: g.items.filter((i) => can(i.permission)) })).filter(
+  return STAFF_NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.permission || can(i.permission)) })).filter(
     (g) => g.items.length > 0,
   );
 }

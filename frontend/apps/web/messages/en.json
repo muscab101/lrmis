@@ -84,7 +84,8 @@
       "idCards": "ID cards",
       "collections": "Collections",
       "incomplete": "Incomplete",
-      "addPrinter": "Add printer"
+      "addPrinter": "Add printer",
+      "chat": "Staff chat"
     }
   },
   "status": {
@@ -258,7 +259,16 @@
       "nothing_payable": "Nothing is owed to this party up to that date.",
       "printer_not_allowed": "This printer can't be used. It may be switched off or not set up.",
       "already_queued": "This document is already waiting to print.",
-      "use_printer": "Official copies print only on an added printer."
+      "use_printer": "Official copies print only on an added printer.",
+      "chat_person": "That person can't be added to a chat.",
+      "chat_empty": "Write a message or attach a file.",
+      "chat_too_long": "The message is too long.",
+      "chat_file": "That file can't be sent.",
+      "chat_file_type": "Only images (JPG, PNG, WebP, GIF) and videos (MP4, WebM, MOV) can be sent.",
+      "chat_image_too_big": "Images can be up to 10 MB.",
+      "chat_video_too_big": "Videos can be up to 50 MB.",
+      "chat_not_group": "This is not a group.",
+      "chat_upload_failed": "The file could not be uploaded. Try again."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -440,7 +450,9 @@
     "printer_ip_address": "Enter an IP address like 192.168.1.50.",
     "printer_ip_taken": "A printer with this IP address is already added.",
     "printer_system_name": "Enter the name shown on the computer.",
-    "printer_location": "Enter where the printer is."
+    "printer_location": "Enter where the printer is.",
+    "chat_group_name": "Give the group a name of 2 to 80 letters.",
+    "chat_members": "Choose at least one person."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -5056,5 +5068,38 @@
       "printed": "Printed",
       "failed": "Failed"
     }
+  },
+  "chat": {
+    "title": "Staff chat",
+    "newChat": "New chat",
+    "newGroup": "New group",
+    "newChatBody": "Choose who to talk to.",
+    "newGroupBody": "Give the group a name and choose its members.",
+    "startChat": "Start chat",
+    "createGroup": "Create group",
+    "groupName": "Group name",
+    "members": "Members",
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "membersBody": "Who is in this group. Tick people below to add them.",
+    "addPeople": "Add people",
+    "leave": "Leave",
+    "remove": "Remove",
+    "you": "you",
+    "searchStaff": "Search staff…",
+    "noStaff": "Nobody found.",
+    "noChats": "No chats yet. Start one with New chat.",
+    "pickChat": "Choose a chat, or start a new one.",
+    "noMessages": "No messages yet",
+    "anImage": "Image",
+    "aVideo": "Video",
+    "back": "Back",
+    "older": "Show older messages",
+    "deleted": "Message deleted",
+    "deleteMessage": "Delete message",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "attach": "Attach an image or video",
+    "removeFile": "Remove file",
+    "uploading": "Uploading…"
   }
 }

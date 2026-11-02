@@ -84,7 +84,8 @@
       "idCards": "Kaararka aqoonsiga",
       "collections": "Ururinta lacagta",
       "incomplete": "Aan dhammaystirnayn",
-      "addPrinter": "Ku dar daabace"
+      "addPrinter": "Ku dar daabace",
+      "chat": "Wada-hadalka shaqaalaha"
     }
   },
   "status": {
@@ -258,7 +259,16 @@
       "nothing_payable": "Cidan waxba laguma laha ilaa taariikhdaas.",
       "printer_not_allowed": "Daabacahan lama isticmaali karo. Waxaa laga yaabaa inuu dansan yahay ama aan la diyaarin.",
       "already_queued": "Dukumentigan horay ayuu u sugayaa daabacaad.",
-      "use_printer": "Nuqullada rasmiga ah waxaa lagu daabacaa daabace lagu daray oo keliya."
+      "use_printer": "Nuqullada rasmiga ah waxaa lagu daabacaa daabace lagu daray oo keliya.",
+      "chat_person": "Qofkaas wada-hadal laguma dari karo.",
+      "chat_empty": "Qor fariin ama ku dar fayl.",
+      "chat_too_long": "Fariintu aad bay u dheer tahay.",
+      "chat_file": "Faylkaas lama diri karo.",
+      "chat_file_type": "Waxaa la diri karaa sawirro (JPG, PNG, WebP, GIF) iyo fiidiyowyo (MP4, WebM, MOV) oo keliya.",
+      "chat_image_too_big": "Sawirku waa ilaa 10 MB.",
+      "chat_video_too_big": "Fiidiyowgu waa ilaa 50 MB.",
+      "chat_not_group": "Tani koox ma aha.",
+      "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -440,7 +450,9 @@
     "printer_ip_address": "Geli cinwaan IP sida 192.168.1.50.",
     "printer_ip_taken": "Daabace leh cinwaankan IP horay ayaa loogu daray.",
     "printer_system_name": "Geli magaca kombiyuutarka ka muuqda.",
-    "printer_location": "Geli meesha daabacuhu yaal."
+    "printer_location": "Geli meesha daabacuhu yaal.",
+    "chat_group_name": "Kooxda sii magac 2 ilaa 80 xaraf ah.",
+    "chat_members": "Dooro ugu yaraan hal qof."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -5056,5 +5068,38 @@
       "printed": "La daabacay",
       "failed": "Fashilmay"
     }
+  },
+  "chat": {
+    "title": "Wada-hadalka shaqaalaha",
+    "newChat": "Wada-hadal cusub",
+    "newGroup": "Koox cusub",
+    "newChatBody": "Dooro qofka aad la hadlayso.",
+    "newGroupBody": "Kooxda magac sii oo dooro xubnaheeda.",
+    "startChat": "Bilow",
+    "createGroup": "Samee kooxda",
+    "groupName": "Magaca kooxda",
+    "members": "Xubnaha",
+    "memberCount": "{count} xubnood",
+    "membersBody": "Cidda kooxdan ku jirta. Hoos ka calaamadee dadka si aad ugu darto.",
+    "addPeople": "Ku dar dad",
+    "leave": "Ka bax",
+    "remove": "Ka saar",
+    "you": "adiga",
+    "searchStaff": "Raadi shaqaale…",
+    "noStaff": "Cidna lama helin.",
+    "noChats": "Weli wada-hadal ma jiro. Ku bilow Wada-hadal cusub.",
+    "pickChat": "Dooro wada-hadal, ama bilow mid cusub.",
+    "noMessages": "Weli fariin ma jirto",
+    "anImage": "Sawir",
+    "aVideo": "Fiidiyow",
+    "back": "Dib",
+    "older": "Tus fariimihii hore",
+    "deleted": "Fariinta waa la tirtiray",
+    "deleteMessage": "Tirtir fariinta",
+    "placeholder": "Qor fariin…",
+    "send": "Dir",
+    "attach": "Ku dar sawir ama fiidiyow",
+    "removeFile": "Ka saar faylka",
+    "uploading": "Waa la soo gelinayaa…"
   }
 }

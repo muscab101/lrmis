@@ -22,6 +22,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabaseUrl} ${MAP_HOSTS}`,
   "font-src 'self' data:",
+  // Videos in staff chat play from private storage.
+  `media-src 'self' blob: ${supabaseUrl}`,
   `connect-src 'self' ${supabaseUrl} ${supabaseUrl.replace(/^http/, "ws")} ${MAP_HOSTS}`,
   // MapLibre renders in a web worker created from a blob.
   "worker-src 'self' blob:",
