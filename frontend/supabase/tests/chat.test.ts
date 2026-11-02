@@ -96,6 +96,23 @@ describe("staff chat", () => {
     expect(await scalar<string | null>(db, `select coalesce(body, 'gone') from public.chat_messages where id = $1`, [id])).toBe("gone");
   });
 
+  it("the sender can edit a message for 5 minutes, and the others see it was edited", async () => {
+    const id = await send(amina, direct, "Waan iman");
+    const edit = (user: string, body: string) => asUser(db, user, (tx) => tx.query(`select public.chat_edit_message($1, $2)`, [id, body]));
+    await expectError(edit(bashir, "Not mine"), "PERMISSION_DENIED");
+    await expectError(edit(cali, "Not my chat"), "NOT_FOUND");
+    await expectError(edit(amina, "   "), "VALIDATION: chat_empty");
+    await edit(amina, "Waan imanayaa");
+    const rows = await asUser(db, bashir, (tx) => tx.query<{ id: string; body: string | null; edited: boolean }>(`select * from public.chat_messages_page($1)`, [direct]));
+    expect(rows.rows.find((r) => r.id === id)).toMatchObject({ body: "Waan imanayaa", edited: true });
+    await db.query(`update public.chat_messages set created_at = now() - interval '5 minutes 1 second' where id = $1`, [id]);
+    await expectError(edit(amina, "Too late"), "CONFLICT: chat_edit_expired");
+    await asUser(db, amina, (tx) => tx.query(`select public.chat_delete_message($1)`, [id]));
+    const fresh = await send(amina, direct, "Fresh");
+    await asUser(db, amina, (tx) => tx.query(`select public.chat_delete_message($1)`, [fresh]));
+    await expectError(asUser(db, amina, (tx) => tx.query(`select public.chat_edit_message($1, 'x')`, [fresh])), "CONFLICT: chat_edit_expired");
+  });
+
   it("deleting a direct chat removes it from my list only; a new message brings it back without the old ones", async () => {
     await send(amina, direct, "Before deleting");
     await asUser(db, bashir, (tx) => tx.query(`select public.chat_delete($1)`, [direct]));

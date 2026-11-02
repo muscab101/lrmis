@@ -41,6 +41,7 @@ export interface ChatMessage {
   file_name: string | null;
   created_at: string;
   deleted: boolean;
+  edited: boolean;
   /** A short-lived link to the file; only members get one. */
   file_url: string | null;
 }
@@ -234,6 +235,16 @@ export const chatDeleteMessageAction = defineAction(
     if (path) await (await createAdminClient()).storage.from(BUCKET).remove([path]);
     return null;
   },
+);
+
+export const chatEditMessageAction = defineAction(
+  "chat.edit_message",
+  z.object({ id: z.uuid(), body: z.string().max(4000) }),
+  async (v, ctx) =>
+    unwrap(
+      await ctx.supabase.rpc("chat_edit_message", { p_id: v.id, p_body: v.body }),
+      "edit message",
+    ),
 );
 
 export const chatDeleteAction = defineAction(

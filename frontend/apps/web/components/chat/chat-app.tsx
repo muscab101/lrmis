@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   MessageSquarePlus,
   Paperclip,
+  Pencil,
   Send,
   Trash2,
   UserPlus,
@@ -25,6 +26,7 @@ import {
   chatCreateGroupAction,
   chatDeleteAction,
   chatDeleteMessageAction,
+  chatEditMessageAction,
   chatDirectoryAction,
   chatListAction,
   chatMarkReadAction,
@@ -102,6 +104,7 @@ function PeoplePicker({
   );
 }
 
+const EDIT_WINDOW_MS = 5 * 60 * 1000; // the database refuses later edits too
 const LINK_REUSE_MS = 50 * 60 * 1000; // the signed links last an hour
 
 /** The whole page: the list of chats, and the open chat. On a phone, one at a time. */
@@ -120,6 +123,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
   const [picked, setPicked] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [deleteBody, setDeleteBody] = useState("");
+  const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
   const [members, setMembers] = useState<ChatPerson[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -184,6 +188,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
 
   useEffect(() => {
     setMessages([]);
+    setEditing(null);
     lastIdRef.current = null;
     setError(null);
     setFile(null);
@@ -249,6 +254,14 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
       setSending(false);
     }
   }
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const r = await chatEditMessageAction({ id: editing.id, body: editing.text });
+    if (!r.ok) setError(r.error);
+    setEditing(null);
+    if (openId) void loadMessages(openId, false);
+  };
 
   const older = async () => {
     const first = messages[0];
@@ -418,6 +431,10 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
               )}
               {messages.map((m) => {
                 const mine = m.sender_id === me;
+                const canEdit =
+                  mine &&
+                  !m.deleted &&
+                  Date.now() - new Date(m.created_at).getTime() < EDIT_WINDOW_MS;
                 return (
                   <div
                     key={m.id}
@@ -426,6 +443,16 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                       mine ? "justify-end" : "justify-start",
                     )}
                   >
+                    {canEdit && editing?.id !== m.id && (
+                      <button
+                        type="button"
+                        aria-label={t("editMessage")}
+                        className="text-muted-foreground hover:text-foreground p-1 focus:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                        onClick={() => setEditing({ id: m.id, text: m.body ?? "" })}
+                      >
+                        <Pencil className="size-3.5" aria-hidden />
+                      </button>
+                    )}
                     {mine && !m.deleted && (
                       <button
                         type="button"
@@ -471,7 +498,51 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                               className="mb-1 max-h-72 max-w-full rounded-md"
                             />
                           )}
-                          {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+                          {editing?.id === m.id ? (
+                            <div className="min-w-56 space-y-1">
+                              <Textarea
+                                autoFocus
+                                rows={2}
+                                onFocus={(ev) =>
+                                  ev.target.setSelectionRange(
+                                    ev.target.value.length,
+                                    ev.target.value.length,
+                                  )
+                                }
+                                aria-label={t("editMessage")}
+                                className="bg-background text-foreground"
+                                value={editing.text}
+                                onChange={(ev) => setEditing({ id: m.id, text: ev.target.value })}
+                                onKeyDown={(ev) => {
+                                  if (ev.key === "Escape") setEditing(null);
+                                  if (ev.key === "Enter" && !ev.shiftKey) {
+                                    ev.preventDefault();
+                                    void saveEdit();
+                                  }
+                                }}
+                              />
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-foreground"
+                                  onClick={() => setEditing(null)}
+                                >
+                                  {t("cancelEdit")}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-foreground"
+                                  onClick={() => void saveEdit()}
+                                >
+                                  {t("saveEdit")}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                          )}
                         </>
                       )}
                       <p
@@ -480,6 +551,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                           mine ? "opacity-70" : "text-muted-foreground",
                         )}
                       >
+                        {m.edited && `${t("edited")} · `}
                         {when(m.created_at)}
                       </p>
                     </div>

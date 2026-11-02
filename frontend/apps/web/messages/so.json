@@ -268,6 +268,7 @@
       "chat_image_too_big": "Sawirku waa ilaa 10 MB.",
       "chat_video_too_big": "Fiidiyowgu waa ilaa 50 MB.",
       "chat_not_group": "Tani koox ma aha.",
+      "chat_edit_expired": "Fariinta waxaa wax laga beddeli karaa 5 daqiiqo oo keliya ka dib markii la diro.",
       "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day."
     },
     "blockers": {
@@ -5099,6 +5100,10 @@
     "deleteChatBody": "Wada-hadalkan iyo fariimihiisa liiskaaga ayaa laga saarayaa. Qofka kale kuwiisa wuu haynayaa. Haddii uu mar kale qoro, fariimaha cusub oo keliya ayaa muuqan doona.",
     "deleteGroupBody": "Tani kooxda way u xiraysaa qof kasta oo ku jira. Cidna mar dambe kuma akhrin karto kumana qori karto.",
     "deleteMessage": "Tirtir fariinta",
+    "editMessage": "Wax ka beddel fariinta",
+    "edited": "la beddelay",
+    "saveEdit": "Kaydi",
+    "cancelEdit": "Jooji",
     "placeholder": "Qor fariin…",
     "send": "Dir",
     "attach": "Ku dar sawir ama fiidiyow",

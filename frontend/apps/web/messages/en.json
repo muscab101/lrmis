@@ -268,6 +268,7 @@
       "chat_image_too_big": "Images can be up to 10 MB.",
       "chat_video_too_big": "Videos can be up to 50 MB.",
       "chat_not_group": "This is not a group.",
+      "chat_edit_expired": "A message can only be edited for 5 minutes after sending it.",
       "chat_upload_failed": "The file could not be uploaded. Try again."
     },
     "blockers": {
@@ -5096,6 +5097,10 @@
     "older": "Show older messages",
     "deleted": "Message deleted",
     "deleteMessage": "Delete message",
+    "editMessage": "Edit message",
+    "edited": "edited",
+    "saveEdit": "Save",
+    "cancelEdit": "Cancel",
     "deleteChat": "Delete chat",
     "deleteChatBody": "This chat and its messages leave your list. The other person keeps theirs. If they write again, only the new messages show.",
     "deleteGroupBody": "This closes the group for everyone in it. Nobody can read or write in it again.",
