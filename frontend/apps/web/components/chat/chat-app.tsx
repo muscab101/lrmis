@@ -431,6 +431,12 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
               )}
               {messages.map((m) => {
                 const mine = m.sender_id === me;
+                // Images and videos stand on their own; only text sits in a coloured bubble.
+                const hasFile = !m.deleted && !!m.file_kind;
+                const bubble = cn(
+                  "rounded-lg px-3 py-2",
+                  mine ? "bg-primary text-primary-foreground" : "bg-muted",
+                );
                 const canEdit =
                   mine &&
                   !m.deleted &&
@@ -467,12 +473,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                         <Trash2 className="size-3.5" aria-hidden />
                       </button>
                     )}
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-                        mine ? "bg-primary text-primary-foreground" : "bg-muted",
-                      )}
-                    >
+                    <div className={cn("max-w-[80%] text-sm", !hasFile && bubble)}>
                       {!mine && open?.kind === "group" && (
                         <p className="text-primary mb-0.5 text-xs font-semibold">{m.sender_name}</p>
                       )}
@@ -541,14 +542,23 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                               </div>
                             </div>
                           ) : (
-                            m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                            m.body && (
+                              <p
+                                className={cn(
+                                  "whitespace-pre-wrap break-words",
+                                  hasFile && cn(bubble, "w-fit", mine && "ms-auto"),
+                                )}
+                              >
+                                {m.body}
+                              </p>
+                            )
                           )}
                         </>
                       )}
                       <p
                         className={cn(
                           "mt-0.5 text-end text-[10px]",
-                          mine ? "opacity-70" : "text-muted-foreground",
+                          mine && !hasFile ? "opacity-70" : "text-muted-foreground",
                         )}
                       >
                         {m.edited && `${t("edited")} · `}
