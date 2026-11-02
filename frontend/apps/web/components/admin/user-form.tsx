@@ -114,7 +114,7 @@ export function UserForm({ mode, roles, myPermissions, rolePermissions, isSuperA
         setShownPassword({ userId: res.data.userId, password: values.credentials.password });
       } else {
         toast.success(t("invited", { email: values.email }));
-        router.push(`/admin/users/${res.data.userId}`);
+        router.push(`/admin/users/${res.data.userId}?created=1`);
       }
       return;
     }
@@ -318,7 +318,7 @@ export function UserForm({ mode, roles, myPermissions, rolePermissions, isSuperA
             <DialogDescription>{t("passwordOnceBody")}</DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
-            <Mono className="flex-1 text-base break-all select-all">{shownPassword?.password}</Mono>
+            <Mono className="rr-block flex-1 text-base break-all select-all">{shownPassword?.password}</Mono>
             <Button
               type="button"
               size="sm"
@@ -333,7 +333,7 @@ export function UserForm({ mode, roles, myPermissions, rolePermissions, isSuperA
             </Button>
           </div>
           <DialogFooter>
-            <Button type="button" onClick={() => shownPassword && router.push(`/admin/users/${shownPassword.userId}`)}>
+            <Button type="button" onClick={() => shownPassword && router.push(`/admin/users/${shownPassword.userId}?created=1`)}>
               {t("passwordOnceDone")}
             </Button>
           </DialogFooter>

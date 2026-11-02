@@ -19,6 +19,7 @@ export default async function LoginPage({
   setRequestLocale(locale);
   const { next, error } = await searchParams;
   const t = await getTranslations("auth");
+  const tr = await getTranslations("workRecording");
   let googleEnabled = false;
   try {
     googleEnabled = publicEnv().NEXT_PUBLIC_GOOGLE_AUTH_ENABLED;
@@ -30,6 +31,7 @@ export default async function LoginPage({
   return (
     <AuthCard title={t("staffLoginTitle")} description={t("staffLoginBody")}>
       <LoginForm next={safeNext} initialError={error ?? null} googleEnabled={googleEnabled} />
+      <p className="mt-4 text-xs text-muted-foreground">{tr("signInNotice")}</p>
     </AuthCard>
   );
 }

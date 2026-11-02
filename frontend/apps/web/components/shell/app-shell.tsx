@@ -6,6 +6,8 @@ import { cn } from "@dhulka/ui/lib/cn";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { TestingBanner } from "@/components/activity/test-login";
+import { WorkRecorder } from "@/components/activity/work-recorder";
 import { CommandMenu } from "./command-menu";
 import { EnvBadge } from "./env-badge";
 import { LocaleSwitch } from "./locale-switch";
@@ -21,12 +23,14 @@ interface AppShellProps {
   permissions: string[];
   user: { id: string; name: string; email: string | null };
   env: "development" | "staging" | "production";
+  /** The user's name while a super admin is testing this account. */
+  testingAs?: string | null;
   children: ReactNode;
 }
 
 const COLLAPSE_KEY = "dhulka.sidebar.collapsed";
 
-export function AppShell({ permissions, user, env, children }: AppShellProps) {
+export function AppShell({ permissions, user, env, testingAs, children }: AppShellProps) {
   const groups = useMemo(() => {
     const allowed = new Set(permissions);
     return visibleNav((p) => allowed.has(p));
@@ -77,6 +81,7 @@ export function AppShell({ permissions, user, env, children }: AppShellProps) {
       </Dialog>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {testingAs && <TestingBanner name={testingAs} />}
         <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t("open")}>
             <Menu aria-hidden />
@@ -86,6 +91,7 @@ export function AppShell({ permissions, user, env, children }: AppShellProps) {
             <EnvBadge env={env} />
           </div>
           <div className="flex items-center gap-1">
+            <WorkRecorder userId={user.id} />
             <LocaleSwitch />
             <ThemeToggle />
             <NotificationsBell userId={user.id} />

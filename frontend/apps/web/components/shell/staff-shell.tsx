@@ -12,6 +12,7 @@ export function StaffShell({ viewer, children }: { viewer: Viewer; children: Rea
   }
   return (
     <AppShell
+      testingAs={viewer.testing ? viewer.profile.full_name || (viewer.profile.email ?? "") : null}
       permissions={[...viewer.permissions]}
       user={{ id: viewer.user.id, name: viewer.profile.full_name, email: viewer.profile.email }}
       env={env}

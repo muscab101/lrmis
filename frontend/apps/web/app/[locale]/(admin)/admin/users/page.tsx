@@ -68,7 +68,7 @@ export default async function UsersPage({
         roles={roles}
         districts={districts}
         me={viewer.user.id}
-        perms={{ changeEmail: viewer.can("users.update"), resetPassword: viewer.can("users.reset_password"), remove: viewer.can("users.delete"), manage: viewer.can("users.manage") }}
+        perms={{ test: viewer.isSuperAdmin, changeEmail: viewer.can("users.update"), resetPassword: viewer.can("users.reset_password"), remove: viewer.can("users.delete"), manage: viewer.can("users.manage") }}
       />
     </>
   );

@@ -5,6 +5,7 @@ import { forbidden } from "next/navigation";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getImpersonation } from "./impersonation";
 
 export interface Profile {
   user_id: string;
@@ -27,6 +28,8 @@ export interface Viewer {
   aal: "aal1" | "aal2";
   mfaRequired: boolean;
   isSuperAdmin: boolean;
+  /** A super admin is signed in as this user to test it. */
+  testing: boolean;
   can: (perm: PermissionKey) => boolean;
 }
 
@@ -60,6 +63,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     aal: aalRes.data?.currentLevel === "aal2" ? "aal2" : "aal1",
     mfaRequired: Boolean(state?.mfa_required),
     isSuperAdmin: (superRes.data?.length ?? 0) > 0,
+    testing: Boolean(await getImpersonation(user.id)),
     can: (perm) => permissions.has(perm),
   };
 });
@@ -70,6 +74,8 @@ export async function requireStaff(locale: string): Promise<Viewer> {
   if (!viewer) redirect({ href: "/login", locale });
   const v = viewer as Viewer;
   if (v.profile.kind !== "staff") redirect({ href: "/my-properties", locale });
+  // A super admin testing this account doesn't set its password or do its 2FA.
+  if (v.testing) return v;
   if (v.profile.must_change_password || v.profile.status === "invited") redirect({ href: "/change-password", locale });
   if (v.mfaRequired && v.aal !== "aal2") redirect({ href: "/mfa", locale });
   return v;

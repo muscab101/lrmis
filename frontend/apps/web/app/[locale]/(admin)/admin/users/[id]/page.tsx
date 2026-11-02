@@ -7,14 +7,18 @@ import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { UserStatusBadge } from "@/components/admin/badges";
 import { UserForm } from "@/components/admin/user-form";
+import { TestLoginButton } from "@/components/activity/test-login";
+import { Button } from "@dhulka/ui/button";
+import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { listRoles, rolePermissionMap } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
 import { CashDeskCard } from "./cash-desk-card";
 import { UserSecurityPanel } from "./security-panel";
 
-export default async function UserDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function UserDetailPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ created?: string }> }) {
   const { locale, id } = await params;
+  const { created } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "users.view");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -49,6 +53,10 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
   const roleIds = (profile.user_roles as { role_id: string }[]).map((r) => r.role_id);
   const hasTotp = ((mfa.data ?? []) as { has_totp: boolean }[])[0]?.has_totp ?? false;
   const isSelf = id === viewer.user.id;
+  const tl = await getTranslations("testLogin");
+  const myRoles = roles.filter((r) => roleIds.includes(r.id));
+  // A super admin can't be tested as, by anyone.
+  const canTest = viewer.isSuperAdmin && !isSelf && ["active", "invited"].includes(profile.status) && !myRoles.some((r) => r.key === "super_admin");
   const recordTotal = ((records.data ?? {}) as { total?: number }).total ?? 0;
   // Desks the user may work at: those in their districts (all of them for an all-districts account).
   type DeskJoin = { id: string; code: string; name: string; district_id: string | null; districts: { name_so: string; name_en: string } | null };
@@ -72,6 +80,30 @@ export default async function UserDetailPage({ params }: { params: Promise<{ loc
           </>
         }
       />
+
+      {created && (
+        <Card className="mb-6 border-primary">
+          <CardHeader>
+            <CardTitle>{tl("createdTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <p className="text-muted-foreground">{tl("createdBody")}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {myRoles.map((r) => (
+                <Button key={r.id} asChild variant="outline" size="sm">
+                  <Link href={`/admin/roles/${r.id}`}>{locale === "so" ? r.name_so : r.name_en}</Link>
+                </Button>
+              ))}
+              {canTest && <TestLoginButton userId={id} name={profile.full_name || (profile.email ?? "")} size="sm" />}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {!created && canTest && (
+        <div className="mb-4 flex justify-end">
+          <TestLoginButton userId={id} name={profile.full_name || (profile.email ?? "")} size="sm" />
+        </div>
+      )}
 
       <Tabs defaultValue="overview">
         <TabsList>

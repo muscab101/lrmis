@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { IMPERSONATION_COOKIE, openImpersonation } from "./lib/impersonation";
 
 const intl = createIntlMiddleware(routing);
 
@@ -13,7 +14,7 @@ const AUTH_FLOW = [/^\/mfa$/, /^\/change-password$/, /^\/reset-password$/];
 const CITIZEN = [/^\/portal(\/|$)/];
 /** Top-level staff sections. Anything else is unknown and gets the 404 page, not a sign-in prompt. */
 const STAFF =
-  /^\/(dashboard|incomplete|map|applications|parcels|owners|surveys|valuation|billing|invoices|payments|collections|cashier|points-of-sale|accounting|transfers|disputes|permits|documents|reports|assistant|messages|locations|audit|admin)(\/|$)/;
+  /^\/(dashboard|incomplete|map|chat|printers|applications|parcels|owners|surveys|valuation|billing|invoices|payments|collections|cashier|points-of-sale|accounting|transfers|disputes|permits|documents|reports|assistant|messages|locations|audit|admin)(\/|$)/;
 
 const IDLE_COOKIE = "dhulka_last_seen";
 const IDLE_MINUTES = Number(process.env.SESSION_IDLE_MINUTES ?? 30);
@@ -115,6 +116,10 @@ export async function middleware(request: NextRequest) {
       return res;
     }
     response.cookies.set(IDLE_COOKIE, String(Date.now()), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
+
+    // A super admin testing this account doesn't set its password or do its 2FA.
+    const testing = await openImpersonation(request.cookies.get(IMPERSONATION_COOKIE)?.value, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    if (testing?.target === user.id) return response;
 
     const needsPassword = state.must_change_password || state.status === "invited";
     if (needsPassword) {

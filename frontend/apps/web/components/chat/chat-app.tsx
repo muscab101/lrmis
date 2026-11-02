@@ -302,6 +302,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b p-3">
           <h1 className="font-semibold">{t("title")}</h1>
+          <p className="text-muted-foreground order-last w-full text-xs">{t("recordedNote")}</p>
           <div className="flex flex-wrap gap-1">
             <Button
               size="sm"

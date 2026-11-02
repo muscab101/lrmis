@@ -11,6 +11,7 @@ import { toast } from "@dhulka/ui/toaster";
 import { KeyRound, Mail, Trash2, UserCheck, UserX, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { TestLoginButton } from "@/components/activity/test-login";
 import { FormError } from "@/components/forms/form-error";
 import { PasswordInput } from "@/components/forms/password-input";
 import { useRouter } from "@/i18n/navigation";
@@ -18,6 +19,8 @@ import { useValidationMessage } from "@/lib/client/errors";
 import { changeUserEmailAction, deleteUserAction, setUserPasswordAction, userStatusAction } from "./actions";
 
 export interface UserRowPerms {
+  /** Sign in as the user to test it. */
+  test: boolean;
   changeEmail: boolean;
   resetPassword: boolean;
   remove: boolean;
@@ -32,9 +35,11 @@ export interface UserRowPerms {
 export function UserRowActions({
   user,
   perms,
+  canTest,
 }: {
   user: { user_id: string; email: string | null; full_name: string | null; status: string };
   perms: UserRowPerms;
+  canTest: boolean;
 }) {
   const t = useTranslations("admin.users.security");
   const tc = useTranslations("common");
@@ -79,6 +84,7 @@ export function UserRowActions({
   return (
     <>
       <div className="flex justify-end gap-0.5">
+        {canTest && <TestLoginButton userId={user.user_id} name={user.full_name || (user.email ?? "")} size="icon-sm" />}
         {perms.manage && user.status === "active" && key(t("suspend"), "text-warning", <UserX aria-hidden />, "status")}
         {perms.manage && user.status === "suspended" && key(t("reactivate"), "text-success", <UserCheck aria-hidden />, "status")}
         {perms.changeEmail && key(t("changeEmail"), "text-primary", <Mail aria-hidden />, "email")}

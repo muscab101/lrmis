@@ -172,7 +172,7 @@ function KeyShown({ value }: { value: string }) {
   return (
     <div className="space-y-3">
       <Alert tone="warning" title={t("keyOnce")} />
-      <Mono className="bg-muted block break-all rounded-md p-3 text-xs">{value}</Mono>
+      <Mono className="rr-block bg-muted block break-all rounded-md p-3 text-xs">{value}</Mono>
       <Button
         type="button"
         variant="outline"

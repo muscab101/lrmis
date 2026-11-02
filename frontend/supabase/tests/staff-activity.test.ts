@@ -1,0 +1,95 @@
+import type { PGlite } from "@electric-sql/pglite";
+import { beforeAll, describe, expect, it } from "vitest";
+import { as, asUser, bootstrapSuperAdmin, createDb, createStaff, scalar } from "./harness";
+
+let db: PGlite;
+let admin: string;
+let amina: string;
+let bashir: string;
+const REC = "11111111-1111-4111-8111-111111111111";
+
+async function expectError(promise: Promise<unknown>, code: string) {
+  await expect(promise).rejects.toThrow(new RegExp(`^${code}`));
+}
+const save = (user: string, rec: string, seq: number, path: string | null, pages: unknown[] = []) =>
+  asUser(db, user, (tx) => scalar<{ id: string; requester: string } | null>(tx, `select public.recording_save($1, $2, $3, 100, $4)`, [rec, seq, path, JSON.stringify(pages)]));
+
+beforeAll(async () => {
+  db = await createDb();
+  admin = await bootstrapSuperAdmin(db);
+  const region = await scalar<string>(db, `insert into public.regions (code, name_so, name_en) values ('BN','Banaadir','Banadir') returning id`);
+  const hodan = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'HDN','Hodan','Hodan') returning id`, [region]);
+  amina = await createStaff(db, admin, "amina@gmail.com", ["print_officer"], [hodan]);
+  bashir = await createStaff(db, admin, "bashir@gmail.com", ["cashier"], [hodan]);
+});
+
+describe("test login", () => {
+  it("only a super admin, never on a super admin or themselves, and it is logged", async () => {
+    await expectError(asUser(db, amina, (tx) => tx.query(`select public.admin_test_login_start($1)`, [bashir])), "PERMISSION_DENIED");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.admin_test_login_start($1)`, [admin])), "CONFLICT: test_login_super_admin");
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.admin_test_login_start($1)`, [amina]))).toBe("amina@gmail.com");
+    expect(await scalar<number>(db, `select count(*)::int from public.audit_log where action = 'test_login.start' and record_id = $1 and actor_id = $2`, [amina, admin])).toBe(1);
+  });
+});
+
+describe("work recording", () => {
+  it("saves pieces only in the person's own folder, and only for their own recording", async () => {
+    await save(amina, REC, 0, `${amina}/${REC}/0.json.gz`, [{ path: "/parcels", at: new Date().toISOString() }]);
+    await expectError(save(amina, REC, 1, `${bashir}/${REC}/1.json.gz`), "VALIDATION: recording_path");
+    await expectError(save(bashir, REC, 1, `${bashir}/${REC}/1.json.gz`), "PERMISSION_DENIED");
+    await expect(as(db, "anon", {}, (tx) => tx.query(`select public.recording_save($1, 0, null, 0, '[]')`, [REC]))).rejects.toThrow();
+  });
+
+  it("nobody reads the tables directly; only a super admin watches, and watching is logged", async () => {
+    for (const u of [amina, bashir, admin]) {
+      expect((await asUser(db, u, (tx) => tx.query(`select * from public.staff_recordings`))).rows).toHaveLength(0);
+    }
+    await expectError(asUser(db, amina, (tx) => tx.query(`select * from public.recording_watch($1)`, [REC])), "PERMISSION_DENIED");
+    await expectError(asUser(db, amina, (tx) => tx.query(`select * from public.staff_recordings_of($1)`, [amina])), "PERMISSION_DENIED");
+    const rows = await asUser(db, admin, (tx) => tx.query<{ recording_watch: string }>(`select * from public.recording_watch($1)`, [REC]));
+    expect(rows.rows.map((r) => r.recording_watch)).toEqual([`${amina}/${REC}/0.json.gz`]);
+    expect(await scalar<number>(db, `select count(*)::int from public.audit_log where action = 'recording.watch' and record_id = $1`, [REC])).toBe(1);
+  });
+
+  it("activity shows the day's pages and actions, for those allowed", async () => {
+    await expectError(asUser(db, amina, (tx) => tx.query(`select * from public.staff_activity_list()`)), "PERMISSION_DENIED");
+    const list = await asUser(db, admin, (tx) => tx.query<{ user_id: string; pages: number }>(`select * from public.staff_activity_list()`));
+    expect(list.rows.find((r) => r.user_id === amina)?.pages).toBe(1);
+    const day = await asUser(db, admin, (tx) => tx.query<{ kind: string; what: string }>(`select * from public.staff_activity_timeline($1)`, [amina]));
+    expect(day.rows).toEqual(expect.arrayContaining([expect.objectContaining({ kind: "page", what: "/parcels" }), expect.objectContaining({ kind: "test", what: "test_login.start" })]));
+  });
+
+  it("past 30 days the files are listed for removal, then forgotten; signed-in users can't call this", async () => {
+    await db.query(`update public.staff_recording_chunks set at = now() - interval '31 days'`);
+    await db.query(`update public.staff_recordings set last_at = now() - interval '31 days'`);
+    await expect(asUser(db, admin, (tx) => tx.query(`select * from public.recording_expired()`))).rejects.toThrow();
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.recording_forget($1)`, [[`x`]]))).rejects.toThrow();
+    const paths = await db.query<{ recording_expired: string }>(`select * from public.recording_expired()`);
+    expect(paths.rows.map((r) => r.recording_expired)).toEqual([`${amina}/${REC}/0.json.gz`]);
+    await db.query(`select public.recording_forget($1)`, [paths.rows.map((r) => r.recording_expired)]);
+    expect(await scalar<number>(db, `select count(*)::int from public.staff_recordings`)).toBe(0);
+  });
+});
+
+describe("screen video", () => {
+  it("is asked by a super admin, reaches the person, and they can decline", async () => {
+    await expectError(asUser(db, bashir, (tx) => tx.query(`select public.screen_request($1)`, [amina])), "PERMISSION_DENIED");
+    const id = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_request($1)`, [amina]));
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.screen_request($1)`, [amina])), "CONFLICT: screen_waiting");
+    const rec = "22222222-2222-4222-8222-222222222222";
+    expect(await save(amina, rec, 0, null)).toMatchObject({ id });
+    await expectError(asUser(db, bashir, (tx) => tx.query(`select public.screen_respond($1, 'sharing')`, [id])), "NOT_FOUND");
+    await asUser(db, amina, (tx) => tx.query(`select public.screen_respond($1, 'declined')`, [id]));
+    expect(await save(amina, rec, 1, null)).toBeNull();
+  });
+
+  it("the finished video is in the person's folder, and watching it is logged", async () => {
+    const id = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_request($1)`, [amina]));
+    await asUser(db, amina, (tx) => tx.query(`select public.screen_respond($1, 'sharing')`, [id]));
+    await expectError(asUser(db, amina, (tx) => tx.query(`select public.screen_finish($1, $2, 10)`, [id, `${bashir}/screen/${id}.webm`])), "VALIDATION: recording_path");
+    await asUser(db, amina, (tx) => tx.query(`select public.screen_finish($1, $2, 10)`, [id, `${amina}/screen/${id}.webm`]));
+    await expectError(asUser(db, amina, (tx) => tx.query(`select public.screen_watch($1)`, [id])), "PERMISSION_DENIED");
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_watch($1)`, [id]))).toBe(`${amina}/screen/${id}.webm`);
+    expect(await scalar<number>(db, `select count(*)::int from public.audit_log where action = 'screen.watch' and record_id = $1`, [id])).toBe(1);
+  });
+});
