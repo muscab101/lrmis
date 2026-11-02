@@ -1,17 +1,12 @@
-import { StatusBadge } from "@dhulka/ui/badge";
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Activity, Video } from "lucide-react";
+import { Activity } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import {
-  RecordingPlayer,
-  ScreenRequestButton,
-  ScreenVideo,
-} from "@/components/activity/recording-player";
+import { RecordingPlayer } from "@/components/activity/recording-player";
 import { TestLoginButton } from "@/components/activity/test-login";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -33,14 +28,6 @@ interface Rec {
   bytes: number;
   pieces: number;
   tested_by_name: string | null;
-}
-interface Screen {
-  id: string;
-  status: "pending" | "sharing" | "done" | "declined" | "failed";
-  created_at: string;
-  bytes: number | null;
-  has_file: boolean;
-  requester: string | null;
 }
 
 const size = (b: number) =>
@@ -75,18 +62,14 @@ export default async function StaffActivityPersonPage({
   if (!person) notFound();
   const name = person.full_name || person.email || "";
 
-  const [timeline, recordings, screens] = await Promise.all([
+  const [timeline, recordings] = await Promise.all([
     supabase.rpc("staff_activity_timeline", { p_user: id, p_day: day }),
     viewer.isSuperAdmin
       ? supabase.rpc("staff_recordings_of", { p_user: id, p_day: day })
       : Promise.resolve({ data: [] }),
-    viewer.isSuperAdmin
-      ? supabase.rpc("screen_requests_of", { p_user: id })
-      : Promise.resolve({ data: [] }),
   ]);
   const entries = (timeline.data ?? []) as Entry[];
   const recs = (recordings.data ?? []) as Rec[];
-  const shots = (screens.data ?? []) as Screen[];
   const time = (s: string) => format.dateTime(new Date(s), { timeStyle: "short" });
 
   const describe = (e: Entry) => {
@@ -126,76 +109,33 @@ export default async function StaffActivityPersonPage({
 
       <div className="space-y-6">
         {viewer.isSuperAdmin && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("recordings")}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-muted-foreground text-sm">{t("recordingsHint")}</p>
-                {recs.length === 0 && (
-                  <p className="text-muted-foreground text-sm">{t("noRecordings")}</p>
-                )}
-                <ul className="divide-y">
-                  {recs.map((r) => (
-                    <li key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                      <span>
-                        {time(r.started_at)} – {time(r.last_at)}
-                        <span className="text-muted-foreground"> · {size(r.bytes)}</span>
-                        {r.tested_by_name && (
-                          <p className="text-muted-foreground text-xs">
-                            {t("testedBy", { name: r.tested_by_name })}
-                          </p>
-                        )}
-                      </span>
-                      <RecordingPlayer id={r.id} />
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Video className="size-4" aria-hidden />
-                  {t("screenVideos")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-muted-foreground text-sm">{t("screenHint")}</p>
-                {id !== viewer.user.id && <ScreenRequestButton userId={id} />}
-                <ul className="divide-y">
-                  {shots.map((s) => (
-                    <li key={s.id} className="space-y-1 py-2 text-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <span>
-                          {format.dateTime(new Date(s.created_at), {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
-                          {s.bytes ? (
-                            <span className="text-muted-foreground"> · {size(s.bytes)}</span>
-                          ) : null}
-                        </span>
-                        <StatusBadge
-                          tone={
-                            s.status === "done"
-                              ? "approved"
-                              : s.status === "pending" || s.status === "sharing"
-                                ? "pending"
-                                : "rejected"
-                          }
-                        >
-                          {t(`screen_${s.status}`)}
-                        </StatusBadge>
-                      </div>
-                      {s.has_file && <ScreenVideo id={s.id} />}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("recordings")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-muted-foreground text-sm">{t("recordingsHint")}</p>
+              {recs.length === 0 && (
+                <p className="text-muted-foreground text-sm">{t("noRecordings")}</p>
+              )}
+              <ul className="divide-y">
+                {recs.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <span>
+                      {time(r.started_at)} – {time(r.last_at)}
+                      <span className="text-muted-foreground"> · {size(r.bytes)}</span>
+                      {r.tested_by_name && (
+                        <p className="text-muted-foreground text-xs">
+                          {t("testedBy", { name: r.tested_by_name })}
+                        </p>
+                      )}
+                    </span>
+                    <RecordingPlayer id={r.id} />
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         )}
 
         <Card className="overflow-hidden">

@@ -1,18 +1,11 @@
 "use client";
 
 import { Button } from "@dhulka/ui/button";
-import { Play, Video, X } from "lucide-react";
+import { Play, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import "rrweb-player/dist/style.css";
-import {
-  recordingPiecesAction,
-  screenLinkAction,
-  screenRequestAction,
-} from "@/app/[locale]/(admin)/admin/activity/actions";
-import { useRouter } from "@/i18n/navigation";
-import { FormError } from "@/components/forms/form-error";
-import type { AppError } from "@dhulka/core/errors";
+import { recordingPiecesAction } from "@/app/[locale]/(admin)/admin/activity/actions";
 
 async function loadPiece(url: string): Promise<unknown[]> {
   const res = await fetch(url);
@@ -100,56 +93,5 @@ export function RecordingPlayer({ id }: { id: string }) {
       )}
       <div ref={box} className="mx-auto w-full max-w-[1200px]" />
     </div>
-  );
-}
-
-/** Asks the person to share their real screen. The browser asks them to allow it. */
-export function ScreenRequestButton({ userId }: { userId: string }) {
-  const t = useTranslations("staffActivity");
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<AppError | null>(null);
-  return (
-    <div className="space-y-2">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={busy}
-        onClick={async () => {
-          setBusy(true);
-          setError(null);
-          const r = await screenRequestAction({ userId });
-          setBusy(false);
-          if (!r.ok) return setError(r.error);
-          router.refresh();
-        }}
-      >
-        <Video aria-hidden />
-        {t("askScreen")}
-      </Button>
-      <FormError error={error} />
-    </div>
-  );
-}
-
-export function ScreenVideo({ id }: { id: string }) {
-  const t = useTranslations("staffActivity");
-  const [url, setUrl] = useState<string | null>(null);
-  if (url)
-    return (
-      <video src={url} controls autoPlay className="mt-2 max-h-[70vh] w-full rounded-md bg-black" />
-    );
-  return (
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={async () => {
-        const r = await screenLinkAction({ id });
-        if (r.ok) setUrl(r.data);
-      }}
-    >
-      <Play aria-hidden />
-      {t("watch")}
-    </Button>
   );
 }

@@ -12,7 +12,7 @@ async function expectError(promise: Promise<unknown>, code: string) {
   await expect(promise).rejects.toThrow(new RegExp(`^${code}`));
 }
 const save = (user: string, rec: string, seq: number, path: string | null, pages: unknown[] = []) =>
-  asUser(db, user, (tx) => scalar<{ id: string; requester: string } | null>(tx, `select public.recording_save($1, $2, $3, 100, $4)`, [rec, seq, path, JSON.stringify(pages)]));
+  asUser(db, user, (tx) => tx.query(`select public.recording_save($1, $2, $3, 100, $4)`, [rec, seq, path, JSON.stringify(pages)]));
 
 beforeAll(async () => {
   db = await createDb();
@@ -68,28 +68,5 @@ describe("work recording", () => {
     expect(paths.rows.map((r) => r.recording_expired)).toEqual([`${amina}/${REC}/0.json.gz`]);
     await db.query(`select public.recording_forget($1)`, [paths.rows.map((r) => r.recording_expired)]);
     expect(await scalar<number>(db, `select count(*)::int from public.staff_recordings`)).toBe(0);
-  });
-});
-
-describe("screen video", () => {
-  it("is asked by a super admin, reaches the person, and they can decline", async () => {
-    await expectError(asUser(db, bashir, (tx) => tx.query(`select public.screen_request($1)`, [amina])), "PERMISSION_DENIED");
-    const id = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_request($1)`, [amina]));
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.screen_request($1)`, [amina])), "CONFLICT: screen_waiting");
-    const rec = "22222222-2222-4222-8222-222222222222";
-    expect(await save(amina, rec, 0, null)).toMatchObject({ id });
-    await expectError(asUser(db, bashir, (tx) => tx.query(`select public.screen_respond($1, 'sharing')`, [id])), "NOT_FOUND");
-    await asUser(db, amina, (tx) => tx.query(`select public.screen_respond($1, 'declined')`, [id]));
-    expect(await save(amina, rec, 1, null)).toBeNull();
-  });
-
-  it("the finished video is in the person's folder, and watching it is logged", async () => {
-    const id = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_request($1)`, [amina]));
-    await asUser(db, amina, (tx) => tx.query(`select public.screen_respond($1, 'sharing')`, [id]));
-    await expectError(asUser(db, amina, (tx) => tx.query(`select public.screen_finish($1, $2, 10)`, [id, `${bashir}/screen/${id}.webm`])), "VALIDATION: recording_path");
-    await asUser(db, amina, (tx) => tx.query(`select public.screen_finish($1, $2, 10)`, [id, `${amina}/screen/${id}.webm`]));
-    await expectError(asUser(db, amina, (tx) => tx.query(`select public.screen_watch($1)`, [id])), "PERMISSION_DENIED");
-    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.screen_watch($1)`, [id]))).toBe(`${amina}/screen/${id}.webm`);
-    expect(await scalar<number>(db, `select count(*)::int from public.audit_log where action = 'screen.watch' and record_id = $1`, [id])).toBe(1);
   });
 });

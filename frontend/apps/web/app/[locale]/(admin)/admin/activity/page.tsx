@@ -100,7 +100,7 @@ export default async function StaffActivityPage({
                     </TableCell>
                     <TableCell className="text-sm">
                       {online ? (
-                        <span className="inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-medium">
                           <span className="bg-success size-2 rounded-full" aria-hidden />
                           {t("online")}
                         </span>
