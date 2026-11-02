@@ -1512,7 +1512,12 @@
     "place": "Place",
     "area": "Size",
     "account": "Account no.",
-    "status": "Status"
+    "status": "Status",
+    "pinPaid": "House paid",
+    "pinOwing": "House owes a bill",
+    "bills": "Bills",
+    "billsPaid": "Paid",
+    "billsOwing": "Owes {amount}"
   },
   "locations": {
     "title": "Locations",

@@ -1512,7 +1512,12 @@
     "place": "Goobta",
     "area": "Cabbirka",
     "account": "Lambarka akoonka",
-    "status": "Xaalad"
+    "status": "Xaalad",
+    "pinPaid": "Guriga wuu bixiyay",
+    "pinOwing": "Guriga biil baa lagu leeyahay",
+    "bills": "Biilasha",
+    "billsPaid": "La bixiyay",
+    "billsOwing": "Waxaa lagu leeyahay {amount}"
   },
   "locations": {
     "title": "Goobaha",

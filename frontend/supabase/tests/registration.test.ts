@@ -250,5 +250,6 @@ describe("map pins for registered houses (0133)", () => {
     const src = await scalar<string>(db, `select prosrc from pg_proc where proname = 'parcel_tile'`);
     expect(src).toContain("'parcel_pins'");
     expect(src).toContain("p.status = 'registered'");
+    expect(src).toContain("as owing"); // red when it owes, blue when paid (0143)
   });
 });

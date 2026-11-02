@@ -247,8 +247,11 @@ export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id
     parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
   };
   const { parcel_owners, ...rest } = p;
+  const { data: open } = await ctx.supabase.from("invoices").select("balance").eq("parcel_id", v.id).in("status", ["issued", "partially_paid"]);
   return {
     ...rest,
+    /** Still owed on its bills: what makes its map pin red. */
+    owed: ((open ?? []) as { balance: number }[]).reduce((s, i) => s + Number(i.balance), 0),
     owners: parcel_owners.filter((o) => !o.valid_to && o.party).map((o) => ({ name: o.party!.full_name, phone: o.party!.phone, role: o.role })),
   };
 });

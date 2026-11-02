@@ -4,7 +4,7 @@ import maplibregl, { type Map as MlMap, type MapGeoJSONFeature } from "maplibre-
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useLocale } from "next-intl";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, LAYER_IDS, type BaseMap, type BoundaryLayer } from "./style";
+import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, LAYER_IDS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "./style";
 
 export interface MapView {
   center: [number, number];
@@ -36,8 +36,8 @@ interface Props {
 
 const CLICKABLE = ["parcel-pins", "facilities-circle", "parcels-fill", "neighbourhoods-fill"];
 
-/** The pin drawn on registered houses: a blue map pin with a white dot, at twice the size for sharp screens. */
-function housePin(): { width: number; height: number; data: Uint8Array } | null {
+/** The pin drawn on registered houses: a coloured map pin with a white dot, at twice the size for sharp screens. */
+function housePin(colour: string): { width: number; height: number; data: Uint8Array } | null {
   const w = 48;
   const h = 64;
   const canvas = document.createElement("canvas");
@@ -45,7 +45,7 @@ function housePin(): { width: number; height: number; data: Uint8Array } | null 
   canvas.height = h;
   const c = canvas.getContext("2d");
   if (!c) return null;
-  c.fillStyle = "#1d4ed8";
+  c.fillStyle = colour;
   c.strokeStyle = "#ffffff";
   c.lineWidth = 3;
   c.beginPath();
@@ -132,9 +132,10 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     });
 
     m.on("styleimagemissing", (e) => {
-      if (e.id !== "house-pin" || m.hasImage("house-pin")) return;
-      const img = housePin();
-      if (img) m.addImage("house-pin", img, { pixelRatio: 2 });
+      const colour = e.id === "house-pin-paid" ? PIN_PAID : e.id === "house-pin-owing" ? PIN_OWING : null;
+      if (!colour || m.hasImage(e.id)) return;
+      const img = housePin(colour);
+      if (img) m.addImage(e.id, img, { pixelRatio: 2 });
     });
     m.on("mouseenter", "parcel-pins", () => (m.getCanvas().style.cursor = "pointer"));
     m.on("mouseleave", "parcel-pins", () => (m.getCanvas().style.cursor = ""));

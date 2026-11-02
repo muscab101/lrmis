@@ -10,7 +10,7 @@ import { Layers, MapPinned, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/dhulka-map";
-import { districtColourFor, LAYER_MINZOOM, LEGEND, type BaseMap, type BoundaryLayer } from "@/components/map/style";
+import { districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
 import { parcelSummaryAction } from "../parcels/actions";
@@ -209,6 +209,16 @@ export function MapWorkspace({
                     <span className="flex-1">{t("layer_parcels")}</span>
                     {zoom < 13 && <span className="text-[10px] text-muted-foreground">{t("zoomIn")}</span>}
                   </label>
+                  <ul className="mt-1.5 space-y-1 ps-6 text-xs text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Swatch colour={PIN_PAID} kind="dot" />
+                      {t("pinPaid")}
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Swatch colour={PIN_OWING} kind="dot" />
+                      {t("pinOwing")}
+                    </li>
+                  </ul>
                 </li>
               )}
             </ul>
@@ -330,6 +340,10 @@ export function MapWorkspace({
                   </dd>
                   <dt className="text-muted-foreground">{t("status")}</dt>
                   <dd>{t(`parcel_${summary.status}`)}</dd>
+                  <dt className="text-muted-foreground">{t("bills")}</dt>
+                  <dd className={summary.owed > 0 ? "font-medium text-danger" : "text-primary"}>
+                    {summary.owed > 0 ? t("billsOwing", { amount: `$${summary.owed.toFixed(2)}` }) : t("billsPaid")}
+                  </dd>
                 </dl>
               ) : (
                 <p className="text-muted-foreground">{t(`parcel_${String(selected.props.status ?? "registered")}`)}</p>

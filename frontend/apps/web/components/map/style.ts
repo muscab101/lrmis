@@ -245,14 +245,14 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               layout: { "text-field": ["coalesce", ["get", "pun"], ""], "text-font": FONT, "text-size": 10 },
               paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 1.5 },
             },
-            // A pin on every registered house ("house-pin" is drawn by DhulkaMap when the style asks for it).
+            // A pin on every registered house: blue when nothing is owed, red when a bill is unpaid (DhulkaMap draws them when the style asks).
             {
               id: "parcel-pins",
               type: "symbol",
               source: "parcels",
               "source-layer": "parcel_pins",
               layout: {
-                "icon-image": "house-pin",
+                "icon-image": ["case", ["boolean", ["get", "owing"], false], "house-pin-owing", "house-pin-paid"],
                 "icon-anchor": "bottom",
                 "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.55, 16, 0.85, 19, 1],
                 "icon-allow-overlap": true,
@@ -305,6 +305,10 @@ export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
   streets: ["streets-line"],
   facilities: ["facilities-circle"],
 };
+
+/** The colours of the house pins. */
+export const PIN_PAID = "#1d4ed8";
+export const PIN_OWING = "#dc2626";
 
 export const LEGEND: { layer: BoundaryLayer; swatch: string; kind: "line" | "fill" | "dashed" | "dot" }[] = [
   { layer: "districts", swatch: C.districts, kind: "fill" },
