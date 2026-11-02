@@ -51,12 +51,10 @@ export async function listDocuments(opts: { q: string; status: "valid" | "any"; 
   if (opts.unprinted) req = req.eq("print_count", 0);
   const term = opts.q.replace(/[,()*%\\]/g, " ").trim();
   if (term) {
-    // PUNs are BN… with no dashes; dashes typed from an older printout are ignored.
-    if (/^bn/i.test(term)) {
-      const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${normalizePun(term)}%`).limit(50);
-      const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
-      req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
-    } else req = req.ilike("serial", `%${term}%`);
+    // A serial, or the PUN of the land (dashes and an old BN typed from a printout are ignored).
+    const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${normalizePun(term)}%`).limit(50);
+    const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
+    req = req.or([`serial.ilike.%${term}%`, ...(ids.length ? [`parcel_id.in.(${ids.join(",")})`] : [])].join(","));
   }
   return unwrap(await req.order("issued_at", { ascending: false }).limit(100), "documents") as unknown as DocumentRow[];
 }

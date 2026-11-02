@@ -41,19 +41,16 @@ export async function listPayments(opts: {
   if (opts.parcelId) req = req.eq("parcel_id", opts.parcelId);
   const term = (opts.q ?? "").replace(/[,()*%\\]/g, " ").trim();
   if (term) {
-    // PUNs are BN… with no dashes; dashes typed from an older printout are ignored.
-    if (/^bn/i.test(term)) {
-      const { data } = await supabase
-        .from("parcels")
-        .select("id")
-        .ilike("pun", `%${normalizePun(term)}%`)
-        .limit(50);
-      const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
-      req = req.in("parcel_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
-    } else
-      req = req.or(
-        `receipt_no.ilike.%${term}%,provider_ref.ilike.%${term}%,reference.ilike.%${term}%`,
-      );
+    // A receipt or reference, or the PUN of the land (dashes and an old BN typed from a printout are ignored).
+    const { data } = await supabase
+      .from("parcels")
+      .select("id")
+      .ilike("pun", `%${normalizePun(term)}%`)
+      .limit(50);
+    const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
+    req = req.or(
+      [`receipt_no.ilike.%${term}%`, `provider_ref.ilike.%${term}%`, `reference.ilike.%${term}%`, ...(ids.length ? [`parcel_id.in.(${ids.join(",")})`] : [])].join(","),
+    );
   }
   return unwrap(
     await req.order("received_at", { ascending: false }).limit(opts.limit ?? 100),
