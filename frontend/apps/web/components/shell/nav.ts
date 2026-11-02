@@ -29,6 +29,7 @@ import {
   Users,
   Wallet,
   type LucideIcon,
+  Printer,
 } from "lucide-react";
 
 export interface NavItem {
@@ -85,6 +86,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "permits", href: "/permits", icon: Building2, permission: "permits.view" },
       { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
       { key: "idCards", href: "/documents/cards", icon: IdCard, permission: "certificates.id_cards" },
+      { key: "addPrinter", href: "/printers", icon: Printer, permission: "certificates.printers" },
     ],
   },
   {

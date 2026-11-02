@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, printOnPrinter, testPrinter } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -81,13 +81,14 @@ describe("certificate actions", () => {
     expect(facts).toEqual({ house_no: "01", invoice_no: "INV-2026-000777", phones: { [partyA]: "+252615550101" } });
   });
 
-  it("bulk print logs each first print once and reports the already printed", async () => {
+  it("bulk send queues each unprinted document and reports the already printed", async () => {
     const ids = [await validCert(parcels[0]!), await validCert(parcels[1]!)];
-    await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [ids[0]]));
-    const out = await asUser(db, printer, (tx) => scalar<{ printed: string[]; failed: { error: string }[] }>(tx, `select public.document_print_bulk($1)`, [ids]));
-    expect(out.printed).toEqual([ids[1]]);
+    await printOnPrinter(db, printer, ids[0]!);
+    const { id: office } = await testPrinter(db);
+    const out = await asUser(db, printer, (tx) => scalar<{ sent: string[]; failed: { error: string }[] }>(tx, `select public.document_send_to_printer_bulk($1, $2)`, [ids, office]));
+    expect(out.sent).toEqual([ids[1]]);
     expect(out.failed[0]!.error).toContain("already_printed");
-    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.document_print_bulk($1)`, [ids])), "PERMISSION_DENIED");
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.document_send_to_printer_bulk($1, $2)`, [ids, office])), "PERMISSION_DENIED");
   });
 
   it("correct and reissue: shows what changed, no fee, another officer approves, ID cards follow the owners", async () => {

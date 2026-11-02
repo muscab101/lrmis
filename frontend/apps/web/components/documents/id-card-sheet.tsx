@@ -1,6 +1,6 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import { banadirOutlines, type DocumentDetail, watermarkLine } from "@/lib/server/certificates";
+import { banadirOutlines, type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
 import { partyPhotoUrl } from "@/lib/server/party-photo";
 import { BanadirMapSvg } from "./banadir-map-svg";
 
@@ -9,7 +9,16 @@ import { BanadirMapSvg } from "./banadir-map-svg";
  * Front: Banadir Regional Administration header and emblem, the holder, the land and the issue date.
  * Back: the Banadir region with the holder's district shaded and the house marked, and the verify QR.
  */
-export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; verifyUrl: string }) {
+export async function IdCardSheet({
+  doc,
+  verifyUrl,
+  agent,
+}: {
+  doc: DocumentDetail;
+  verifyUrl: string;
+  /** Printing through the print program there is no signed-in person: the page hands over what would be fetched. */
+  agent?: { facts: WatermarkFacts; photoUrl: string | null; outlines: Awaited<ReturnType<typeof banadirOutlines>> };
+}) {
   const t = await getTranslations("documents");
   const to = await getTranslations("owners");
   const [en, so] = await Promise.all([getTranslations({ locale: "en", namespace: "common" }), getTranslations({ locale: "so", namespace: "common" })]);
@@ -19,10 +28,10 @@ export async function IdCardSheet({ doc, verifyUrl }: { doc: DocumentDetail; ver
   const h = s.holder;
   const [qr, outlines, mark, photo] = await Promise.all([
     QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } }),
-    banadirOutlines(),
-    watermarkLine(doc, lang),
+    agent ? agent.outlines : banadirOutlines(),
+    watermarkLine(doc, lang, agent?.facts),
     // The holder's current photo, so one added after issue still prints.
-    partyPhotoUrl(h?.party_id),
+    agent ? agent.photoUrl : partyPhotoUrl(h?.party_id),
   ]);
   const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : null);
   const initials = (h?.full_name ?? "?")

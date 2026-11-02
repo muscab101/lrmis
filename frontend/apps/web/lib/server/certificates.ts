@@ -151,16 +151,23 @@ export async function documentChanges(id: string) {
   return (data ?? []) as DocumentChange[];
 }
 
+export interface WatermarkFacts {
+  house_no: string | null;
+  invoice_no: string | null;
+  phones: Record<string, string>;
+}
+
 /**
  * The certificate's security watermark: issue date, owners and their phones, house number, tax bill,
  * neighbourhood and district on one line. Uses the frozen snapshot; documents issued before those
  * facts were frozen get them from today's register.
  */
-export async function watermarkLine(doc: DocumentDetail, lang: string) {
+export async function watermarkLine(doc: DocumentDetail, lang: string, given?: WatermarkFacts) {
   const s = doc.snapshot;
   const frozen = "invoice_no" in s;
-  let facts = { house_no: s.house_no ?? null, invoice_no: s.invoice_no ?? null, phones: {} as Record<string, string> };
-  if (!frozen) {
+  let facts: WatermarkFacts = { house_no: s.house_no ?? null, invoice_no: s.invoice_no ?? null, phones: {} };
+  if (!frozen && given) facts = given;
+  else if (!frozen) {
     const supabase = await createClient();
     const { data } = await supabase.rpc("document_watermark_facts", { p_id: doc.id });
     if (data) facts = data as typeof facts;

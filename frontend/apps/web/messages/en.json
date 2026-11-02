@@ -83,7 +83,8 @@
       "yetToRegister": "Yet to register",
       "idCards": "ID cards",
       "collections": "Collections",
-      "incomplete": "Incomplete"
+      "incomplete": "Incomplete",
+      "addPrinter": "Add printer"
     }
   },
   "status": {
@@ -254,7 +255,10 @@
       "payment": "Pick a payment of the same kind that isn't reversed.",
       "rule_locked": "An approved rule can't be changed. Start a new version instead.",
       "draft_exists": "This rule already has a draft version. Finish or delete it first.",
-      "nothing_payable": "Nothing is owed to this party up to that date."
+      "nothing_payable": "Nothing is owed to this party up to that date.",
+      "printer_not_allowed": "This printer can't be used. It may be switched off or not set up.",
+      "already_queued": "This document is already waiting to print.",
+      "use_printer": "Official copies print only on an added printer."
     },
     "blockers": {
       "dispute": "open dispute",
@@ -425,7 +429,18 @@
     "acct_pct": "Enter a percent (0–100) or a fixed amount.",
     "acct_effective_from": "Pick a valid start date (a new version must start after the current one).",
     "acct_effective_to": "The end can't be before the start.",
-    "acct_method": "Choose a way of paying."
+    "acct_method": "Choose a way of paying.",
+    "printer_name": "Enter the printer's name.",
+    "printer_manufacturer": "Enter the manufacturer.",
+    "printer_model": "Enter the model.",
+    "printer_serial_no": "Enter a serial number: 4 to 40 letters, numbers or dashes.",
+    "printer_serial_taken": "A printer with this serial number is already added.",
+    "printer_mac_address": "Enter a MAC address like AA:BB:CC:DD:EE:FF.",
+    "printer_mac_taken": "A printer with this MAC address is already added.",
+    "printer_ip_address": "Enter an IP address like 192.168.1.50.",
+    "printer_ip_taken": "A printer with this IP address is already added.",
+    "printer_system_name": "Enter the name shown on the computer.",
+    "printer_location": "Enter where the printer is."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -3670,7 +3685,20 @@
     "payOpen": "Bill {number} unpaid",
     "payNone": "Not billed",
     "holderPhoto": "Holder's photo",
-    "cardSendToCashier": "Send to cashier"
+    "cardSendToCashier": "Send to cashier",
+    "choosePrinter": "Choose a printer",
+    "printerOffline": "offline",
+    "browserPrintOff": "This is a preview. Official copies print only on an added printer.",
+    "noPrinters": "No printer is ready. An administrator adds one on the Add printer page.",
+    "sendToPrinter": "Send to printer",
+    "sendAllToPrinter": "Send {count} to printer",
+    "job": {
+      "queued": "Waiting for {printer}",
+      "printing": "Printing on {printer}",
+      "printed": "Printed on {printer}",
+      "failed": "Printing on {printer} failed. You can send it again."
+    },
+    "batchProgress": "Printed {printed}, waiting {waiting}, failed {failed}"
   },
   "verify": {
     "title": "Verify a certificate",
@@ -4922,6 +4950,89 @@
       "permits": "Drafts and permits waiting for a decision.",
       "zones": "Zones a surveyor is working through: surveyor, land recorded out of the target, district.",
       "places": "Neighbourhoods with land not registered yet: land half-registered / applications still open."
+    }
+  },
+  "printers": {
+    "title": "Add printer",
+    "subtitle": "Certificates and ID cards can only print on the printers added here.",
+    "add": "Add printer",
+    "addTitle": "Add a printer",
+    "addBody": "After saving, create the key for its print program.",
+    "editTitle": "Edit {code}",
+    "name": "Printer name",
+    "nameHint": "What staff see when printing.",
+    "connectionLabel": "Connection",
+    "connection": {
+      "usb": "USB",
+      "ethernet": "Ethernet",
+      "wifi": "Wi-Fi"
+    },
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "serialNo": "Serial number",
+    "systemName": "Name on the computer",
+    "systemNameHint": "Exactly as shown in the computer's printer list.",
+    "macAddress": "MAC address",
+    "macHint": "For example AA:BB:CC:DD:EE:FF",
+    "ipAddress": "IP address",
+    "ipHint": "For example 192.168.1.50",
+    "optionalUsb": "Not needed for USB.",
+    "location": "Location",
+    "department": "Department",
+    "kpiTotal": "Printers",
+    "kpiActive": "Active",
+    "kpiInactive": "Inactive",
+    "kpiPrinted": "Documents printed",
+    "kpiPending": "Waiting to print",
+    "kpiFailed": "Failed (7 days)",
+    "noPrinters": "No printers yet",
+    "noPrintersBody": "Add a printer so certificates can be printed.",
+    "printerId": "Printer ID",
+    "printer": "Printer",
+    "network": "IP / MAC",
+    "program": "Print program",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "programNoKey": "No key yet",
+    "programOnline": "Online",
+    "programLastSeen": "Last seen {time}",
+    "programNever": "Never connected",
+    "createKey": "Create key",
+    "newKey": "New key",
+    "createKeyTitle": "Create a key for {code}?",
+    "createKeyBody": "The key connects this printer's print program. It is shown only once.",
+    "newKeyTitle": "Replace the key of {code}?",
+    "newKeyBody": "The old key stops working at once. The print program needs the new one.",
+    "keyTitle": "Key for {code}",
+    "keyOnce": "Copy this key now. It will not be shown again.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "activateTitle": "Activate {code}?",
+    "activateBody": "Staff can send documents to it again.",
+    "deactivateTitle": "Deactivate {code}?",
+    "deactivateBody": "Nothing can print on it. Jobs waiting for it fail and can be sent to another printer.",
+    "alertsTitle": "Security alerts",
+    "alertResolve": "Mark as checked",
+    "alertNotClosed": "Could not close the alert. Try again.",
+    "alerts": {
+      "bad_key": "A print program tried to connect with a wrong key from {ip}.",
+      "inactive_printer_used": "The print program of a deactivated printer connected from {ip}.",
+      "agent_moved": "The print program moved to another computer or network: {from} to {to}.",
+      "network_changed": "Printing stopped: the device at this address has MAC {seen}, expected {expected}.",
+      "printer_missing": "Printing stopped: the computer has no printer called {name}."
+    },
+    "jobsTitle": "Recent printing",
+    "document": "Document",
+    "sent": "Sent",
+    "job": {
+      "queued": "Waiting",
+      "printing": "Printing",
+      "printed": "Printed",
+      "failed": "Failed"
     }
   }
 }

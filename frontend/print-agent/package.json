@@ -1,0 +1,9 @@
+{
+  "name": "lrmis-print-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Prints LRMIS certificates and ID cards on one added printer.",
+  "main": "main.js",
+  "scripts": { "start": "electron ." },
+  "devDependencies": { "electron": "33.4.11" }
+}

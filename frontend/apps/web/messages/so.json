@@ -83,7 +83,8 @@
       "yetToRegister": "Weli lama diiwaangelin",
       "idCards": "Kaararka aqoonsiga",
       "collections": "Ururinta lacagta",
-      "incomplete": "Aan dhammaystirnayn"
+      "incomplete": "Aan dhammaystirnayn",
+      "addPrinter": "Ku dar daabace"
     }
   },
   "status": {
@@ -254,7 +255,10 @@
       "payment": "Dooro lacag-bixin isku nooc ah oo aan dib loo celin.",
       "rule_locked": "Xeer la ansixiyay lama beddeli karo. Beddelkeed bilow nooc cusub.",
       "draft_exists": "Xeerkan horay ayuu u leeyahay nooc qabyo ah. Marka hore dhammee ama tirtir.",
-      "nothing_payable": "Cidan waxba laguma laha ilaa taariikhdaas."
+      "nothing_payable": "Cidan waxba laguma laha ilaa taariikhdaas.",
+      "printer_not_allowed": "Daabacahan lama isticmaali karo. Waxaa laga yaabaa inuu dansan yahay ama aan la diyaarin.",
+      "already_queued": "Dukumentigan horay ayuu u sugayaa daabacaad.",
+      "use_printer": "Nuqullada rasmiga ah waxaa lagu daabacaa daabace lagu daray oo keliya."
     },
     "blockers": {
       "dispute": "muran furan",
@@ -425,7 +429,18 @@
     "acct_pct": "Geli boqolley (0–100) ama qadar go'an.",
     "acct_effective_from": "Dooro taariikh bilow sax ah (nooc cusub waa inuu ka dambeeyaa kan hadda).",
     "acct_effective_to": "Dhammaadku kama horrayn karo bilowga.",
-    "acct_method": "Dooro habka lacag-bixinta."
+    "acct_method": "Dooro habka lacag-bixinta.",
+    "printer_name": "Geli magaca daabacaha.",
+    "printer_manufacturer": "Geli shirkadda samaysay.",
+    "printer_model": "Geli nooca.",
+    "printer_serial_no": "Geli lambar taxane: 4 ilaa 40 xaraf, tiro ama xarriiq.",
+    "printer_serial_taken": "Daabace leh lambarkan taxanaha horay ayaa loogu daray.",
+    "printer_mac_address": "Geli cinwaan MAC sida AA:BB:CC:DD:EE:FF.",
+    "printer_mac_taken": "Daabace leh cinwaankan MAC horay ayaa loogu daray.",
+    "printer_ip_address": "Geli cinwaan IP sida 192.168.1.50.",
+    "printer_ip_taken": "Daabace leh cinwaankan IP horay ayaa loogu daray.",
+    "printer_system_name": "Geli magaca kombiyuutarka ka muuqda.",
+    "printer_location": "Geli meesha daabacuhu yaal."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -3670,7 +3685,20 @@
     "payOpen": "Biilka {number} lama bixin",
     "payNone": "Biil lama samayn",
     "holderPhoto": "Sawirka haystaha",
-    "cardSendToCashier": "U dir lacag-hayaha"
+    "cardSendToCashier": "U dir lacag-hayaha",
+    "choosePrinter": "Dooro daabace",
+    "printerOffline": "ma xirna",
+    "browserPrintOff": "Tani waa horudhac. Nuqullada rasmiga ah waxaa lagu daabacaa daabace lagu daray oo keliya.",
+    "noPrinters": "Daabace diyaar ah ma jiro. Maamule ayaa ku daraya bogga Ku dar daabace.",
+    "sendToPrinter": "U dir daabacaha",
+    "sendAllToPrinter": "U dir {count} daabacaha",
+    "job": {
+      "queued": "Sugaya {printer}",
+      "printing": "Ku daabacaya {printer}",
+      "printed": "Lagu daabacay {printer}",
+      "failed": "Daabacaadda {printer} way fashilantay. Mar kale ayaad diri kartaa."
+    },
+    "batchProgress": "La daabacay {printed}, sugaya {waiting}, fashilmay {failed}"
   },
   "verify": {
     "title": "Hubi shahaado",
@@ -4922,6 +4950,89 @@
       "permits": "Qabyo iyo ogolaansho sugaya go'aan.",
       "zones": "Aagag uu sahamiye ka shaqaynayo: sahamiyaha, dhulka la diiwaangeliyay ee hadafka, degmada.",
       "places": "Xaafado leh dhul aan weli la diiwaangelin: dhul qayb la diiwaangeliyay / codsiyo weli furan."
+    }
+  },
+  "printers": {
+    "title": "Ku dar daabace",
+    "subtitle": "Shahaadooyinka iyo kaararka aqoonsiga waxaa lagu daabici karaa oo keliya daabacayaasha halkan lagu daray.",
+    "add": "Ku dar daabace",
+    "addTitle": "Ku dar daabace",
+    "addBody": "Kaydinta ka dib, samee furaha barnaamijkiisa daabacaadda.",
+    "editTitle": "Wax ka beddel {code}",
+    "name": "Magaca daabacaha",
+    "nameHint": "Waxa shaqaaluhu arkaan marka ay daabacayaan.",
+    "connectionLabel": "Isku xirka",
+    "connection": {
+      "usb": "USB",
+      "ethernet": "Ethernet",
+      "wifi": "Wi-Fi"
+    },
+    "manufacturer": "Shirkadda samaysay",
+    "model": "Nooca",
+    "serialNo": "Lambarka taxanaha",
+    "systemName": "Magaca kombiyuutarka",
+    "systemNameHint": "Sida uu ugu qoran yahay liiska daabacayaasha kombiyuutarka.",
+    "macAddress": "Cinwaanka MAC",
+    "macHint": "Tusaale AA:BB:CC:DD:EE:FF",
+    "ipAddress": "Cinwaanka IP",
+    "ipHint": "Tusaale 192.168.1.50",
+    "optionalUsb": "Looma baahna USB.",
+    "location": "Goobta",
+    "department": "Waaxda",
+    "kpiTotal": "Daabacayaasha",
+    "kpiActive": "Shaqaynaya",
+    "kpiInactive": "Aan shaqaynayn",
+    "kpiPrinted": "Dukumentiyo la daabacay",
+    "kpiPending": "Sugaya daabacaad",
+    "kpiFailed": "Fashilmay (7 maalmood)",
+    "noPrinters": "Weli daabace ma jiro",
+    "noPrintersBody": "Ku dar daabace si shahaadooyinka loo daabaco.",
+    "printerId": "Aqoonsiga daabacaha",
+    "printer": "Daabace",
+    "network": "IP / MAC",
+    "program": "Barnaamijka daabacaadda",
+    "status": "Xaalad",
+    "actions": "Ficillo",
+    "active": "Shaqaynaya",
+    "inactive": "Aan shaqaynayn",
+    "programNoKey": "Weli fure ma leh",
+    "programOnline": "Ku xiran",
+    "programLastSeen": "Ugu dambeeyay {time}",
+    "programNever": "Weligii ma xirmin",
+    "createKey": "Samee fure",
+    "newKey": "Fure cusub",
+    "createKeyTitle": "Fure ma loo sameeyaa {code}?",
+    "createKeyBody": "Furuhu wuxuu isku xiraa barnaamijka daabacaadda ee daabacahan. Hal mar oo keliya ayaa la muujinayaa.",
+    "newKeyTitle": "Furaha {code} ma la beddelaa?",
+    "newKeyBody": "Furihii hore isla markiiba wuu joogsanayaa. Barnaamijka wuxuu u baahan yahay kan cusub.",
+    "keyTitle": "Furaha {code}",
+    "keyOnce": "Hadda koobiyee furahan. Mar kale lama muujin doono.",
+    "copy": "Koobiyee",
+    "copied": "Waa la koobiyeeyay",
+    "activate": "Shid",
+    "deactivate": "Dami",
+    "activateTitle": "{code} ma la shidaa?",
+    "activateBody": "Shaqaaluhu mar kale ayay u diri karaan dukumentiyo.",
+    "deactivateTitle": "{code} ma la damiyaa?",
+    "deactivateBody": "Waxba laguma daabici karo. Shaqooyinka sugaya way fashilmayaan, waxaana loo diri karaa daabace kale.",
+    "alertsTitle": "Digniino amni",
+    "alertResolve": "Waa la hubiyay",
+    "alertNotClosed": "Digniinta lama xirin. Mar kale isku day.",
+    "alerts": {
+      "bad_key": "Barnaamij daabacaad ayaa isku dayay inuu ku xirmo fure khaldan oo ka yimid {ip}.",
+      "inactive_printer_used": "Barnaamijka daabace la damiyay ayaa ku xirmay {ip}.",
+      "agent_moved": "Barnaamijka daabacaadda wuxuu u guuray kombiyuutar ama shabakad kale: {from} ilaa {to}.",
+      "network_changed": "Daabacaadda waa la joojiyay: qalabka cinwaankan wuxuu leeyahay MAC {seen}, waxaa la filayay {expected}.",
+      "printer_missing": "Daabacaadda waa la joojiyay: kombiyuutarku ma laha daabace la yiraahdo {name}."
+    },
+    "jobsTitle": "Daabacaaddii dhowayd",
+    "document": "Dukumenti",
+    "sent": "La diray",
+    "job": {
+      "queued": "Sugaya",
+      "printing": "Daabacaya",
+      "printed": "La daabacay",
+      "failed": "Fashilmay"
     }
   }
 }

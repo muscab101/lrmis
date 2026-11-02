@@ -5,6 +5,7 @@ import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { requirePermission } from "@/lib/server/auth";
 import { awaitingCardPayment, cardPrintPayments, type DocumentDetail, getDocument } from "@/lib/server/certificates";
+import { printerChoices } from "@/lib/server/printers";
 
 export async function generateMetadata() {
   const t = await getTranslations("documents");
@@ -24,6 +25,8 @@ export default async function BatchPrintPage({ params, searchParams }: { params:
   const unpaid = docs.filter((d) => d.status === "valid" && d.print_count === 0 && awaitingCardPayment(pays.get(d.id)));
   const ready = docs.filter((d) => d.status === "valid" && d.print_count === 0 && !unpaid.includes(d));
   const skipped = docs.filter((d) => !ready.includes(d) && !unpaid.includes(d));
+  const canPrint = viewer.can("certificates.print");
+  const printers = canPrint ? await printerChoices() : [];
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   return (
     <div className="min-h-dvh bg-neutral-100 py-8 print:bg-white print:py-0">
@@ -48,7 +51,7 @@ export default async function BatchPrintPage({ params, searchParams }: { params:
           ))}
         </Alert>
       )}
-      <BatchPrintControls ids={ready.map((d) => d.id)} canPrint={viewer.can("certificates.print")}>
+      <BatchPrintControls ids={ready.map((d) => d.id)} canPrint={canPrint} printers={printers}>
         <div className="space-y-8 print:space-y-0">
           {await Promise.all(
             ready.map(async (d) => {

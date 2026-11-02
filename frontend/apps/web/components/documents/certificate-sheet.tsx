@@ -1,10 +1,10 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
-import { type DocumentDetail, watermarkLine } from "@/lib/server/certificates";
+import { type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
 import { ParcelMapSvg } from "./parcel-map-svg";
 
 /** A4 title certificate (bilingual headings), rendered from the document's frozen snapshot. */
-export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail; verifyUrl: string }) {
+export async function CertificateSheet({ doc, verifyUrl, watermarkFacts }: { doc: DocumentDetail; verifyUrl: string; watermarkFacts?: WatermarkFacts }) {
   const t = await getTranslations("documents");
   const ts = await getTranslations("stage");
   const tc = await getTranslations("common");
@@ -14,7 +14,7 @@ export async function CertificateSheet({ doc, verifyUrl }: { doc: DocumentDetail
   const qr = await QRCode.toString(verifyUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0b1a3a", light: "#ffffff" } });
   const name = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en) : "—");
   const vertices = (s.geom.coordinates[0] ?? []).slice(0, -1);
-  const mark = await watermarkLine(doc, lang);
+  const mark = await watermarkLine(doc, lang, watermarkFacts);
   const facts: [string, string][] = [
     ["PUN", s.pun],
     [t("account"), s.account_no ?? "—"],

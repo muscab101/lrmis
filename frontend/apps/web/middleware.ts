@@ -6,7 +6,7 @@ import { routing } from "./i18n/routing";
 const intl = createIntlMiddleware(routing);
 
 /** Paths (after the locale) anyone can open. */
-const PUBLIC = [/^\/$/, /^\/login$/, /^\/citizen\/login$/, /^\/forgot-password$/, /^\/setup$/, /^\/design$/, /^\/verify(\/|$)/, /^\/pay\//, /^\/track(\/|$)/, /^\/notices$/];
+const PUBLIC = [/^\/$/, /^\/login$/, /^\/citizen\/login$/, /^\/forgot-password$/, /^\/setup$/, /^\/design$/, /^\/verify(\/|$)/, /^\/pay\//, /^\/track(\/|$)/, /^\/notices$/, /^\/agent-print\//];
 /** Steps of the sign-in flow: need a user but skip the staff gates. */
 const AUTH_FLOW = [/^\/mfa$/, /^\/change-password$/, /^\/reset-password$/];
 /** Citizen portal. Everything else is the staff area. */

@@ -20,8 +20,16 @@ export const issueCertificateAction = defineAction("certificates.issue", z.objec
   done(unwrap(await ctx.supabase.rpc("certificate_issue", { p_parcel: parcelId }), "issue") as { certificate_id: string; id_cards: number }),
 );
 
-export const printDocumentAction = defineAction("certificates.print", z.object({ id: z.uuid() }), async ({ id }, ctx) =>
-  done(unwrap(await ctx.supabase.rpc("document_print", { p_id: id }), "print") as { serial: string; print_count: number }),
+/** Official copies go to an added printer: the job waits for that printer's print program. */
+export const sendToPrinterAction = defineAction(
+  "certificates.send_to_printer",
+  z.object({ id: z.uuid(), printerId: z.uuid("validation.required"), locale: z.enum(["so", "en"]) }),
+  async (v, ctx) => done(unwrap(await ctx.supabase.rpc("document_send_to_printer", { p_id: v.id, p_printer: v.printerId, p_locale: v.locale }), "send to printer") as string),
+);
+
+/** Where documents are in the print queue. */
+export const printStatusAction = defineAction("certificates.print_status", z.object({ ids: z.array(z.uuid()).min(1).max(100) }), async ({ ids }, ctx) =>
+  unwrap(await ctx.supabase.rpc("document_print_status", { p_ids: ids }), "print status") as { document_id: string; status: "queued" | "printing" | "printed" | "failed"; error: string | null; printer_name: string }[],
 );
 
 export const requestReprintAction = defineAction("certificates.reprint", z.object({ id: z.uuid(), reason: z.string().trim().min(5, "validation.reason").max(500) }), async (v, ctx) => {
@@ -72,8 +80,11 @@ export const issueBulkAction = defineAction("certificates.issue_bulk", z.object(
   done(unwrap(await ctx.supabase.rpc("certificate_issue_bulk", { p_parcels: parcelIds }), "issue") as BulkIssueResult),
 );
 
-export const printBulkAction = defineAction("certificates.print_bulk", z.object({ ids: z.array(z.uuid()).min(1).max(100) }), async ({ ids }, ctx) =>
-  done(unwrap(await ctx.supabase.rpc("document_print_bulk", { p_ids: ids }), "print") as { printed: string[]; failed: { id: string; serial: string | null; error: string }[] }),
+export const sendBulkToPrinterAction = defineAction(
+  "certificates.send_bulk_to_printer",
+  z.object({ ids: z.array(z.uuid()).min(1).max(100), printerId: z.uuid("validation.required"), locale: z.enum(["so", "en"]) }),
+  async (v, ctx) =>
+    done(unwrap(await ctx.supabase.rpc("document_send_to_printer_bulk", { p_ids: v.ids, p_printer: v.printerId, p_locale: v.locale }), "send to printer") as { sent: string[]; failed: { id: string; serial: string | null; error: string }[] }),
 );
 
 /** Send an ID card's print bill to the district's cashier (raised at the fixed fee if missing). */

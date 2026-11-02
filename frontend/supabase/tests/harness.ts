@@ -180,3 +180,25 @@ export async function letClerksCreate(db: PGlite): Promise<void> {
      on conflict do nothing`,
   );
 }
+
+/** A printer with a known key, as the Add printer page would leave it (one per test database). */
+export async function testPrinter(db: PGlite): Promise<{ id: string; key: string }> {
+  const key = "test-agent-key";
+  const found = await db.query<{ id: string }>(`select id from public.printers where serial_no = 'TEST-PRINTER'`);
+  if (found.rows[0]) return { id: found.rows[0].id, key };
+  const id = await scalar<string>(
+    db,
+    `insert into public.printers (code, name, manufacturer, model, serial_no, connection_type, system_name, location)
+     values ('PRN-TEST', 'Office printer', 'HP', 'M404', 'TEST-PRINTER', 'usb', 'HP_M404', 'Registry') returning id`,
+  );
+  await db.query(`insert into public.printer_keys (printer_id, key_hash) values ($1, private.printer_key_hash($2))`, [id, key]);
+  return { id, key };
+}
+
+/** Print the way it really happens: staff send it to the printer, the print program takes the job and reports it printed. */
+export async function printOnPrinter(db: PGlite, user: string, document: string): Promise<void> {
+  const { id, key } = await testPrinter(db);
+  await asUser(db, user, (tx) => tx.query(`select public.document_send_to_printer($1, $2)`, [document, id]));
+  const claim = await as(db, "anon", {}, (tx) => scalar<{ job: { id: string } }>(tx, `select public.agent_claim_job($1, '10.0.0.5')`, [key]));
+  await as(db, "anon", {}, (tx) => tx.query(`select public.agent_report_job($1, $2, true)`, [key, claim.job.id]));
+}

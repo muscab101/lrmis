@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { as, asUser, bootstrapSuperAdmin, createAuthUser, createDb, createStaff, scalar, square } from "./harness";
+import { as, asUser, bootstrapSuperAdmin, createAuthUser, createDb, createStaff, scalar, square, printOnPrinter, testPrinter } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -89,9 +89,10 @@ describe("certificates (Phase 8)", () => {
   });
 
   it("the first print is logged once; printing again needs a reprint", async () => {
-    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.document_print($1)`, [certId])), "PERMISSION_DENIED");
-    await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [certId]));
-    await expectError(asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [certId])), "CONFLICT: already_printed");
+    const { id: office } = await testPrinter(db);
+    await expectError(asUser(db, registrar, (tx) => tx.query(`select public.document_send_to_printer($1, $2)`, [certId, office])), "PERMISSION_DENIED");
+    await printOnPrinter(db, printer, certId);
+    await expectError(asUser(db, printer, (tx) => tx.query(`select public.document_send_to_printer($1, $2)`, [certId, office])), "CONFLICT: already_printed");
     expect(await scalar<number>(db, `select count(*)::int from public.print_jobs where document_id = $1 and kind = 'original'`, [certId])).toBe(1);
   });
 
@@ -120,7 +121,7 @@ describe("certificates (Phase 8)", () => {
     expect(await scalar<string>(db, `select status::text from public.issued_documents where id = $1`, [certId])).toBe("cancelled");
     const old = await as(db, "anon", {}, (tx) => scalar<{ status: string }>(tx, `select public.verify_document($1)`, [certCode]));
     expect(old.status).toBe("cancelled");
-    await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [out.document_id]));
+    await printOnPrinter(db, printer, out.document_id);
     expect(await scalar<string>(db, `select kind from public.print_jobs where document_id = $1`, [out.document_id])).toBe("reprint");
   });
 

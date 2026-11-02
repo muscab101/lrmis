@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, printOnPrinter, testPrinter } from "./harness";
 
 let db: PGlite;
 let registrar: string;
@@ -45,7 +45,7 @@ beforeAll(async () => {
 describe("ID card print fee", () => {
   it("while the fee is off, cards print as before and no bill can be raised", async () => {
     await expectError(asUser(db, cashier, (tx) => tx.query(`select public.card_print_bill($1)`, [cards[0]])), "CONFLICT: card_fee_not_set");
-    await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[0]]));
+    await printOnPrinter(db, printer, cards[0]!);
   });
 
   it("with the fee on: the cashier finds the card, raises a bill; it prints only once the bill is paid", async () => {
@@ -54,7 +54,8 @@ describe("ID card print fee", () => {
     expect(found.rows.map((r) => r.id).sort()).toEqual([...cards].sort());
     expect(found.rows.every((r) => r.fee_on && r.invoice_id === null)).toBe(true);
 
-    await expectError(asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[1]])), "CONFLICT: card_fee_unpaid");
+    const { id: office } = await testPrinter(db);
+    await expectError(asUser(db, printer, (tx) => tx.query(`select public.document_send_to_printer($1, $2)`, [cards[1], office])), "CONFLICT: card_fee_unpaid");
     // The print page sees it first: fee on, no bill yet.
     const before = await asUser(db, printer, (tx) => tx.query<{ fee_on: boolean; invoice_number: string | null; paid: boolean }>(`select * from public.card_print_status($1)`, [[cards[1]]]));
     expect(before.rows[0]).toMatchObject({ fee_on: true, invoice_number: null, paid: false });
@@ -72,7 +73,7 @@ describe("ID card print fee", () => {
     await db.query(`select private.invoice_apply_payment($1, 5)`, [bill.invoice_id]);
     const after = await asUser(db, printer, (tx) => tx.query<{ invoice_number: string; paid: boolean }>(`select * from public.card_print_status($1)`, [[cards[1]]]));
     expect(after.rows[0]).toMatchObject({ invoice_number: bill.number, paid: true });
-    await asUser(db, printer, (tx) => tx.query(`select public.document_print($1)`, [cards[1]]));
+    await printOnPrinter(db, printer, cards[1]!);
     await expectError(asUser(db, cashier, (tx) => tx.query(`select public.card_print_bill($1)`, [cards[1]])), "CONFLICT: already_printed");
   });
   it("print staff send a card made before the fee to the cashier: the bill is raised and the cashier is told", async () => {

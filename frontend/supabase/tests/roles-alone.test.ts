@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, printOnPrinter } from "./harness";
 
 // Each role, with only that role, can do its own job — and doesn't get other jobs' pages.
 let db: PGlite;
@@ -80,7 +80,7 @@ describe("every role works on its own", () => {
 
   it("print officer prints the certificate; legal officer opens a dispute", async () => {
     const doc = await scalar<string>(db, `select id from public.issued_documents where type = 'certificate' and parcel_id = $1`, [parcel]);
-    await asUser(db, u.print_officer!, (tx) => tx.query(`select public.document_print($1)`, [doc]));
+    await printOnPrinter(db, u.print_officer!, doc);
     await asUser(db, u.legal_officer!, (tx) =>
       tx.query(`select public.dispute_open($1, $2)`, [parcel, JSON.stringify({ kind: "boundary", description: "Neighbour claims part of the plot", claimant_name: "Neighbour" })]),
     );
