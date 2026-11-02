@@ -235,3 +235,13 @@ export const chatDeleteMessageAction = defineAction(
     return null;
   },
 );
+
+export const chatDeleteAction = defineAction(
+  "chat.delete",
+  z.object({ conversationId: z.uuid() }),
+  async (v, ctx) =>
+    unwrap(
+      await ctx.supabase.rpc("chat_delete", { p_conversation: v.conversationId }),
+      "delete chat",
+    ),
+);

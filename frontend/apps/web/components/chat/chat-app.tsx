@@ -23,6 +23,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   chatAddMembersAction,
   chatCreateGroupAction,
+  chatDeleteAction,
   chatDeleteMessageAction,
   chatDirectoryAction,
   chatListAction,
@@ -115,9 +116,10 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
   const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
-  const [dialog, setDialog] = useState<"direct" | "group" | "members" | null>(null);
+  const [dialog, setDialog] = useState<"direct" | "group" | "members" | "delete" | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
+  const [deleteBody, setDeleteBody] = useState("");
   const [members, setMembers] = useState<ChatPerson[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,13 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
   const loadMessages = useCallback(
     async (id: string, scroll: boolean) => {
       const r = await chatMessagesAction({ conversationId: id, before: null });
+      if (!r.ok && r.error.code === "NOT_FOUND" && openRef.current === id) {
+        // The group was closed, or I was taken out of it, while it was open here.
+        setOpenId(null);
+        window.history.replaceState(null, "", "?");
+        void loadChats();
+        return;
+      }
       if (!r.ok || openRef.current !== id) return;
       const now = Date.now();
       const rows = r.data.map((m) => {
@@ -381,6 +390,23 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                   {t("members")}
                 </Button>
               )}
+              {open && (open.kind === "direct" || open.created_by === me) && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-danger shrink-0"
+                  aria-label={t("deleteChat")}
+                  title={t("deleteChat")}
+                  onClick={() => {
+                    setDeleteBody(
+                      open.kind === "group" ? t("deleteGroupBody") : t("deleteChatBody"),
+                    );
+                    setDialog("delete");
+                  }}
+                >
+                  <Trash2 aria-hidden />
+                </Button>
+              )}
             </header>
             <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto p-4">
               {more && (
@@ -554,6 +580,21 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
       >
         {() => <PeoplePicker picked={picked} onChange={(ids) => setPicked(ids.slice(-1))} />}
       </FormDialog>
+
+      <FormDialog
+        open={dialog === "delete"}
+        onOpenChange={(o) => !o && setDialog(null)}
+        title={t("deleteChat")}
+        description={deleteBody}
+        confirmLabel={t("deleteChat")}
+        destructive
+        submit={() => chatDeleteAction({ conversationId: openId ?? "" })}
+        onDone={() => {
+          setOpenId(null);
+          window.history.replaceState(null, "", "?");
+          void loadChats();
+        }}
+      />
 
       <FormDialog
         open={dialog === "group"}

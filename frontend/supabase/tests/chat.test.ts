@@ -95,4 +95,34 @@ describe("staff chat", () => {
     expect(rows.rows.find((r) => r.id === id)).toMatchObject({ body: null, deleted: true });
     expect(await scalar<string | null>(db, `select coalesce(body, 'gone') from public.chat_messages where id = $1`, [id])).toBe("gone");
   });
+
+  it("deleting a direct chat removes it from my list only; a new message brings it back without the old ones", async () => {
+    await send(amina, direct, "Before deleting");
+    await asUser(db, bashir, (tx) => tx.query(`select public.chat_delete($1)`, [direct]));
+    expect((await list(bashir)).rows.some((r) => r.id === direct)).toBe(false);
+    expect((await list(amina)).rows.some((r) => r.id === direct)).toBe(true);
+    await send(amina, direct, "After deleting");
+    expect((await list(bashir)).rows.find((r) => r.id === direct)).toMatchObject({ last_body: "After deleting", unread: 1 });
+    const seen = await asUser(db, bashir, (tx) => tx.query<{ body: string | null }>(`select * from public.chat_messages_page($1)`, [direct]));
+    expect(seen.rows.map((r) => r.body)).toEqual(["After deleting"]);
+    const kept = await asUser(db, amina, (tx) => tx.query<{ body: string | null }>(`select * from public.chat_messages_page($1)`, [direct]));
+    expect(kept.rows.map((r) => r.body)).toContain("Before deleting");
+    await asUser(db, bashir, (tx) => tx.query(`select public.chat_delete($1)`, [direct]));
+    expect(await asUser(db, bashir, (tx) => scalar<string>(tx, `select public.chat_open_direct($1)`, [amina]))).toBe(direct);
+    expect((await list(bashir)).rows.some((r) => r.id === direct)).toBe(true);
+  });
+
+  it("only the maker deletes a group, for everyone; its notices clear and nobody can read it after", async () => {
+    const g = await asUser(db, amina, (tx) => scalar<string>(tx, `select public.chat_create_group('Kooxda Tirtir', $1)`, [[bashir]]));
+    await send(amina, g, "Hello group");
+    await expectError(asUser(db, bashir, (tx) => tx.query(`select public.chat_delete($1)`, [g])), "PERMISSION_DENIED");
+    await expectError(asUser(db, cali, (tx) => tx.query(`select public.chat_delete($1)`, [g])), "NOT_FOUND");
+    await asUser(db, amina, (tx) => tx.query(`select public.chat_delete($1)`, [g]));
+    for (const u of [amina, bashir]) expect((await list(u)).rows.some((r) => r.id === g)).toBe(false);
+    await expectError(send(bashir, g, "still here?"), "NOT_FOUND");
+    await expectError(asUser(db, bashir, (tx) => tx.query(`select * from public.chat_messages_page($1)`, [g])), "NOT_FOUND");
+    expect((await asUser(db, bashir, (tx) => tx.query(`select * from public.chat_messages where conversation_id = $1`, [g]))).rows).toHaveLength(0);
+    expect(await scalar<number>(db, `select count(*)::int from public.notifications where link = $1 and read_at is null`, [`/chat?c=${g}`])).toBe(0);
+    expect(await scalar<number>(db, `select count(*)::int from public.chat_messages where conversation_id = $1`, [g])).toBe(1);
+  });
 });

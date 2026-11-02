@@ -9,7 +9,7 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
 import { savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
@@ -67,7 +67,14 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
       return party ? v : { ...v, phone: v.phone || dialCode(v.nationality) };
     })(),
   });
+  // Country names differ between the server and the browser, so the full list only fills in once in the browser.
+  const inBrowser = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const countries = useMemo(() => countryOptions(locale), [locale]);
+  const chosenCountry = form.getValues("nationality");
   const nationalityField = form.register("nationality");
   // Names start each word with a capital as they are typed ("mohamed al haji" → "Mohamed Al Haji").
   const nameField = (name: "fullName" | "motherName" | "nextOfKinName") => {
@@ -150,11 +157,13 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
                   if (next && (!before || /^\+\d{1,4}$/.test(before))) form.setValue("phone", next, { shouldDirty: true });
                 }}
               >
-                {countries.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name} ({c.dial})
-                  </option>
-                ))}
+                {countries
+                  .filter((c) => inBrowser || c.code === chosenCountry)
+                  .map((c) => (
+                    <option key={c.code} value={c.code} suppressHydrationWarning>
+                      {c.name} ({c.dial})
+                    </option>
+                  ))}
               </NativeSelect>
             </Field>
           </>

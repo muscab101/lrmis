@@ -40,7 +40,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
     void load();
     const channel = supabase
       .channel(`notifications:${userId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, () => void load())
       .subscribe();
     return () => void supabase.removeChannel(channel);
   }, [supabase, userId, load]);
