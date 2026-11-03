@@ -163,8 +163,11 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     )}
                   </TableCell>
                   <TableCell>
-                    {/* A flat or compound house registers alone; its sizes and deleting go with its building. */}
-                    <ParcelRowActions parcel={p} can={{ ...can, update: can.update && !p.parent_id, delete: !p.parent_id && canDelete(p.status) }} />
+                    {/* Partial land: View, Update and Delete here; registering and locking are on its own page. A registered flat goes with its building. */}
+                    <ParcelRowActions
+                      parcel={p}
+                      can={partial(p.status) ? { update: can.update, lock: false, delete: canDelete(p.status) } : { ...can, update: can.update && !p.parent_id, delete: !p.parent_id && canDelete(p.status) }}
+                    />
                   </TableCell>
                 </TableRow>
                 );

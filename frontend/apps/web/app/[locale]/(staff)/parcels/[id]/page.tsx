@@ -129,11 +129,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               parcel={p}
               onDetail
               can={{
-                // A building's sizes are fixed once saved; a unit registers on its own and is deleted with its land.
-                update: viewer.can("parcels.update") && !holdsUnits && !p.parent_id,
+                // A building's sizes are fixed once saved; a flat or house can change and be deleted until it's registered.
+                update: viewer.can("parcels.update") && !holdsUnits && (!p.parent_id || partial),
                 lock: viewer.can("parcels.lock"),
                 register: viewer.can("parcels.approve"),
-                delete: !p.parent_id && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
+                delete: (!p.parent_id || partial) && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
               }}
             />
           </div>

@@ -34,6 +34,9 @@ export const updateParcelDetailsAction = defineAction(
     lengthM: z.string().trim().max(10).optional(),
     landUse: z.enum(["residential", "commercial", "state", "mixed", "agricultural", "other"]).optional(),
     units: z.string().trim().max(4).optional(),
+    /** A flat or compound house not registered yet. */
+    ownM2: z.string().trim().max(12).optional(),
+    unitFloor: z.string().trim().max(3).optional(),
     /** Partial land only (registered land changes owners by transfer). */
     ownerName: z.string().trim().max(120).optional(),
     ownerPhone: z.string().trim().max(30).optional(),
@@ -48,6 +51,8 @@ export const updateParcelDetailsAction = defineAction(
     }
     if (v.landUse !== undefined) p.land_use = v.landUse;
     if (v.units !== undefined) p.units = v.units;
+    if (v.ownM2 !== undefined) p.own_m2 = v.ownM2;
+    if (v.unitFloor !== undefined) p.unit_floor = v.unitFloor;
     if (v.ownerName !== undefined) {
       p.owner_name = v.ownerName;
       p.owner_phone = v.ownerPhone ?? "";
@@ -55,11 +60,13 @@ export const updateParcelDetailsAction = defineAction(
     try {
       unwrap(await ctx.supabase.rpc("parcel_update_details", { p_id: v.id, p }), "parcel details");
     } catch (err) {
-      const field = { property_type: "propertyType", plot_size: "widthM", units: "units", owner_name: "ownerName" }[String(err instanceof AppFailure ? err.values?.detail : "")];
+      const field = { property_type: "propertyType", plot_size: "widthM", units: "units", owner_name: "ownerName", unit_size: "ownM2", unit_floor: "unitFloor", compound_too_big: "ownM2" }[String(err instanceof AppFailure ? err.values?.detail : "")];
       if (err instanceof AppFailure && err.code === "VALIDATION" && field) throw new AppFailure("VALIDATION", undefined, { [field]: ["validation.required"] });
       throw err;
     }
     refresh();
+    // Land not registered yet is billed again when it changes.
+    revalidatePath("/[locale]/invoices", "layout");
     return null;
   },
 );
@@ -69,7 +76,7 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
   const [{ data: parcel }, { data: types }] = await Promise.all([
     ctx.supabase
       .from("parcels")
-      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parcel_owners(role, valid_to, party:parties(full_name, phone))")
+      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parent_id, own_m2, unit_floor, parcel_owners(role, valid_to, party:parties(full_name, phone))")
       .eq("id", v.id)
       .maybeSingle(),
     ctx.supabase.from("property_grades").select("code, name_so, name_en, active").order("sort").order("name_en"),
@@ -82,8 +89,14 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     land_use: string;
     units: number | null;
     status: string;
+    parent_id: string | null;
+    own_m2: number | null;
+    unit_floor: number | null;
     parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
   } | null;
+  // The building a flat belongs to, or the compound a house belongs to.
+  const { data: above } = p?.parent_id ? await ctx.supabase.from("parcels").select("layout, floors").eq("id", p.parent_id).maybeSingle() : { data: null };
+  const land = above as { layout: string; floors: number | null } | null;
   const owner = p?.parcel_owners.filter((o) => !o.valid_to && o.party).sort((a, b) => Number(b.role === "owner") - Number(a.role === "owner"))[0]?.party ?? null;
   return {
     propertyType: p?.property_type ?? "",
@@ -94,6 +107,16 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     units: p?.units != null ? String(p.units) : "",
     /** Partial land: its owner's name and phone can be fixed here. */
     owner: p && ["draft", "surveyed", "verified"].includes(p.status) && owner ? { name: owner.full_name, phone: owner.phone ?? "" } : null,
+    /** A flat or compound house: its size is its own m², not a width and length. */
+    unit: p?.parent_id
+      ? {
+          flats: land?.layout === "flats",
+          floors: land?.floors ?? null,
+          ownM2: p.own_m2 != null ? String(p.own_m2) : "",
+          floor: p.unit_floor != null ? String(p.unit_floor) : "",
+          partial: ["draft", "surveyed", "verified"].includes(p.status),
+        }
+      : null,
     types: (types ?? []) as { code: string; name_so: string; name_en: string; active: boolean }[],
   };
 });

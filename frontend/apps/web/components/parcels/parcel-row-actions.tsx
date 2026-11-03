@@ -49,6 +49,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const [info, setInfo] = useState<Info | null>(null);
   const ts = useTranslations("stage");
   const tf = useTranslations("parcels.fieldLand");
+  const tu = useTranslations("parcels.landUnits");
   useEffect(() => {
     if (dialog !== "edit") return;
     setInfo(null);
@@ -169,11 +170,13 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             ...(info
               ? {
                   propertyType: info.propertyType,
-                  flatNo: apartment ? info.flatNo : "",
-                  widthM: info.widthM,
-                  lengthM: info.lengthM,
+                  ...(info.unit ? {} : { flatNo: apartment ? info.flatNo : "" }),
                   landUse: info.landUse,
-                  units: info.units,
+                  ...(info.unit
+                    ? info.unit.partial
+                      ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
+                      : {}
+                    : { widthM: info.widthM, lengthM: info.lengthM, units: info.units }),
                   ...(info.owner ? { ownerName: info.owner.name, ownerPhone: info.owner.phone } : {}),
                 }
               : {}),
@@ -197,11 +200,26 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   ))}
               </NativeSelect>
             </Field>
-            {apartment && (
+            {apartment && !info?.unit && (
               <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
                 <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
               </Field>
             )}
+            {info?.unit ? (
+              info.unit.partial && (
+                <>
+                  <Field id={`own-${parcel.id}`} label={tu("ownM2")} hint={t("rebillHint")} error={fe("ownM2")}>
+                    <Input type="number" inputMode="decimal" min={0} step="0.01" value={info.unit.ownM2} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, ownM2: e.target.value } })} />
+                  </Field>
+                  {info.unit.flats && (
+                    <Field id={`floor-${parcel.id}`} label={tu("floor")} error={fe("unitFloor")}>
+                      <Input type="number" inputMode="numeric" min={0} max={info.unit.floors ?? undefined} value={info.unit.floor} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, floor: e.target.value } })} />
+                    </Field>
+                  )}
+                </>
+              )
+            ) : (
+              <>
             <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
             </Field>
@@ -212,6 +230,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             >
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.lengthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, lengthM: e.target.value })} />
             </Field>
+              </>
+            )}
             <Field id={`use-${parcel.id}`} label={ts("landUse")}>
               <NativeSelect value={info?.landUse ?? "residential"} disabled={!info} onChange={(e) => info && setInfo({ ...info, landUse: e.target.value as Info["landUse"] })}>
                 {LAND_USES.map((u) => (
@@ -221,9 +241,11 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                 ))}
               </NativeSelect>
             </Field>
+            {!info?.unit && (
             <Field id={`units-${parcel.id}`} label={t("units")} hint={t("unitsHint")} error={fe("units")}>
               <Input type="number" inputMode="numeric" min={1} max={500} value={info?.units ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, units: e.target.value })} />
             </Field>
+            )}
             {info?.owner && (
               <>
                 <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>

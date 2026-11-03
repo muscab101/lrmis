@@ -100,10 +100,10 @@ describe("flats building", () => {
     ]);
   });
 
-  it("a flat registers alone and the building follows; a flat can't be deleted alone; the rest register all at once", async () => {
+  it("a flat registers alone and the building follows; a registered flat can't be deleted alone; the rest register all at once", async () => {
     const unit = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [land.parcel_id]);
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not needed any more')`, [unit])), "CONFLICT: unit_follows_land");
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit]));
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not needed any more')`, [unit])), "CONFLICT: unit_follows_land");
     expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "draft", "draft"]);
     expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [land.parcel_id])).toBe("registered");
     await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit])), "CONFLICT: status");
@@ -153,5 +153,113 @@ describe("each unit's bills", () => {
     await expect(
       asUser(db, admin, (tx) => tx.query(`select public.payment_record_manual($1)`, [JSON.stringify({ parcel_id: r.parcel_id, amount: 10, currency: "USD", method: "bank_transfer", reference: "UNITTEST", provider_ref: "BANK-UNITTEST", received_at: "2026-11-03T12:00:00Z" })])),
     ).rejects.toThrow(/land_has_units/);
+  });
+});
+
+describe("changing land not registered yet", () => {
+  const taxBill = (parcel: string) =>
+    db
+      .query<{ id: string; total: string; status: string }>(
+        `select i.id, i.total, i.status from public.invoices i join public.fee_types ft on ft.id = i.fee_type_id where i.parcel_id = $1 and ft.code = 'property_bill' and i.status <> 'cancelled'`,
+        [parcel],
+      )
+      .then((r) => r.rows[0]);
+  const edit = (id: string, p: Record<string, unknown>) => asUser(db, admin, (tx) => tx.query(`select public.parcel_update_details($1, $2)`, [id, JSON.stringify(p)]));
+  const remove = (id: string) => asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'saved by mistake')`, [id]));
+  const unitId = (land: string, no: string) => scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = $2`, [land, no]);
+  const flats = [
+    { unit_no: "A", floor: 0, own_m2: 80, owner_name: "Rebill One" },
+    { unit_no: "B", floor: 1, own_m2: 90, owner_name: "Rebill Two" },
+  ];
+
+  beforeAll(async () => {
+    await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('unit_test','Darajo','Grade', 0.5), ('unit_dear','Qaali','Dear', 1) on conflict (code) do update set amount = excluded.amount`);
+  });
+
+  it("a flat's new size or type changes the same bill, and the books; its neighbour's bill stays", async () => {
+    const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "71" });
+    const a = await unitId(r.parcel_id, "A");
+    const b = await unitId(r.parcel_id, "B");
+    const before = (await taxBill(a))!;
+    expect(Number(before.total)).toBe(40);
+    await edit(a, { own_m2: "100", unit_floor: "1" });
+    const after = (await taxBill(a))!;
+    expect(after.id).toBe(before.id);
+    expect(Number(after.total)).toBe(50);
+    expect(await scalar<number>(db, `select sum(amount)::float from public.invoice_lines where invoice_id = $1`, [after.id])).toBe(50);
+    expect(await scalar<string>(db, `select description from public.invoice_lines where invoice_id = $1 order by created_at desc limit 1`, [after.id])).toMatch(/^Re-bill: .*was 40/);
+    expect(await scalar<number>(db, `select sum(l.debit - l.credit)::float from public.journal_lines l join public.journal_entries e on e.id = l.entry_id where e.source_id = $1 and l.account = '1200'`, [after.id])).toBe(50);
+    expect(Number((await taxBill(b))!.total)).toBe(45);
+    await edit(a, { property_type: "unit_dear" });
+    expect(Number((await taxBill(a))!.total)).toBe(100);
+    // A new price on the grade waits for a change that needs a new bill: a new house number isn't one.
+    await db.query(`update public.property_grades set amount = 2 where code = 'unit_dear'`);
+    await edit(a, { house_no: "71-X" });
+    expect(Number((await taxBill(a))!.total)).toBe(100);
+    await db.query(`update public.property_grades set amount = 1 where code = 'unit_dear'`);
+    await expectError(edit(a, { own_m2: "0" }), "VALIDATION: unit_size");
+    await expectError(edit(a, { unit_floor: "9" }), "VALIDATION: unit_floor");
+  });
+
+  it("a registered flat's size is fixed and its bill stays", async () => {
+    const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "72" });
+    const a = await unitId(r.parcel_id, "A");
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [a]));
+    await expectError(edit(a, { own_m2: "100" }), "CONFLICT: units_fixed");
+    expect(Number((await taxBill(a))!.total)).toBe(40);
+  });
+
+  it("a normal house not registered yet is re-billed when its size changes", async () => {
+    const r = await asUser(db, surveyor, (tx) =>
+      scalar<{ parcel_id: string }>(tx, `select public.land_with_units_create($1)`, [JSON.stringify({ ...base(), layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "73" })]),
+    );
+    const house = await scalar<string>(
+      db,
+      `insert into public.parcels (district_id, neighbourhood_id, house_no, property_type, area_m2, plot_width_m, plot_length_m, geom, status)
+       select district_id, neighbourhood_id, '74', 'unit_test', 100, 10, 10, geom, 'draft' from public.parcels where id = $1 returning id`,
+      [r.parcel_id],
+    );
+    await db.query(`select private.parcel_bill($1)`, [house]);
+    expect(Number((await taxBill(house))!.total)).toBe(50);
+    await edit(house, { plot_width_m: "20", plot_length_m: "10" });
+    expect(Number((await taxBill(house))!.total)).toBe(100);
+  });
+
+  it("changing a compound house shares the land out again, re-bills them all, and can't go over the land", async () => {
+    const r = await create({ layout: "compound", shared_split: "by_size", units: houses, shared_spaces: spaces, property_type: "unit_test", house_no: "75" });
+    const [one, two] = await unitsOf(r.parcel_id);
+    const first = await unitId(r.parcel_id, one!.unit_no);
+    const second = await unitId(r.parcel_id, two!.unit_no);
+    const land = Number(one!.area_m2) + Number(two!.area_m2);
+    await edit(first, { own_m2: String(Number(one!.own_m2) + 50) });
+    const [a, b] = await unitsOf(r.parcel_id);
+    expect(Number(a!.own_m2)).toBe(Number(one!.own_m2) + 50);
+    expect(Number(a!.area_m2) + Number(b!.area_m2)).toBeCloseTo(land, 2);
+    expect(Number((await taxBill(first))!.total)).toBeCloseTo(Number(a!.area_m2) * 0.5, 2);
+    expect(Number((await taxBill(second))!.total)).toBeCloseTo(Number(b!.area_m2) * 0.5, 2);
+    await expectError(edit(first, { own_m2: "99999" }), "VALIDATION: compound_too_big");
+  });
+
+  it("one flat or house not registered can be deleted alone, its bills cancelled; the last one takes the land", async () => {
+    const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "76" });
+    const a = await unitId(r.parcel_id, "A");
+    const b = await unitId(r.parcel_id, "B");
+    await remove(a);
+    expect(await taxBill(a)).toBeUndefined();
+    expect((await unitsOf(r.parcel_id)).filter((u) => u.status === "draft").length).toBeGreaterThan(0);
+    expect(await scalar<number>(db, `select units from public.parcels where id = $1`, [r.parcel_id])).toBe(1);
+    expect(await scalar<string | null>(db, `select deleted_at::text from public.parcels where id = $1`, [r.parcel_id])).toBeNull();
+    await remove(b);
+    expect(await scalar<string | null>(db, `select deleted_at::text from public.parcels where id = $1`, [r.parcel_id])).not.toBeNull();
+  });
+
+  it("once a compound house is registered, the others can't change size or be deleted", async () => {
+    const r = await create({ layout: "compound", shared_split: "equal", units: houses, shared_spaces: spaces, property_type: "unit_test", house_no: "77" });
+    const [one, two] = await unitsOf(r.parcel_id);
+    const first = await unitId(r.parcel_id, one!.unit_no);
+    const second = await unitId(r.parcel_id, two!.unit_no);
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [first]));
+    await expectError(edit(second, { own_m2: String(Number(two!.own_m2) + 1) }), "CONFLICT: compound_started");
+    await expectError(remove(second), "CONFLICT: compound_started");
   });
 });
