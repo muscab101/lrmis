@@ -287,8 +287,15 @@ export interface NeighbourhoodStatusRow {
 /** Per neighbourhood: land waiting (partial parcels, open applications) and land registered. */
 export async function neighbourhoodStatus(districtId: string | null) {
   const supabase = await createClient();
-  const res = await supabase.rpc("neighbourhood_registration_status", { p_district: districtId });
-  return (unwrap(res, "neighbourhoods") as NeighbourhoodStatusRow[]).map((r) => ({
+  // Banaadir has ~5,300 neighbourhoods and the API returns at most 1,000 rows per request: read in pages.
+  const rows: NeighbourhoodStatusRow[] = [];
+  for (let from = 0; ; from += 1000) {
+    const res = await supabase.rpc("neighbourhood_registration_status", { p_district: districtId }).range(from, from + 999);
+    const page = unwrap(res, "neighbourhoods") as NeighbourhoodStatusRow[];
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+  return rows.map((r) => ({
     ...r,
     partial: Number(r.partial),
     open_applications: Number(r.open_applications),

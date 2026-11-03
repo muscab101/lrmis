@@ -5,6 +5,7 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { MapPinOff } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { NumberPager } from "@/components/admin/number-pager";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { ZoneAssigner } from "@/components/parcels/zone-assigner";
@@ -20,6 +21,7 @@ export async function generateMetadata() {
 }
 
 const TABS = ["zones", "waiting", "not_started"] as const;
+const PAGE_SIZE = 50;
 type Tab = (typeof TABS)[number];
 
 /**
@@ -50,10 +52,16 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
   ]);
   const shownZones = district ? zones.filter((z) => z.district_id === district) : zones;
   const openZoneBy = new Map(zones.filter((z) => z.status === "open").map((z) => [z.neighbourhood_id, z.surveyor ?? ""]));
-  const statusById = Object.fromEntries(status.map((r) => [r.id, { partial: r.partial, registered: r.registered, openZone: openZoneBy.get(r.id) ?? null }]));
+  // Only what the assign box has to say something about; it counts anything left out as nothing yet.
+  const statusById = Object.fromEntries(
+    status.filter((r) => r.partial > 0 || r.registered > 0 || openZoneBy.has(r.id)).map((r) => [r.id, { partial: r.partial, registered: r.registered, openZone: openZoneBy.get(r.id) ?? null }]),
+  );
   const waiting = status.filter((r) => r.partial > 0 || r.open_applications > 0).sort((a, b) => b.partial + b.open_applications - (a.partial + a.open_applications));
   const notStarted = status.filter((r) => r.registered === 0);
-  const rows = tab === "not_started" ? notStarted : waiting;
+  const allRows = tab === "not_started" ? notStarted : waiting;
+  const pages = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+  const page = Math.min(Math.max(Number(sp.page) || 1, 1), pages);
+  const rows = allRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const counts: Record<Tab, number> = { zones: shownZones.filter((z) => z.status === "open").length, waiting: waiting.length, not_started: notStarted.length };
   const name = (o: { name_so: string; name_en: string }) => (lang === "so" ? o.name_so : o.name_en);
   const href = (k: Tab) => `/parcels/yet-to-register?${new URLSearchParams({ tab: k, ...(district ? { district } : {}) })}`;
@@ -157,7 +165,7 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
                   <TableCell className="text-end text-sm whitespace-nowrap">
                     <span className="inline-flex gap-3">
                       {canAssign && !openZoneBy.has(r.id) && (
-                        <Link href={`/parcels/yet-to-register?${new URLSearchParams({ tab, ...(district ? { district } : {}), assign: r.id })}#assign`} className="text-primary underline">
+                        <Link href={`/parcels/yet-to-register?${new URLSearchParams({ tab, ...(district ? { district } : {}), ...(page > 1 ? { page: String(page) } : {}), assign: r.id })}#assign`} className="text-primary underline">
                           {t("assignZone")}
                         </Link>
                       )}
@@ -172,6 +180,15 @@ export default async function YetToRegisterPage({ params, searchParams }: { para
               ))}
             </TableBody>
           </Table>
+        )}
+        {tab !== "zones" && pages > 1 && (
+          <NumberPager
+            page={page}
+            pages={pages}
+            total={allRows.length}
+            size={PAGE_SIZE}
+            href={(p) => `/parcels/yet-to-register?${new URLSearchParams({ tab, ...(district ? { district } : {}), page: String(p) })}`}
+          />
         )}
       </Card>
     </>
