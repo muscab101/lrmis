@@ -4,7 +4,7 @@ import maplibregl, { type Map as MlMap, type MapGeoJSONFeature } from "maplibre-
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useLocale } from "next-intl";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, LAYER_IDS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "./style";
+import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, DEMOLISHED_COLOUR, LAYER_IDS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "./style";
 
 export interface MapView {
   center: [number, number];
@@ -132,7 +132,7 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     });
 
     m.on("styleimagemissing", (e) => {
-      const colour = e.id === "house-pin-paid" ? PIN_PAID : e.id === "house-pin-owing" ? PIN_OWING : null;
+      const colour = e.id === "house-pin-paid" ? PIN_PAID : e.id === "house-pin-owing" ? PIN_OWING : e.id === "house-pin-demolished" ? DEMOLISHED_COLOUR : null;
       if (!colour || m.hasImage(e.id)) return;
       const img = housePin(colour);
       if (img) m.addImage(e.id, img, { pixelRatio: 2 });

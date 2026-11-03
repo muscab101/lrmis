@@ -61,6 +61,9 @@ export const DISTRICT_COLOURS: { colour: string; names: string[] }[] = [
   { colour: "#9f1239", names: ["tarabuunka", "tarabunka"] },
 ];
 const districtPairs = DISTRICT_COLOURS.flatMap((d) => d.names.flatMap((n) => [n, d.colour]));
+/** Demolished land: grey on the map, its boundary kept. */
+export const DEMOLISHED_COLOUR = "#6b7280";
+
 /** The map colour of one district (same rule as the map: Somali name, then English, else district red). */
 export function districtColourFor(nameSo: string, nameEn?: string | null): string {
   const find = (n?: string | null) => (n ? DISTRICT_COLOURS.find((d) => d.names.includes(n.trim().toLowerCase()))?.colour : undefined);
@@ -225,7 +228,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               source: "parcels",
               "source-layer": "parcels",
               paint: {
-                "fill-color": ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"],
+                "fill-color": ["case", ["boolean", ["get", "demolished"], false], DEMOLISHED_COLOUR, ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"]],
                 "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.45, 0.28],
               },
             },
@@ -234,7 +237,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               type: "line",
               source: "parcels",
               "source-layer": "parcels",
-              paint: { "line-color": ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"], "line-width": 1.5 },
+              paint: { "line-color": ["case", ["boolean", ["get", "demolished"], false], DEMOLISHED_COLOUR, ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"]], "line-width": 1.5 },
             },
             {
               id: "parcels-label",
@@ -252,7 +255,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               source: "parcels",
               "source-layer": "parcel_pins",
               layout: {
-                "icon-image": ["case", ["boolean", ["get", "owing"], false], "house-pin-owing", "house-pin-paid"],
+                "icon-image": ["case", ["boolean", ["get", "demolished"], false], "house-pin-demolished", ["boolean", ["get", "owing"], false], "house-pin-owing", "house-pin-paid"],
                 "icon-anchor": "bottom",
                 "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.55, 16, 0.85, 19, 1],
                 "icon-allow-overlap": true,

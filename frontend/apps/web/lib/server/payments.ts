@@ -391,8 +391,10 @@ export async function parcelForCashier(term: string) {
     layout: string;
     application: { number: string } | null;
   };
-  // A flats building or compound holds no bills: the cashier picks one of its units.
-  const { units } = parcel.layout === "house" ? { units: [] } : await getLandUnits(parcel.id);
+  // A flats building or compound holds no bills: the cashier picks one of its units. Once its units are demolished,
+  // the land can be paid too, and any unit still owing old bills is listed with it.
+  const land = await getLandUnits(parcel.id);
+  const units = parcel.layout === "house" ? land.units.filter((u) => u.owed > 0) : land.units;
   const [{ data: inv }, { data: owners }] = await Promise.all([
     supabase
       .from("invoices")

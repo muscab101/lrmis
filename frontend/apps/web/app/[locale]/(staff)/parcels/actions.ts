@@ -308,7 +308,7 @@ export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id
   const { data } = await ctx.supabase
     .from("parcels")
     .select(
-      "id, pun, account_no, house_no, flat_no, status, land_use, area_m2, registered_at, layout, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), parcel_owners(role, valid_to, party:parties(full_name, phone))",
+      "id, pun, account_no, house_no, flat_no, status, land_use, area_m2, registered_at, layout, building_state, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), parcel_owners(role, valid_to, party:parties(full_name, phone))",
     )
     .eq("id", v.id)
     .is("deleted_at", null)
@@ -325,31 +325,29 @@ export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id
     area_m2: number | null;
     registered_at: string | null;
     layout: string;
+    building_state: string;
     district: { name_so: string; name_en: string } | null;
     neighbourhood: { name_so: string; name_en: string } | null;
     parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
   };
   const { parcel_owners, ...rest } = p;
-  // A building has its units' owners and bills.
-  const units =
-    p.layout === "house"
-      ? []
-      : (((
-          await ctx.supabase
-            .from("parcels")
-            .select("id, unit_no, parcel_owners(valid_to, role, party:parties(full_name, phone))")
-            .eq("parent_id", v.id)
-            .is("deleted_at", null)
-        ).data ?? []) as unknown as { id: string; unit_no: string; parcel_owners: typeof p.parcel_owners }[]);
+  // A building has its units' owners and bills; demolished units' old bills still count.
+  const units = (((
+    await ctx.supabase
+      .from("parcels")
+      .select("id, unit_no, parcel_owners(valid_to, role, party:parties(full_name, phone))")
+      .eq("parent_id", v.id)
+      .is("deleted_at", null)
+  ).data ?? []) as unknown as { id: string; unit_no: string; parcel_owners: typeof p.parcel_owners }[]);
   const { data: open } = await ctx.supabase
     .from("invoices")
     .select("balance")
     .in("parcel_id", [v.id, ...units.map((u) => u.id)])
     .in("status", ["issued", "partially_paid"]);
-  const owners = [...parcel_owners, ...units.flatMap((u) => u.parcel_owners)];
+  const owners = p.layout === "house" ? parcel_owners : units.flatMap((u) => u.parcel_owners);
   return {
     ...rest,
-    units: units.length,
+    units: p.layout === "house" ? 0 : units.length,
     /** Still owed on its bills: what makes its map pin red. */
     owed: ((open ?? []) as { balance: number }[]).reduce((s, i) => s + Number(i.balance), 0),
     owners: owners.filter((o) => !o.valid_to && o.party).map((o) => ({ name: o.party!.full_name, phone: o.party!.phone, role: o.role })),

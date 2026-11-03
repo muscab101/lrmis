@@ -2,15 +2,15 @@
 
 import { Button } from "@dhulka/ui/button";
 import { AsyncCombobox, type ComboOption } from "@dhulka/ui/combobox";
-import { Checkbox } from "@dhulka/ui/form-controls";
+import { Checkbox, NativeSelect } from "@dhulka/ui/form-controls";
 import { cn } from "@dhulka/ui/lib/cn";
 import { Mono } from "@dhulka/ui/misc";
-import type { MapGeoJSONFeature } from "maplibre-gl";
+import type { FilterSpecification, MapGeoJSONFeature } from "maplibre-gl";
 import { Layers, MapPinned, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/dhulka-map";
-import { districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
+import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
 import { parcelSummaryAction } from "../parcels/actions";
@@ -32,12 +32,14 @@ export function MapWorkspace({
   extent,
   canEditLocations,
   canViewParcels,
+  canMarkDemolished,
   districts,
 }: {
   initialView: MapView | undefined;
   extent: [number, number, number, number] | null;
   canEditLocations: boolean;
   canViewParcels: boolean;
+  canMarkDemolished: boolean;
   districts: { id: string; code: string; name_so: string; name_en: string; has_geom: boolean | null }[];
 }) {
   const t = useTranslations("map");
@@ -51,6 +53,7 @@ export function MapWorkspace({
   const [zoom, setZoom] = useState(initialView?.zoom ?? 12);
   const [search, setSearch] = useState<ComboOption[]>([]);
   const [showParcels, setShowParcels] = useState(true);
+  const [buildingFilter, setBuildingFilter] = useState<"all" | "active" | "demolished">("all");
 
   useEffect(() => {
     const m = mapRef.current?.getMap();
@@ -61,6 +64,18 @@ export function MapWorkspace({
     if (m.isStyleLoaded()) apply();
     else m.once("load", apply);
   }, [showParcels]);
+
+  useEffect(() => {
+    const m = mapRef.current?.getMap();
+    if (!m) return;
+    const demolished = ["boolean", ["get", "demolished"], false];
+    const filter = buildingFilter === "all" ? null : buildingFilter === "demolished" ? demolished : ["!", demolished];
+    const apply = () => {
+      for (const id of ["parcels-fill", "parcels-line", "parcels-label", "parcel-pins"]) if (m.getLayer(id)) m.setFilter(id, filter as FilterSpecification | null);
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("load", apply);
+  }, [buildingFilter]);
 
   // Per-viewer convenience: remember base map + layers in this browser.
   useEffect(() => {
@@ -209,7 +224,19 @@ export function MapWorkspace({
                     <span className="flex-1">{t("layer_parcels")}</span>
                     {zoom < 13 && <span className="text-[10px] text-muted-foreground">{t("zoomIn")}</span>}
                   </label>
+                  <label className="mt-1.5 grid gap-1 ps-6 text-xs text-muted-foreground">
+                    {t("buildingFilter")}
+                    <NativeSelect className="h-8 text-xs" value={buildingFilter} onChange={(e) => setBuildingFilter(e.target.value as typeof buildingFilter)}>
+                      <option value="all">{t("buildingAll")}</option>
+                      <option value="active">{t("buildingActive")}</option>
+                      <option value="demolished">{t("buildingDemolished")}</option>
+                    </NativeSelect>
+                  </label>
                   <ul className="mt-1.5 space-y-1 ps-6 text-xs text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Swatch colour={DEMOLISHED_COLOUR} kind="dot" />
+                      {t("pinDemolished")}
+                    </li>
                     <li className="flex items-center gap-2">
                       <Swatch colour={PIN_PAID} kind="dot" />
                       {t("pinPaid")}
@@ -314,6 +341,12 @@ export function MapWorkspace({
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
                   <dt className="text-muted-foreground">{t("houseNo")}</dt>
                   <dd>{[summary.house_no, summary.flat_no].filter(Boolean).join(" / ") || "—"}</dd>
+                  {summary.building_state === "demolished" && (
+                    <>
+                      <dt className="text-muted-foreground">{t("buildingLabel")}</dt>
+                      <dd className="font-medium">{t("buildingDemolishedOne")}</dd>
+                    </>
+                  )}
                   {summary.units > 0 && (
                     <>
                       <dt className="text-muted-foreground">{t("unitsLabel")}</dt>
@@ -354,9 +387,16 @@ export function MapWorkspace({
               ) : (
                 <p className="text-muted-foreground">{t(`parcel_${String(selected.props.status ?? "registered")}`)}</p>
               )}
-              <Button size="sm" variant="outline" asChild>
-                <Link href={`/parcels/${String(selected.props.id)}`}>{t("openParcel")}</Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/parcels/${String(selected.props.id)}`}>{t("openParcel")}</Link>
+                </Button>
+                {canMarkDemolished && summary && summary !== "loading" && summary.status === "registered" && summary.building_state === "standing" && (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/demolished?mark=${String(selected.props.id)}`}>{t("markDemolished")}</Link>
+                  </Button>
+                )}
+              </div>
             </div>
           )}
           {selected.layer === "districts" && (

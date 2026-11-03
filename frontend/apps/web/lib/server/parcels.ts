@@ -68,6 +68,8 @@ export interface ParcelDetail {
   developed: boolean;
   /** A normal house, or a land holding units: a flats building or a shared compound. */
   layout: "house" | "flats" | "compound";
+  building_state: "standing" | "demolished";
+  building_no: string | null;
   floors: number | null;
   shared_split: "equal" | "by_size" | null;
   /** On a unit: the land it belongs to, its number and floor, and its m². */
@@ -128,7 +130,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, shared_split, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, shared_split, building_state, building_no, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
        site_check_status, site_check_surveyor, site_check_requested_at, site_check_done_at, site_check_note,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),

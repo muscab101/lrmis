@@ -16,6 +16,7 @@ import {
   ListTodo,
   Map,
   MapPinned,
+  Hammer,
   MapPinOff,
   MessageSquare,
   Receipt,
@@ -67,6 +68,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "surveys", href: "/surveys", icon: Ruler, permission: "surveys.view" },
       { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
       { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
+      { key: "demolished", href: "/demolished", icon: Hammer, permission: "parcels.demolitions" },
     ],
   },
   {

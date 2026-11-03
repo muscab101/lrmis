@@ -11,6 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getLandUnits, getParcel, getParentLand } from "@/lib/server/parcels";
+import { openDemolitionOf } from "@/lib/server/demolitions";
+import { MarkDemolished } from "@/components/demolitions/mark-demolished";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
@@ -44,8 +46,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const owed = await (async () => {
     if (partial || !viewer.can("invoices.view")) return null;
     const supabase = await createClient();
-    // A building owes what its units owe.
-    const { data: kids } = p.layout === "house" ? { data: [] } : await supabase.from("parcels").select("id").eq("parent_id", p.id).is("deleted_at", null);
+    // A building owes what its units owe, and demolished units' old bills still count.
+    const { data: kids } = await supabase.from("parcels").select("id").eq("parent_id", p.id).is("deleted_at", null);
     const ids = [p.id, ...((kids ?? []) as { id: string }[]).map((k) => k.id)];
     const { data } = await supabase.from("invoices").select("balance, status").in("parcel_id", ids).neq("status", "cancelled");
     const rows = (data ?? []) as { balance: number; status: string }[];
@@ -58,9 +60,18 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const holdsUnits = p.layout !== "house";
   const [land, parent] = await Promise.all([holdsUnits ? getLandUnits(p.id) : null, p.parent_id ? getParentLand(p.parent_id) : null]);
   const money = (n: number) => format.number(n, { style: "currency", currency: "USD" });
+  const td = await getTranslations("demolitions");
+  const canSeeDemolitions = viewer.can("parcels.demolitions");
+  const demolitions = canSeeDemolitions ? await openDemolitionOf(p.id) : [];
+  const waiting = demolitions.find((x) => x.status === "pending");
+  const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
+  const canMark =
+    (viewer.can("parcels.demolish") || viewer.can("parcels.demolish_approve")) &&
+    p.status === "registered" && p.building_state === "standing" && !p.locked_at && !waiting && parent?.layout !== "flats";
   const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
   const facts: [string, React.ReactNode][] = [
     [t("account"), <Mono key="a">{p.account_no ?? "—"}</Mono>],
+    ...(p.building_no ? [[tu("buildingNo"), <Mono key="b">{p.building_no}</Mono>] as [string, React.ReactNode]] : []),
     ...(holdsUnits ? [[tu("kind"), tu(`layout_${p.layout}`) + (p.floors ? ` · ${tu("floorCount", { count: p.floors })}` : "")] as [string, React.ReactNode]] : []),
     ...(parent
       ? [
@@ -113,6 +124,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               canRequest={p.site_check_status !== "pending" && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
               canAnswer={p.site_check_status === "pending" && ((p.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve"))}
             />
+            {canMark && <MarkDemolished canApprove={viewer.can("parcels.demolish_approve")} preset={{ id: p.id, pun: p.pun }} size="sm" />}
             <ParcelRowActions
               parcel={p}
               onDetail
@@ -140,6 +152,23 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           ]
             .filter(Boolean)
             .join(" · ")}
+        </Alert>
+      )}
+      {p.building_state === "demolished" && (
+        <Alert tone="danger" className="mb-5" title={td("parcelDemolished")}>
+          {td("parcelDemolishedBody")}{" "}
+          {underDemolition && canSeeDemolitions && (
+            <Link href={`/demolished/${underDemolition.id}`} className="font-medium underline">
+              {underDemolition.number}
+            </Link>
+          )}
+        </Alert>
+      )}
+      {waiting && (
+        <Alert tone="info" className="mb-5" title={td("parcelWaiting")}>
+          <Link href={`/demolished/${waiting.id}`} className="font-medium underline">
+            {waiting.number}
+          </Link>
         </Alert>
       )}
       {p.locked_at && (

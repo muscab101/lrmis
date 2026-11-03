@@ -203,7 +203,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
                 <p className="font-medium">
                   <Mono>{found.parcel.pun}</Mono>
                 </p>
-                <p className="text-sm text-muted-foreground">{t("chooseUnit")}</p>
+                <p className="text-sm text-muted-foreground">{found.parcel.layout === "house" ? t("oldUnitBills") : t("chooseUnit")}</p>
               </div>
               <ul className="divide-y rounded-md border text-sm">
                 {found.units.map((u) => (
@@ -224,7 +224,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </div>
           )}
 
-          {found && found.units.length === 0 && (
+          {found && (found.units.length === 0 || found.parcel.layout === "house") && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">

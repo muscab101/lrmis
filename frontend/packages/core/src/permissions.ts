@@ -63,6 +63,9 @@ export const SPECIAL_PERMISSIONS = [
   "reports.assistant",
   "parcels.registered",
   "parcels.delete_registered",
+  "parcels.demolitions",
+  "parcels.demolish",
+  "parcels.demolish_approve",
   "owners.registered",
   "owners.delete_registered",
 ] as const;
