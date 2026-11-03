@@ -2924,6 +2924,9 @@
     "owner": "Milkiile",
     "batchState": "Biil",
     "willBeBilled": "Waa la biilayn doonaa",
+    "placeNumbersHint": "Biilasha iyo wadarta hoose waa meeshan oo keliya. Fur billing run si aad halkan biilashiisa u aragto.",
+    "noRunsPlace": "Halkan billing run ma jiro",
+    "noRunsPlaceBody": "Billing run ma laha dhul meeshan ku yaal. Dooro meel kale, ama Dhammaan si aad dhammaan u aragto.",
     "placeFilter": {
       "d": "Degmo",
       "s": "Qayb",

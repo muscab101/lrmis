@@ -35,6 +35,7 @@ export function PlaceFilter({
           {t(l.key)}
           <NativeSelect
             className="h-9 min-w-40"
+            disabled={l.options.length === 0}
             value={query[l.key] ?? ""}
             onChange={(e) => pick(l.key, e.target.value)}
           >

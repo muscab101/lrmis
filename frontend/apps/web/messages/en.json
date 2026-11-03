@@ -2924,6 +2924,9 @@
     "owner": "Owner",
     "batchState": "Bill",
     "willBeBilled": "Will be billed",
+    "placeNumbersHint": "The bills and totals below are for this place only. Open a run to see its bills here.",
+    "noRunsPlace": "No runs here",
+    "noRunsPlaceBody": "No billing run has land in this place. Choose another place, or All to see every run.",
     "placeFilter": {
       "d": "District",
       "s": "Section",

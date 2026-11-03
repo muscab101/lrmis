@@ -392,6 +392,27 @@ export interface RunBatch {
   sector_en: string | null;
 }
 
+const isId = (v: string | undefined) => !!v && /^[0-9a-f-]{36}$/i.test(v);
+
+/** The choices for a place filter: every district, and the places under whichever level is chosen. */
+export async function placeChoices(q: { d?: string; s?: string; k?: string }, lang: string) {
+  const supabase = await createClient();
+  type Row = { id: string; code?: string | null; name_so: string; name_en: string };
+  const options = (rows: unknown) =>
+    ((rows ?? []) as Row[]).map((r) => {
+      const name = lang === "so" ? r.name_so : r.name_en;
+      return { id: r.id, label: r.code && r.code !== name ? `${r.code} · ${name}` : name };
+    });
+  const none = { data: [] };
+  const [districts, sections, sectors, neighbourhoods] = await Promise.all([
+    supabase.from("districts").select("id, name_so, name_en").is("deleted_at", null).order("name_en"),
+    isId(q.d) ? supabase.from("sections").select("id, code, name_so, name_en").eq("district_id", q.d!).order("code") : none,
+    isId(q.s) ? supabase.from("sectors").select("id, code, name_so, name_en").eq("section_id", q.s!).order("code") : none,
+    isId(q.k) ? supabase.from("neighbourhoods").select("id, code, name_so, name_en").eq("sector_id", q.k!).is("deleted_at", null).order("code") : none,
+  ]);
+  return { d: options(districts.data), s: options(sections.data), k: options(sectors.data), n: options(neighbourhoods.data) };
+}
+
 export async function runBatches(runId: string) {
   const supabase = await createClient();
   return (unwrap(await supabase.rpc("billing_run_batches", { p_id: runId }), "run batches") as RunBatch[]).map((b) => ({ ...b, total: Number(b.total) }));
