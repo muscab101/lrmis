@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
-import { CreditNoteQueue, PlanQueue } from "@/components/billing/queues";
 import { PAGE_SIZES } from "@/components/billing/page-sizes";
 import { EntriesSelect } from "@/components/billing/table-controls";
 import { InvoiceStatusBadge } from "@/components/billing/status";
@@ -27,9 +26,7 @@ import {
   invoicesByLand,
   type InvoiceLand,
   INVOICE_SORTS,
-  listCreditNotes,
   listInvoiceTable,
-  listPlans,
   type InvoiceFilter,
   type InvoiceSort,
 } from "@/lib/server/billing";
@@ -40,7 +37,6 @@ export async function generateMetadata() {
 }
 
 const FILTERS: InvoiceFilter[] = ["open", "overdue", "paid", "cancelled", "any"];
-const SECTIONS = ["invoices", "credit", "plans"] as const;
 
 export default async function InvoicesPage({
   params,
@@ -51,45 +47,20 @@ export default async function InvoicesPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "invoices.view");
+  await requirePermission(locale, "invoices.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const section = (SECTIONS as readonly string[]).includes(sp.s ?? "")
-    ? (sp.s as (typeof SECTIONS)[number])
-    : "invoices";
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
   const byLand = await invoicesByLand();
-  // Bills of registered land can be paid; bills of land in partial registration wait for it to be registered.
-  const land: InvoiceLand = (INVOICE_LANDS as readonly string[]).includes(sp.land ?? "") ? (sp.land as InvoiceLand) : "registered";
+  // One list; the filter can narrow it to registered land or land in partial registration.
+  const land = (INVOICE_LANDS as readonly string[]).includes(sp.land ?? "") ? (sp.land as InvoiceLand) : undefined;
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
-  const tabCount = {
-    invoices: counts.invoices_open,
-    credit: counts.credit_notes_pending,
-    plans: counts.plans_pending,
-  };
-
   let body: React.ReactNode;
-  if (section === "credit") {
-    body = (
-      <CreditNoteQueue
-        rows={await listCreditNotes(sp.all === "1" ? "any" : "pending")}
-        me={viewer.user.id}
-        canDecide={viewer.can("invoices.approve")}
-      />
-    );
-  } else if (section === "plans") {
-    body = (
-      <PlanQueue
-        rows={await listPlans({ status: sp.all === "1" ? "any" : "pending" })}
-        me={viewer.user.id}
-        canDecide={viewer.can("billing.approve")}
-      />
-    );
-  } else {
+  {
     const size = (PAGE_SIZES as readonly number[]).includes(Number(sp.size)) ? Number(sp.size) : 10;
     const sort = (INVOICE_SORTS as readonly string[]).includes(sp.sort ?? "")
       ? (sp.sort as InvoiceSort)
@@ -137,7 +108,7 @@ export default async function InvoicesPage({
     const when = (d: string) => format.dateTime(new Date(d), { timeStyle: "short" });
     const money = (n: number) =>
       format.number(Number(n), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const filtered = filter !== "open" || from || to || fee;
+    const filtered = filter !== "open" || from || to || fee || land;
     const Sort = ({
       by,
       children,
@@ -169,22 +140,6 @@ export default async function InvoicesPage({
     );
     body = (
       <>
-        <nav className="flex flex-wrap gap-1 border-b p-3 text-sm" aria-label={t("landTabs")}>
-          {INVOICE_LANDS.map((k) => (
-            <Link
-              key={k}
-              href={`/invoices?${new URLSearchParams({ land: k, size: String(size) })}`}
-              aria-current={land === k ? "page" : undefined}
-              className={`rounded-md px-3 py-1.5 ${land === k ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {t(`land_${k}`)} <span className="tabular-nums">{format.number(byLand[k].invoices)}</span>
-              <span className="text-muted-foreground ms-2 text-xs tabular-nums">{t("landOwed", { amount: usd(byLand[k].owed) })}</span>
-            </Link>
-          ))}
-        </nav>
-        {land === "partial" && (
-          <p className="bg-muted/50 text-muted-foreground border-b px-4 py-2 text-sm">{t("landPartialHint")}</p>
-        )}
         <div className="flex flex-wrap items-center gap-3 border-b p-3">
           <details className="relative">
             <summary className="bg-primary text-primary-foreground inline-flex h-9 cursor-pointer select-none list-none items-center gap-1.5 rounded-md px-4 text-sm font-medium">
@@ -197,7 +152,6 @@ export default async function InvoicesPage({
             </summary>
             <form className="bg-popover absolute start-0 z-20 mt-2 grid w-80 gap-3 rounded-lg border p-4 shadow-lg">
               <input type="hidden" name="size" value={size} />
-              <input type="hidden" name="land" value={land} />
               {q && <input type="hidden" name="q" value={q} />}
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
@@ -212,6 +166,17 @@ export default async function InvoicesPage({
                       {f === "overdue" && counts.invoices_overdue > 0
                         ? ` (${counts.invoices_overdue})`
                         : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-muted-foreground text-xs">{t("table.landFilter")}</span>
+                <select name="land" defaultValue={land ?? ""} className="bg-background h-9 rounded-md border px-2">
+                  <option value="">{t("land_any")}</option>
+                  {INVOICE_LANDS.map((k) => (
+                    <option key={k} value={k}>
+                      {t(`land_${k}`)}
                     </option>
                   ))}
                 </select>
@@ -240,7 +205,7 @@ export default async function InvoicesPage({
               </div>
               <div className="flex justify-end gap-2">
                 <Link
-                  href={`/invoices?land=${land}&size=${size}`}
+                  href={`/invoices?size=${size}`}
                   className="hover:bg-muted inline-flex h-9 items-center rounded-md border px-3 text-sm"
                 >
                   {t("table.clear")}
@@ -343,6 +308,7 @@ export default async function InvoicesPage({
                   </TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} dueDate={i.due_date} />
+                    {i.partial_land && <span className="text-muted-foreground block pt-1 text-xs">{t("landPartialShort")}</span>}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-0.5">
@@ -384,36 +350,8 @@ export default async function InvoicesPage({
 
   return (
     <>
-      <PageHeader
-        title={t("invoicesTitle")}
-        description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed) })}
-      >
-        <nav className="flex gap-5 overflow-x-auto text-sm">
-          {SECTIONS.map((s) => (
-            <Link
-              key={s}
-              href={`/invoices?s=${s}`}
-              className={`-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 pb-2 ${section === s ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
-            >
-              {t(`sections.${s}`)}
-              <span className="bg-muted rounded-sm px-1.5 font-mono text-[11px]">
-                {tabCount[s]}
-              </span>
-            </Link>
-          ))}
-        </nav>
-      </PageHeader>
+      <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed), partial: usd(byLand.partial.owed) })} />
       <Card className="overflow-hidden">{body}</Card>
-      {section !== "invoices" && (
-        <p className="mt-3 text-sm">
-          <Link
-            href={`/invoices?s=${section}${sp.all === "1" ? "" : "&all=1"}`}
-            className="text-primary hover:underline"
-          >
-            {sp.all === "1" ? t("showPendingOnly") : t("showAll")}
-          </Link>
-        </p>
-      )}
     </>
   );
 }

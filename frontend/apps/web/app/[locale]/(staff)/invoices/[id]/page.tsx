@@ -6,7 +6,7 @@ import { InvoiceActions } from "@/components/billing/invoice-actions";
 import { InvoiceStatusBadge } from "@/components/billing/status";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { getInvoice, listInvoices, listPlans } from "@/lib/server/billing";
+import { getInvoice } from "@/lib/server/billing";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,10 +23,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
   const lang = await getLocale();
   const inv = await getInvoice(id);
   if (!inv) notFound();
-  const [open, plans] = await Promise.all([
-    inv.parcel ? listInvoices({ filter: "open", q: "", parcelId: inv.parcel.id }) : null,
-    inv.parcel ? listPlans({ status: "any", parcelId: inv.parcel.id }) : [],
-  ]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const date = (d: string) => format.dateTime(new Date(d), { dateStyle: "medium" });
   const fee = inv.fee_type ? (lang === "so" ? inv.fee_type.name_so : inv.fee_type.name_en) : "";
@@ -56,10 +52,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
         }
         actions={
           <InvoiceActions
-            invoice={{ id: inv.id, parcelId: inv.parcel?.id ?? "", balance: Number(inv.balance), paid: Number(inv.paid), status: inv.status, createdBy: inv.created_by }}
+            invoice={{ id: inv.id, paid: Number(inv.paid), status: inv.status, createdBy: inv.created_by }}
             me={viewer.user.id}
-            can={{ credit: viewer.can("invoices.create"), cancel: viewer.can("invoices.cancel"), plan: viewer.can("billing.update") }}
-            openInvoices={(open?.rows ?? []).map((i) => ({ id: i.id, number: i.number, balance: Number(i.balance) }))}
+            can={{ cancel: viewer.can("invoices.cancel") }}
           />
         }
       />
@@ -142,50 +137,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
               </dl>
             </CardContent>
           </Card>
-          {inv.credit_notes.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{t("sections.credit")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  {inv.credit_notes.map((c) => (
-                    <li key={c.id} className="flex justify-between gap-2">
-                      <span>
-                        <Mono>{c.number}</Mono> · {c.reason}
-                      </span>
-                      <span className="text-xs whitespace-nowrap">
-                        {usd(c.amount)} · {t(`decision.${c.status}`)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-          {plans.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{t("sections.plans")}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {plans.map((p) => (
-                  <div key={p.id}>
-                    <p>
-                      <Mono>{p.number}</Mono> · {usd(p.total)} · {t(`planStatus.${p.status}`)}
-                    </p>
-                    <ol className="mt-1 text-xs text-muted-foreground">
-                      {p.payment_plan_installments.map((i) => (
-                        <li key={i.seq}>
-                          {i.seq}. {date(i.due_date)} — {usd(i.amount)}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

@@ -83,10 +83,12 @@ export interface InvoiceListRow extends InvoiceRow {
   created_at: string;
   account_no: string | null;
   phone: string | null;
+  /** Its land isn't registered yet, so it can't be paid. */
+  partial_land: boolean;
 }
 const LIST_COLUMNS =
   "id, number, period, issue_date, due_date, total, paid, credited, balance, status, created_at, fee_type:fee_types(code, name_so, name_en), " +
-  "parcel:parcels(id, pun, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
+  "parcel:parcels(id, pun, status, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
 export const INVOICE_SORTS = ["number", "issue_date", "due_date", "total", "paid"] as const;
 export type InvoiceSort = (typeof INVOICE_SORTS)[number];
 export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
@@ -195,6 +197,7 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
     created_at: string;
     parcel:
       | (InvoiceRow["parcel"] & {
+          status: string;
           account_no: string | null;
           owners?: { valid_to: string | null; party: { phone: string | null } | null }[];
         })
@@ -205,6 +208,7 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
     rows: (rows as Raw[]).map((r): InvoiceListRow => ({
       ...r,
       parcel: r.parcel ? { id: r.parcel.id, pun: r.parcel.pun } : null,
+      partial_land: ["draft", "surveyed", "verified"].includes(r.parcel?.status ?? ""),
       account_no: r.parcel?.account_no ?? null,
       phone: r.parcel?.owners?.find((o) => !o.valid_to && o.party?.phone)?.party?.phone ?? null,
     })),
@@ -287,69 +291,6 @@ export async function parcelOwnersFor(parcelId: string) {
     share_pct: number | null;
     party: { full_name: string; phone: string | null } | null;
   }[];
-}
-
-export interface PlanRow {
-  id: string;
-  number: string;
-  total: number;
-  instalments: number;
-  start_date: string;
-  status: "pending" | "active" | "completed" | "rejected" | "cancelled" | "defaulted";
-  note: string | null;
-  requested_by: string | null;
-  requested_at: string;
-  decision_note: string | null;
-  parcel: { id: string; pun: string | null } | null;
-  payment_plan_installments: { seq: number; due_date: string; amount: number; paid: number }[];
-}
-
-export async function listPlans(opts: { status: "pending" | "any"; parcelId?: string }) {
-  const supabase = await createClient();
-  let req = supabase
-    .from("payment_plans")
-    .select(
-      "id, number, total, instalments, start_date, status, note, requested_by, requested_at, decision_note, parcel:parcels(id, pun), payment_plan_installments(seq, due_date, amount, paid)",
-    );
-  if (opts.status === "pending") req = req.eq("status", "pending");
-  if (opts.parcelId) req = req.eq("parcel_id", opts.parcelId);
-  const rows = unwrap(
-    await req.order("requested_at", { ascending: false }).limit(100),
-    "plans",
-  ) as unknown as PlanRow[];
-  for (const r of rows) r.payment_plan_installments.sort((a, b) => a.seq - b.seq);
-  return rows;
-}
-
-export interface CreditNoteRow {
-  id: string;
-  number: string;
-  amount: number;
-  reason: string;
-  status: "pending" | "approved" | "rejected";
-  requested_by: string | null;
-  requested_at: string;
-  decision_note: string | null;
-  invoice: {
-    id: string;
-    number: string;
-    balance: number;
-    parcel: { pun: string | null } | null;
-  } | null;
-}
-
-export async function listCreditNotes(status: "pending" | "any") {
-  const supabase = await createClient();
-  let req = supabase
-    .from("credit_notes")
-    .select(
-      "id, number, amount, reason, status, requested_by, requested_at, decision_note, invoice:invoices(id, number, balance, parcel:parcels(pun))",
-    );
-  if (status === "pending") req = req.eq("status", "pending");
-  return unwrap(
-    await req.order("requested_at", { ascending: false }).limit(100),
-    "credit notes",
-  ) as unknown as CreditNoteRow[];
 }
 
 export async function billingCounts() {

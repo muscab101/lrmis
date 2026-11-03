@@ -16,7 +16,7 @@ export interface IncompleteRow {
 }
 
 export interface IncompleteGroup {
-  key: "owners" | "parcels" | "zones" | "places" | "invoices" | "certificates" | "transfers" | "surveys" | "siteChecks" | "disputes" | "permits" | "demolitions" | "exemptions" | "appeals" | "billingRuns" | "paymentPlans" | "unmatched" | "shifts" | "reprints" | "unprinted" | "campaigns";
+  key: "owners" | "parcels" | "zones" | "places" | "invoices" | "certificates" | "transfers" | "surveys" | "siteChecks" | "disputes" | "permits" | "demolitions" | "exemptions" | "appeals" | "billingRuns" | "unmatched" | "shifts" | "reprints" | "unprinted" | "campaigns";
   count: number;
   rows: IncompleteRow[];
   /** The page with the full list. */
@@ -369,25 +369,6 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           count: count ?? 0,
           href: "/billing/runs",
           rows: ((data ?? []) as Rec[]).map((r) => ({ id: r.id as string, title: r.number as string, detail: null, status: r.status as string, amount: r.total == null ? null : Number(r.total), at: r.created_at as string, href: `/billing/runs/${r.id}` })),
-        };
-      })(),
-    );
-  }
-
-  if (can("invoices.view")) {
-    jobs.push(
-      (async () => {
-        const { data, count } = await supabase
-          .from("payment_plans")
-          .select("id, number, total, requested_at, parcel:parcels(pun)", { count: "exact" })
-          .eq("status", "pending")
-          .order("requested_at", { ascending: false })
-          .limit(LIMIT);
-        return {
-          key: "paymentPlans",
-          count: count ?? 0,
-          href: "/invoices?s=plans",
-          rows: ((data ?? []) as Rec[]).map((r) => ({ id: r.id as string, title: r.number as string, detail: (r.parcel as { pun: string | null } | null)?.pun ?? null, status: null, amount: Number(r.total), at: r.requested_at as string, href: "/invoices?s=plans" })),
         };
       })(),
     );
