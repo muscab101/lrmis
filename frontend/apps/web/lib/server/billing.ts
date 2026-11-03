@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 import { normalizePun } from "@/lib/pun";
+import type { ParcelStatus } from "./parcels";
 
 export type RunStatus = "draft" | "submitted" | "approved" | "generating" | "issued" | "cancelled";
 export type InvoiceStatus = "issued" | "partially_paid" | "paid" | "cancelled";
@@ -215,6 +216,22 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
   };
 }
 
+export interface InvoiceOwner {
+  role: string;
+  share_pct: number | null;
+  valid_to: string | null;
+  party: {
+    id: string;
+    full_name: string;
+    mother_name: string | null;
+    phone: string | null;
+    email: string | null;
+    id_type: string | null;
+    id_number: string | null;
+    owner_type: { name_so: string; name_en: string } | null;
+  } | null;
+}
+
 export interface InvoiceDetail extends InvoiceRow {
   district_id: string;
   run_id: string | null;
@@ -228,12 +245,22 @@ export interface InvoiceDetail extends InvoiceRow {
   parcel: {
     id: string;
     pun: string | null;
+    status: ParcelStatus;
     account_no: string | null;
     area_m2: number | null;
     land_use: string;
+    house_no: string | null;
+    unit_no: string | null;
+    parent_id: string | null;
+    plot_width_m: number | null;
+    plot_length_m: number | null;
+    property_type: string | null;
     neighbourhood: { name_so: string; name_en: string } | null;
     district: { name_so: string; name_en: string } | null;
+    owners: InvoiceOwner[];
   } | null;
+  /** The property type's name, for the parcel card. */
+  property_type_name: { name_so: string; name_en: string } | null;
   invoice_lines: {
     id: string;
     kind: string;
@@ -262,7 +289,8 @@ export async function getInvoice(id: string) {
     .select(
       `id, number, period, issue_date, due_date, total, paid, credited, balance, status, district_id, run_id, discount_until, early_discount_pct, currency, note, cancel_reason, created_by, penalty_applied_at,
        fee_type:fee_types(code, name_so, name_en),
-       parcel:parcels(id, pun, status, account_no, area_m2, land_use, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en)),
+       parcel:parcels(id, pun, status, account_no, area_m2, land_use, house_no, unit_no, parent_id, plot_width_m, plot_length_m, property_type, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en),
+         owners:parcel_owners(role, share_pct, valid_to, party:parties(id, full_name, mother_name, phone, email, id_type, id_number, owner_type:owner_types(name_so, name_en)))),
        invoice_lines(id, kind, description, amount, created_at),
        credit_notes(id, number, amount, reason, status, requested_by, requested_at, decision_note),
        run:billing_runs(id, number)`,
@@ -270,7 +298,17 @@ export async function getInvoice(id: string) {
     .eq("id", id)
     .maybeSingle();
   const inv = unwrap(res, "invoice") as unknown as InvoiceDetail | null;
-  if (inv) inv.invoice_lines.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  if (inv) {
+    inv.invoice_lines.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    inv.property_type_name = null;
+    if (inv.parcel) {
+      inv.parcel.owners = inv.parcel.owners.filter((o) => !o.valid_to && o.party);
+      if (inv.parcel.property_type) {
+        const { data } = await supabase.from("property_grades").select("name_so, name_en").eq("code", inv.parcel.property_type).maybeSingle();
+        inv.property_type_name = data as InvoiceDetail["property_type_name"];
+      }
+    }
+  }
   return inv;
 }
 
