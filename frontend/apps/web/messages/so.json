@@ -2520,6 +2520,10 @@
       "on": "laga jawaabay {date}"
     },
     "paidLabel": "La bixiyay",
+    "split_demolished": "La dumiyay",
+    "demolishedLabel": "La dumiyay",
+    "demolishedHint": "Dhul gurigiisii la dumiyay. PUN-kiisa wuu haystaa, wuxuuna bixinayaa canshuurta dhulka ilaa dib loo diiwaangeliyo.",
+    "demolishedOpenArchive": "Fur kaydka oo dhan",
     "split_all": "Dhammaan",
     "split_paid": "La bixiyay",
     "split_owing": "Aan la bixin",

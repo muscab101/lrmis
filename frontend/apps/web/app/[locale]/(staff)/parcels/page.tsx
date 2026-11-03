@@ -30,7 +30,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const tabs = PARCEL_TABS.filter((k) => k === "draft" || seesRegistered);
   const stage: (typeof PARCEL_TABS)[number] = (tabs as readonly string[]).includes(sp.stage ?? "") ? (sp.stage as (typeof PARCEL_TABS)[number]) : "draft";
   const nbhdId = /^[0-9a-f-]{36}$/i.test(sp.nbhd ?? "") ? sp.nbhd! : null;
-  // Inside Registered: all, paid or not paid.
+  // Inside Registered: all, paid, not paid or demolished.
   const split: (typeof REGISTERED_SPLITS)[number] = stage === "registered" && (REGISTERED_SPLITS as readonly string[]).includes(sp.pay ?? "") ? (sp.pay as (typeof REGISTERED_SPLITS)[number]) : "all";
   const [rows, counts] = await Promise.all([searchParcels(q, stage === "registered" && split !== "all" ? split : stage, nbhdId), parcelStageCounts()]);
   const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
@@ -69,6 +69,16 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
             </Link>
           ))}
         </div>
+      )}
+      {split === "demolished" && (
+        <p className="text-muted-foreground mb-3 text-sm">
+          {t("demolishedHint")}{" "}
+          {viewer.can("parcels.demolitions") && (
+            <Link href="/demolished" className="text-foreground font-medium underline">
+              {t("demolishedOpenArchive")}
+            </Link>
+          )}
+        </p>
       )}
       <Card className="overflow-hidden">
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
@@ -121,7 +131,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     </Link>
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
-                      {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")}
+                      {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`, p.building_state === "demolished" && t("demolishedLabel")].filter(Boolean).join(" · ")}
                     </div>
                   </TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{p.account_no ? <Mono className="text-xs">{p.account_no}</Mono> : "—"}</TableCell>
@@ -138,8 +148,13 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />
+                    {p.building_state === "demolished" && (
+                      <div className="mt-1">
+                        <StatusBadge tone="draft">{t("demolishedLabel")}</StatusBadge>
+                      </div>
+                    )}
                     {/* Registered land: paid in full (approved, certificate issued) or what it still owes. */}
-                    {!partial(p.status) && p.invoice && (
+                    {!partial(p.status) && (p.invoice || Number(p.balance) > 0) && (
                       <div className="mt-1">
                         <StatusBadge tone={Number(p.balance) > 0 ? "pending" : "approved"}>
                           {Number(p.balance) > 0 ? t("owing", { amount: usd(p.balance) }) : t("paidLabel")}

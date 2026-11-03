@@ -28,13 +28,15 @@ export interface ParcelListRow {
   district_en: string;
   neighbourhood_en: string | null;
   plot_no: string | null;
+  building_state: "standing" | "demolished";
+  parent_id: string | null;
 }
 
-export const PARCEL_STAGES = ["draft", "registered", "paid", "owing", "all"] as const;
+export const PARCEL_STAGES = ["draft", "registered", "paid", "owing", "demolished", "all"] as const;
 /** The tabs on Parcels: partial registration and registered ("all" is only used inside, e.g. a zone's houses). */
 export const PARCEL_TABS = ["draft", "registered"] as const;
-/** Inside Registered: all, paid (nothing owed) and not paid. */
-export const REGISTERED_SPLITS = ["all", "paid", "owing"] as const;
+/** Inside Registered: all, paid (nothing owed), not paid, and the demolished archive. */
+export const REGISTERED_SPLITS = ["all", "paid", "owing", "demolished"] as const;
 export type ParcelStage = (typeof PARCEL_STAGES)[number];
 /** Not registered yet: partial registration, still worked on through its application. */
 const PARTIAL = "(draft,surveyed,verified)";
@@ -50,7 +52,10 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
     req = req.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
   }
   if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
-  if (stage === "registered" || stage === "paid" || stage === "owing") req = req.not("status", "in", PARTIAL);
+  if (stage === "registered" || stage === "paid" || stage === "owing" || stage === "demolished") req = req.not("status", "in", PARTIAL);
+  if (stage === "demolished") req = req.eq("building_state", "demolished");
+  // A compound house demolished alone is listed only in the archive, or when searched for.
+  else if (!term.trim()) req = req.is("parent_id", null);
   if (stage === "paid") req = req.lte("balance", 0);
   if (stage === "owing") req = req.gt("balance", 0);
   const res = await req.limit(100);
@@ -254,14 +259,15 @@ export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> 
   const supabase = await createClient();
   const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).is("parent_id", null).neq("status", "archived");
   // Registered land owing: from its open bills (RLS keeps both to the viewer's districts and registered-land access).
-  const [draft, registered, owingRows] = await Promise.all([
+  const [draft, registered, owingRows, demolished] = await Promise.all([
     base().in("status", ["draft", "surveyed", "verified"]),
     base().not("status", "in", PARTIAL),
-    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).gt("balance", 0).select("id"),
+    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).is("parent_id", null).gt("balance", 0).select("id"),
+    supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("building_state", "demolished").neq("status", "archived"),
   ]);
   const owing = ((owingRows.data ?? []) as unknown[]).length;
   const reg = registered.count ?? 0;
-  return { draft: draft.count ?? 0, registered: reg, paid: Math.max(reg - owing, 0), owing, all: (draft.count ?? 0) + reg };
+  return { draft: draft.count ?? 0, registered: reg, paid: Math.max(reg - owing, 0), owing, demolished: demolished.count ?? 0, all: (draft.count ?? 0) + reg };
 }
 
 export interface NeighbourhoodStatusRow {

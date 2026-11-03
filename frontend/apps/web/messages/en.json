@@ -2520,6 +2520,10 @@
       "on": "answered on {date}"
     },
     "paidLabel": "Paid",
+    "split_demolished": "Demolished",
+    "demolishedLabel": "Demolished",
+    "demolishedHint": "Land whose house was demolished. It keeps its PUN and pays land tax until it is registered again.",
+    "demolishedOpenArchive": "Open the full archive",
     "split_all": "All",
     "split_paid": "Paid",
     "split_owing": "Not paid",

@@ -205,6 +205,21 @@ describe("flats and compounds", () => {
     expect((await parcel(c.parcel_id)).layout).toBe("compound");
   });
 
+  it("the land list says what is demolished, and lists a compound house demolished alone", async () => {
+    const c = await units("compound", "24");
+    const one = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [c.parcel_id]);
+    await ask(registrar, [one], { approve_now: true });
+    const f = await units("flats", "25");
+    await ask(registrar, [f.parcel_id], { approve_now: true });
+    const rows = await asUser(db, registrar, (tx) => tx.query<{ id: string; building_state: string; balance: string }>(`select * from public.search_parcels('', 100)`));
+    expect(rows.rows.find((r) => r.id === one)?.building_state).toBe("demolished");
+    expect(rows.rows.find((r) => r.id === f.parcel_id)?.building_state).toBe("demolished");
+    expect(rows.rows.find((r) => r.id === c.parcel_id)?.building_state).toBe("standing");
+    // The flats themselves are archived, not listed again.
+    const flats = await scalar<string[]>(db, `select array_agg(id) from public.parcels where parent_id = $1`, [f.parcel_id]);
+    expect(rows.rows.some((r) => flats.includes(r.id))).toBe(false);
+  });
+
   it("undoing a mistake puts the building back", async () => {
     const f = await units("flats", "22");
     await ask(registrar, [f.parcel_id], { approve_now: true });
