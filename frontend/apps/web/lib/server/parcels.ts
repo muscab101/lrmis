@@ -66,6 +66,16 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
 
 export interface ParcelDetail {
   developed: boolean;
+  /** A normal house, or a land holding units: a flats building or a shared compound. */
+  layout: "house" | "flats" | "compound";
+  floors: number | null;
+  shared_split: "equal" | "by_size" | null;
+  /** On a unit: the land it belongs to, its number and floor, and its m². */
+  parent_id: string | null;
+  unit_no: string | null;
+  unit_floor: number | null;
+  own_m2: number | null;
+  shared_m2: number | null;
   id: string;
   pun: string | null;
   account_no: string | null;
@@ -118,7 +128,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, shared_split, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
        site_check_status, site_check_surveyor, site_check_requested_at, site_check_done_at, site_check_note,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
@@ -134,6 +144,52 @@ export async function getParcel(id: string) {
     await describeHistory(supabase, parcel.parcel_history);
   }
   return parcel;
+}
+
+export interface LandUnit {
+  id: string;
+  pun: string | null;
+  unit_no: string;
+  unit_floor: number | null;
+  own_m2: number | null;
+  shared_m2: number | null;
+  area_m2: number | null;
+  owners: string[];
+  owed: number;
+}
+
+/** A building's or compound's units, what each owes, and its shared spaces. */
+export async function getLandUnits(parcelId: string) {
+  const supabase = await createClient();
+  const [{ data: units }, { data: spaces }] = await Promise.all([
+    supabase
+      .from("parcels")
+      .select("id, pun, unit_no, unit_floor, own_m2, shared_m2, area_m2, parcel_owners(valid_to, party:parties(full_name))")
+      .eq("parent_id", parcelId)
+      .is("deleted_at", null)
+      .order("unit_no"),
+    supabase.from("parcel_shared_spaces").select("id, name, area_m2").eq("parcel_id", parcelId).order("area_m2", { ascending: false }),
+  ]);
+  const rows = (units ?? []) as unknown as (Omit<LandUnit, "owners" | "owed"> & { parcel_owners: { valid_to: string | null; party: { full_name: string } | null }[] })[];
+  const { data: bills } = rows.length
+    ? await supabase.from("invoices").select("parcel_id, balance").in("parcel_id", rows.map((r) => r.id)).in("status", ["issued", "partially_paid"])
+    : { data: [] };
+  const owed = new Map<string, number>();
+  for (const b of (bills ?? []) as { parcel_id: string; balance: number }[]) owed.set(b.parcel_id, (owed.get(b.parcel_id) ?? 0) + Number(b.balance));
+  return {
+    units: rows.map(({ parcel_owners, ...u }): LandUnit => ({
+      ...u,
+      owners: parcel_owners.filter((o) => !o.valid_to && o.party).map((o) => o.party!.full_name),
+      owed: owed.get(u.id) ?? 0,
+    })),
+    spaces: (spaces ?? []) as { id: string; name: string; area_m2: number }[],
+  };
+}
+
+/** The land a unit belongs to. */
+export async function getParentLand(parentId: string) {
+  const { data } = await (await createClient()).from("parcels").select("id, pun, layout").eq("id", parentId).maybeSingle();
+  return data as { id: string; pun: string | null; layout: "flats" | "compound" } | null;
 }
 
 /** Fill in each history line's detail: the kind and number of the transfer or change, the people, the other PUNs. */
@@ -194,7 +250,7 @@ async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>
 /** Parcel counts for the stage tabs (RLS: only districts the viewer can see). */
 export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> {
   const supabase = await createClient();
-  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).neq("status", "archived");
+  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).is("parent_id", null).neq("status", "archived");
   // Registered land owing: from its open bills (RLS keeps both to the viewer's districts and registered-land access).
   const [draft, registered, owingRows] = await Promise.all([
     base().in("status", ["draft", "surveyed", "verified"]),

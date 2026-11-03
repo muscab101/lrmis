@@ -222,11 +222,93 @@ export const neighbourhoodViewAction = defineAction("parcels.neighbourhood_view"
 );
 
 /** What the map shows when a house pin is clicked: its numbers, owners and place. RLS limits it to the viewer's districts. */
+const landError = (err: unknown): never => {
+  if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
+    throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
+  }
+  throw err;
+};
+
+/** A flats building or a shared compound with all its units. */
+export const addLandWithUnitsAction = defineAction(
+  "parcels.land_with_units",
+  z.object({
+    layout: z.enum(["flats", "compound"]),
+    districtId: z.uuid("validation.district"),
+    neighbourhoodId: z.uuid().nullable().default(null),
+    pinLon: z.number({ error: "validation.pin_required" }).min(40).max(52),
+    pinLat: z.number({ error: "validation.pin_required" }).min(-2).max(12.5),
+    pinAccuracyM: z.number().min(0).max(10_000).nullable().default(null),
+    plotWidthM: size,
+    plotLengthM: size,
+    houseNo: text(40),
+    propertyType: text(40),
+    landUse: text(40),
+    // Empty boxes arrive as not-a-number; the database says which one is wrong.
+    floors: z.number().nullable().catch(null),
+    split: z.enum(["equal", "by_size"]),
+    units: z
+      .array(
+        z.object({
+          no: z.string().trim().max(6, "validation.too_long"),
+          floor: z.number().nullable().catch(null),
+          ownM2: z.number().nullable().catch(null),
+          ownerId: z.uuid().nullable().default(null),
+          ownerName: z.string().trim().max(200, "validation.too_long").default(""),
+          ownerPhone: optionalPhone,
+        }),
+      )
+      .max(200),
+    spaces: z
+      .array(z.object({ name: z.string().trim().max(80, "validation.too_long"), areaM2: z.number().nullable().catch(null) }))
+      .max(50),
+    note: text(400),
+  }),
+  async (v, ctx) => {
+    try {
+      const out = unwrap(
+        await ctx.supabase.rpc("land_with_units_create", {
+          p: {
+            layout: v.layout,
+            district_id: v.districtId,
+            neighbourhood_id: v.neighbourhoodId,
+            pin_lon: v.pinLon,
+            pin_lat: v.pinLat,
+            pin_accuracy_m: v.pinAccuracyM,
+            plot_width_m: v.plotWidthM,
+            plot_length_m: v.plotLengthM,
+            house_no: v.houseNo,
+            property_type: v.propertyType,
+            land_use: v.landUse,
+            floors: v.floors,
+            shared_split: v.split,
+            units: v.units.map((u) => ({
+              unit_no: u.no,
+              floor: u.floor,
+              own_m2: u.ownM2,
+              owner_id: u.ownerId,
+              owner_name: u.ownerName,
+              owner_phone: u.ownerPhone,
+            })),
+            shared_spaces: v.spaces.map((s) => ({ name: s.name, area_m2: s.areaM2 })),
+            note: v.note,
+          },
+        }),
+        "land with units",
+      ) as { parcel_id: string };
+      refresh();
+      return out;
+    } catch (err) {
+      return landError(err);
+    }
+  },
+);
+
 export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id: z.uuid() }), async (v, ctx) => {
   const { data } = await ctx.supabase
     .from("parcels")
     .select(
-      "id, pun, account_no, house_no, flat_no, status, land_use, area_m2, registered_at, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), parcel_owners(role, valid_to, party:parties(full_name, phone))",
+      "id, pun, account_no, house_no, flat_no, status, land_use, area_m2, registered_at, layout, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en), parcel_owners(role, valid_to, party:parties(full_name, phone))",
     )
     .eq("id", v.id)
     .is("deleted_at", null)
@@ -242,17 +324,35 @@ export const parcelSummaryAction = defineAction("parcels.summary", z.object({ id
     land_use: string | null;
     area_m2: number | null;
     registered_at: string | null;
+    layout: string;
     district: { name_so: string; name_en: string } | null;
     neighbourhood: { name_so: string; name_en: string } | null;
     parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
   };
   const { parcel_owners, ...rest } = p;
-  const { data: open } = await ctx.supabase.from("invoices").select("balance").eq("parcel_id", v.id).in("status", ["issued", "partially_paid"]);
+  // A building has its units' owners and bills.
+  const units =
+    p.layout === "house"
+      ? []
+      : (((
+          await ctx.supabase
+            .from("parcels")
+            .select("id, unit_no, parcel_owners(valid_to, role, party:parties(full_name, phone))")
+            .eq("parent_id", v.id)
+            .is("deleted_at", null)
+        ).data ?? []) as unknown as { id: string; unit_no: string; parcel_owners: typeof p.parcel_owners }[]);
+  const { data: open } = await ctx.supabase
+    .from("invoices")
+    .select("balance")
+    .in("parcel_id", [v.id, ...units.map((u) => u.id)])
+    .in("status", ["issued", "partially_paid"]);
+  const owners = [...parcel_owners, ...units.flatMap((u) => u.parcel_owners)];
   return {
     ...rest,
+    units: units.length,
     /** Still owed on its bills: what makes its map pin red. */
     owed: ((open ?? []) as { balance: number }[]).reduce((s, i) => s + Number(i.balance), 0),
-    owners: parcel_owners.filter((o) => !o.valid_to && o.party).map((o) => ({ name: o.party!.full_name, phone: o.party!.phone, role: o.role })),
+    owners: owners.filter((o) => !o.valid_to && o.party).map((o) => ({ name: o.party!.full_name, phone: o.party!.phone, role: o.role })),
   };
 });
 

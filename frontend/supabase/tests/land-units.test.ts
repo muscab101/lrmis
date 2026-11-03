@@ -1,0 +1,135 @@
+import type { PGlite } from "@electric-sql/pglite";
+import { beforeAll, describe, expect, it } from "vitest";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+
+let db: PGlite;
+let admin: string;
+let surveyor: string;
+let district: string;
+let neighbourhood: string;
+
+async function expectError(promise: Promise<unknown>, code: string) {
+  await expect(promise).rejects.toThrow(new RegExp(`^${code}`));
+}
+const base = () => ({ district_id: district, neighbourhood_id: neighbourhood, pin_lon: 45.3, pin_lat: 2.04, plot_width_m: 25, plot_length_m: 40, property_type: "", land_use: "residential" });
+const create = (p: Record<string, unknown>) => asUser(db, surveyor, (tx) => scalar<{ parcel_id: string; pun: string; bills: number }>(tx, `select public.land_with_units_create($1)`, [JSON.stringify({ ...base(), ...p })]));
+const houses = [
+  { unit_no: "a", own_m2: 200, owner_name: "Amina Compound" },
+  { unit_no: "b", own_m2: 150, owner_name: "Bashir Compound" },
+];
+const spaces = [{ name: "Play place", area_m2: 100 }];
+type Unit = { pun: string; unit_no: string; own_m2: string; shared_m2: string; area_m2: string; status: string };
+const unitsOf = async (parent: string) => (await db.query<Unit>(`select pun, unit_no, own_m2, shared_m2, area_m2, status from public.parcels where parent_id = $1 order by unit_no`, [parent])).rows;
+
+beforeAll(async () => {
+  db = await createDb();
+  const region = await scalar<string>(db, `insert into public.regions (code, name_so, name_en) values ('BN','Banaadir','Banadir') returning id`);
+  district = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'HDN','Hodan','Hodan') returning id`, [region]);
+  const section = await scalar<string>(db, `insert into public.sections (district_id, code, name_so, name_en) values ($1,'S1','S','S') returning id`, [district]);
+  const sector = await scalar<string>(db, `insert into public.sectors (section_id, code, name_so, name_en) values ($1,'K1','K','K') returning id`, [section]);
+  neighbourhood = await scalar<string>(
+    db,
+    `insert into public.neighbourhoods (sector_id, code, name_so, name_en, geom)
+     values ($1,'012','Taleex','Taleh', extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson($2), 4326))) returning id`,
+    [sector, JSON.stringify(square(45.3, 2.04))],
+  );
+  admin = await bootstrapSuperAdmin(db);
+  surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [district]);
+});
+
+describe("shared compound", () => {
+  it("splits the shared m² equally; the rest of the land is empty land", async () => {
+    const r = await create({ layout: "compound", shared_split: "equal", units: houses, shared_spaces: spaces, house_no: "01" });
+    const units = await unitsOf(r.parcel_id);
+    expect(units.map((u) => [u.pun, Number(u.own_m2), Number(u.shared_m2), Number(u.area_m2)])).toEqual([
+      [`${r.pun}-A`, 200, 325, 525],
+      [`${r.pun}-B`, 150, 325, 475],
+    ]);
+    const shared = await db.query<{ name: string; area_m2: string }>(`select name, area_m2 from public.parcel_shared_spaces where parcel_id = $1 order by name`, [r.parcel_id]);
+    expect(shared.rows.map((s) => [s.name, Number(s.area_m2)])).toEqual([["Empty land", 550], ["Play place", 100]]);
+  });
+
+  it("or by house size, and the totals always add up to the land", async () => {
+    const r = await create({ layout: "compound", shared_split: "by_size", units: houses, shared_spaces: spaces, house_no: "02" });
+    const units = await unitsOf(r.parcel_id);
+    expect(units.map((u) => Number(u.area_m2))).toEqual([571.43, 428.57]);
+    expect(units.reduce((s, u) => s + Number(u.area_m2), 0)).toBeCloseTo(1000, 2);
+  });
+
+  it("refuses houses and spaces bigger than the land", async () => {
+    await expectError(create({ layout: "compound", units: [{ unit_no: "A", own_m2: 900, owner_name: "Amina" }, { unit_no: "B", own_m2: 200, owner_name: "Bashir" }] }), "VALIDATION: compound_too_big");
+    await expectError(create({ layout: "compound", units: houses, shared_spaces: [{ name: "Play", area_m2: 700 }] }), "VALIDATION: compound_too_big");
+  });
+});
+
+describe("flats building", () => {
+  const flats = [
+    { unit_no: "01", floor: 0, own_m2: 80, owner_name: "Cali Flat" },
+    { unit_no: "02", floor: 1, own_m2: 90, owner_name: "Hodan Flat" },
+    { unit_no: "03", floor: 1, own_m2: 90, owner_name: "Cali Flat" },
+  ];
+  let land: { parcel_id: string; pun: string };
+
+  it("checks floors and numbers, and keeps each flat's own m²", async () => {
+    await expectError(create({ layout: "flats", floors: 2, units: [flats[0]] }), "VALIDATION: units_few");
+    await expectError(create({ layout: "flats", units: flats }), "VALIDATION: unit_floors");
+    await expectError(create({ layout: "flats", floors: 1, units: [flats[0], { ...flats[1], floor: 3 }] }), "VALIDATION: unit_floor");
+    await expectError(create({ layout: "flats", floors: 2, units: [flats[0], { ...flats[1], unit_no: "01" }] }), "VALIDATION: unit_no_twice");
+    land = await create({ layout: "flats", floors: 2, units: flats, house_no: "03" });
+    const units = await unitsOf(land.parcel_id);
+    expect(units.map((u) => [u.pun, Number(u.area_m2), Number(u.shared_m2)])).toEqual([
+      [`${land.pun}-01`, 80, 0],
+      [`${land.pun}-02`, 90, 0],
+      [`${land.pun}-03`, 90, 0],
+    ]);
+  });
+
+  it("the same person with two flats is one owner; the land itself has no owner", async () => {
+    const owners = await scalar<number>(db, `select count(distinct po.party_id)::int from public.parcel_owners po join public.parcels p on p.id = po.parcel_id where p.parent_id = $1`, [land.parcel_id]);
+    expect(owners).toBe(2);
+    expect(await scalar<number>(db, `select count(*)::int from public.parcel_owners where parcel_id = $1`, [land.parcel_id])).toBe(0);
+  });
+
+  it("a unit can't be registered or deleted alone; registering the land registers them all", async () => {
+    const unit = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [land.parcel_id]);
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit])), "CONFLICT: unit_follows_land");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not needed any more')`, [unit])), "CONFLICT: unit_follows_land");
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]));
+    expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "registered", "registered"]);
+    expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [land.parcel_id])).toBe("registered");
+  });
+
+  it("each unit can have a certificate, the land above can't; subdivide refuses both", async () => {
+    expect(await scalar<string[]>(db, `select private.certificate_blockers($1)`, [land.parcel_id])).toEqual(["has_units"]);
+    const unit = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [land.parcel_id]);
+    expect(await scalar<string[]>(db, `select private.certificate_blockers($1)`, [unit])).not.toContain("has_units");
+    await expect(db.query(`update public.parcels set area_m2 = 5 where id = $1`, [unit])).rejects.toThrow(/CONFLICT: units_fixed/);
+  });
+
+  it("the list shows the building once; searching still finds a flat", async () => {
+    const all = await asUser(db, admin, (tx) => tx.query<{ pun: string; owners: string }>(`select * from public.search_parcels('', 100)`));
+    expect(all.rows.filter((r) => r.pun?.startsWith(land.pun)).map((r) => r.pun)).toEqual([land.pun]);
+    expect(all.rows.find((r) => r.pun === land.pun)?.owners).toContain("Hodan Flat");
+    const found = await asUser(db, admin, (tx) => tx.query<{ pun: string }>(`select * from public.search_parcels($1, 100)`, [`${land.pun}-02`]));
+    expect(found.rows.map((r) => r.pun)).toEqual([`${land.pun}-02`]);
+  });
+
+  it("deleting the land takes its units", async () => {
+    const r = await create({ layout: "flats", floors: 2, units: flats, house_no: "04" });
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'entered by mistake')`, [r.parcel_id]));
+    expect(await scalar<number>(db, `select count(*)::int from public.parcels where parent_id = $1 and deleted_at is null`, [r.parcel_id])).toBe(0);
+  });
+});
+
+describe("each unit's bills", () => {
+  it("a unit is priced on its total m², the land above has no bills, and yearly bills skip the land", async () => {
+    await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('unit_test','Darajo','Grade', 0.5) on conflict (code) do update set amount = 0.5`);
+    const r = await create({ layout: "compound", shared_split: "equal", units: houses, shared_spaces: spaces, property_type: "unit_test", house_no: "09" });
+    const bills = await db.query<{ pun: string; total: string }>(
+      `select p.pun, i.total from public.invoices i join public.fee_types ft on ft.id = i.fee_type_id join public.parcels p on p.id = i.parcel_id
+        where p.parent_id = $1 and ft.code = 'property_bill' order by p.pun`, [r.parcel_id]);
+    expect(bills.rows.map((b) => Number(b.total))).toEqual([262.5, 237.5]);
+    expect(await scalar<number>(db, `select count(*)::int from public.invoices where parcel_id = $1`, [r.parcel_id])).toBe(0);
+    expect(await scalar<number>(db, `select private.parcel_bill($1)`, [r.parcel_id])).toBe(0);
+  });
+});

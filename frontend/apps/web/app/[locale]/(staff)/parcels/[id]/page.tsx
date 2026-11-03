@@ -10,7 +10,7 @@ import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getParcel } from "@/lib/server/parcels";
+import { getLandUnits, getParcel, getParentLand } from "@/lib/server/parcels";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import { getParcelValuation, listGrades } from "@/lib/server/valuation";
 import { ParcelValuation } from "@/components/valuation/parcel-valuation";
@@ -43,24 +43,50 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   // Registered land with bills: paid in full, or what's still owed.
   const owed = await (async () => {
     if (partial || !viewer.can("invoices.view")) return null;
-    const { data } = await (await createClient()).from("invoices").select("balance, status").eq("parcel_id", p.id).neq("status", "cancelled");
+    const supabase = await createClient();
+    // A building owes what its units owe.
+    const { data: kids } = p.layout === "house" ? { data: [] } : await supabase.from("parcels").select("id").eq("parent_id", p.id).is("deleted_at", null);
+    const ids = [p.id, ...((kids ?? []) as { id: string }[]).map((k) => k.id)];
+    const { data } = await supabase.from("invoices").select("balance, status").in("parcel_id", ids).neq("status", "cancelled");
     const rows = (data ?? []) as { balance: number; status: string }[];
     return rows.length ? rows.reduce((s, i) => s + Number(i.balance), 0) : null;
   })();
   const showValuation = viewer.can("valuation.view");
   const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
   const owners = p.parcel_owners.filter((o) => !o.valid_to);
+  const tu = await getTranslations("parcels.landUnits");
+  const holdsUnits = p.layout !== "house";
+  const [land, parent] = await Promise.all([holdsUnits ? getLandUnits(p.id) : null, p.parent_id ? getParentLand(p.parent_id) : null]);
+  const money = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
   const facts: [string, React.ReactNode][] = [
     [t("account"), <Mono key="a">{p.account_no ?? "—"}</Mono>],
+    ...(holdsUnits ? [[tu("kind"), tu(`layout_${p.layout}`) + (p.floors ? ` · ${tu("floorCount", { count: p.floors })}` : "")] as [string, React.ReactNode]] : []),
+    ...(parent
+      ? [
+          [
+            tu(`partOf_${parent.layout}`),
+            <Link key="land" href={`/parcels/${parent.id}`} className="hover:text-primary">
+              <Mono>{parent.pun ?? "—"}</Mono>
+            </Link>,
+          ] as [string, React.ReactNode],
+        ]
+      : []),
+    ...(p.unit_floor != null ? [[tu("floor"), p.unit_floor] as [string, React.ReactNode]] : []),
     [t("area"), num(p.area_m2, "m²")],
+    ...(p.parent_id && Number(p.shared_m2) > 0
+      ? [
+          [tu("ownM2"), num(p.own_m2, "m²")] as [string, React.ReactNode],
+          [tu("sharedM2"), num(p.shared_m2, "m²")] as [string, React.ReactNode],
+        ]
+      : []),
     [t("perimeter"), num(p.perimeter_m, "m")],
     [ta("propertyType"), propertyTypeName(propertyTypes, p.property_type, lang) ?? "—"],
     [ts("landUse"), ts(`landUses.${p.land_use}`)],
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],
     [t("houseNo"), p.house_no ?? "—"],
-    ...(p.flat_no ? [[t("flatNo"), p.flat_no] as [string, string]] : []),
+    ...(p.flat_no && parent?.layout !== "compound" ? [[t("flatNo"), p.flat_no] as [string, string]] : []),
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],
   ];
@@ -91,10 +117,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               parcel={p}
               onDetail
               can={{
-                update: viewer.can("parcels.update"),
+                // A building's sizes are fixed once saved; a unit registers and goes with its land.
+                update: viewer.can("parcels.update") && !holdsUnits && !p.parent_id,
                 lock: viewer.can("parcels.lock"),
-                register: viewer.can("parcels.approve"),
-                delete: partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"),
+                register: viewer.can("parcels.approve") && !p.parent_id,
+                delete: !p.parent_id && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
               }}
             />
           </div>
@@ -134,7 +161,68 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           </CardContent>
         </Card>
         <GeometryPreview geometry={p.geom} className="h-72 md:h-full" />
-        <Card>
+        {land && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-base">{tu(p.layout === "flats" ? "flatsTitle" : "housesTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-xs text-muted-foreground">
+                  <tr className="border-b text-start">
+                    <th className="py-2 pe-3 text-start font-medium">PUN</th>
+                    {p.layout === "flats" && <th className="py-2 pe-3 text-start font-medium">{tu("floor")}</th>}
+                    <th className="py-2 pe-3 text-end font-medium">{tu("ownM2")}</th>
+                    {p.layout === "compound" && (
+                      <>
+                        <th className="py-2 pe-3 text-end font-medium">{tu("sharedM2")}</th>
+                        <th className="py-2 pe-3 text-end font-medium">{tu("totalM2")}</th>
+                      </>
+                    )}
+                    <th className="py-2 pe-3 text-start font-medium">{t("owners")}</th>
+                    <th className="py-2 text-end font-medium">{tu("owes")}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {land.units.map((u) => (
+                    <tr key={u.id}>
+                      <td className="py-2 pe-3">
+                        <Link href={`/parcels/${u.id}`} className="hover:text-primary">
+                          <Mono>{u.pun ?? u.unit_no}</Mono>
+                        </Link>
+                      </td>
+                      {p.layout === "flats" && <td className="py-2 pe-3 tabular-nums">{u.unit_floor ?? "—"}</td>}
+                      <td className="py-2 pe-3 text-end tabular-nums">{num(u.own_m2, "m²")}</td>
+                      {p.layout === "compound" && (
+                        <>
+                          <td className="py-2 pe-3 text-end tabular-nums">{num(u.shared_m2, "m²")}</td>
+                          <td className="py-2 pe-3 text-end font-medium tabular-nums">{num(u.area_m2, "m²")}</td>
+                        </>
+                      )}
+                      <td className="py-2 pe-3">{u.owners.join(", ") || "—"}</td>
+                      <td className={`py-2 text-end tabular-nums ${u.owed > 0 ? "font-medium text-danger" : ""}`}>{money(u.owed)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {land.spaces.length > 0 && (
+                <div className="mt-4 border-t pt-3">
+                  <p className="text-sm font-medium">{tu("sharedTitle")}</p>
+                  <p className="mb-2 text-xs text-muted-foreground">{tu(p.shared_split === "by_size" ? "splitBySize" : "splitEqual")}</p>
+                  <ul className="space-y-1 text-sm">
+                    {land.spaces.map((s) => (
+                      <li key={s.id} className="flex justify-between gap-3">
+                        <span>{s.name === "Empty land" ? tu("emptyLand") : s.name}</span>
+                        <span className="tabular-nums">{num(s.area_m2, "m²")}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {!holdsUnits && <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("owners")}</CardTitle>
           </CardHeader>
@@ -157,7 +245,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               </ul>
             )}
           </CardContent>
-        </Card>
+        </Card>}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("history")}</CardTitle>
@@ -189,22 +277,22 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </ol>
           </CardContent>
         </Card>
-        {viewer.can("transfers.view") && p.pun && (
+        {viewer.can("transfers.view") && p.pun && !holdsUnits && (
           <div className="md:col-span-2">
             <TransferHistory parcelId={p.id} />
           </div>
         )}
-        {viewer.can("certificates.view") && p.pun && (
+        {viewer.can("certificates.view") && p.pun && !holdsUnits && (
           <div className="md:col-span-2">
             <ParcelCertificate parcelId={p.id} pun={p.pun} canIssue={viewer.can("certificates.approve")} />
           </div>
         )}
-        {viewer.can("invoices.view") && (
+        {viewer.can("invoices.view") && !holdsUnits && (
           <div className="md:col-span-2">
             <ParcelInvoices parcelId={p.id} canCreate={viewer.can("invoices.create")} />
           </div>
         )}
-        {valuation && (
+        {valuation && !holdsUnits && (
           <div className="md:col-span-2">
             <ParcelValuation
               parcelId={p.id}

@@ -314,6 +314,12 @@ export function MapWorkspace({
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
                   <dt className="text-muted-foreground">{t("houseNo")}</dt>
                   <dd>{[summary.house_no, summary.flat_no].filter(Boolean).join(" / ") || "—"}</dd>
+                  {summary.units > 0 && (
+                    <>
+                      <dt className="text-muted-foreground">{t("unitsLabel")}</dt>
+                      <dd>{t(`units_${summary.layout}`, { count: summary.units })}</dd>
+                    </>
+                  )}
                   <dt className="text-muted-foreground">{t("owners")}</dt>
                   <dd>
                     {summary.owners.length === 0

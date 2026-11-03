@@ -68,6 +68,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           .from("parcels")
           .select("id, pun, house_no, status, created_at, neighbourhood:neighbourhoods(name_so, name_en)", { count: "exact" })
           .is("deleted_at", null)
+          .is("parent_id", null)
           .in("status", ["draft", "surveyed", "verified"])
           .order("created_at", { ascending: false })
           .limit(LIMIT);
@@ -193,7 +194,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         // Registered land that has no valid certificate yet (usually still unpaid).
         const [{ data: regs }, { data: certs }] = await Promise.all([
-          supabase.from("parcels").select("id, pun, registered_at").is("deleted_at", null).eq("status", "registered").order("registered_at", { ascending: false }).limit(500),
+          supabase.from("parcels").select("id, pun, registered_at").is("deleted_at", null).eq("status", "registered").eq("layout", "house").order("registered_at", { ascending: false }).limit(500),
           supabase.from("issued_documents").select("parcel_id").eq("type", "certificate").eq("status", "valid").limit(2000),
         ]);
         const has = new Set(((certs ?? []) as Rec[]).map((c) => c.parcel_id as string));

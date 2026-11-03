@@ -19,10 +19,17 @@ import {
 } from "@/app/[locale]/(staff)/locations/actions";
 import {
   addFieldLandAction,
+  addLandWithUnitsAction,
   houseNumberChoicesAction,
   neighbourhoodViewAction,
 } from "@/app/[locale]/(staff)/parcels/actions";
 import { PinPicker, type Pin } from "@/components/applications/pin-picker";
+import {
+  LandUnitsInputs,
+  startUnits,
+  type LandLayout,
+  type UnitsValue,
+} from "@/components/parcels/land-units-inputs";
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
 import { isApartmentType } from "@/lib/apartment";
@@ -83,6 +90,8 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     ownerPhone: "",
     note: "",
   });
+  const [layout, setLayout] = useState<LandLayout>("house");
+  const [unitsValue, setUnitsValue] = useState<UnitsValue>(() => startUnits("flats"));
   const [error, setError] = useState<AppError | null>(null);
   const [saving, setSaving] = useState(false);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) =>
@@ -159,7 +168,8 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         String(i + 1).padStart(2, "0"),
       ).filter((no) => {
         const hit = houseChoices.taken.find((x) => x.house_no === no);
-        return !hit || (hit.apartment && apartment);
+        // Each flat gets its own letter under one number, so a new building takes a free number of its own.
+        return !hit || (hit.apartment && apartment && layout === "house");
       })
     : [];
   // A number that became unavailable (other neighbourhood, taken meanwhile) is cleared.
@@ -167,7 +177,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     if (f.houseNo && houseChoices && !houseNumbers.includes(f.houseNo))
       setF((p) => ({ ...p, houseNo: "" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [houseChoices, apartment]);
+  }, [houseChoices, apartment, layout]);
 
   // Dropping a pin fills in the neighbourhood and district, and warns about land already registered close by.
   const onPin = async (p: Pin) => {
@@ -207,22 +217,52 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
   const save = async () => {
     setSaving(true);
     setError(null);
-    const res = await addFieldLandAction({
-      districtId,
-      neighbourhoodId: neighbourhood?.value ?? null,
-      pinLon: pin?.lon as number,
-      pinLat: pin?.lat as number,
-      pinAccuracyM: pin?.accuracy ?? null,
-      plotWidthM: num(f.width),
-      plotLengthM: num(f.length),
-      houseNo: f.houseNo,
-      propertyType: f.grade,
-      landUse: f.landUse,
-      ownerId: owner?.id ?? null,
-      ownerName: owner ? "" : f.ownerName,
-      ownerPhone: owner ? "" : f.ownerPhone,
-      note: f.note,
-    });
+    const res =
+      layout !== "house"
+        ? await addLandWithUnitsAction({
+            layout,
+            districtId,
+            neighbourhoodId: neighbourhood?.value ?? null,
+            pinLon: pin?.lon as number,
+            pinLat: pin?.lat as number,
+            pinAccuracyM: pin?.accuracy ?? null,
+            plotWidthM: num(f.width),
+            plotLengthM: num(f.length),
+            houseNo: f.houseNo,
+            propertyType: f.grade,
+            landUse: f.landUse,
+            floors: layout === "flats" ? num(unitsValue.floors) : null,
+            split: unitsValue.split,
+            units: unitsValue.units.map((u, i) => ({
+              no: u.no,
+              floor: layout === "flats" ? num(u.floor) : null,
+              ownM2: num(u.own),
+              ownerId: i === 0 ? (owner?.id ?? null) : null,
+              ownerName: i === 0 && owner ? "" : u.ownerName,
+              ownerPhone: i === 0 && owner ? "" : u.ownerPhone,
+            })),
+            spaces:
+              layout === "compound"
+                ? unitsValue.spaces.map((s) => ({ name: s.name, areaM2: num(s.area) }))
+                : [],
+            note: f.note,
+          })
+        : await addFieldLandAction({
+            districtId,
+            neighbourhoodId: neighbourhood?.value ?? null,
+            pinLon: pin?.lon as number,
+            pinLat: pin?.lat as number,
+            pinAccuracyM: pin?.accuracy ?? null,
+            plotWidthM: num(f.width),
+            plotLengthM: num(f.length),
+            houseNo: f.houseNo,
+            propertyType: f.grade,
+            landUse: f.landUse,
+            ownerId: owner?.id ?? null,
+            ownerName: owner ? "" : f.ownerName,
+            ownerPhone: owner ? "" : f.ownerPhone,
+            note: f.note,
+          });
     setSaving(false);
     if (!res.ok) return setError(res.error);
     toast.success(t("saved"));
@@ -390,7 +430,32 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         </Field>
       </div>
 
-      {owner ? (
+      <div className="max-w-sm">
+        <Field id="layout" label={t("layout")} hint={t(`layoutHint_${layout}`)} required>
+          <NativeSelect
+            value={layout}
+            onChange={(e) => {
+              const next = e.target.value as LandLayout;
+              setLayout(next);
+              if (next !== "house") setUnitsValue(startUnits(next));
+            }}
+          >
+            <option value="house">{t("layout_house")}</option>
+            <option value="flats">{t("layout_flats")}</option>
+            <option value="compound">{t("layout_compound")}</option>
+          </NativeSelect>
+        </Field>
+      </div>
+
+      {layout !== "house" ? (
+        <LandUnitsInputs
+          layout={layout}
+          landArea={area}
+          value={unitsValue}
+          onChange={setUnitsValue}
+          fixedOwner={owner}
+        />
+      ) : owner ? (
         <div className="bg-muted/40 rounded-md border px-3 py-2 text-sm">
           <span className="text-muted-foreground">{t("ownerName")}:</span>{" "}
           <span className="font-medium">{owner.full_name}</span>
