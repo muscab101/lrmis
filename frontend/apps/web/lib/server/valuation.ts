@@ -25,6 +25,23 @@ export async function listFeeTypes() {
   return unwrap(await supabase.from("fee_types").select("id, code, name_so, name_en, interval, amount, active, sort").order("sort"), "fee types") as FeeType[];
 }
 
+export interface OwnerType {
+  id: string;
+  name_so: string;
+  name_en: string;
+  active: boolean;
+  sort: number;
+  owners: number;
+}
+
+export async function listOwnerTypes() {
+  const supabase = await createClient();
+  const rows = unwrap(await supabase.from("owner_types").select("id, name_so, name_en, active, sort, parties(count)").order("sort").order("name_en"), "owner types") as unknown as (Omit<OwnerType, "owners"> & {
+    parties: { count: number }[];
+  })[];
+  return rows.map(({ parties, ...r }) => ({ ...r, owners: parties[0]?.count ?? 0 })) as OwnerType[];
+}
+
 export interface RateRow {
   id: string;
   land_use: string;

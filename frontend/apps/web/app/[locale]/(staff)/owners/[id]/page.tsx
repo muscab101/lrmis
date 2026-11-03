@@ -48,6 +48,7 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
   );
 
   const rows: [string, React.ReactNode][] = [
+    [t("ownerType"), party.owner_type ? (locale === "so" ? party.owner_type.name_so : party.owner_type.name_en) : null],
     [t("motherName"), party.mother_name],
     [t("gender"), party.gender ? t(party.gender) : null],
     [t("dateOfBirth"), party.date_of_birth ? format.dateTime(new Date(party.date_of_birth), { dateStyle: "long" }) : null],

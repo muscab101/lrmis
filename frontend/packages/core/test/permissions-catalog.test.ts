@@ -23,9 +23,12 @@ describe("permission catalog stays in sync with the SQL migration", () => {
     const dir = join(import.meta.dirname, "../../../supabase/migrations");
     for (const f of readdirSync(dir).filter((n) => n.endsWith(".sql") && n > "20261015000003")) {
       const later = readFileSync(join(dir, f), "utf8");
-      for (const m of later.matchAll(/insert into public\.permissions[^;]*?values\s*\('([a-z_]+\.[a-z_0-9]+)'/g)) if (!special.includes(m[1]!)) special.push(m[1]!);
+      // Every row of each insert, as one insert can add several.
+      for (const block of later.matchAll(/insert into public\.permissions[^;]*?values([^;]*);/g)) {
+        for (const m of block[1]!.matchAll(/\('([a-z_]+\.[a-z_0-9]+)',/g)) if (!special.includes(m[1]!)) special.push(m[1]!);
+      }
     }
-    expect(special).toEqual([...SPECIAL_PERMISSIONS]);
+    expect(special.sort()).toEqual([...SPECIAL_PERMISSIONS].sort());
   });
-  it("total count matches the database test (217)", () => expect(ALL_PERMISSIONS).toHaveLength(217));
+  it("total count matches the database test (221)", () => expect(ALL_PERMISSIONS).toHaveLength(221));
 });

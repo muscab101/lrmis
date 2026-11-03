@@ -6,20 +6,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Calculator } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CatalogEditor } from "@/components/valuation/catalog-editor";
+import { OwnerTypesEditor } from "@/components/valuation/owner-types-editor";
 import { AssessmentRowActions } from "@/components/valuation/row-actions";
 import { RatesPanel } from "@/components/valuation/rates-panel";
 import { AppealQueue, AssessNeighbourhoodButton, ExemptionQueue } from "@/components/valuation/review-queues";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
-import { listAppeals, listAssessments, listExemptions, listFeeTypes, listGrades, listRates, valuationCounts } from "@/lib/server/valuation";
+import { listAppeals, listAssessments, listExemptions, listFeeTypes, listGrades, listOwnerTypes, listRates, valuationCounts } from "@/lib/server/valuation";
 
 export async function generateMetadata() {
   const t = await getTranslations("valuation");
   return { title: t("title") };
 }
 
-const TABS = ["assessments", "rates", "grades", "fees", "exemptions", "appeals"] as const;
+const TABS = ["assessments", "rates", "grades", "fees", "owner_types", "exemptions", "appeals"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function ValuationPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -112,6 +113,8 @@ export default async function ValuationPage({ params, searchParams }: { params: 
     body = <CatalogEditor kind="grades" items={await listGrades()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "fees") {
     body = <CatalogEditor kind="fees" items={await listFeeTypes()} canEdit={viewer.can("valuation.update")} />;
+  } else if (tab === "owner_types") {
+    body = <OwnerTypesEditor items={await listOwnerTypes()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "exemptions") {
     body = <ExemptionQueue rows={await listExemptions(sp.all === "1" ? "any" : "pending")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} canEdit={viewer.can("valuation.create")} />;
   } else {

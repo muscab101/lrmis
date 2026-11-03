@@ -9,10 +9,11 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
 import { savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
+import { listOwnerTypesAction, type OwnerTypeOption } from "@/app/[locale]/(staff)/owners/actions";
 import { FormError } from "@/components/forms/form-error";
 import { applyFieldErrors, useValidationMessage } from "@/lib/client/errors";
 import type { PartyRow } from "@/lib/server/applications";
@@ -37,6 +38,7 @@ export function partyToInput(p: PartyRow | null, districtId?: string | null): Pa
     nextOfKinName: p?.next_of_kin?.name ?? "",
     nextOfKinPhone: p?.next_of_kin?.phone ?? "",
     districtId: p?.district_id ?? districtId ?? "",
+    ownerTypeId: p?.owner_type_id ?? "",
   };
 }
 
@@ -58,6 +60,13 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   const tc = useTranslations("common");
   const vm = useValidationMessage();
   const [error, setError] = useState<AppError | null>(null);
+  const [ownerTypes, setOwnerTypes] = useState<OwnerTypeOption[]>([]);
+  useEffect(() => {
+    if (mode !== "staff") return;
+    void listOwnerTypesAction({}).then((res) => {
+      if (res.ok) setOwnerTypes(res.data ?? []);
+    });
+  }, [mode]);
   const form = useForm<PartyInput, unknown, Out>({
     // Staff record a full owner (every field, the ID included); citizens keep the lighter profile form.
     resolver: zodResolver(mode === "staff" ? ownerSchema : partySchema) as unknown as Resolver<PartyInput, unknown, Out>,
@@ -92,6 +101,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
   };
   const e = form.formState.errors;
   const kind = form.watch("kind");
+  const ownerTypeId = form.watch("ownerTypeId");
 
   const onSubmit = form.handleSubmit(async (values) => {
     setError(null);
@@ -128,6 +138,21 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {mode === "staff" && (
+          <Field id="ownerTypeId" label={t("ownerType")} error={vm(e.ownerTypeId?.message)} required className="sm:col-span-2">
+            {/* The choices arrive after the form opens, so the value is set on the box directly. */}
+            <NativeSelect {...form.register("ownerTypeId")} value={ownerTypeId ?? ""}>
+              <option value="">—</option>
+              {ownerTypes
+                .filter((o) => o.active || o.id === party?.owner_type_id)
+                .map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {locale === "so" ? o.name_so : o.name_en}
+                  </option>
+                ))}
+            </NativeSelect>
+          </Field>
+        )}
         <Field id="fullName" label={kind === "organisation" ? t("orgName") : t("fullName")} error={vm(e.fullName?.message)} required className="sm:col-span-2">
           <Input autoComplete="off" {...nameField("fullName")} />
         </Field>

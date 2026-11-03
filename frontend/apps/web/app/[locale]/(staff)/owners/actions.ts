@@ -7,6 +7,18 @@ import { log } from "@/lib/server/log";
 import { PARTY_PHOTO_BUCKET } from "@/lib/server/party-photo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export interface OwnerTypeOption {
+  id: string;
+  name_so: string;
+  name_en: string;
+  active: boolean;
+}
+
+/** The choices for the owner form, which opens from several pages. */
+export const listOwnerTypesAction = defineAction("owners.types", z.object({}), async (_, ctx) =>
+  unwrap(await ctx.supabase.from("owner_types").select("id, name_so, name_en, active").order("sort").order("name_en"), "owner types") as OwnerTypeOption[],
+);
+
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /** Upload an owner's photo (for the ID card) and replace the old one. */

@@ -256,6 +256,7 @@ function partyPayload(v: z.output<typeof partySchema>) {
     org_registration_no: v.orgRegistrationNo,
     next_of_kin: v.nextOfKinName || v.nextOfKinPhone ? { name: v.nextOfKinName, phone: v.nextOfKinPhone } : {},
     district_id: v.districtId,
+    owner_type_id: v.ownerTypeId,
   };
 }
 

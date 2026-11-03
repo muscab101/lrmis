@@ -72,6 +72,25 @@ export const deleteFeeTypeAction = defineAction("valuation.delete_fee_type", z.o
   return done({ result });
 });
 
+export const saveOwnerTypeAction = defineAction(
+  "valuation.save_owner_type",
+  z.object({ id: z.uuid().nullable(), nameSo: z.string().trim().min(2, "validation.name").max(80), nameEn: z.string().trim().min(2, "validation.name").max(80), active: z.boolean().default(true) }),
+  async (v, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("owner_type_save", { p_id: v.id, p: { name_so: v.nameSo, name_en: v.nameEn, active: v.active } }), "save owner type");
+    } catch (err) {
+      field(err, { owner_type_taken: "nameEn" });
+    }
+    return done(null);
+  },
+);
+
+/** Delete an owner type nobody has; one in use is switched off instead. */
+export const deleteOwnerTypeAction = defineAction("valuation.delete_owner_type", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const result = unwrap(await ctx.supabase.rpc("owner_type_delete", { p_id: id }), "delete owner type") as "deleted" | "hidden";
+  return done({ result });
+});
+
 export const setRateAction = defineAction(
   "valuation.set_rate",
   z.object({

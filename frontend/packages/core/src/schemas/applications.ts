@@ -71,6 +71,7 @@ const partyFields = z.object({
     nextOfKinName: optionalText(120).transform((v) => (v === null ? null : capitalizeName(v))),
     nextOfKinPhone: phoneOrEmpty.default(""),
     districtId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),
+    ownerTypeId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),
 });
 
 const idPair = (v: z.output<typeof partyFields>) => (v.idNumber === null) === (v.idType === null);
@@ -88,7 +89,7 @@ export const ownerSchema = partyFields.superRefine((v, ctx) => {
     if (v[key] === null || v[key] === "") ctx.addIssue({ code: "custom", path: [key], message: "validation.required" });
   };
   // The address is optional.
-  const common = ["phone", "email", "districtId"] as const;
+  const common = ["ownerTypeId", "phone", "email", "districtId"] as const;
   const person = ["motherName", "gender", "dateOfBirth", "nationality", "idType", "idNumber", "nextOfKinName", "nextOfKinPhone"] as const;
   for (const k of v.kind === "organisation" ? (["orgRegistrationNo", ...common] as const) : ([...person, ...common] as const)) need(k);
   // An organisation's ID is optional, but a type needs a number and the other way round.

@@ -99,6 +99,8 @@ export interface PartyRow {
   next_of_kin: { name?: string; phone?: string };
   org_registration_no: string | null;
   district_id: string | null;
+  owner_type_id: string | null;
+  owner_type: { name_so: string; name_en: string } | null;
   citizen_user_id: string | null;
   created_at: string;
   /** null while the owner is a draft (partial registration). */
@@ -106,7 +108,7 @@ export interface PartyRow {
 }
 
 export const PARTY_COLUMNS =
-  "id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, phone_verified_at, email, address, next_of_kin, org_registration_no, district_id, citizen_user_id, created_at, registered_at";
+  "id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, phone_verified_at, email, address, next_of_kin, org_registration_no, district_id, owner_type_id, owner_type:owner_types(name_so, name_en), citizen_user_id, created_at, registered_at";
 
 export interface ApplicationDetail {
   id: string;
