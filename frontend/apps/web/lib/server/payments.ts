@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 import { normalizePun } from "@/lib/pun";
+import { getLandUnits } from "./parcels";
 
 export type PaymentStatus = "completed" | "unmatched" | "reversed";
 export type PaymentMethod = "cash" | "cheque" | "mobile_money" | "card" | "bank_transfer";
@@ -361,7 +362,7 @@ export async function parcelForCashier(term: string) {
   const supabase = await createClient();
   const key = term.trim().toUpperCase();
   const cols =
-    "id, pun, account_no, district_id, application:applications!parcels_application_id_fkey(number)";
+    "id, pun, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
   let parcelId: string | null = null;
   if (key.startsWith("INV-") || key.startsWith("SCIN-")) {
     const { data } = await supabase
@@ -387,8 +388,11 @@ export async function parcelForCashier(term: string) {
     pun: string | null;
     account_no: string | null;
     district_id: string;
+    layout: string;
     application: { number: string } | null;
   };
+  // A flats building or compound holds no bills: the cashier picks one of its units.
+  const { units } = parcel.layout === "house" ? { units: [] } : await getLandUnits(parcel.id);
   const [{ data: inv }, { data: owners }] = await Promise.all([
     supabase
       .from("invoices")
@@ -417,6 +421,7 @@ export async function parcelForCashier(term: string) {
   const main = people.find((x) => x.role === "owner" && x.party) ?? people.find((x) => x.party);
   return {
     parcel,
+    units,
     owners: people.map((o) => o.party?.full_name).filter(Boolean) as string[],
     payer: { name: main?.party?.full_name ?? "", phone: main?.party?.phone ?? "" },
     invoices: (inv ?? []) as {

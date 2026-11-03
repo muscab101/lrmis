@@ -151,7 +151,7 @@ export function LandUnitsInputs({
               </div>
             ) : (
               <>
-                <div className={flats ? "" : "sm:col-span-2"}>
+                <div className="sm:col-span-2">
                   <Field id={`unit-owner-${i}`} label={t("owner")} required>
                     <Input
                       value={u.ownerName}
@@ -180,7 +180,8 @@ export function LandUnitsInputs({
                 })}
               </p>
             )}
-            {value.units.length > 2 && (
+            {/* The owner from the owner form stays with the first row, so that row stays too. */}
+            {value.units.length > 2 && !(i === 0 && fixedOwner) && (
               <div className="flex justify-end sm:col-span-6">
                 <Button
                   type="button"

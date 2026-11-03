@@ -92,11 +92,12 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const owed = found?.invoices.reduce((s, i) => s + Number(i.balance), 0) ?? 0;
 
-  async function find() {
+  async function find(term = pun) {
+    setPun(term);
     setBusy(true);
     setError(null);
     setReceipt(null);
-    const res = await findParcelAction({ pun });
+    const res = await findParcelAction({ pun: term });
     setBusy(false);
     if (!res.ok) {
       setFound(null);
@@ -196,7 +197,34 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </Button>
           </form>
 
-          {found && (
+          {found && found.units.length > 0 && (
+            <div className="space-y-3 border-t pt-4">
+              <div>
+                <p className="font-medium">
+                  <Mono>{found.parcel.pun}</Mono>
+                </p>
+                <p className="text-sm text-muted-foreground">{t("chooseUnit")}</p>
+              </div>
+              <ul className="divide-y rounded-md border text-sm">
+                {found.units.map((u) => (
+                  <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                    <span className="min-w-0">
+                      <Mono>{u.pun}</Mono>
+                      <span className="text-muted-foreground"> · {u.owners.join(", ") || "—"}</span>
+                    </span>
+                    <span className="flex items-center gap-3">
+                      <span className={`tabular-nums ${u.owed > 0 ? "font-medium text-danger" : ""}`}>{usd(u.owed)}</span>
+                      <Button type="button" size="sm" variant="outline" onClick={() => void find(u.pun ?? "")}>
+                        {t("openUnit")}
+                      </Button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {found && found.units.length === 0 && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">

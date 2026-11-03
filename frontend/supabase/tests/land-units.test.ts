@@ -132,4 +132,11 @@ describe("each unit's bills", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.invoices where parcel_id = $1`, [r.parcel_id])).toBe(0);
     expect(await scalar<number>(db, `select private.parcel_bill($1)`, [r.parcel_id])).toBe(0);
   });
+
+  it("money can't be recorded on the land itself, only on a unit", async () => {
+    const r = await create({ layout: "flats", floors: 1, units: [{ unit_no: "01", floor: 0, own_m2: 80, owner_name: "Pay Test One" }, { unit_no: "02", floor: 1, own_m2: 80, owner_name: "Pay Test Two" }], house_no: "11" });
+    await expect(
+      asUser(db, admin, (tx) => tx.query(`select public.payment_record_manual($1)`, [JSON.stringify({ parcel_id: r.parcel_id, amount: 10, currency: "USD", method: "bank_transfer", reference: "UNITTEST", provider_ref: "BANK-UNITTEST", received_at: "2026-11-03T12:00:00Z" })])),
+    ).rejects.toThrow(/land_has_units/);
+  });
 });
