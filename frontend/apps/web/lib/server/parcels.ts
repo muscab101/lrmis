@@ -54,12 +54,11 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
   if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
   if (stage === "registered" || stage === "paid" || stage === "owing" || stage === "demolished") req = req.not("status", "in", PARTIAL);
   if (stage === "demolished") req = req.eq("building_state", "demolished");
-  // A compound house demolished alone is listed only in the archive, or when searched for.
-  else if (!term.trim()) req = req.is("parent_id", null);
   if (stage === "paid") req = req.lte("balance", 0);
   if (stage === "owing") req = req.gt("balance", 0);
   const res = await req.limit(100);
-  const rows = unwrap(res, "parcels") as ParcelListRow[];
+  // Newest first; the flats of one building, saved together, in order.
+  const rows = (unwrap(res, "parcels") as ParcelListRow[]).sort((a, b) => b.created_at.localeCompare(a.created_at) || (a.pun ?? "").localeCompare(b.pun ?? "", undefined, { numeric: true }));
   // The account number isn't in search_parcels: one lookup for the rows shown.
   if (rows.length) {
     const { data } = await supabase.from("parcels").select("id, account_no").in("id", rows.map((r) => r.id));
@@ -257,12 +256,12 @@ async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>
 /** Parcel counts for the stage tabs (RLS: only districts the viewer can see). */
 export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> {
   const supabase = await createClient();
-  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).is("parent_id", null).neq("status", "archived");
+  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("layout", "house").neq("status", "archived");
   // Registered land owing: from its open bills (RLS keeps both to the viewer's districts and registered-land access).
   const [draft, registered, owingRows, demolished] = await Promise.all([
     base().in("status", ["draft", "surveyed", "verified"]),
     base().not("status", "in", PARTIAL),
-    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).is("parent_id", null).gt("balance", 0).select("id"),
+    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).gt("balance", 0).select("id"),
     supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("building_state", "demolished").neq("status", "archived"),
   ]);
   const owing = ((owingRows.data ?? []) as unknown[]).length;

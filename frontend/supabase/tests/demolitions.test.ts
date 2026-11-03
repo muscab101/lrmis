@@ -214,7 +214,10 @@ describe("flats and compounds", () => {
     const rows = await asUser(db, registrar, (tx) => tx.query<{ id: string; building_state: string; balance: string }>(`select * from public.search_parcels('', 100)`));
     expect(rows.rows.find((r) => r.id === one)?.building_state).toBe("demolished");
     expect(rows.rows.find((r) => r.id === f.parcel_id)?.building_state).toBe("demolished");
-    expect(rows.rows.find((r) => r.id === c.parcel_id)?.building_state).toBe("standing");
+    // The compound's other houses stay, each on its own row.
+    expect(rows.rows.some((r) => r.id === c.parcel_id)).toBe(false);
+    const neighbour = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no <> '01' limit 1`, [c.parcel_id]);
+    expect(rows.rows.find((r) => r.id === neighbour)?.building_state).toBe("standing");
     // The flats themselves are archived, not listed again.
     const flats = await scalar<string[]>(db, `select array_agg(id) from public.parcels where parent_id = $1`, [f.parcel_id]);
     expect(rows.rows.some((r) => flats.includes(r.id))).toBe(false);

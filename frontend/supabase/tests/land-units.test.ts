@@ -90,11 +90,29 @@ describe("flats building", () => {
     expect(await scalar<number>(db, `select count(*)::int from public.parcel_owners where parcel_id = $1`, [land.parcel_id])).toBe(0);
   });
 
-  it("a unit can't be registered or deleted alone; registering the land registers them all", async () => {
+  it("the list shows each flat with its own owner, not the building, in Partial and Registered", async () => {
+    const all = await asUser(db, admin, (tx) => tx.query<{ pun: string; owners: string; status: string }>(`select * from public.search_parcels('', 100)`));
+    const mine = all.rows.filter((r) => r.pun?.startsWith(land.pun)).sort((a, b) => a.pun.localeCompare(b.pun));
+    expect(mine.map((r) => [r.pun, r.owners, r.status])).toEqual([
+      [`${land.pun}-01`, "Cali Flat", "draft"],
+      [`${land.pun}-02`, "Hodan Flat", "draft"],
+      [`${land.pun}-03`, "Cali Flat", "draft"],
+    ]);
+  });
+
+  it("a flat registers alone and the building follows; a flat can't be deleted alone; the rest register all at once", async () => {
     const unit = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [land.parcel_id]);
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit])), "CONFLICT: unit_follows_land");
     await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not needed any more')`, [unit])), "CONFLICT: unit_follows_land");
-    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]));
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit]));
+    expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "draft", "draft"]);
+    expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [land.parcel_id])).toBe("registered");
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit])), "CONFLICT: status");
+    for (const u of await scalar<string[]>(db, `select array_agg(id) from public.parcels where parent_id = $1 and status = 'draft'`, [land.parcel_id])) {
+      await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [u]));
+    }
+    const other = await create({ layout: "flats", floors: 2, units: flats, house_no: "99" });
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [other.parcel_id]));
+    expect((await unitsOf(other.parcel_id)).map((u) => u.status)).toEqual(["registered", "registered", "registered"]);
     expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "registered", "registered"]);
     expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [land.parcel_id])).toBe("registered");
   });
@@ -106,10 +124,7 @@ describe("flats building", () => {
     await expect(db.query(`update public.parcels set area_m2 = 5 where id = $1`, [unit])).rejects.toThrow(/CONFLICT: units_fixed/);
   });
 
-  it("the list shows the building once; searching still finds a flat", async () => {
-    const all = await asUser(db, admin, (tx) => tx.query<{ pun: string; owners: string }>(`select * from public.search_parcels('', 100)`));
-    expect(all.rows.filter((r) => r.pun?.startsWith(land.pun)).map((r) => r.pun)).toEqual([land.pun]);
-    expect(all.rows.find((r) => r.pun === land.pun)?.owners).toContain("Hodan Flat");
+  it("searching finds one flat by its PUN", async () => {
     const found = await asUser(db, admin, (tx) => tx.query<{ pun: string }>(`select * from public.search_parcels($1, 100)`, [`${land.pun}-02`]));
     expect(found.rows.map((r) => r.pun)).toEqual([`${land.pun}-02`]);
   });

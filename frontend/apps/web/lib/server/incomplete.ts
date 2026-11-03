@@ -82,7 +82,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           .from("parcels")
           .select("id, pun, house_no, status, created_at, neighbourhood:neighbourhoods(name_so, name_en)", { count: "exact" })
           .is("deleted_at", null)
-          .is("parent_id", null)
+          .eq("layout", "house")
           .in("status", ["draft", "surveyed", "verified"])
           .order("created_at", { ascending: false })
           .limit(LIMIT);

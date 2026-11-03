@@ -133,8 +133,6 @@ const PARTIAL = "(draft,surveyed,verified)";
 async function findLand(supabase: SupabaseClient, input: Record<string, unknown>): Promise<unknown> {
   const limit = Math.min(Math.max(Number(input.limit) || 25, 1), 100);
   let q = supabase.rpc("search_parcels", { p_q: String(input.search ?? "").replace(/[%\\]/g, " ").trim(), p_limit: 1000 }, { count: "exact" });
-  // An empty search also returns compound houses demolished alone: the assistant counts land, not those.
-  if (!String(input.search ?? "").trim()) q = q.is("parent_id", null);
   const stage = String(input.stage ?? "all");
   if (stage === "partial") q = q.in("status", ["draft", "surveyed", "verified"]);
   if (stage === "registered" || stage === "paid" || stage === "owing") q = q.not("status", "in", PARTIAL);

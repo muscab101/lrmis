@@ -163,7 +163,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     )}
                   </TableCell>
                   <TableCell>
-                    <ParcelRowActions parcel={p} can={{ ...can, delete: canDelete(p.status) }} />
+                    {/* A flat or compound house registers alone; its sizes and deleting go with its building. */}
+                    <ParcelRowActions parcel={p} can={{ ...can, update: can.update && !p.parent_id, delete: !p.parent_id && canDelete(p.status) }} />
                   </TableCell>
                 </TableRow>
                 );
