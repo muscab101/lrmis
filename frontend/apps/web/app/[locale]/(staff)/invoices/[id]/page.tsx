@@ -33,6 +33,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
   const place = inv.parcel ? [inv.parcel.neighbourhood && (lang === "so" ? inv.parcel.neighbourhood.name_so : inv.parcel.neighbourhood.name_en), inv.parcel.district && (lang === "so" ? inv.parcel.district.name_so : inv.parcel.district.name_en)].filter(Boolean).join(", ") : "";
   const discountOpen = inv.discount_until && Number(inv.early_discount_pct) > 0 && inv.discount_until >= new Date().toISOString().slice(0, 10) && inv.paid === 0;
 
+  const partialLand = ["draft", "surveyed", "verified"].includes((inv.parcel as { status?: string } | null)?.status ?? "");
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
@@ -65,6 +66,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
       {inv.status === "cancelled" && (
         <Alert tone="warning" title={t("cancelledInvoice")} className="mb-5">
           {inv.cancel_reason}
+        </Alert>
+      )}
+      {partialLand && (
+        <Alert tone="warning" title={t("landPartialTitle")} className="mb-5">
+          {t("landPartialHint")}
         </Alert>
       )}
       {discountOpen && (

@@ -24,6 +24,9 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import {
   billingCounts,
+  INVOICE_LANDS,
+  invoicesByLand,
+  type InvoiceLand,
   INVOICE_SORTS,
   listCreditNotes,
   listInvoiceTable,
@@ -61,6 +64,9 @@ export default async function InvoicesPage({
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
+  const byLand = await invoicesByLand();
+  // Bills of registered land can be paid; bills of land in partial registration wait for it to be registered.
+  const land: InvoiceLand = (INVOICE_LANDS as readonly string[]).includes(sp.land ?? "") ? (sp.land as InvoiceLand) : "registered";
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const tabCount = {
     invoices: counts.invoices_open,
@@ -106,10 +112,12 @@ export default async function InvoicesPage({
       from,
       to,
       feeCode: fee,
+      land,
     });
     // Everything the URL carries, so sorting, paging and the page size keep the filter and search.
     const query: Record<string, string> = Object.fromEntries(
       Object.entries({
+        land,
         f: filter,
         q,
         from,
@@ -163,6 +171,22 @@ export default async function InvoicesPage({
     );
     body = (
       <>
+        <nav className="flex flex-wrap gap-1 border-b p-3 text-sm" aria-label={t("landTabs")}>
+          {INVOICE_LANDS.map((k) => (
+            <Link
+              key={k}
+              href={`/invoices?${new URLSearchParams({ land: k, size: String(size) })}`}
+              aria-current={land === k ? "page" : undefined}
+              className={`rounded-md px-3 py-1.5 ${land === k ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t(`land_${k}`)} <span className="tabular-nums">{format.number(byLand[k].invoices)}</span>
+              <span className="text-muted-foreground ms-2 text-xs tabular-nums">{t("landOwed", { amount: usd(byLand[k].owed) })}</span>
+            </Link>
+          ))}
+        </nav>
+        {land === "partial" && (
+          <p className="bg-muted/50 text-muted-foreground border-b px-4 py-2 text-sm">{t("landPartialHint")}</p>
+        )}
         <div className="flex flex-wrap items-center gap-3 border-b p-3">
           <details className="relative">
             <summary className="bg-primary text-primary-foreground inline-flex h-9 cursor-pointer select-none list-none items-center gap-1.5 rounded-md px-4 text-sm font-medium">
@@ -175,6 +199,7 @@ export default async function InvoicesPage({
             </summary>
             <form className="bg-popover absolute start-0 z-20 mt-2 grid w-80 gap-3 rounded-lg border p-4 shadow-lg">
               <input type="hidden" name="size" value={size} />
+              <input type="hidden" name="land" value={land} />
               {q && <input type="hidden" name="q" value={q} />}
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
@@ -217,7 +242,7 @@ export default async function InvoicesPage({
               </div>
               <div className="flex justify-end gap-2">
                 <Link
-                  href={`/invoices?size=${size}`}
+                  href={`/invoices?land=${land}&size=${size}`}
                   className="hover:bg-muted inline-flex h-9 items-center rounded-md border px-3 text-sm"
                 >
                   {t("table.clear")}
@@ -342,6 +367,7 @@ export default async function InvoicesPage({
                         </Link>
                       </Button>
                       {canCollect &&
+                        land === "registered" &&
                         Number(i.balance) > 0 &&
                         (i.status === "issued" || i.status === "partially_paid") && (
                           <Button
@@ -381,7 +407,7 @@ export default async function InvoicesPage({
     <>
       <PageHeader
         title={t("invoicesTitle")}
-        description={t("invoicesSubtitle", { outstanding: usd(counts.outstanding) })}
+        description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed) })}
       >
         <nav className="flex gap-5 overflow-x-auto text-sm">
           {SECTIONS.map((s) => (

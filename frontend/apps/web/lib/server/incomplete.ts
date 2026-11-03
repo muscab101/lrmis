@@ -168,8 +168,10 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("invoices")
-          .select("id, number, balance, due_date, status, parcel:parcels(pun), fee_type:fee_types(name_so, name_en)", { count: "exact" })
+          .select("id, number, balance, due_date, status, parcel:parcels!inner(pun, status), fee_type:fee_types(name_so, name_en)", { count: "exact" })
           .in("status", ["issued", "partially_paid"])
+          // Bills that can be paid: land in partial registration is counted under Yet to register.
+          .not("parcel.status", "in", "(draft,surveyed,verified)")
           .gt("balance", 0)
           .order("due_date", { ascending: true })
           .limit(LIMIT);

@@ -83,9 +83,14 @@ describe("application fee invoice", () => {
   it("the cashier takes the fee: part-paid stays due, paid in full settles it", async () => {
     const app = await submitted(45.301);
     const [inv] = await feeInvoice(app);
-    await asUser(db, cashier, (tx) =>
-      tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
-    );
+    const pay5 = () =>
+      asUser(db, cashier, (tx) =>
+        tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
+      );
+    // The land isn't registered yet, so its bill waits.
+    await expect(pay5()).rejects.toThrow(/^CONFLICT: bill_needs_registered/);
+    await db.query(`update public.parcels set status = 'registered', registered_at = now(), pun = coalesce(pun, 'FEE' || left(id::text, 8)), account_no = coalesce(account_no, left(id::text, 8)) where id = $1`, [inv!.parcel_id]);
+    await pay5();
     expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("due"); // part-paid
     await asUser(db, cashier, (tx) =>
       tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 7, method: "cash" })]),
@@ -163,9 +168,13 @@ describe("deleting an application (0058)", () => {
   it("is refused once money was paid, or for staff without the right", async () => {
     const app = await submitted(45.2974);
     const [inv] = await feeInvoice(app);
+    // Bills can be paid only on registered land.
+    await db.query(`update public.parcels set status = 'registered', registered_at = now(), pun = coalesce(pun, 'FEE' || left(id::text, 8)), account_no = coalesce(account_no, left(id::text, 8)) where id = $1`, [inv!.parcel_id]);
     await asUser(db, cashier, (tx) =>
       tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
     );
+    // Money taken before bills had to wait for registration still stops the delete.
+    await db.query(`update public.parcels set status = 'draft', registered_at = null where id = $1`, [inv!.parcel_id]);
     await expect(asUser(db, clerk, (tx) => tx.query(`select public.application_delete($1)`, [app]))).rejects.toThrow(/^CONFLICT: application_paid/);
     const other = await submitted(45.2975);
     await expect(asUser(db, cashier, (tx) => tx.query(`select public.application_delete($1)`, [other]))).rejects.toThrow(/^(PERMISSION_DENIED|NOT_FOUND)/);

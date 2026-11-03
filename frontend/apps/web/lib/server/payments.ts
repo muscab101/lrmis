@@ -362,7 +362,7 @@ export async function parcelForCashier(term: string) {
   const supabase = await createClient();
   const key = term.trim().toUpperCase();
   const cols =
-    "id, pun, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
+    "id, pun, status, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
   let parcelId: string | null = null;
   if (key.startsWith("INV-") || key.startsWith("SCIN-")) {
     const { data } = await supabase
@@ -386,6 +386,7 @@ export async function parcelForCashier(term: string) {
   const parcel = p as unknown as {
     id: string;
     pun: string | null;
+    status: string;
     account_no: string | null;
     district_id: string;
     layout: string;

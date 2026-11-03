@@ -91,6 +91,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
   const [note, setNote] = useState("");
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const owed = found?.invoices.reduce((s, i) => s + Number(i.balance), 0) ?? 0;
+  const partialLand = !!found && ["draft", "surveyed", "verified"].includes(found.parcel.status);
 
   async function find(term = pun) {
     setPun(term);
@@ -197,7 +198,14 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </Button>
           </form>
 
-          {found && found.units.length > 0 && (
+          {/* Bills of land not registered yet wait: the database refuses them too. */}
+          {partialLand && (
+            <Alert tone="warning" title={t("notRegisteredTitle", { pun: found!.parcel.pun ?? "—" })} className="border-t">
+              {t("notRegisteredBody")}
+            </Alert>
+          )}
+
+          {found && !partialLand && found.units.length > 0 && (
             <div className="space-y-3 border-t pt-4">
               <div>
                 <p className="font-medium">
@@ -224,7 +232,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </div>
           )}
 
-          {found && (found.units.length === 0 || found.parcel.layout === "house") && (
+          {found && !partialLand && (found.units.length === 0 || found.parcel.layout === "house") && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">

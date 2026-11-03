@@ -91,6 +91,21 @@ export const INVOICE_SORTS = ["number", "issue_date", "due_date", "total", "paid
 export type InvoiceSort = (typeof INVOICE_SORTS)[number];
 export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
 
+export const INVOICE_LANDS = ["registered", "partial"] as const;
+export type InvoiceLand = (typeof INVOICE_LANDS)[number];
+
+/** How many bills, and what is still owed, for registered land and for land in partial registration. */
+export async function invoicesByLand() {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("invoices_by_land");
+  const rows = (data ?? []) as { partial: boolean; invoices: number; owed: number }[];
+  const of = (partial: boolean) => {
+    const r = rows.find((x) => x.partial === partial);
+    return { invoices: Number(r?.invoices ?? 0), owed: Number(r?.owed ?? 0) };
+  };
+  return { registered: of(false), partial: of(true) };
+}
+
 export async function listInvoices(opts: {
   filter: InvoiceFilter;
   q: string;
@@ -103,9 +118,13 @@ export async function listInvoices(opts: {
   from?: string;
   to?: string;
   feeCode?: string;
+  /** Only the bills of registered land, or of land still in partial registration. */
+  land?: InvoiceLand;
 }) {
   const supabase = await createClient();
-  let req = supabase.from("invoices").select(LIST_COLUMNS, { count: "exact" });
+  let req = supabase.from("invoices").select(opts.land ? LIST_COLUMNS.replace("parcel:parcels(", "parcel:parcels!inner(") : LIST_COLUMNS, { count: "exact" });
+  if (opts.land === "partial") req = req.in("parcel.status", ["draft", "surveyed", "verified"]);
+  if (opts.land === "registered") req = req.not("parcel.status", "in", "(draft,surveyed,verified)");
   if (opts.from) req = req.gte("issue_date", opts.from);
   if (opts.to) req = req.lte("issue_date", opts.to);
   if (opts.feeCode) {
@@ -239,7 +258,7 @@ export async function getInvoice(id: string) {
     .select(
       `id, number, period, issue_date, due_date, total, paid, credited, balance, status, district_id, run_id, discount_until, early_discount_pct, currency, note, cancel_reason, created_by, penalty_applied_at,
        fee_type:fee_types(code, name_so, name_en),
-       parcel:parcels(id, pun, account_no, area_m2, land_use, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en)),
+       parcel:parcels(id, pun, status, account_no, area_m2, land_use, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en)),
        invoice_lines(id, kind, description, amount, created_at),
        credit_notes(id, number, amount, reason, status, requested_by, requested_at, decision_note),
        run:billing_runs(id, number)`,
