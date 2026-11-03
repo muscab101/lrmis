@@ -7,6 +7,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Banknote,
   ChevronDown,
   Eye,
   Filter,
@@ -47,11 +48,12 @@ export default async function InvoicesPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "invoices.view");
+  const viewer = await requirePermission(locale, "invoices.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
+  const canCollect = viewer.can("cashier.view");
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
@@ -330,6 +332,26 @@ export default async function InvoicesPage({
                           <Printer aria-hidden />
                         </Link>
                       </Button>
+                      {/* Only registered land's bills can be paid. */}
+                      {canCollect &&
+                        !i.partial_land &&
+                        Number(i.balance) > 0 &&
+                        (i.status === "issued" || i.status === "partially_paid") && (
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-status-approved"
+                            asChild
+                          >
+                            <Link
+                              href={`/cashier?find=${encodeURIComponent(i.number)}`}
+                              aria-label={t("takePayment")}
+                              title={t("takePayment")}
+                            >
+                              <Banknote aria-hidden />
+                            </Link>
+                          </Button>
+                        )}
                     </div>
                   </TableCell>
                 </TableRow>

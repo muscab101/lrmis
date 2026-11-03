@@ -2929,6 +2929,7 @@
     "printInvoice": "Print invoice",
     "actions": "Actions",
     "viewRun": "View run",
+    "takePayment": "Take payment at the cashier",
     "table": {
       "filter": "Filter",
       "show": "Show",
