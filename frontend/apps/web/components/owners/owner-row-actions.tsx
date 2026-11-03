@@ -5,10 +5,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
-import { Ellipsis, Info, Pencil, SquareCheckBig, Trash2 } from "lucide-react";
+import { Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { deleteOwnerAction, registerOwnerAction } from "@/app/[locale]/(staff)/applications/actions";
+import { deleteOwnerAction } from "@/app/[locale]/(staff)/applications/actions";
 import { EditOwner } from "@/app/[locale]/(staff)/owners/[id]/edit-owner";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -18,19 +18,18 @@ export interface OwnerAbilities {
   update: boolean;
   /** Delete partial owners (owners.delete). */
   remove: boolean;
-  register: boolean;
   /** Delete registered owners (owners.delete_registered — admins). */
   removeRegistered?: boolean;
 }
 
 type Districts = { id: string; name_so: string; name_en: string }[];
 
-/** Row keys: view, edit, delete and move to the register. Registered owners are deleted only by admins. New owners and land are added from Surveys. */
+/** Row keys: view, edit and delete. An owner is registered with their land. Registered owners are deleted only by admins. New owners and land are added from Surveys. */
 export function OwnerRowActions({ party, districts, can, onDetail = false }: { party: PartyRow; districts: Districts; can: OwnerAbilities; onDetail?: boolean }) {
   const t = useTranslations("owners");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [dialog, setDialog] = useState<"edit" | "delete" | "register" | null>(null);
+  const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
   const draft = !party.registered_at;
   const canDelete = draft ? can.remove : !!can.removeRegistered;
   const [reason, setReason] = useState("");
@@ -58,12 +57,6 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
               <DropdownMenuItem onSelect={() => setDialog("edit")}>
                 <Pencil aria-hidden />
                 {tc("edit")}
-              </DropdownMenuItem>
-            )}
-            {draft && can.register && (
-              <DropdownMenuItem onSelect={() => setDialog("register")}>
-                <SquareCheckBig aria-hidden />
-                {t("actionRegister")}
               </DropdownMenuItem>
             )}
             {canDelete && (
@@ -95,14 +88,6 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
             <Trash2 aria-hidden />
           </Button>,
         )}
-      {draft &&
-        can.register &&
-        icon(
-          t("actionRegister"),
-          <Button variant="ghost" size="icon-sm" className={`text-success ${keys}`} aria-label={t("actionRegister")} onClick={() => setDialog("register")}>
-            <SquareCheckBig aria-hidden />
-          </Button>,
-        )}
 
       <FormDialog
         open={dialog === "delete"}
@@ -125,17 +110,6 @@ export function OwnerRowActions({ party, districts, can, onDetail = false }: { p
             {fe("owner") && <p className="text-danger text-sm">{fe("owner")}</p>}
           </>
         )}
-      </FormDialog>
-      <FormDialog
-        open={dialog === "register"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("registerTitle", { name: party.full_name })}
-        description={t("registerBody")}
-        confirmLabel={t("actionRegister")}
-        submit={() => registerOwnerAction({ id: party.id })}
-        successMessage={t("registeredDone")}
-      >
-        {(fe) => fe("owner") && <p className="text-danger text-sm">{fe("owner")}</p>}
       </FormDialog>
     </div>
   );

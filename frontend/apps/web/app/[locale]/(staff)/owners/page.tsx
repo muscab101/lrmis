@@ -48,7 +48,6 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
   const can = {
     update: viewer.can("owners.update"),
     remove: viewer.can("owners.delete"),
-    register: viewer.can("owners.approve"),
     removeRegistered: viewer.can("owners.delete_registered"),
   };
   const stageHref = (stage: string, extra: Record<string, string> = {}) =>

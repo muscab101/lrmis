@@ -293,17 +293,6 @@ function ownerErrors(err: unknown): never {
   throw err;
 }
 
-/** Move a draft owner (partial registration) to the register. */
-export const registerOwnerAction = defineAction("owners.register", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
-  try {
-    unwrap(await ctx.supabase.rpc("party_register", { p_id: id }), "register owner");
-  } catch (err) {
-    ownerErrors(err);
-  }
-  revalidatePath("/[locale]/owners", "layout");
-  return null;
-});
-
 /** Delete a draft owner. */
 export const deleteOwnerAction = defineAction("owners.delete", z.object({ id: z.uuid(), reason: z.string().trim().max(500).default("") }), async ({ id, reason }, ctx) => {
   try {

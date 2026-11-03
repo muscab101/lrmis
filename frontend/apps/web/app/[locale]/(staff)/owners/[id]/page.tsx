@@ -90,7 +90,6 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
               update: viewer.can("owners.update"),
               remove: viewer.can("owners.delete"),
               removeRegistered: viewer.can("owners.delete_registered"),
-              register: viewer.can("owners.approve"),
             }}
           />
         }
