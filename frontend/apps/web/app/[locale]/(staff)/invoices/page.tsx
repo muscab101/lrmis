@@ -310,7 +310,11 @@ export default async function InvoicesPage({
                   </TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} dueDate={i.due_date} />
-                    {i.partial_land && <span className="text-muted-foreground block pt-1 text-xs">{t("landPartialShort")}</span>}
+                    {i.demolished_land ? (
+                      <span className="text-muted-foreground block pt-1 text-xs">{t("landDemolishedShort")}</span>
+                    ) : (
+                      i.partial_land && <span className="text-muted-foreground block pt-1 text-xs">{t("landPartialShort")}</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-0.5">
@@ -335,6 +339,7 @@ export default async function InvoicesPage({
                       {/* Only registered land's bills can be paid. */}
                       {canCollect &&
                         !i.partial_land &&
+                        !i.demolished_land &&
                         Number(i.balance) > 0 &&
                         (i.status === "issued" || i.status === "partially_paid") && (
                           <Button
@@ -372,7 +377,7 @@ export default async function InvoicesPage({
 
   return (
     <>
-      <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed), partial: usd(byLand.partial.owed) })} />
+      <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed), partial: usd(byLand.partial.owed), demolished: usd(byLand.demolished.owed) })} />
       <Card className="overflow-hidden">{body}</Card>
     </>
   );

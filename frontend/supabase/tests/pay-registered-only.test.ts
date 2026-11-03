@@ -78,9 +78,8 @@ describe("only registered land's bills can be paid", () => {
   });
 
   it("the two lists add up separately", async () => {
-    const rows = await asUser(db, admin, (tx) => tx.query<{ partial: boolean; invoices: string; owed: string }>(`select * from public.invoices_by_land()`));
-    expect(rows.rows.find((r) => r.partial)).toMatchObject({ partial: true });
-    expect(Number(rows.rows.find((r) => r.partial)!.owed)).toBe(12);
-    expect(Number(rows.rows.find((r) => !r.partial)!.owed)).toBe(0);
+    const rows = await asUser(db, admin, (tx) => tx.query<{ land: string; invoices: string; owed: string }>(`select * from public.invoices_by_land()`));
+    expect(Number(rows.rows.find((r) => r.land === "partial")!.owed)).toBe(12);
+    expect(Number(rows.rows.find((r) => r.land === "registered")!.owed)).toBe(0);
   });
 });

@@ -284,6 +284,7 @@
       "units_fixed": "The sizes of a building or compound can't be changed once saved.",
       "units_no_change": "A building or compound and its units can't be subdivided or merged.",
       "bill_needs_registered": "This parcel isn't registered yet. Its bills can be paid once it's registered.",
+      "parcel_demolished": "This land is demolished. It's kept as an archive and can only be viewed.",
       "land_has_units": "Money goes to a flat or house, not the land above it. Choose the flat or house.",
       "demolish_selection": "Choose at least one land, up to 1,000.",
       "demolish_date": "Enter a demolition date, not in the future.",
@@ -303,6 +304,7 @@
       "chat_upload_failed": "The file could not be uploaded. Try again."
     },
     "blockers": {
+      "demolished": "the land is demolished",
       "has_units": "it has units: each flat or house gets its own",
       "dispute": "open dispute",
       "freeze_order": "court freeze order",
@@ -2524,7 +2526,7 @@
     "paidLabel": "Paid",
     "split_demolished": "Demolished",
     "demolishedLabel": "Demolished",
-    "demolishedHint": "Land whose house was demolished. It keeps its PUN and pays land tax until it is registered again.",
+    "demolishedHint": "Land whose house was demolished. It's kept as an archive and can only be viewed.",
     "demolishedOpenArchive": "Open the full archive",
     "split_all": "All",
     "split_paid": "Paid",
@@ -2784,7 +2786,7 @@
       "submitDone": "Submitted for approval.",
       "approve": "Approve",
       "approveTitle": "Approve this billing run?",
-      "approveBody": "After approval the invoices can be generated. You can't approve a run you created.",
+      "approveBody": "The house becomes an archive: it can only be viewed, with no payments, transfers, dividing or new bills. Its original details go into the archive, and its unpaid bills are frozen.",
       "approveDone": "Run approved.",
       "generate": "Generate invoices",
       "generateTitle": "Generate the invoices?",
@@ -2832,7 +2834,11 @@
     "size": "Size",
     "district": "District",
     "noteLabel": "Note",
-    "invoicesSubtitle": "{outstanding} outstanding on registered parcels, {partial} on partial parcels.",
+    "landDemolishedShort": "Demolished",
+    "land_demolished": "Demolished land",
+    "landDemolishedTitle": "This land is demolished",
+    "landDemolishedHint": "This bill is kept as a record and can't be paid or changed.",
+    "invoicesSubtitle": "{outstanding} outstanding on registered parcels, {partial} on partial parcels, {demolished} frozen on demolished land.",
     "sections": {
       "invoices": "Invoices",
       "credit": "Credit notes",
@@ -2998,6 +3004,8 @@
     "due": "Due {date}",
     "notRegisteredTitle": "This land isn't registered yet",
     "notRegisteredBody": "This bill can be paid once the land is registered. Please ask at the district office.",
+    "demolishedTitle": "This land is demolished",
+    "demolishedBody": "This bill is kept as a record and can't be paid. Please ask at the district office.",
     "howToPay": "How to pay",
     "howToPayBody": "Pay here by card, or by EVC Plus, Zaad, Sahal or eDahab with {pun} as the reference, or at any district cashier.",
     "notFound": "Invoice not found",
@@ -3186,6 +3194,8 @@
     "cashInDrawer": "Cash in drawer: {amount}",
     "notRegisteredTitle": "{pun} isn't registered yet",
     "notRegisteredBody": "Its bills can't be paid until the parcel is registered.",
+    "demolishedLandTitle": "{pun} is demolished",
+    "demolishedLandBody": "Demolished land is kept as an archive. Its bills can't be paid.",
     "notYetRegistered": "not registered yet",
     "collect": {
       "title": "To collect",
@@ -3671,6 +3681,7 @@
     "notEligible": "Not yet",
     "registered": "Registered",
     "blockers": {
+      "demolished": "the land is demolished",
       "has_units": "it has units: each flat or house gets its own",
       "unpaid": "unpaid balance",
       "overdue": "overdue balance",
@@ -3957,6 +3968,7 @@
       "heir": "Heir"
     },
     "blockers": {
+      "demolished": "the land is demolished",
       "has_units": "it has units: each flat or house gets its own",
       "dispute": "open dispute",
       "freeze_order": "court freeze order",
@@ -5340,11 +5352,13 @@
     "removed": "Removed {what}"
   },
   "demolitions": {
+    "archiveTitle": "Demolished: view only",
+    "archiveBody": "This land is kept as an archive. It can't be paid, transferred, divided, billed or changed.",
     "title": "Demolished properties",
     "subtitle": "Houses that were demolished, kept with their original place, owners, boundary and tax history. The land keeps its PUN.",
     "mark": "Mark as demolished",
     "markTitle": "Mark as demolished",
-    "markBodyNow": "Each house stops paying the house tax and pays land tax at the Empty Land price. Its original details go into the archive. Old bills and balances stay.",
+    "markBodyNow": "Each house becomes an archive: it can only be viewed, with no payments, transfers, dividing or new bills. Its original details go into the archive, and its unpaid bills are frozen.",
     "markBodyAsk": "This sends a request to a registrar or admin. Nothing changes until it is approved.",
     "markConfirm": "{count, plural, =0 {Choose land first} one {Mark # as demolished} other {Mark # as demolished}}",
     "askConfirm": "{count, plural, =0 {Choose land first} one {Send request for #} other {Send request for #}}",
@@ -5469,7 +5483,7 @@
     "audit_update": "Record updated",
     "audit_delete": "Record removed",
     "parcelDemolished": "The house on this land was demolished",
-    "parcelDemolishedBody": "It pays land tax only until the land is registered again.",
+    "parcelDemolishedBody": "It stays an archive until it's undone or the land is registered again.",
     "parcelWaiting": "A demolition is waiting for approval"
   }
 }

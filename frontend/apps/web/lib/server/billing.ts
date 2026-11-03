@@ -86,27 +86,29 @@ export interface InvoiceListRow extends InvoiceRow {
   phone: string | null;
   /** Its land isn't registered yet, so it can't be paid. */
   partial_land: boolean;
+  /** Its land is demolished: an archive, so it can't be paid. */
+  demolished_land: boolean;
 }
 const LIST_COLUMNS =
   "id, number, period, issue_date, due_date, total, paid, credited, balance, status, created_at, fee_type:fee_types(code, name_so, name_en), " +
-  "parcel:parcels(id, pun, status, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
+  "parcel:parcels(id, pun, status, building_state, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
 export const INVOICE_SORTS = ["number", "issue_date", "due_date", "total", "paid"] as const;
 export type InvoiceSort = (typeof INVOICE_SORTS)[number];
 export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
 
-export const INVOICE_LANDS = ["registered", "partial"] as const;
+export const INVOICE_LANDS = ["registered", "partial", "demolished"] as const;
 export type InvoiceLand = (typeof INVOICE_LANDS)[number];
 
-/** How many bills, and what is still owed, for registered land and for land in partial registration. */
+/** How many bills, and what is still owed, for registered land, land in partial registration and demolished land. */
 export async function invoicesByLand() {
   const supabase = await createClient();
   const { data } = await supabase.rpc("invoices_by_land");
-  const rows = (data ?? []) as { partial: boolean; invoices: number; owed: number }[];
-  const of = (partial: boolean) => {
-    const r = rows.find((x) => x.partial === partial);
+  const rows = (data ?? []) as { land: InvoiceLand; invoices: number; owed: number }[];
+  const of = (land: InvoiceLand) => {
+    const r = rows.find((x) => x.land === land);
     return { invoices: Number(r?.invoices ?? 0), owed: Number(r?.owed ?? 0) };
   };
-  return { registered: of(false), partial: of(true) };
+  return { registered: of("registered"), partial: of("partial"), demolished: of("demolished") };
 }
 
 export async function listInvoices(opts: {
@@ -126,8 +128,9 @@ export async function listInvoices(opts: {
 }) {
   const supabase = await createClient();
   let req = supabase.from("invoices").select(opts.land ? LIST_COLUMNS.replace("parcel:parcels(", "parcel:parcels!inner(") : LIST_COLUMNS, { count: "exact" });
-  if (opts.land === "partial") req = req.in("parcel.status", ["draft", "surveyed", "verified"]);
-  if (opts.land === "registered") req = req.not("parcel.status", "in", "(draft,surveyed,verified)");
+  if (opts.land === "partial") req = req.in("parcel.status", ["draft", "surveyed", "verified"]).eq("parcel.building_state", "standing");
+  if (opts.land === "registered") req = req.not("parcel.status", "in", "(draft,surveyed,verified)").eq("parcel.building_state", "standing");
+  if (opts.land === "demolished") req = req.eq("parcel.building_state", "demolished");
   if (opts.from) req = req.gte("issue_date", opts.from);
   if (opts.to) req = req.lte("issue_date", opts.to);
   if (opts.feeCode) {
@@ -199,6 +202,7 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
     parcel:
       | (InvoiceRow["parcel"] & {
           status: string;
+          building_state: string;
           account_no: string | null;
           owners?: { valid_to: string | null; party: { phone: string | null } | null }[];
         })
@@ -210,6 +214,7 @@ export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0])
       ...r,
       parcel: r.parcel ? { id: r.parcel.id, pun: r.parcel.pun } : null,
       partial_land: ["draft", "surveyed", "verified"].includes(r.parcel?.status ?? ""),
+      demolished_land: r.parcel?.building_state === "demolished",
       account_no: r.parcel?.account_no ?? null,
       phone: r.parcel?.owners?.find((o) => !o.valid_to && o.party?.phone)?.party?.phone ?? null,
     })),
@@ -246,6 +251,7 @@ export interface InvoiceDetail extends InvoiceRow {
     id: string;
     pun: string | null;
     status: ParcelStatus;
+    building_state: "standing" | "demolished";
     account_no: string | null;
     area_m2: number | null;
     land_use: string;
@@ -289,7 +295,7 @@ export async function getInvoice(id: string) {
     .select(
       `id, number, period, issue_date, due_date, total, paid, credited, balance, status, district_id, run_id, discount_until, early_discount_pct, currency, note, cancel_reason, created_by, penalty_applied_at,
        fee_type:fee_types(code, name_so, name_en),
-       parcel:parcels(id, pun, status, account_no, area_m2, land_use, house_no, unit_no, parent_id, plot_width_m, plot_length_m, property_type, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en),
+       parcel:parcels(id, pun, status, building_state, account_no, area_m2, land_use, house_no, unit_no, parent_id, plot_width_m, plot_length_m, property_type, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en),
          owners:parcel_owners(role, share_pct, valid_to, party:parties(id, full_name, mother_name, phone, email, id_type, id_number, owner_type:owner_types(name_so, name_en)))),
        invoice_lines(id, kind, description, amount, created_at),
        credit_notes(id, number, amount, reason, status, requested_by, requested_at, decision_note),

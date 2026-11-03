@@ -43,7 +43,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
   const size = inv.parcel?.area_m2
     ? `${num(inv.parcel.area_m2)} m²${inv.parcel.plot_width_m && inv.parcel.plot_length_m ? ` (${num(inv.parcel.plot_width_m)} × ${num(inv.parcel.plot_length_m)} m)` : ""}`
     : null;
-  const partialLand = ["draft", "surveyed", "verified"].includes(inv.parcel?.status ?? "");
+  const demolishedLand = inv.parcel?.building_state === "demolished";
+  const partialLand = !demolishedLand && ["draft", "surveyed", "verified"].includes(inv.parcel?.status ?? "");
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
@@ -68,13 +69,18 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
           <InvoiceActions
             invoice={{ id: inv.id, paid: Number(inv.paid), status: inv.status, createdBy: inv.created_by }}
             me={viewer.user.id}
-            can={{ cancel: viewer.can("invoices.cancel") }}
+            can={{ cancel: viewer.can("invoices.cancel") && !demolishedLand }}
           />
         }
       />
       {inv.status === "cancelled" && (
         <Alert tone="warning" title={t("cancelledInvoice")} className="mb-5">
           {inv.cancel_reason}
+        </Alert>
+      )}
+      {demolishedLand && (
+        <Alert tone="warning" title={t("landDemolishedTitle")} className="mb-5">
+          {t("landDemolishedHint")}
         </Alert>
       )}
       {partialLand && (

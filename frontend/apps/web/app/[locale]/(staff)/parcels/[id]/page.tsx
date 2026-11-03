@@ -65,6 +65,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const demolitions = canSeeDemolitions ? await openDemolitionOf(p.id) : [];
   const waiting = demolitions.find((x) => x.status === "pending");
   const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
+  // Demolished land is an archive: it can be seen, nothing else.
+  const archived = p.building_state === "demolished";
   const canMark =
     (viewer.can("parcels.demolish") || viewer.can("parcels.demolish_approve")) &&
     p.status === "registered" && p.building_state === "standing" && !p.locked_at && !waiting && parent?.layout !== "flats";
@@ -121,14 +123,14 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           <div className="flex flex-wrap items-center gap-2">
             <SiteCheckButtons
               parcelId={p.id}
-              canRequest={p.site_check_status !== "pending" && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
-              canAnswer={p.site_check_status === "pending" && ((p.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve"))}
+              canRequest={!archived && p.site_check_status !== "pending" && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
+              canAnswer={!archived && p.site_check_status === "pending" && ((p.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve"))}
             />
             {canMark && <MarkDemolished canApprove={viewer.can("parcels.demolish_approve")} preset={{ id: p.id, pun: p.pun }} size="sm" />}
             <ParcelRowActions
               parcel={p}
               onDetail
-              can={{
+              can={archived ? { update: false, lock: false } : {
                 // A building's sizes are fixed once saved; a flat or house can change and be deleted until it's registered.
                 update: viewer.can("parcels.update") && !holdsUnits && (!p.parent_id || partial),
                 lock: viewer.can("parcels.lock"),
@@ -139,6 +141,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           </div>
         }
       />
+      {archived && (
+        <Alert tone="warning" className="mb-5" title={td("archiveTitle")}>
+          {td("archiveBody")}
+        </Alert>
+      )}
       {p.site_check_status && (
         <Alert
           tone={p.site_check_status === "confirmed" ? "success" : p.site_check_status === "not_found" ? "danger" : "info"}
@@ -313,12 +320,12 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
         )}
         {viewer.can("certificates.view") && p.pun && !holdsUnits && (
           <div className="md:col-span-2">
-            <ParcelCertificate parcelId={p.id} pun={p.pun} canIssue={viewer.can("certificates.approve")} />
+            <ParcelCertificate parcelId={p.id} pun={p.pun} canIssue={viewer.can("certificates.approve") && !archived} />
           </div>
         )}
         {viewer.can("invoices.view") && !holdsUnits && (
           <div className="md:col-span-2">
-            <ParcelInvoices parcelId={p.id} canCreate={viewer.can("invoices.create")} />
+            <ParcelInvoices parcelId={p.id} canCreate={viewer.can("invoices.create") && !archived} />
           </div>
         )}
         {valuation && !holdsUnits && (
@@ -328,7 +335,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               registered={p.status === "registered" || p.status === "disputed"}
               data={valuation}
               grades={grades}
-              can={{ edit: viewer.can("valuation.update"), assess: viewer.can("valuation.create") }}
+              can={{ edit: viewer.can("valuation.update") && !archived, assess: viewer.can("valuation.create") && !archived }}
             />
           </div>
         )}

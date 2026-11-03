@@ -284,6 +284,7 @@
       "units_fixed": "Cabbirrada dhismaha ama xerada lama beddeli karo marka la kaydiyo.",
       "units_no_change": "Dhisme ama xero iyo qaybahooda lama qaybin karo lamana isku dari karo.",
       "bill_needs_registered": "Dhulkan weli lama diiwaangelin. Biilashiisa waa la bixin karaa marka la diiwaangeliyo.",
+      "parcel_demolished": "Dhulkan waa la dumiyay. Waxaa loo hayaa kayd ahaan, waana la arki karaa oo keliya.",
       "land_has_units": "Lacagta waxaa la siiyaa guri, ee ma aha dhulka ka sarreeya. Dooro guriga.",
       "demolish_selection": "Dooro ugu yaraan hal dhul, ilaa 1,000.",
       "demolish_date": "Geli taariikhda dumista, oo aan mustaqbalka ahayn.",
@@ -303,6 +304,7 @@
       "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day."
     },
     "blockers": {
+      "demolished": "dhulka waa la dumiyay",
       "has_units": "waxay leedahay qaybo: guri kastaa kiisa ayuu helaa",
       "dispute": "muran furan",
       "freeze_order": "amar maxkamadeed oo xannibaad ah",
@@ -2524,7 +2526,7 @@
     "paidLabel": "La bixiyay",
     "split_demolished": "La dumiyay",
     "demolishedLabel": "La dumiyay",
-    "demolishedHint": "Dhul gurigiisii la dumiyay. PUN-kiisa wuu haystaa, wuxuuna bixinayaa canshuurta dhulka ilaa dib loo diiwaangeliyo.",
+    "demolishedHint": "Dhul gurigiisii la dumiyay. Waxaa loo hayaa kayd ahaan, waana la arki karaa oo keliya.",
     "demolishedOpenArchive": "Fur kaydka oo dhan",
     "split_all": "Dhammaan",
     "split_paid": "La bixiyay",
@@ -2784,7 +2786,7 @@
       "submitDone": "Waxaa loo gudbiyay ansixinta.",
       "approve": "Ansixi",
       "approveTitle": "Ma la ansixinayaa biil-wareegan?",
-      "approveBody": "Ansixinta kadib biilasha waa la samayn karaa. Ma ansixin kartid wareeg aad adigu samaysay.",
+      "approveBody": "Gurigu wuxuu noqonayaa kayd: waa la arki karaa oo keliya, lacag, wareejin, qaybin iyo biil cusub midna ma jiro. Xogtiisii asalka ahayd waxay gelaysaa kaydka, biilashiisa aan la bixinna waa la xirayaa.",
       "approveDone": "Wareegga waa la ansixiyay.",
       "generate": "Samee biilasha",
       "generateTitle": "Ma la samaynayaa biilasha?",
@@ -2832,7 +2834,11 @@
     "size": "Cabbir",
     "district": "Degmo",
     "noteLabel": "Qoraal",
-    "invoicesSubtitle": "{outstanding} lagu leeyahay dhul la diiwaangeliyay, {partial} dhul qayb ahaan ah.",
+    "landDemolishedShort": "La dumiyay",
+    "land_demolished": "Dhul la dumiyay",
+    "landDemolishedTitle": "Dhulkan waa la dumiyay",
+    "landDemolishedHint": "Biilkan waxaa loo hayaa diiwaan ahaan, lama bixin karo lamana beddeli karo.",
+    "invoicesSubtitle": "{outstanding} lagu leeyahay dhul la diiwaangeliyay, {partial} dhul qayb ahaan ah, {demolished} oo xiran dhul la dumiyay.",
     "sections": {
       "invoices": "Biilal",
       "credit": "Warqadaha dhimista",
@@ -2998,6 +3004,8 @@
     "due": "Waqtiga {date}",
     "notRegisteredTitle": "Dhulkan weli lama diiwaangelin",
     "notRegisteredBody": "Biilkan waa la bixin karaa marka dhulka la diiwaangeliyo. Fadlan weydii xafiiska degmada.",
+    "demolishedTitle": "Dhulkan waa la dumiyay",
+    "demolishedBody": "Biilkan waxaa loo hayaa diiwaan ahaan, lama bixin karo. Fadlan weydii xafiiska degmada.",
     "howToPay": "Sida loo bixiyo",
     "howToPayBody": "Halkan ku bixi kaar, ama EVC Plus, Zaad, Sahal ama eDahab adoo tixraac ahaan u isticmaalaya {pun}, ama khasnajiga degmo kasta.",
     "notFound": "Biilka lama helin",
@@ -3186,6 +3194,8 @@
     "cashInDrawer": "Lacagta khaanadda: {amount}",
     "notRegisteredTitle": "{pun} weli lama diiwaangelin",
     "notRegisteredBody": "Biilashiisa lama bixin karo ilaa dhulka la diiwaangeliyo.",
+    "demolishedLandTitle": "{pun} waa la dumiyay",
+    "demolishedLandBody": "Dhulka la dumiyay waxaa loo hayaa kayd ahaan. Biilashiisa lama bixin karo.",
     "notYetRegistered": "weli lama diiwaangelin",
     "collect": {
       "title": "Lacagta la ururinayo",
@@ -3671,6 +3681,7 @@
     "notEligible": "Weli maya",
     "registered": "La diiwaangeliyay",
     "blockers": {
+      "demolished": "dhulka waa la dumiyay",
       "has_units": "waxay leedahay qaybo: guri kastaa kiisa ayuu helaa",
       "unpaid": "lacag aan la bixin",
       "overdue": "lacag waqtigeedii dhaafay",
@@ -3957,6 +3968,7 @@
       "heir": "Dhaxle"
     },
     "blockers": {
+      "demolished": "dhulka waa la dumiyay",
       "has_units": "waxay leedahay qaybo: guri kastaa kiisa ayuu helaa",
       "dispute": "muran furan",
       "freeze_order": "amar maxkamadeed oo xannibaad ah",
@@ -5340,11 +5352,13 @@
     "removed": "Wuxuu tirtiray {what}"
   },
   "demolitions": {
+    "archiveTitle": "La dumiyay: arag oo keliya",
+    "archiveBody": "Dhulkan waxaa loo hayaa kayd ahaan. Lama bixin karo, lama wareejin karo, lama qaybin karo, biil looma samayn karo lamana beddeli karo.",
     "title": "Guryaha la dumiyay",
     "subtitle": "Guryihii la dumiyay, oo lagu hayo meeshoodii asalka ahayd, milkiilayaashii, xuduudda iyo taariikhda canshuurta. Dhulku PUN-kiisa ayuu haystaa.",
     "mark": "Calaamadee la dumiyay",
     "markTitle": "Calaamadee la dumiyay",
-    "markBodyNow": "Guri kastaa wuxuu joojinayaa canshuurta guriga, wuxuuna bixinayaa canshuurta dhulka qiimaha Dhul Bannaan. Xogtiisii asalka ahayd waxay gelaysaa kaydka. Biilashii hore iyo deymaha way sii jiraan.",
+    "markBodyNow": "Guri kastaa wuxuu noqonayaa kayd: waa la arki karaa oo keliya, lacag, wareejin, qaybin iyo biil cusub midna ma jiro. Xogtiisii asalka ahayd waxay gelaysaa kaydka, biilashiisa aan la bixinna waa la xirayaa.",
     "markBodyAsk": "Tani waxay codsi u dirtaa diiwaangeliyaha ama maamulaha. Waxba isma beddelayaan ilaa la oggolaado.",
     "markConfirm": "{count, plural, =0 {Marka hore dooro dhul} other {Calaamadee # la dumiyay}}",
     "askConfirm": "{count, plural, =0 {Marka hore dooro dhul} other {U dir codsi #}}",
@@ -5469,7 +5483,7 @@
     "audit_update": "Diiwaanka waa la cusboonaysiiyay",
     "audit_delete": "Diiwaanka waa la saaray",
     "parcelDemolished": "Guriga dhulkan waa la dumiyay",
-    "parcelDemolishedBody": "Wuxuu bixinayaa canshuurta dhulka oo keliya ilaa dhulka dib loo diiwaangeliyo.",
+    "parcelDemolishedBody": "Wuxuu ahaanayaa kayd ilaa la laabto ama dhulka dib loo diiwaangeliyo.",
     "parcelWaiting": "Dumis ayaa sugaysa oggolaansho"
   }
 }

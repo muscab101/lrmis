@@ -362,7 +362,7 @@ export async function parcelForCashier(term: string) {
   const supabase = await createClient();
   const key = term.trim().toUpperCase();
   const cols =
-    "id, pun, status, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
+    "id, pun, status, building_state, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
   let parcelId: string | null = null;
   if (key.startsWith("INV-") || key.startsWith("SCIN-")) {
     const { data } = await supabase
@@ -387,15 +387,15 @@ export async function parcelForCashier(term: string) {
     id: string;
     pun: string | null;
     status: string;
+    building_state: string;
     account_no: string | null;
     district_id: string;
     layout: string;
     application: { number: string } | null;
   };
-  // A flats building or compound holds no bills: the cashier picks one of its units. Once its units are demolished,
-  // the land can be paid too, and any unit still owing old bills is listed with it.
+  // A flats building or compound holds no bills: the cashier picks one of its units. Units that were demolished stay as a record.
   const land = await getLandUnits(parcel.id);
-  const units = parcel.layout === "house" ? land.units.filter((u) => u.owed > 0) : land.units;
+  const units = parcel.layout === "house" ? [] : land.units;
   const [{ data: inv }, { data: owners }] = await Promise.all([
     supabase
       .from("invoices")

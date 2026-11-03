@@ -172,6 +172,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           .in("status", ["issued", "partially_paid"])
           // Bills that can be paid: land in partial registration is counted under Yet to register.
           .not("parcel.status", "in", "(draft,surveyed,verified)")
+          .eq("parcel.building_state", "standing")
           .gt("balance", 0)
           .order("due_date", { ascending: true })
           .limit(LIMIT);
@@ -198,7 +199,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         // Registered land that has no valid certificate yet (usually still unpaid).
         const [{ data: regs }, { data: certs }] = await Promise.all([
-          supabase.from("parcels").select("id, pun, registered_at").is("deleted_at", null).eq("status", "registered").eq("layout", "house").order("registered_at", { ascending: false }).limit(500),
+          supabase.from("parcels").select("id, pun, registered_at").is("deleted_at", null).eq("status", "registered").eq("layout", "house").eq("building_state", "standing").order("registered_at", { ascending: false }).limit(500),
           supabase.from("issued_documents").select("parcel_id").eq("type", "certificate").eq("status", "valid").limit(2000),
         ]);
         const has = new Set(((certs ?? []) as Rec[]).map((c) => c.parcel_id as string));
@@ -430,7 +431,8 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
       (async () => {
         const { data, count } = await supabase
           .from("issued_documents")
-          .select("id, serial, issued_at, parcel:parcels(pun)", { count: "exact" })
+          .select("id, serial, issued_at, parcel:parcels!inner(pun)", { count: "exact" })
+          .eq("parcel.building_state", "standing")
           .eq("status", "valid")
           .eq("type", "certificate")
           .eq("print_count", 0)

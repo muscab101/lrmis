@@ -91,7 +91,8 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
   const [note, setNote] = useState("");
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const owed = found?.invoices.reduce((s, i) => s + Number(i.balance), 0) ?? 0;
-  const partialLand = !!found && ["draft", "surveyed", "verified"].includes(found.parcel.status);
+  const demolishedLand = found?.parcel.building_state === "demolished";
+  const partialLand = !!found && !demolishedLand && ["draft", "surveyed", "verified"].includes(found.parcel.status);
 
   async function find(term = pun) {
     setPun(term);
@@ -204,8 +205,13 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
               {t("notRegisteredBody")}
             </Alert>
           )}
+          {demolishedLand && (
+            <Alert tone="warning" title={t("demolishedLandTitle", { pun: found!.parcel.pun ?? "—" })} className="border-t">
+              {t("demolishedLandBody")}
+            </Alert>
+          )}
 
-          {found && !partialLand && found.units.length > 0 && (
+          {found && !partialLand && !demolishedLand && found.units.length > 0 && (
             <div className="space-y-3 border-t pt-4">
               <div>
                 <p className="font-medium">
@@ -232,7 +238,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </div>
           )}
 
-          {found && !partialLand && (found.units.length === 0 || found.parcel.layout === "house") && (
+          {found && !partialLand && !demolishedLand && (found.units.length === 0 || found.parcel.layout === "house") && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">

@@ -117,7 +117,7 @@ export async function parcelsToCertify(limit = 30) {
   const supabase = await createClient();
   const { data: docs } = await supabase.from("issued_documents").select("parcel_id").eq("type", "certificate").eq("status", "valid");
   const done = new Set(((docs ?? []) as { parcel_id: string }[]).map((d) => d.parcel_id));
-  const { data } = await supabase.from("parcels").select("id, pun, area_m2, registered_at").eq("status", "registered").eq("layout", "house").order("registered_at", { ascending: false }).limit(200);
+  const { data } = await supabase.from("parcels").select("id, pun, area_m2, registered_at").eq("status", "registered").eq("layout", "house").eq("building_state", "standing").order("registered_at", { ascending: false }).limit(200);
   const rows = ((data ?? []) as { id: string; pun: string; area_m2: number | null; registered_at: string | null }[]).filter((p) => !done.has(p.id)).slice(0, limit);
   return Promise.all(
     rows.map(async (p) => {

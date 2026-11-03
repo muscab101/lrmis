@@ -166,7 +166,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     {/* Partial land: View, Update, Delete, and Move to registered once it has an owner; locking is on its own page. A registered flat goes with its building. */}
                     <ParcelRowActions
                       parcel={p}
-                      can={partial(p.status) ? { update: can.update, lock: false, register: can.register && !!p.owners, delete: canDelete(p.status) } : { ...can, update: can.update && !p.parent_id, delete: !p.parent_id && canDelete(p.status) }}
+                      can={p.building_state === "demolished" ? { update: false, lock: false } : partial(p.status) ? { update: can.update, lock: false, register: can.register && !!p.owners, delete: canDelete(p.status) } : { ...can, update: can.update && !p.parent_id, delete: !p.parent_id && canDelete(p.status) }}
                     />
                   </TableCell>
                 </TableRow>

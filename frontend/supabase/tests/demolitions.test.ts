@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asService, asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -155,21 +155,21 @@ describe("yearly tax", () => {
     return db.query<{ amount: string; exception: string | null }>(`select c.amount, c.exception from public.billing_runs r, private.billing_run_candidates(r) c where r.id = $1 and c.parcel_id = $2`, [run, id]);
   };
 
-  it("pays land tax at the Empty Land price instead of the house price, and old balances stay", async () => {
+  it("demolished land gets no more yearly bills", async () => {
     const h = await house("09");
     expect(Number((await candidate(h.parcel_id)).rows[0]!.amount)).toBe(50);
     await ask(registrar, [h.parcel_id], { approve_now: true });
-    expect(Number((await candidate(h.parcel_id)).rows[0]!.amount)).toBe(20);
+    expect((await candidate(h.parcel_id)).rows).toHaveLength(0);
   });
 
-  it("a demolished building's flats get no more bills; its land does", async () => {
+  it("a demolished building's flats and its land get no more bills", async () => {
     const f = await units("flats", "10");
     const flat = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [f.parcel_id]);
     expect(Number((await candidate(flat)).rows[0]!.amount)).toBe(12.5);
     expect((await candidate(f.parcel_id)).rows).toHaveLength(0);
     await ask(registrar, [f.parcel_id], { approve_now: true });
     expect((await candidate(flat)).rows).toHaveLength(0);
-    expect(Number((await candidate(f.parcel_id)).rows[0]!.amount)).toBe(20);
+    expect((await candidate(f.parcel_id)).rows).toHaveLength(0);
   });
 });
 
@@ -274,5 +274,61 @@ describe("registering again", () => {
     await house("34");
     await ask(registrar, [a.parcel_id], { approve_now: true });
     await expectError(again(await demolitionOf(a.parcel_id), { keep_owner: true, property_type: "brick", house_no: "34" }), "CONFLICT: house_no_taken");
+  });
+});
+
+describe("demolished land is an archive", () => {
+  let land: string;
+  let landPun: string;
+  beforeAll(async () => {
+    const r = await house("91");
+    land = r.parcel_id;
+    landPun = r.pun;
+    await ask(registrar, [land], { approve_now: true });
+  });
+  const refused = (sql: string, args: unknown[] = [land]) => expect(db.query(sql, args)).rejects.toThrow(/^CONFLICT: parcel_demolished/);
+
+  it("takes no payment, by the desk or online; its bills are frozen; a provider's money waits unmatched", async () => {
+    await refused(`insert into public.payments (parcel_id) values ($1)`);
+    const bill = await scalar<string>(db, `select id from public.invoices where parcel_id = $1 and status = 'issued' limit 1`, [land]);
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.payment_intent_create($1, null, 'test', '+252615550101')`, [bill]))).rejects.toThrow(/^CONFLICT: parcel_demolished/);
+    await refused(`update public.invoices set status = 'cancelled' where id = $1`, [bill]);
+    const res = await asService(db, (tx) =>
+      scalar<{ result: string; payment_id: string }>(tx, `select public.webhook_ingest('test', 'archive1', true, $1, '{}')`, [
+        JSON.stringify({ status: "succeeded", reference: landPun, amount: 5, currency: "USD", provider_ref: "archive-ref" }),
+      ]),
+    );
+    expect(res.result).toBe("unmatched");
+    expect(await scalar<string>(db, `select status from public.payments where id = $1`, [res.payment_id])).toBe("unmatched");
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.payment_match($1, $2)`, [res.payment_id, land]))).rejects.toThrow(/^CONFLICT: parcel_demolished/);
+    expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [bill])).toBe("issued");
+  });
+
+  it("takes no transfer, division, bill, assessment, certificate, permit, lease, dispute or lien", async () => {
+    for (const table of ["transfers", "invoices", "assessments", "issued_documents", "permits", "leases", "disputes", "liens", "court_orders", "exemptions", "surveys"]) {
+      await refused(`insert into public.${table} (parcel_id) values ($1)`);
+    }
+    await refused(`insert into public.parcel_changes (parcel_ids) values (array[$1::uuid])`);
+    expect(await scalar<string[]>(db, `select private.certificate_blockers($1)`, [land])).toEqual(["demolished"]);
+  });
+
+  it("can't be edited, locked or deleted", async () => {
+    await expect(asUser(db, registrar, (tx) => tx.query(`select public.parcel_update_details($1, '{"house_no": "99"}')`, [land]))).rejects.toThrow(/^CONFLICT: parcel_demolished/);
+    await expect(asUser(db, registrar, (tx) => tx.query(`select public.parcel_lock($1, 'not allowed here')`, [land]))).rejects.toThrow(/^CONFLICT: parcel_demolished/);
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not allowed here')`, [land]))).rejects.toThrow(/CONFLICT: parcel_demolished/);
+  });
+
+  it("isn't listed for collecting, and its bills count apart", async () => {
+    const collect = await asUser(db, cashier, (tx) => tx.query<{ parcel_id: string }>(`select parcel_id from public.cashier_to_collect($1)`, [district]));
+    expect(collect.rows.some((r) => r.parcel_id === land)).toBe(false);
+    const rows = await asUser(db, registrar, (tx) => tx.query<{ land: string; owed: string }>(`select * from public.invoices_by_land()`));
+    expect(Number(rows.rows.find((r) => r.land === "demolished")!.owed)).toBeGreaterThan(0);
+  });
+
+  it("Undo brings it back, and it works as normal again", async () => {
+    const id = await scalar<string>(db, `select id from public.demolitions where parcel_id = $1 and status = 'approved'`, [land]);
+    await asUser(db, registrar, (tx) => tx.query(`select public.demolition_restore($1, 'Marked by mistake')`, [id]));
+    await asUser(db, registrar, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_no": "P-1"}')`, [land]));
+    expect(await scalar<string>(db, `select plot_no from public.parcels where id = $1`, [land])).toBe("P-1");
   });
 });
