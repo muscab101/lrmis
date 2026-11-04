@@ -118,7 +118,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                 const nbhd = lang === "so" ? p.neighbourhood : (p.neighbourhood_en ?? p.neighbourhood);
                 const district = lang === "so" ? p.district : p.district_en;
                 // The neighbourhood with the house or flat number, unless the number already starts with it.
-                const houseNo = p.house_no && (nbhd && !p.house_no.startsWith(nbhd) ? `${nbhd} · ${p.house_no}` : p.house_no);
+                const houseNo = p.house_no && (nbhd && !p.house_no.startsWith(nbhd) ? `${nbhd} ${p.house_no}` : p.house_no);
                 return (
                 <TableRow key={p.id}>
                   <TableCell className="hidden text-sm whitespace-nowrap tabular-nums md:table-cell">
