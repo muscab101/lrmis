@@ -105,7 +105,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               <TableRow>
                 <TableHead className="hidden md:table-cell">{t("dateCreated")}</TableHead>
                 <TableHead>{t("pun")}</TableHead>
-                <TableHead className="hidden md:table-cell">{t("accountNo")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
                 <TableHead className="hidden md:table-cell">{t("district")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
@@ -131,12 +130,12 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
                       <Mono>{p.pun ?? t("noPun")}</Mono>
                     </Link>
+                    {p.account_no && <Mono className="text-muted-foreground block text-xs">{p.account_no}</Mono>}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
                       {[houseNo ?? nbhd, p.building_state === "demolished" && t("demolishedLabel")].filter(Boolean).join(" · ")}
                     </div>
                   </TableCell>
-                  <TableCell className="hidden text-sm md:table-cell">{p.account_no ? <Mono className="text-xs">{p.account_no}</Mono> : "—"}</TableCell>
                   {showInvoices && (
                     <TableCell className="hidden text-sm md:table-cell">
                       {p.invoice ? <Mono className="text-xs whitespace-nowrap">{p.invoice}</Mono> : "—"}
