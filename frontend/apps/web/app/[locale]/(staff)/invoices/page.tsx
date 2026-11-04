@@ -4,16 +4,16 @@ import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import {
+  Archive,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  BadgeCheck,
   Banknote,
   ChevronDown,
-  Clock,
   Eye,
   Filter,
-  Hammer,
+  HandCoins,
+  Hourglass,
   Printer,
   Receipt,
 } from "lucide-react";
@@ -41,9 +41,9 @@ export async function generateMetadata() {
 }
 
 const LAND_CARDS = [
-  { land: "registered", icon: BadgeCheck, tone: "text-foreground", chip: "bg-status-approved/10 text-status-approved" },
-  { land: "partial", icon: Clock, tone: "text-foreground", chip: "bg-status-pending/10 text-status-pending" },
-  { land: "demolished", icon: Hammer, tone: "text-muted-foreground", chip: "bg-muted text-muted-foreground" },
+  { land: "registered", icon: HandCoins, tone: "text-foreground", chip: "text-status-approved" },
+  { land: "partial", icon: Hourglass, tone: "text-foreground", chip: "text-status-pending" },
+  { land: "demolished", icon: Archive, tone: "text-muted-foreground", chip: "text-muted-foreground" },
 ] as const;
 
 const FILTERS: InvoiceFilter[] = ["open", "overdue", "paid", "cancelled", "any"];
@@ -398,9 +398,7 @@ export default async function InvoicesPage({
           >
             <span className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground text-sm">{t(`land_${k}`)}</span>
-              <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${chip}`}>
-                <Icon className="size-4" aria-hidden />
-              </span>
+              <Icon className={`size-5 shrink-0 ${chip}`} aria-hidden />
             </span>
             <span className={`mt-1 block text-2xl font-semibold tabular-nums ${tone}`}>{usd(byLand[k].owed)}</span>
             <span className="text-muted-foreground mt-1 block text-xs">{t(`landCard_${k}`)}</span>
