@@ -263,3 +263,21 @@ describe("changing land not registered yet", () => {
     await expectError(remove(second), "CONFLICT: compound_started");
   });
 });
+
+describe("a registered flat", () => {
+  it("can change its house number, not its type or size", async () => {
+    await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('unit_test','Darajo','Grade', 0.5), ('unit_dear','Qaali','Dear', 1) on conflict (code) do update set amount = excluded.amount`);
+    const flats = [
+      { unit_no: "A", floor: 0, own_m2: 80, owner_name: "Office One" },
+      { unit_no: "B", floor: 1, own_m2: 90, owner_name: "Office Two" },
+    ];
+    const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "81" });
+    const a = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = 'A'`, [r.parcel_id]);
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [a]));
+    const edit = (p: Record<string, unknown>) => asUser(db, admin, (tx) => tx.query(`select public.parcel_update_details($1, $2)`, [a, JSON.stringify(p)]));
+    await edit({ house_no: "81-A1", plot_no: "P-7" });
+    expect(await scalar<string>(db, `select house_no from public.parcels where id = $1`, [a])).toBe("81-A1");
+    await expectError(edit({ property_type: "unit_dear" }), "CONFLICT: registered_size_fixed");
+    await expectError(edit({ own_m2: "100" }), "CONFLICT: units_fixed");
+  });
+});

@@ -30,6 +30,19 @@ export interface ParcelListRow {
   plot_no: string | null;
   building_state: "standing" | "demolished";
   parent_id: string | null;
+  /** Money was received on it, so it can't be deleted. */
+  has_money: boolean;
+}
+
+/** Of these parcels, the ones money was received on (the database refuses to delete those). */
+export async function parcelsWithMoney(ids: string[]) {
+  if (ids.length === 0) return new Set<string>();
+  const supabase = await createClient();
+  const [{ data: bills }, { data: payments }] = await Promise.all([
+    supabase.from("invoices").select("parcel_id").in("parcel_id", ids).neq("status", "cancelled").or("paid.gt.0,credited.gt.0"),
+    supabase.from("payments").select("parcel_id").in("parcel_id", ids).neq("status", "reversed"),
+  ]);
+  return new Set([...((bills ?? []) as { parcel_id: string }[]), ...((payments ?? []) as { parcel_id: string }[])].map((r) => r.parcel_id));
 }
 
 export const PARCEL_STAGES = ["draft", "registered", "paid", "owing", "demolished", "all"] as const;
@@ -63,7 +76,11 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
   if (rows.length) {
     const { data } = await supabase.from("parcels").select("id, account_no").in("id", rows.map((r) => r.id));
     const acct = new Map(((data ?? []) as { id: string; account_no: string | null }[]).map((a) => [a.id, a.account_no]));
-    for (const r of rows) r.account_no = acct.get(r.id) ?? null;
+    const money = await parcelsWithMoney(rows.map((r) => r.id));
+    for (const r of rows) {
+      r.account_no = acct.get(r.id) ?? null;
+      r.has_money = money.has(r.id);
+    }
   }
   return rows;
 }

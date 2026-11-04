@@ -10,7 +10,7 @@ import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getLandUnits, getParcel, getParentLand } from "@/lib/server/parcels";
+import { getLandUnits, getParcel, getParentLand, parcelsWithMoney } from "@/lib/server/parcels";
 import { openDemolitionOf } from "@/lib/server/demolitions";
 import { MarkDemolished } from "@/components/demolitions/mark-demolished";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
@@ -65,6 +65,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const demolitions = canSeeDemolitions ? await openDemolitionOf(p.id) : [];
   const waiting = demolitions.find((x) => x.status === "pending");
   const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
+  const hasMoney = (await parcelsWithMoney([p.id])).has(p.id);
   // Demolished land is an archive: it can be seen, nothing else.
   const archived = p.building_state === "demolished";
   const canMark =
@@ -131,11 +132,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               parcel={p}
               onDetail
               can={archived ? { update: false, lock: false } : {
-                // A building's sizes are fixed once saved; a flat or house can change and be deleted until it's registered.
-                update: viewer.can("parcels.update") && !holdsUnits && (!p.parent_id || partial),
+                // A building's sizes are fixed once saved. A flat or house can be deleted until it's registered; land with money received can't.
+                update: viewer.can("parcels.update") && !holdsUnits,
                 lock: viewer.can("parcels.lock"),
                 register: viewer.can("parcels.approve"),
-                delete: (!p.parent_id || partial) && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
+                delete: (!p.parent_id || partial) && !hasMoney && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
               }}
             />
           </div>

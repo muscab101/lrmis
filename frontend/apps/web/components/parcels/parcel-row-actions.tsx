@@ -160,7 +160,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         open={dialog === "edit"}
         onOpenChange={close}
         title={t("editTitle", { pun: name })}
-        description={t("editBody")}
+        description={partial ? t("editBody") : t("editBodyRegistered")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
         submit={() =>
@@ -169,14 +169,14 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             ...v,
             ...(info
               ? {
-                  propertyType: info.propertyType,
+                  ...(partial ? { propertyType: info.propertyType } : {}),
                   ...(info.unit ? {} : { flatNo: apartment ? info.flatNo : "" }),
                   landUse: info.landUse,
                   ...(info.unit
                     ? info.unit.partial
                       ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
                       : {}
-                    : { widthM: info.widthM, lengthM: info.lengthM, units: info.units }),
+                    : { ...(partial ? { widthM: info.widthM, lengthM: info.lengthM } : {}), units: info.units }),
                   ...(info.owner ? { ownerName: info.owner.name, ownerPhone: info.owner.phone } : {}),
                 }
               : {}),
@@ -188,6 +188,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
               <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
             </Field>
+            {/* Registered land keeps the size and type its bills and certificate were made from. */}
+            {partial && (
             <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")} className="sm:col-span-2">
               <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
                 <option value="">{ta("choose")}</option>
@@ -200,6 +202,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   ))}
               </NativeSelect>
             </Field>
+            )}
             {apartment && !info?.unit && (
               <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
                 <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
@@ -219,7 +222,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                 </>
               )
             ) : (
-              <>
+              partial && <>
             <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
             </Field>

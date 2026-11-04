@@ -104,6 +104,12 @@ describe("flat number", () => {
     expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
   });
 
+  it("registered land keeps its size and type; land not registered yet can change them", async () => {
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"storey"}')`, [parcel])), "CONFLICT: registered_size_fixed");
+    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_width_m":"12","plot_length_m":"15"}')`, [parcel])), "CONFLICT: registered_size_fixed");
+    await db.query(`update public.parcels set status = 'draft' where id = $1`, [parcel]);
+  });
+
   it("the edit can change the property type and unit; only the keys sent change (0135)", async () => {
     await asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"storey","flat_no":"4A"}')`, [parcel]));
     const r = await db.query<{ property_type: string; flat_no: string; house_no: string; plot_no: string }>(
@@ -125,6 +131,7 @@ describe("flat number", () => {
     expect([Number(r.rows[0]!.w), Number(r.rows[0]!.l), r.rows[0]!.land_use, r.rows[0]!.units]).toEqual([12, 15, "commercial", 4]);
     await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_width_m":"0","plot_length_m":"5"}')`, [parcel])), "VALIDATION");
     await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"units":"0"}')`, [parcel])), "VALIDATION");
+    await db.query(`update public.parcels set status = 'registered' where id = $1`, [parcel]);
   });
 
   it("goes from the application to its parcel", async () => {
