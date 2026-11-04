@@ -7,10 +7,13 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  BadgeCheck,
   Banknote,
   ChevronDown,
+  Clock,
   Eye,
   Filter,
+  Hammer,
   Printer,
   Receipt,
 } from "lucide-react";
@@ -36,6 +39,12 @@ export async function generateMetadata() {
   const t = await getTranslations("billing");
   return { title: t("invoicesTitle") };
 }
+
+const LAND_CARDS = [
+  { land: "registered", icon: BadgeCheck, tone: "text-foreground", chip: "bg-status-approved/10 text-status-approved" },
+  { land: "partial", icon: Clock, tone: "text-foreground", chip: "bg-status-pending/10 text-status-pending" },
+  { land: "demolished", icon: Hammer, tone: "text-muted-foreground", chip: "bg-muted text-muted-foreground" },
+] as const;
 
 const FILTERS: InvoiceFilter[] = ["open", "overdue", "paid", "cancelled", "any"];
 
@@ -377,7 +386,27 @@ export default async function InvoicesPage({
 
   return (
     <>
-      <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle", { outstanding: usd(byLand.registered.owed), partial: usd(byLand.partial.owed), demolished: usd(byLand.demolished.owed) })} />
+      <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle")} />
+      {/* What is owed on each kind of land; a card opens its bills, and pressing it again shows them all. */}
+      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+        {LAND_CARDS.map(({ land: k, icon: Icon, tone, chip }) => (
+          <Link
+            key={k}
+            href={`/invoices?${new URLSearchParams(land === k ? {} : { land: k })}`}
+            aria-current={land === k ? "true" : undefined}
+            className={`bg-card hover:border-primary/40 rounded-xl border p-4 shadow-xs transition-colors ${land === k ? "border-primary ring-primary/30 ring-1" : ""}`}
+          >
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-muted-foreground text-sm">{t(`land_${k}`)}</span>
+              <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${chip}`}>
+                <Icon className="size-4" aria-hidden />
+              </span>
+            </span>
+            <span className={`mt-1 block text-2xl font-semibold tabular-nums ${tone}`}>{usd(byLand[k].owed)}</span>
+            <span className="text-muted-foreground mt-1 block text-xs">{t(`landCard_${k}`)}</span>
+          </Link>
+        ))}
+      </div>
       <Card className="overflow-hidden">{body}</Card>
     </>
   );

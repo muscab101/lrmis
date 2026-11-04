@@ -2841,7 +2841,10 @@
     "land_demolished": "Dhul la dumiyay",
     "landDemolishedTitle": "Dhulkan waa la dumiyay",
     "landDemolishedHint": "Biilkan waxaa loo hayaa diiwaan ahaan, lama bixin karo lamana beddeli karo.",
-    "invoicesSubtitle": "{outstanding} lagu leeyahay dhul la diiwaangeliyay, {partial} dhul qayb ahaan ah, {demolished} oo xiran dhul la dumiyay.",
+    "landCard_registered": "Hadda waa la bixin karaa",
+    "landCard_partial": "Sugaya diiwaangelin",
+    "landCard_demolished": "Xiran, diiwaan ahaan loo hayo",
+    "invoicesSubtitle": "Biil kasta, iyadoo loo eegayo nooca dhulka uu leeyahay.",
     "sections": {
       "invoices": "Biilal",
       "credit": "Warqadaha dhimista",

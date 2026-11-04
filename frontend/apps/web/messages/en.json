@@ -2841,7 +2841,10 @@
     "land_demolished": "Demolished land",
     "landDemolishedTitle": "This land is demolished",
     "landDemolishedHint": "This bill is kept as a record and can't be paid or changed.",
-    "invoicesSubtitle": "{outstanding} outstanding on registered parcels, {partial} on partial parcels, {demolished} frozen on demolished land.",
+    "landCard_registered": "Can be paid now",
+    "landCard_partial": "Waiting for registration",
+    "landCard_demolished": "Frozen, kept as a record",
+    "invoicesSubtitle": "Every bill, by the kind of land it belongs to.",
     "sections": {
       "invoices": "Invoices",
       "credit": "Credit notes",
