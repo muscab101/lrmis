@@ -107,7 +107,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                 <TableHead>{t("pun")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("accountNo")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
-                <TableHead className="hidden md:table-cell">{t("neighbourhood")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("district")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
                 <TableHead>{t("ownerName")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("statusLabel")}</TableHead>
@@ -118,6 +118,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               {rows.map((p) => {
                 const nbhd = lang === "so" ? p.neighbourhood : (p.neighbourhood_en ?? p.neighbourhood);
                 const district = lang === "so" ? p.district : p.district_en;
+                // The neighbourhood with the house or flat number, unless the number already starts with it.
+                const houseNo = p.house_no && (nbhd && !p.house_no.startsWith(nbhd) ? `${nbhd} · ${p.house_no}` : p.house_no);
                 return (
                 <TableRow key={p.id}>
                   <TableCell className="hidden text-sm whitespace-nowrap tabular-nums md:table-cell">
@@ -131,7 +133,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     </Link>
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
-                      {[nbhd, p.house_no && `${t("houseNoShort")} ${p.house_no}`, p.building_state === "demolished" && t("demolishedLabel")].filter(Boolean).join(" · ")}
+                      {[houseNo ?? nbhd, p.building_state === "demolished" && t("demolishedLabel")].filter(Boolean).join(" · ")}
                     </div>
                   </TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{p.account_no ? <Mono className="text-xs">{p.account_no}</Mono> : "—"}</TableCell>
@@ -140,11 +142,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.invoice ? <Mono className="text-xs whitespace-nowrap">{p.invoice}</Mono> : "—"}
                     </TableCell>
                   )}
-                  <TableCell className="hidden text-sm md:table-cell">
-                    {nbhd ?? "—"}
-                    <div className="text-muted-foreground text-xs">{district}</div>
-                  </TableCell>
-                  <TableCell className="hidden text-sm lg:table-cell">{p.house_no ?? "—"}</TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{district ?? "—"}</TableCell>
+                  <TableCell className="hidden text-sm lg:table-cell">{houseNo ?? nbhd ?? "—"}</TableCell>
                   <TableCell className="text-sm">{p.owners ?? "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <ParcelStatusBadge status={p.status} />

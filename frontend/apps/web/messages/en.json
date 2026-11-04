@@ -2393,6 +2393,7 @@
     "houseNo": "House No",
     "flatNo": "Flat number",
     "houseNoShort": "House",
+    "district": "District",
     "neighbourhood": "Neighbourhood",
     "ownerName": "Owner",
     "owing": "{amount} owing",
