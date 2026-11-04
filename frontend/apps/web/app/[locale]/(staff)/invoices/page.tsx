@@ -261,11 +261,9 @@ export default async function InvoicesPage({
                   <Sort by="due_date">{t("table.dateDue")}</Sort>
                 </TableHead>
                 <TableHead>{t("table.pun")}</TableHead>
-                <TableHead>{t("table.accountNo")}</TableHead>
                 <TableHead>
                   <Sort by="number">{t("table.reference")}</Sort>
                 </TableHead>
-                <TableHead>{t("table.telephone")}</TableHead>
                 <TableHead className="text-end">
                   <Sort by="total" end>
                     {t("table.amount")}
@@ -273,7 +271,7 @@ export default async function InvoicesPage({
                 </TableHead>
                 <TableHead className="text-end">
                   <Sort by="paid" end>
-                    {t("table.amountPaid")}
+                    {t("paid")}
                   </Sort>
                 </TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
@@ -293,14 +291,18 @@ export default async function InvoicesPage({
                   <TableCell>
                     {i.parcel ? (
                       <Link href={`/parcels/${i.parcel.id}`} className="hover:text-primary">
-                        <Mono>{i.parcel.pun ?? "—"}</Mono>
+                        <Mono className="whitespace-nowrap">{i.parcel.pun ?? "—"}</Mono>
                       </Link>
                     ) : (
                       "—"
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Mono className="text-xs">{i.account_no ?? "—"}</Mono>
+                    {/* The account and phone sit under the PUN, so the actions fit without scrolling. */}
+                    {i.account_no && <Mono className="text-muted-foreground block text-xs">{i.account_no}</Mono>}
+                    {i.phone && (
+                      <span dir="ltr" className="text-muted-foreground block text-xs tabular-nums">
+                        {i.phone}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Link href={`/invoices/${i.id}`} className="hover:text-primary">
@@ -309,9 +311,6 @@ export default async function InvoicesPage({
                     <span className="text-muted-foreground block text-xs">
                       {i.fee_type ? (lang === "so" ? i.fee_type.name_so : i.fee_type.name_en) : ""}
                     </span>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm tabular-nums">
-                    {i.phone ?? "—"}
                   </TableCell>
                   <TableCell className="text-end text-sm tabular-nums">{money(i.total)}</TableCell>
                   <TableCell className="text-end text-sm font-medium tabular-nums">
