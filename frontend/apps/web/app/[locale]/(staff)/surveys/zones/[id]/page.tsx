@@ -6,7 +6,6 @@ import { Home, MapPinPlus, UserPlus } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
-import { RegisterParcelButton } from "@/components/parcels/register-parcel-button";
 import { ZoneCloseButtons } from "@/components/parcels/zone-close-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -18,7 +17,7 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-/** One survey zone: how far it is (houses / capacity) and every house recorded in its neighbourhood. */
+/** One survey zone: how far it is (houses / capacity) and every house recorded in its neighbourhood. Land is registered from Parcels, not here. */
 export default async function ZonePage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -108,7 +107,6 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                 <TableHead>{tp("ownerName")}</TableHead>
                 <TableHead>{tp("statusLabel")}</TableHead>
                 <TableHead className="hidden md:table-cell">{tp("dateCreated")}</TableHead>
-                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,11 +127,6 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                     <ParcelStatusBadge status={p.status} />
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden text-xs md:table-cell">{format.dateTime(new Date(p.created_at), { dateStyle: "medium" })}</TableCell>
-                  <TableCell className="text-end">
-                    {["draft", "surveyed", "verified"].includes(p.status) && viewer.can("parcels.approve") ? (
-                      <RegisterParcelButton parcelId={p.id} label={[name, p.house_no && `${tp("houseNoShort")} ${p.house_no}`].filter(Boolean).join(" · ")} />
-                    ) : null}
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
