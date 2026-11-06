@@ -64,6 +64,47 @@ export const cancelInvoiceAction = defineAction("invoices.cancel", z.object({ id
   return done(null);
 });
 
+export interface DuplicateCopy {
+  id: string;
+  number: string;
+  total: number;
+  paid: number;
+  pun: string | null;
+  parcel_id: string;
+  fee_so: string;
+  fee_en: string;
+  keep: boolean;
+  has_money: boolean;
+}
+
+export interface MissingBill {
+  parcel_id: string;
+  pun: string | null;
+  house_no: string | null;
+  owners: string | null;
+  code: string;
+  fee_so: string;
+  fee_en: string;
+  amount: number;
+}
+
+export const checkDuplicatesAction = defineAction("invoices.check_duplicates", z.object({}), async (_v, ctx) =>
+  unwrap(await ctx.supabase.rpc("invoice_duplicates", {}), "check duplicates") as DuplicateCopy[],
+);
+
+/** One of each stays; the others are cancelled, so they stay on record. */
+export const fixDuplicatesAction = defineAction("invoices.fix_duplicates", z.object({}), async (_v, ctx) =>
+  done(unwrap(await ctx.supabase.rpc("invoice_duplicates_fix", {}), "fix duplicates") as { cancelled: number; left: number }),
+);
+
+export const checkMissingAction = defineAction("invoices.check_missing", z.object({}), async (_v, ctx) =>
+  unwrap(await ctx.supabase.rpc("invoice_missing", {}), "check missing") as MissingBill[],
+);
+
+export const createMissingAction = defineAction("invoices.create_missing", z.object({ parcelIds: z.array(z.uuid()).min(1).max(1000) }), async ({ parcelIds }, ctx) =>
+  done(unwrap(await ctx.supabase.rpc("invoice_missing_create", { p_parcels: parcelIds }), "create missing") as number),
+);
+
 export const applyPenaltiesAction = defineAction("billing.penalties", z.object({}), async (_v, ctx) =>
   done(unwrap(await ctx.supabase.rpc("apply_late_penalties", {}), "penalties") as number),
 );

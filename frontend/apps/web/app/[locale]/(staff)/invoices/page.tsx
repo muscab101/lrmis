@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
+import { InvoiceTools } from "@/components/billing/invoice-tools";
 import { PAGE_SIZES } from "@/components/billing/page-sizes";
 import { EntriesSelect } from "@/components/billing/table-controls";
 import { InvoiceStatusBadge } from "@/components/billing/status";
@@ -228,6 +229,7 @@ export default async function InvoicesPage({
             </form>
           </details>
           <EntriesSelect size={size} query={query} />
+          <InvoiceTools canFixDuplicates={viewer.can("invoices.cancel")} canCreateMissing={viewer.can("invoices.create")} />
           <form className="ms-auto flex items-center gap-2 text-sm" role="search">
             {Object.entries(query)
               .filter(([k]) => k !== "q")
