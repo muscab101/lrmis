@@ -7,7 +7,19 @@ import { IMPERSONATION_COOKIE, openImpersonation } from "./lib/impersonation";
 const intl = createIntlMiddleware(routing);
 
 /** Paths (after the locale) anyone can open. */
-const PUBLIC = [/^\/$/, /^\/login$/, /^\/citizen\/login$/, /^\/forgot-password$/, /^\/setup$/, /^\/design$/, /^\/verify(\/|$)/, /^\/pay\//, /^\/track(\/|$)/, /^\/notices$/, /^\/agent-print\//];
+const PUBLIC = [
+  /^\/$/,
+  /^\/login$/,
+  /^\/citizen\/login$/,
+  /^\/forgot-password$/,
+  /^\/setup$/,
+  /^\/design$/,
+  /^\/verify(\/|$)/,
+  /^\/pay\//,
+  /^\/track(\/|$)/,
+  /^\/notices$/,
+  /^\/agent-print\//,
+];
 /** Steps of the sign-in flow: need a user but skip the staff gates. */
 const AUTH_FLOW = [/^\/mfa$/, /^\/change-password$/, /^\/reset-password$/];
 /** Citizen portal. Everything else is the staff area. */
@@ -28,23 +40,15 @@ interface SessionState {
   permissions_changed_at: number;
 }
 
-function jwtIat(token: string | undefined): number {
-  try {
-    const payload = token?.split(".")[1];
-    if (!payload) return 0;
-    return (JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { iat?: number }).iat ?? 0;
-  } catch {
-    return 0;
-  }
-}
-
 export async function middleware(request: NextRequest) {
   const response = intl(request);
   // Locale redirect (e.g. /admin → /so/admin): let next-intl answer first.
   if (response.headers.get("location")) return response;
 
   const [, maybeLocale = "", ...rest] = request.nextUrl.pathname.split("/");
-  const locale = (routing.locales as readonly string[]).includes(maybeLocale) ? maybeLocale : routing.defaultLocale;
+  const locale = (routing.locales as readonly string[]).includes(maybeLocale)
+    ? maybeLocale
+    : routing.defaultLocale;
   const path = `/${rest.join("/")}`.replace(/\/$/, "") || "/";
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -71,9 +75,10 @@ export async function middleware(request: NextRequest) {
     return res;
   };
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Checked locally with the project's public key (refreshed when it runs out): no trip to the auth server.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  const user = claims?.sub ? { id: claims.sub } : null;
 
   const isPublic = PUBLIC.some((r) => r.test(path));
   const isAuthFlow = AUTH_FLOW.some((r) => r.test(path));
@@ -95,10 +100,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Roles/districts changed since this token was issued → refresh so JWT claims are current.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (state.permissions_changed_at > jwtIat(session?.access_token)) {
+  if (state.permissions_changed_at > Number(claims?.iat ?? 0)) {
     await supabase.auth.refreshSession();
   }
 
@@ -108,22 +110,39 @@ export async function middleware(request: NextRequest) {
     // Idle timeout for staff sessions.
     // Activity from before the current sign-in doesn't count (a stale cookie from an earlier session).
     const lastSeen = Number(request.cookies.get(IDLE_COOKIE)?.value ?? 0);
-    const signedInAt = Date.parse(user.last_sign_in_at ?? "") || 0;
+    // When they signed in: the latest sign-in step recorded in the token.
+    const signedInAt = Math.max(
+      0,
+      ...(claims?.amr ?? []).map((a) => (typeof a === "string" ? 0 : Number(a.timestamp) * 1000)),
+    );
     if (lastSeen && lastSeen > signedInAt && Date.now() - lastSeen > IDLE_MINUTES * 60_000) {
       await supabase.auth.signOut();
-      const res = redirectTo("/login", { error: "SESSION_EXPIRED", next: request.nextUrl.pathname });
+      const res = redirectTo("/login", {
+        error: "SESSION_EXPIRED",
+        next: request.nextUrl.pathname,
+      });
       res.cookies.delete(IDLE_COOKIE);
       return res;
     }
-    response.cookies.set(IDLE_COOKIE, String(Date.now()), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
+    response.cookies.set(IDLE_COOKIE, String(Date.now()), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
 
     // A super admin testing this account doesn't set its password or do its 2FA.
-    const testing = await openImpersonation(request.cookies.get(IMPERSONATION_COOKIE)?.value, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const testing = await openImpersonation(
+      request.cookies.get(IMPERSONATION_COOKIE)?.value,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+    );
     if (testing?.target === user.id) return response;
 
     const needsPassword = state.must_change_password || state.status === "invited";
     if (needsPassword) {
-      return path === "/change-password" || path === "/reset-password" ? response : redirectTo("/change-password");
+      return path === "/change-password" || path === "/reset-password"
+        ? response
+        : redirectTo("/change-password");
     }
     if (state.mfa_required) {
       const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();

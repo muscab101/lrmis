@@ -98,6 +98,11 @@ export default async function StaffActivityPersonPage({
               {t("show")}
             </Button>
           </form>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/admin/activity/${id}/work${day ? `?day=${day}` : ""}`}>
+              {t("viewWork")}
+            </Link>
+          </Button>
           {viewer.isSuperAdmin && id !== viewer.user.id && (
             <Button asChild size="sm">
               <Link href={`/admin/activity/live?u=${id}`}>{t("live")}</Link>

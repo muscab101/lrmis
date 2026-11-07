@@ -19,6 +19,8 @@ interface Result {
   pun: string;
   issued_at: string;
   expires_at: string | null;
+  /** Certificates: the tax year it covers. */
+  tax_year: number | null;
   district: string;
   district_en: string;
   neighbourhood: string | null;
@@ -58,7 +60,13 @@ export default async function VerifyPage({ params }: { params: Promise<{ locale:
           {tone === "valid" ? <CheckCircle2 className="size-8" aria-hidden /> : tone === "bad" ? <XCircle className="size-8" aria-hidden /> : <CircleAlert className="size-8" aria-hidden />}
           <div>
             <p className="text-xl font-semibold">{!r ? t("notFound") : t(`result.${r.status}`)}</p>
-            <p className="text-sm opacity-80">{!r ? t("notFoundBody") : td(`types.${r.type}`)}</p>
+            <p className="text-sm opacity-80">
+              {!r
+                ? t("notFoundBody")
+                : r.status === "expired" && r.tax_year
+                  ? t("expiredBody", { year: r.tax_year })
+                  : `${td(`types.${r.type}`)}${r.tax_year ? ` · ${td("taxYear")} ${r.tax_year}` : ""}`}
+            </p>
           </div>
         </div>
         {r && (
@@ -69,6 +77,12 @@ export default async function VerifyPage({ params }: { params: Promise<{ locale:
                 <dd>
                   <Mono>{r.serial}</Mono>
                 </dd>
+                {r.tax_year && (
+                  <>
+                    <dt className="text-muted-foreground">{td("taxYear")}</dt>
+                    <dd className="font-semibold">{r.tax_year}</dd>
+                  </>
+                )}
                 <dt className="text-muted-foreground">PUN</dt>
                 <dd>
                   <Mono>{r.pun}</Mono>

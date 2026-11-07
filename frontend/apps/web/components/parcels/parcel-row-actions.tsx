@@ -6,11 +6,12 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect, Tooltip } from "@dhulka/ui/form-controls";
 import { LAND_USES } from "@dhulka/core/schemas";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, Pencil, Trash2 } from "lucide-react";
+import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, MapPin, Pencil, Trash2, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { deleteParcelAction, lockParcelAction, parcelEditInfoAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { OwnerFields } from "@/components/owners/owner-fields";
 import { HouseNoSelect } from "@/components/parcels/house-no-select";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isApartmentType } from "@/lib/apartment";
@@ -160,6 +161,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         open={dialog === "edit"}
         onOpenChange={close}
         title={t("editTitle", { pun: name })}
+        className={partial ? "sm:max-w-2xl" : undefined}
         description={partial ? t("editBody") : t("editBodyRegistered")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
@@ -176,92 +178,124 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                     ? info.unit.partial
                       ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
                       : {}
-                    : { ...(partial ? { widthM: info.widthM, lengthM: info.lengthM } : {}), units: info.units }),
-                  ...(info.owner ? { ownerName: info.owner.name, ownerPhone: info.owner.phone } : {}),
+                    : partial
+                      ? { widthM: info.widthM, lengthM: info.lengthM }
+                      : {}),
+                  // With full owner details, the name and phone come from them (saved together with the land).
+                  ...(info.ownerDetails
+                    ? {
+                        ownerName: info.ownerDetails.input.fullName ?? "",
+                        ownerPhone: info.ownerDetails.input.phone ?? "",
+                        ownerId: info.ownerDetails.id,
+                        owner: info.ownerDetails.input,
+                      }
+                    : info.owner
+                      ? { ownerName: info.owner.name, ownerPhone: info.owner.phone }
+                      : {}),
                 }
               : {}),
           })
         }
       >
         {(fe) => (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
-              <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
-            </Field>
-            {/* Registered land keeps the size and type its bills and certificate were made from. */}
-            {partial && (
-            <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")} className="sm:col-span-2">
-              <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
-                <option value="">{ta("choose")}</option>
-                {(info?.types ?? [])
-                  .filter((p) => p.active || p.code === info?.propertyType)
-                  .map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {locale === "so" ? p.name_so : p.name_en}
-                    </option>
-                  ))}
-              </NativeSelect>
-            </Field>
-            )}
-            {apartment && !info?.unit && (
-              <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
-                <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
-              </Field>
-            )}
-            {info?.unit ? (
-              info.unit.partial && (
-                <>
-                  <Field id={`own-${parcel.id}`} label={tu("ownM2")} hint={t("rebillHint")} error={fe("ownM2")}>
-                    <Input type="number" inputMode="decimal" min={0} step="0.01" value={info.unit.ownM2} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, ownM2: e.target.value } })} />
+          <div className="space-y-4">
+            {/* The land: where it is, what it is and how big. */}
+            <fieldset className="space-y-3 rounded-md border p-3">
+              <legend className="flex items-center gap-1.5 px-1 text-sm font-medium">
+                <MapPin className="size-4" aria-hidden />
+                {t("editLand")}
+              </legend>
+              <div className="grid items-start gap-3 sm:grid-cols-2">
+                <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
+                  <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
+                </Field>
+                <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")}>
+                  <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
+                </Field>
+                {/* Registered land keeps the size and type its bills and certificate were made from. */}
+                {partial && (
+                  <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")}>
+                    <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
+                      <option value="">{ta("choose")}</option>
+                      {(info?.types ?? [])
+                        .filter((p) => p.active || p.code === info?.propertyType)
+                        .map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {locale === "so" ? p.name_so : p.name_en}
+                          </option>
+                        ))}
+                    </NativeSelect>
                   </Field>
-                  {info.unit.flats && (
-                    <Field id={`floor-${parcel.id}`} label={tu("floor")} error={fe("unitFloor")}>
-                      <Input type="number" inputMode="numeric" min={0} max={info.unit.floors ?? undefined} value={info.unit.floor} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, floor: e.target.value } })} />
-                    </Field>
-                  )}
-                </>
-              )
+                )}
+                <Field id={`use-${parcel.id}`} label={ts("landUse")}>
+                  <NativeSelect value={info?.landUse ?? "residential"} disabled={!info} onChange={(e) => info && setInfo({ ...info, landUse: e.target.value as Info["landUse"] })}>
+                    {LAND_USES.map((u) => (
+                      <option key={u} value={u}>
+                        {ts(`landUses.${u}`)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+                {apartment && !info?.unit && (
+                  <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
+                    <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />
+                  </Field>
+                )}
+                {info?.unit
+                  ? info.unit.partial && (
+                      <>
+                        <Field id={`own-${parcel.id}`} label={tu("ownM2")} hint={t("rebillHint")} error={fe("ownM2")}>
+                          <Input type="number" inputMode="decimal" min={0} step="0.01" value={info.unit.ownM2} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, ownM2: e.target.value } })} />
+                        </Field>
+                        {info.unit.flats && (
+                          <Field id={`floor-${parcel.id}`} label={tu("floor")} error={fe("unitFloor")}>
+                            <Input type="number" inputMode="numeric" min={0} max={info.unit.floors ?? undefined} value={info.unit.floor} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, floor: e.target.value } })} />
+                          </Field>
+                        )}
+                      </>
+                    )
+                  : partial && (
+                      <>
+                        <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
+                          <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
+                        </Field>
+                        <Field id={`l-${parcel.id}`} label={ta("plotLength")}>
+                          <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.lengthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, lengthM: e.target.value })} />
+                        </Field>
+                        {/* The size worked out as it is typed: the bill is made from it. */}
+                        {info && Number(info.widthM) > 0 && Number(info.lengthM) > 0 && (
+                          <p className="bg-muted/50 rounded-md px-3 py-2 text-sm sm:col-span-2">
+                            <span className="text-muted-foreground">{tf("area")}: </span>
+                            <span className="font-medium tabular-nums">{Math.round(Number(info.widthM) * Number(info.lengthM) * 10) / 10} m²</span>
+                            <span className="text-muted-foreground ms-2 text-xs">{t("rebillHint")}</span>
+                          </p>
+                        )}
+                      </>
+                    )}
+              </div>
+            </fieldset>
+
+            {/* The owner, saved in the same go. */}
+            {info?.ownerDetails ? (
+              <OwnerFields value={info.ownerDetails.input} onChange={(input) => setInfo({ ...info, ownerDetails: { ...info.ownerDetails!, input } })} error={fe} />
             ) : (
-              partial && <>
-            <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
-              <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
-            </Field>
-            <Field
-              id={`l-${parcel.id}`}
-              label={ta("plotLength")}
-              hint={info && Number(info.widthM) > 0 && Number(info.lengthM) > 0 ? `${tf("area")}: ${Math.round(Number(info.widthM) * Number(info.lengthM) * 10) / 10} m²` : undefined}
-            >
-              <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.lengthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, lengthM: e.target.value })} />
-            </Field>
-              </>
+              info?.owner && (
+                <fieldset className="space-y-3 rounded-md border p-3">
+                  <legend className="flex items-center gap-1.5 px-1 text-sm font-medium">
+                    <UserRound className="size-4" aria-hidden />
+                    {tf("ownerName")}
+                  </legend>
+                  <div className="grid items-start gap-3 sm:grid-cols-2">
+                    <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>
+                      <Input value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
+                    </Field>
+                    <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")}>
+                      <Input type="tel" value={info.owner.phone} maxLength={30} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, phone: e.target.value } })} />
+                    </Field>
+                  </div>
+                </fieldset>
+              )
             )}
-            <Field id={`use-${parcel.id}`} label={ts("landUse")}>
-              <NativeSelect value={info?.landUse ?? "residential"} disabled={!info} onChange={(e) => info && setInfo({ ...info, landUse: e.target.value as Info["landUse"] })}>
-                {LAND_USES.map((u) => (
-                  <option key={u} value={u}>
-                    {ts(`landUses.${u}`)}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-            {!info?.unit && (
-            <Field id={`units-${parcel.id}`} label={t("units")} hint={t("unitsHint")} error={fe("units")}>
-              <Input type="number" inputMode="numeric" min={1} max={500} value={info?.units ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, units: e.target.value })} />
-            </Field>
-            )}
-            {info?.owner && (
-              <>
-                <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>
-                  <Input value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
-                </Field>
-                <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")}>
-                  <Input type="tel" value={info.owner.phone} maxLength={30} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, phone: e.target.value } })} />
-                </Field>
-              </>
-            )}
-            <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")} className="sm:col-span-2">
-              <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
-            </Field>
           </div>
         )}
       </FormDialog>

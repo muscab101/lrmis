@@ -49,3 +49,19 @@ export async function uploadPartyPhotoAction(form: FormData) {
   });
   return handler({ partyId: String(form.get("partyId") ?? "") });
 }
+
+export interface OwnerMatch {
+  party_id: string;
+  full_name: string;
+  phone: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  houses: { pun: string | null; house_no: string | null; status: string; neighbourhood_so: string | null; neighbourhood_en: string | null }[];
+}
+
+/** Owners already on the register with this same name and phone (both must match), for "Merge". */
+export const ownerMatchAction = defineAction(
+  "owners.match",
+  z.object({ name: z.string().trim().max(200), phone: z.string().trim().max(40) }),
+  async (v, ctx) => unwrap(await ctx.supabase.rpc("owner_match", { p_name: v.name, p_phone: v.phone }), "owner match") as OwnerMatch[],
+);

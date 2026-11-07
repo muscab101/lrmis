@@ -7,6 +7,7 @@ import { UserMenu } from "@/components/shell/user-menu";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { Link } from "@/i18n/navigation";
 import { requireCitizen } from "@/lib/server/auth";
+import { profilePhotoUrl } from "@/lib/server/profile-photo";
 
 // Per-user page: never prerender or cache.
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function CitizenLayout({ children, params }: { children: Re
           <div className="ms-auto flex items-center gap-1">
             <LocaleSwitch />
             <ThemeToggle />
-            <UserMenu name={viewer.profile.full_name || viewer.profile.phone || ""} email={viewer.profile.phone} />
+            <UserMenu name={viewer.profile.full_name || viewer.profile.phone || ""} email={viewer.profile.phone} photo={await profilePhotoUrl(viewer.profile.avatar_path)} />
           </div>
         </div>
         <PortalNav />

@@ -9,21 +9,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dhulka/ui/dropdown-menu";
-import { KeyRound, LogOut, ShieldCheck } from "lucide-react";
+import { Camera, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { signOutAction } from "@/app/[locale]/(auth)/actions";
+import { ProfilePhotoDialog } from "@/components/shell/profile-photo-dialog";
 import { useRouter } from "@/i18n/navigation";
 
-export function UserMenu({ name, email }: { name: string; email: string | null }) {
+export function UserMenu({ name, email, photo = null }: { name: string; email: string | null; photo?: string | null }) {
   const t = useTranslations("common");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [photoOpen, setPhotoOpen] = useState(false);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-md focus-visible:outline-2 focus-visible:outline-ring" aria-label={t("account")}>
-        <Avatar name={name || email || "?"} />
+        <Avatar name={name || email || "?"} src={photo} className="rounded-full" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="text-foreground">
@@ -31,6 +33,10 @@ export function UserMenu({ name, email }: { name: string; email: string | null }
           <div className="truncate text-xs font-normal text-muted-foreground">{email}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => setPhotoOpen(true)}>
+          <Camera />
+          {t("profilePhoto")}
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => router.push("/change-password")}>
           <KeyRound />
           {t("changePassword")}
@@ -55,6 +61,7 @@ export function UserMenu({ name, email }: { name: string; email: string | null }
           {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <ProfilePhotoDialog open={photoOpen} onOpenChange={setPhotoOpen} name={name || email || "?"} photo={photo} />
     </DropdownMenu>
   );
 }

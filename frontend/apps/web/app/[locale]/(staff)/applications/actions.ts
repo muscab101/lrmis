@@ -14,6 +14,7 @@ import { z } from "zod";
 import { AppFailure, defineAction, fail, unwrap, withIdempotency } from "@/lib/server/action";
 import { isApartmentType } from "@/lib/apartment";
 import { log } from "@/lib/server/log";
+import { partyErrors, partyPayload } from "@/lib/server/party-payload";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const BUCKET = "application-documents";
@@ -240,37 +241,6 @@ export const transitionApplicationAction = defineAction("applications.transition
 // ---------------------------------------------------------------------------
 // Owners (parties)
 // ---------------------------------------------------------------------------
-function partyPayload(v: z.output<typeof partySchema>) {
-  return {
-    kind: v.kind,
-    full_name: v.fullName,
-    mother_name: v.motherName,
-    gender: v.gender,
-    date_of_birth: v.dateOfBirth,
-    nationality: v.nationality,
-    id_type: v.idType,
-    id_number: v.idNumber,
-    phone: v.phone,
-    email: v.email,
-    address: v.address,
-    org_registration_no: v.orgRegistrationNo,
-    next_of_kin: v.nextOfKinName || v.nextOfKinPhone ? { name: v.nextOfKinName, phone: v.nextOfKinPhone } : {},
-    district_id: v.districtId,
-    owner_type_id: v.ownerTypeId,
-  };
-}
-
-function partyErrors(err: unknown): never {
-  if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "id_number") {
-    throw new AppFailure("CONFLICT", undefined, { idNumber: ["validation.id_taken"] });
-  }
-  // A date the register refuses (before 1900 or in the future) goes under the field, not "something went wrong".
-  if (err instanceof Error && err.message.includes("parties_date_of_birth_check")) {
-    throw new AppFailure("VALIDATION", undefined, { dateOfBirth: ["validation.birth_date"] });
-  }
-  throw err;
-}
-
 export const savePartyAction = defineAction("owners.save", z.object({ id: z.uuid().nullable(), input: ownerSchema }), async ({ id, input }, ctx) => {
   try {
     const partyId = unwrap(await ctx.supabase.rpc("save_party", { p_id: id, p: partyPayload(input) }), "save party") as string;

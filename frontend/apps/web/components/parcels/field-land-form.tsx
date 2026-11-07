@@ -31,6 +31,7 @@ import {
   type UnitsValue,
 } from "@/components/parcels/land-units-inputs";
 import { FormError } from "@/components/forms/form-error";
+import { OwnerMatchNotice } from "@/components/owners/owner-match";
 import { useRouter } from "@/i18n/navigation";
 import { isApartmentType } from "@/lib/apartment";
 import { useValidationMessage } from "@/lib/client/errors";
@@ -53,14 +54,18 @@ interface Props {
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, start = null, returnTo, owner = null }: Props) {
+export function FieldLandForm({ districts, grades, start = null, returnTo, owner: fixedOwner = null }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
+  const tm = useTranslations("owners.match");
   const tc = useTranslations("common");
   const locale = useLocale();
   const vm = useValidationMessage();
   const router = useRouter();
+  // An owner already on the register with the same name and phone, chosen with "Merge": the house goes under them.
+  const [merged, setMerged] = useState<{ id: string; full_name: string; phone: string | null } | null>(null);
+  const owner = fixedOwner ?? merged;
   const [districtId, setDistrictId] = useState(
     start?.district_id ?? (districts.length === 1 ? districts[0]!.id : ""),
   );
@@ -259,8 +264,10 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             propertyType: f.grade,
             landUse: f.landUse,
             ownerId: owner?.id ?? null,
-            ownerName: owner ? "" : f.ownerName,
-            ownerPhone: owner ? "" : f.ownerPhone,
+            // With an existing owner, their name and phone go along: they let the owner's record be used even
+            // when it was first registered in another district (same person, second house).
+            ownerName: merged ? f.ownerName : owner ? owner.full_name : f.ownerName,
+            ownerPhone: merged ? f.ownerPhone : owner ? (owner.phone ?? "") : f.ownerPhone,
             note: f.note,
           });
     setSaving(false);
@@ -456,11 +463,19 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
           fixedOwner={owner}
         />
       ) : owner ? (
-        <div className="bg-muted/40 rounded-md border px-3 py-2 text-sm">
+        <div className="bg-muted/40 flex flex-wrap items-center gap-2 rounded-md border px-3 py-2 text-sm">
           <span className="text-muted-foreground">{t("ownerName")}:</span>{" "}
           <span className="font-medium">{owner.full_name}</span>
           {owner.phone && (
             <span className="text-muted-foreground ms-2 font-mono text-xs">{owner.phone}</span>
+          )}
+          {merged && (
+            <>
+              <span className="bg-primary/10 text-primary rounded px-1.5 py-0.5 text-xs font-medium">{tm("merged")}</span>
+              <Button type="button" variant="ghost" size="sm" className="ms-auto h-7" onClick={() => setMerged(null)}>
+                {tm("undo")}
+              </Button>
+            </>
           )}
         </div>
       ) : (
@@ -482,6 +497,13 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
               autoComplete="off"
             />
           </Field>
+          <div className="sm:col-span-2">
+            <OwnerMatchNotice
+              name={f.ownerName}
+              phone={f.ownerPhone}
+              onMerge={(m) => setMerged({ id: m.party_id, full_name: m.full_name, phone: m.phone })}
+            />
+          </div>
         </div>
       )}
 

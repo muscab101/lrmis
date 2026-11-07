@@ -132,7 +132,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
         />
         {!value && !disabled && (
-          <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
+          <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card-solid/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
         )}
       </div>
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

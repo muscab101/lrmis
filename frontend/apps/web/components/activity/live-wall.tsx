@@ -11,6 +11,15 @@ import {
   livePiecesAction,
   type LivePerson,
 } from "@/app/[locale]/(admin)/admin/activity/actions";
+import {
+  SCREEN_EVENT,
+  WATCH_EVENT,
+  WATCH_EVERY_MS,
+  closeLiveChannel,
+  openLiveChannel,
+  screenAssembler,
+  type ScreenPart,
+} from "@/lib/live-screen";
 
 const LIST_EVERY_MS = 20_000;
 
@@ -21,7 +30,13 @@ async function loadPiece(url: string): Promise<{ timestamp: number }[]> {
   return JSON.parse(text) as { timestamp: number }[];
 }
 
-/** One person's LRMIS screen, following along a few seconds behind. */
+/** rrweb's "meta" event: where a new picture of the page starts. */
+const META = 4;
+
+/**
+ * One person's LRMIS screen as it happens: their browser sends it straight here over a private channel. Until the
+ * first picture comes that way (an old tab, a blocked connection) it follows the saved pieces, a few seconds behind.
+ */
 function LiveScreen({ userId, everyMs }: { userId: string; everyMs: number }) {
   const t = useTranslations("staffActivity");
   const box = useRef<HTMLDivElement>(null);
@@ -35,6 +50,10 @@ function LiveScreen({ userId, everyMs }: { userId: string; everyMs: number }) {
     let replayer: import("rrweb").Replayer | null = null;
     let recording: string | null = null;
     let after = -1;
+    // Once the screen comes straight over the channel, the saved pieces only keep the watch going.
+    let streamed = false;
+    let channel: Awaited<ReturnType<typeof openLiveChannel>> | null = null;
+    let watch: ReturnType<typeof setInterval> | undefined;
 
     const reset = () => {
       replayer?.destroy();
@@ -52,17 +71,75 @@ function LiveScreen({ userId, everyMs }: { userId: string; everyMs: number }) {
       target.style.height = `${Math.round(height * scale)}px`;
     };
 
+    const start = async (from?: number) => {
+      const { Replayer } = await import("rrweb");
+      if (gone) return;
+      replayer = new Replayer([], {
+        root: target,
+        liveMode: true,
+        mouseTail: false,
+        showWarning: false,
+      });
+      replayer.on("resize", (d) => {
+        const size = d as { width: number; height: number };
+        fit(size.width, size.height);
+      });
+      // Their clock, not ours: each event plays as soon as it arrives.
+      replayer.startLive(from);
+    };
+
+    // The screen straight from their browser. Batches are handled one after another, in the order they came.
+    const assemble = screenAssembler();
+    let queue = Promise.resolve();
+    const onScreen = (part: ScreenPart) => {
+      queue = queue.then(async () => {
+        const events = await assemble(part).catch(() => null);
+        if (!events?.length || gone) return;
+        const meta = events.findIndex((e) => e.type === META);
+        if (!streamed || !replayer) {
+          if (meta < 0) return;
+          reset();
+          streamed = true;
+          await start(events[meta]!.timestamp);
+          if (gone) return;
+          for (const e of events.slice(meta)) replayer?.addEvent(e as never);
+          setState("live");
+          return;
+        }
+        for (const e of events) replayer?.addEvent(e as never);
+      });
+    };
+    void openLiveChannel(userId).then((ch) => {
+      if (gone) return closeLiveChannel(ch);
+      channel = ch.on("broadcast", { event: SCREEN_EVENT }, ({ payload }) =>
+        onScreen(payload as ScreenPart),
+      );
+      ch.subscribe((status) => {
+        if (status !== "SUBSCRIBED" || gone) return;
+        const ask = (fresh: boolean) =>
+          void ch.send({ type: "broadcast", event: WATCH_EVENT, payload: { fresh } });
+        ask(true);
+        clearInterval(watch);
+        watch = setInterval(() => ask(!streamed), WATCH_EVERY_MS);
+      });
+    });
+
     const look = async () => {
       try {
-        const r = await livePiecesAction({ userId, recording, after });
+        const r = await livePiecesAction({
+          userId,
+          recording,
+          after: streamed ? 2_147_483_647 : after,
+        });
         if (gone) return;
         if (r.ok && !r.data.recording) {
           reset();
           recording = null;
           after = -1;
+          streamed = false;
           setState("away");
         } else if (r.ok) {
-          if (r.data.recording !== recording) {
+          if (r.data.recording !== recording && !streamed) {
             reset();
             recording = r.data.recording;
             after = -1;
@@ -70,24 +147,13 @@ function LiveScreen({ userId, everyMs }: { userId: string; everyMs: number }) {
           const parts = await Promise.all(r.data.pieces.map((p) => loadPiece(p.url)));
           if (gone) return;
           const events = parts.flat().sort((a, b) => a.timestamp - b.timestamp);
-          if (!replayer && events.length) {
-            const { Replayer } = await import("rrweb");
-            if (gone) return;
-            replayer = new Replayer([], {
-              root: target,
-              liveMode: true,
-              mouseTail: false,
-              showWarning: false,
-            });
-            replayer.on("resize", (d) => {
-              const size = d as { width: number; height: number };
-              fit(size.width, size.height);
-            });
-            replayer.startLive();
+          if (!streamed && !replayer && events.length) await start();
+          if (!gone && !streamed) {
+            for (const e of events) replayer?.addEvent(e as never);
+            recording = r.data.recording;
+            after = r.data.pieces.at(-1)?.seq ?? after;
           }
-          for (const e of events) replayer?.addEvent(e as never);
-          after = r.data.pieces.at(-1)?.seq ?? after;
-          setState(replayer ? "live" : "connecting");
+          if (!gone) setState(replayer ? "live" : "connecting");
         }
       } catch {
         // A piece didn't load: the next look asks for it again.
@@ -99,6 +165,8 @@ function LiveScreen({ userId, everyMs }: { userId: string; everyMs: number }) {
     return () => {
       gone = true;
       clearTimeout(timer);
+      clearInterval(watch);
+      if (channel) closeLiveChannel(channel);
       reset();
     };
   }, [userId, everyMs]);

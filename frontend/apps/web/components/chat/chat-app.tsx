@@ -2,12 +2,17 @@
 
 import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@dhulka/ui/dialog";
 import { Checkbox } from "@dhulka/ui/form-controls";
 import { Field } from "@dhulka/ui/field";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { cn } from "@dhulka/ui/lib/cn";
 import {
   ArrowLeft,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
   Image as ImageIcon,
   MessageSquarePlus,
   Paperclip,
@@ -19,7 +24,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   chatAddMembersAction,
@@ -34,15 +39,171 @@ import {
   chatMessagesAction,
   chatOpenDirectAction,
   chatPrepareUploadAction,
+  chatProfileAction,
   chatRemoveMemberAction,
   chatSendAction,
   type ChatMessage,
   type ChatPerson,
+  type ChatProfile,
   type ChatRow,
 } from "@/app/[locale]/(staff)/chat/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { FormError } from "@/components/forms/form-error";
 import { createClient } from "@/lib/supabase/client";
+
+/** A person's photo, or the first letter of their name when they have none. */
+function PersonAvatar({
+  name,
+  photo,
+  className,
+}: {
+  name: string;
+  photo: string | null | undefined;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "bg-primary-soft text-primary grid size-9 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-semibold",
+        className,
+      )}
+    >
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- private storage link
+        <img src={photo} alt="" className="size-full object-cover" />
+      ) : (
+        (name || "?").slice(0, 1).toUpperCase()
+      )}
+    </span>
+  );
+}
+
+/** A staff member's profile: photo, roles, districts and how to reach them. */
+function ProfileDialog({
+  userId,
+  me,
+  onClose,
+  onMessage,
+}: {
+  userId: string | null;
+  me: string;
+  onClose: () => void;
+  onMessage: (userId: string) => void;
+}) {
+  const t = useTranslations("chat");
+  const format = useFormatter();
+  const locale = useLocale();
+  const [profile, setProfile] = useState<ChatProfile | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setProfile(null);
+    setFailed(false);
+    if (!userId) return;
+    let live = true;
+    void chatProfileAction({ userId }).then((r) => {
+      if (!live) return;
+      if (r.ok) setProfile(r.data);
+      else setFailed(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [userId]);
+  const roles = profile ? (locale === "so" ? profile.roles_so : profile.roles_en) : [];
+  const seen = profile?.last_seen ? new Date(profile.last_seen) : null;
+  const online = !!seen && Date.now() - seen.getTime() < 2 * 60_000;
+  return (
+    <Dialog open={!!userId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-sm overflow-hidden p-0">
+        <DialogTitle className="sr-only">{profile?.full_name ?? t("profile")}</DialogTitle>
+        {!profile ? (
+          <p className="text-muted-foreground p-8 text-center text-sm">
+            {failed ? t("profileFailed") : t("loading")}
+          </p>
+        ) : (
+          <>
+            <div className="bg-primary-soft flex flex-col items-center gap-3 px-6 pb-6 pt-8 text-center">
+              <span className="relative">
+                <PersonAvatar
+                  name={profile.full_name}
+                  photo={profile.photo}
+                  className="ring-background size-24 text-3xl ring-4"
+                />
+                {online && (
+                  <span
+                    className="bg-success ring-background absolute bottom-1.5 end-1.5 size-4 rounded-full ring-2"
+                    aria-hidden
+                  />
+                )}
+              </span>
+              <div>
+                <p className="text-lg font-semibold">{profile.full_name}</p>
+                <p className="text-muted-foreground text-sm">{roles.join(", ") || "—"}</p>
+              </div>
+            </div>
+            <dl className="space-y-3 p-6 text-sm">
+              {profile.email && (
+                <div className="flex items-center gap-3">
+                  <Mail className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                  <dt className="sr-only">{t("email")}</dt>
+                  <dd className="min-w-0 truncate">
+                    <a className="hover:underline" href={`mailto:${profile.email}`}>
+                      {profile.email}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {profile.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                  <dt className="sr-only">{t("phone")}</dt>
+                  <dd>
+                    <a className="hover:underline" href={`tel:${profile.phone}`}>
+                      {profile.phone}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <MapPin className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                <dt className="sr-only">{t("districts")}</dt>
+                <dd>
+                  {profile.all_districts ? t("allDistricts") : profile.districts.join(", ") || "—"}
+                </dd>
+              </div>
+              <div className="text-muted-foreground grid grid-cols-2 gap-3 border-t pt-3 text-xs">
+                <div>
+                  <dt>{t("lastSeen")}</dt>
+                  <dd className="text-foreground mt-0.5 font-medium">
+                    {online
+                      ? t("online")
+                      : seen
+                        ? format.dateTime(seen, { dateStyle: "medium", timeStyle: "short" })
+                        : "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("joined")}</dt>
+                  <dd className="text-foreground mt-0.5 font-medium">
+                    {format.dateTime(new Date(profile.joined), { dateStyle: "medium" })}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+            {profile.user_id !== me && (
+              <div className="border-t p-4">
+                <Button className="w-full" onClick={() => onMessage(profile.user_id)}>
+                  <MessageSquare aria-hidden />
+                  {t("sendMessage")}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 /** Tick people from the staff list, with a search. */
 function PeoplePicker({
@@ -92,6 +253,11 @@ function PeoplePicker({
                   )
                 }
               />
+              <PersonAvatar
+                name={p.full_name || p.email || ""}
+                photo={p.photo}
+                className="size-8"
+              />
               <span className="min-w-0">
                 <span className="block truncate">{p.full_name || p.email}</span>
                 <span className="text-muted-foreground block truncate text-xs">{p.email}</span>
@@ -125,19 +291,31 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
   const [deleteBody, setDeleteBody] = useState("");
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
   const [members, setMembers] = useState<ChatPerson[]>([]);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef<string | null>(null);
   // Each load signs new links; keeping the first one stops pictures reloading and videos restarting.
   const linksRef = useRef(new Map<string, { url: string; at: number }>());
   const fileRef = useRef<HTMLInputElement>(null);
+  const photosRef = useRef(new Map<string, { url: string; at: number }>());
   const openRef = useRef(openId);
   openRef.current = openId;
   const open = chats?.find((c) => c.id === openId) ?? null;
 
   const loadChats = useCallback(async () => {
     const r = await chatListAction({});
-    if (r.ok) setChats(r.data);
+    if (r.ok)
+      // Keep the first link to each photo, so photos don't reload every time the list refreshes.
+      setChats(
+        r.data.map((c) => {
+          if (!c.photo_key || !c.photo) return c;
+          const kept = photosRef.current.get(c.photo_key);
+          if (kept && Date.now() - kept.at < LINK_REUSE_MS) return { ...c, photo: kept.url };
+          photosRef.current.set(c.photo_key, { url: c.photo, at: Date.now() });
+          return c;
+        }),
+      );
   }, []);
 
   const loadMessages = useCallback(
@@ -341,17 +519,29 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                 type="button"
                 onClick={() => setOpenId(c.id)}
                 className={cn(
-                  "hover:bg-muted/50 flex w-full items-center gap-3 px-3 py-2.5 text-start",
-                  c.id === openId && "bg-muted",
+                  "flex w-full items-center gap-3 px-3 py-2.5 text-start",
+                  // The open chat is solid blue so it stands out clearly.
+                  c.id === openId
+                    ? "bg-primary text-primary-foreground [&_.text-muted-foreground]:text-primary-foreground/75"
+                    : "hover:bg-muted/50",
                 )}
               >
-                <span className="bg-primary-soft text-primary grid size-9 shrink-0 place-items-center rounded-full text-sm font-semibold">
-                  {c.kind === "group" ? (
+                {c.kind === "group" ? (
+                  <span
+                    className={cn(
+                      "grid size-10 shrink-0 place-items-center rounded-full",
+                      c.id === openId ? "bg-white/20 text-white" : "bg-primary-soft text-primary",
+                    )}
+                  >
                     <Users className="size-4" aria-hidden />
-                  ) : (
-                    c.name.slice(0, 1).toUpperCase()
-                  )}
-                </span>
+                  </span>
+                ) : (
+                  <PersonAvatar
+                    name={c.name}
+                    photo={c.photo}
+                    className={cn("size-10", c.id === openId && "bg-white/20 text-white")}
+                  />
+                )}
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline justify-between gap-2">
                     <span className="truncate text-sm font-medium">{c.name}</span>
@@ -362,7 +552,14 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-muted-foreground truncate text-xs">{preview(c)}</span>
                     {c.unread > 0 && (
-                      <span className="bg-primary text-primary-foreground grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1 text-[11px] font-semibold">
+                      <span
+                        className={cn(
+                          "grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1 text-[11px] font-semibold",
+                          c.id === openId
+                            ? "text-primary bg-white"
+                            : "bg-primary text-primary-foreground",
+                        )}
+                      >
                         {c.unread}
                       </span>
                     )}
@@ -390,14 +587,31 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
               >
                 <ArrowLeft aria-hidden />
               </Button>
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate font-semibold">{open?.name ?? ""}</h2>
-                {open?.kind === "group" && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("memberCount", { count: open.member_count })}
-                  </p>
-                )}
-              </div>
+              {open?.kind === "direct" && open.other_user ? (
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-start hover:opacity-80"
+                  aria-label={t("viewProfile", { name: open.name })}
+                  onClick={() => setProfileId(open.other_user)}
+                >
+                  <PersonAvatar name={open.name} photo={open.photo} className="size-10" />
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">{open.name}</span>
+                    <span className="text-muted-foreground block text-xs">
+                      {t("viewProfileHint")}
+                    </span>
+                  </span>
+                </button>
+              ) : (
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate font-semibold">{open?.name ?? ""}</h2>
+                  {open?.kind === "group" && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("memberCount", { count: open.member_count })}
+                    </p>
+                  )}
+                </div>
+              )}
               {open?.kind === "group" && (
                 <Button size="sm" variant="outline" onClick={() => void openMembers()}>
                   <Users aria-hidden />
@@ -646,6 +860,21 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
         )}
       </section>
 
+      <ProfileDialog
+        userId={profileId}
+        me={me}
+        onClose={() => setProfileId(null)}
+        onMessage={(userId) => {
+          setProfileId(null);
+          setDialog(null);
+          void chatOpenDirectAction({ userId }).then(async (r) => {
+            if (!r.ok) return;
+            await loadChats();
+            setOpenId(r.data);
+          });
+        }}
+      />
+
       <FormDialog
         open={dialog === "direct"}
         onOpenChange={(o) => !o && setDialog(null)}
@@ -730,12 +959,23 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                   key={p.user_id}
                   className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
                 >
-                  <span className="min-w-0 truncate">
-                    {p.full_name || p.email}
-                    {p.user_id === me && (
-                      <span className="text-muted-foreground"> ({t("you")})</span>
-                    )}
-                  </span>
+                  <button
+                    type="button"
+                    className="flex min-w-0 items-center gap-2.5 text-start hover:underline"
+                    onClick={() => setProfileId(p.user_id)}
+                  >
+                    <PersonAvatar
+                      name={p.full_name || p.email || ""}
+                      photo={p.photo}
+                      className="size-8"
+                    />
+                    <span className="min-w-0 truncate">
+                      {p.full_name || p.email}
+                      {p.user_id === me && (
+                        <span className="text-muted-foreground"> ({t("you")})</span>
+                      )}
+                    </span>
+                  </button>
                   {(p.user_id === me || open?.created_by === me) && (
                     <Button
                       size="sm"

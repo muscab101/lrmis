@@ -2,9 +2,10 @@ import { BrandMark } from "@dhulka/ui/brand";
 import { ArrowRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowField } from "@/components/landing/arrow-field";
-import { AudienceTabs } from "@/components/landing/audience-tabs";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { Reveal } from "@/components/landing/reveal";
+import { FocusCards, ScrollWords } from "@/components/landing/scroll-sections";
+import { StepsStory } from "@/components/landing/steps-story";
+import { CountUp, Reveal, ScrollProgress } from "@/components/landing/reveal";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -78,7 +79,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
       {/* Hero */}
       <section className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden">
         <ArrowField className="absolute inset-0 -z-10 h-full w-full" />
-        <div className="px-5 text-center text-white">
+        <ScrollProgress distance={700} className="px-5 text-center text-white [transform:translateY(calc(var(--p)*-120px))_scale(calc(1-var(--p)*0.12))] [opacity:calc(1-var(--p)*0.85)]">
           <BrandMark title={t("barOrg")} className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none mx-auto mb-6 size-20 drop-shadow-[0_6px_24px_rgba(11,42,143,0.45)] sm:size-24" />
           <h1 className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none text-[clamp(72px,15vw,208px)] leading-[0.9] font-semibold tracking-[-0.045em] [text-shadow:0_8px_40px_rgba(11,42,143,0.35)]">
             {tc("appShortName")}
@@ -93,70 +94,57 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
               {t("staffCta")}
             </Link>
           </div>
-        </div>
+        </ScrollProgress>
       </section>
 
-      {/* What Dhulka does */}
+      {/* What Dhulka does: the heading stays put while the features pass by, the one in the middle in focus. */}
       <section className="mx-auto max-w-7xl px-5 py-24 sm:py-32">
-        <Reveal>
-          <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("whatTitle")}</h2>
-          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("whatBody")}</p>
-        </Reveal>
-        <div className="mt-16 grid gap-12 sm:grid-cols-3">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f} delay={i * 120} className="group">
-              <div className="transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-4deg]">
-                <FeatureGlyph kind={f} />
-              </div>
-              <h3 className="mt-8 font-semibold">{t(`features.${f}.title`)}</h3>
-              <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#4a5468]">{t(`features.${f}.body`)}</p>
+        <FocusCards
+          heading={
+            <Reveal variant="blur">
+              <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("whatTitle")}</h2>
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("whatBody")}</p>
             </Reveal>
-          ))}
-        </div>
+          }
+          items={FEATURES.map((f) => ({ key: f, title: t(`features.${f}.title`), body: t(`features.${f}.body`), glyph: <FeatureGlyph kind={f} /> }))}
+        />
       </section>
 
-      {/* Who it's for */}
+      {/* Who it's for: one statement per audience, lighting up word by word as you scroll. */}
       <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
-        <Reveal>
-          <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">{t("whoTitle")}</h2>
-          <AudienceTabs label={t("whoTitle")} items={AUDIENCES.map((a) => ({ key: a, label: t(`audiences.${a}.label`), text: t(`audiences.${a}.text`) }))} />
+        <Reveal variant="blur">
+          <h2 className="mb-12 text-4xl font-semibold tracking-tight sm:text-6xl">{t("whoTitle")}</h2>
         </Reveal>
+        <ScrollWords items={AUDIENCES.map((a) => ({ key: a, label: t(`audiences.${a}.label`), text: t(`audiences.${a}.text`) }))} />
       </section>
 
       {/* How registration works */}
       <section className="mx-auto max-w-7xl px-5 pb-24 sm:pb-32">
-        <Reveal>
+        <Reveal variant="blur">
           <h2 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t("howTitle")}</h2>
           <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#4a5468]">{t("howBody")}</p>
         </Reveal>
-        <ol className="mt-12 border-t border-black/10">
-          {STEPS.map((s, i) => (
-            <Reveal
-              as="li"
-              key={s.key}
-              delay={i * 70}
-              className="grid grid-cols-[3.5rem_1fr] items-center gap-x-6 gap-y-1 border-b border-black/10 py-5 hover:bg-[#2a55d6]/[0.03] sm:grid-cols-[7rem_1fr_auto]"
-            >
-              <div>
-                <div className="text-sm font-semibold tabular-nums">0{i + 1}</div>
-                <div className="text-xs text-[#6b7487]">{t(`steps.${s.key}.when`)}</div>
-              </div>
-              <div>
-                <div className="text-lg font-semibold">{t(`steps.${s.key}.title`)}</div>
-                <div className="text-sm text-[#6b7487]">{t(`steps.${s.key}.body`)}</div>
-              </div>
-              <span className={`col-start-2 w-fit rounded-sm px-2 py-0.5 text-xs font-medium sm:col-start-3 ${TAG_CLASS[s.tag]}`}>{t(`tags.${s.tag}`)}</span>
-            </Reveal>
-          ))}
-        </ol>
+        <StepsStory
+          steps={STEPS.map((x) => ({
+            key: x.key,
+            when: t(`steps.${x.key}.when`),
+            title: t(`steps.${x.key}.title`),
+            body: t(`steps.${x.key}.body`),
+            tag: t(`tags.${x.tag}`),
+            tagClass: TAG_CLASS[x.tag]!,
+          }))}
+        />
       </section>
 
-      {/* Band */}
-      <section className="relative isolate overflow-hidden">
+      {/* Band: arrives as a rounded card and opens out to the full width. */}
+      <ScrollProgress from={1} to={1}>
+      <section className="relative isolate overflow-hidden [margin-inline:calc((1-var(--p))*2.5rem)] [border-radius:calc((1-var(--p))*2rem)] max-sm:[margin-inline:calc((1-var(--p))*1rem)]">
         <ArrowField flip className="absolute inset-0 -z-10 h-full w-full" />
         <Reveal className="mx-auto grid max-w-7xl gap-10 px-5 pt-32 pb-20 text-white sm:grid-cols-[1fr_auto] sm:items-end">
           <div>
-            <p className="text-6xl font-semibold tracking-tight tabular-nums sm:text-8xl">{noticeCount}</p>
+            <p className="text-6xl font-semibold tracking-tight tabular-nums sm:text-8xl">
+              <CountUp value={noticeCount} />
+            </p>
             <p className="mt-2 max-w-md text-lg font-medium">{t("bandNotices", { count: noticeCount })}</p>
             <Link href="/notices" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-4 hover:underline">
               {t("bandNoticesCta")}
@@ -186,6 +174,7 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
           </div>
         </footer>
       </section>
+      </ScrollProgress>
     </div>
   );
 }

@@ -102,7 +102,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 key={r}
                 href={`/dashboard?range=${r}`}
                 aria-current={r === range ? "page" : undefined}
-                className={cn("rounded-md px-3 py-1.5 font-medium transition-colors", r === range ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:text-foreground")}
+                className={cn("rounded-md px-5 py-1 font-medium whitespace-nowrap transition-colors", r === range ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:text-foreground")}
               >
                 {t("lastDays", { days: r })}
               </Link>

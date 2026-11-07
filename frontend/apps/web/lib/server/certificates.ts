@@ -26,6 +26,17 @@ export interface Snapshot {
   owners: { party_id: string; full_name: string; mother_name: string | null; id_type: string | null; id_number: string | null; role: string; share_pct: number | null; photo_path: string | null; phone?: string | null }[];
   holder?: Snapshot["owners"][number];
   registrar: string | null;
+  /** Yearly certificates (migration 0171): the tax year it covers and that year's bills, frozen when issued. */
+  tax_year?: number;
+  valid_from?: string;
+  valid_to?: string;
+  bills?: { number: string; fee_so: string; fee_en: string; code: string; total: number; paid: number; balance: number }[];
+  receipts?: { receipt_no: string; at: string; amount: number }[];
+  paid_in_full?: boolean;
+  valuation?: { type: string; type_so: string; type_en: string; floors: number | null; area_m2: number | null; rate_m2: number; tax: number } | null;
+  sequence?: number;
+  previous?: { serial: string; issued_at: string; tax_year: number } | null;
+  changes?: ("owners" | "area" | "land_use" | "building")[];
 }
 
 export interface DocumentRow {
@@ -33,7 +44,7 @@ export interface DocumentRow {
   issued_by: string | null;
   type: "certificate" | "id_card";
   serial: string;
-  status: "valid" | "cancelled";
+  status: "valid" | "cancelled" | "expired";
   issued_at: string;
   expires_at: string | null;
   print_count: number;

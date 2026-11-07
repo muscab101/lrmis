@@ -21,7 +21,7 @@ interface AppShellProps {
   /** Effective permission keys. Plain strings cross the server→client boundary; the
    *  menu (with its icon components) is built here in the browser. */
   permissions: string[];
-  user: { id: string; name: string; email: string | null };
+  user: { id: string; name: string; email: string | null; photo: string | null };
   env: "development" | "staging" | "production";
   /** The user's name while a super admin is testing this account. */
   testingAs?: string | null;
@@ -82,7 +82,7 @@ export function AppShell({ permissions, user, env, testingAs, children }: AppShe
 
       <div className="flex min-w-0 flex-1 flex-col">
         {testingAs && <TestingBanner name={testingAs} />}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
+        <header className="glass-bar sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t("open")}>
             <Menu aria-hidden />
           </Button>
@@ -96,7 +96,7 @@ export function AppShell({ permissions, user, env, testingAs, children }: AppShe
             <ThemeToggle />
             <NotificationsBell userId={user.id} />
             <div className="ms-1">
-              <UserMenu name={user.name} email={user.email} />
+              <UserMenu name={user.name} email={user.email} photo={user.photo} />
             </div>
           </div>
         </header>

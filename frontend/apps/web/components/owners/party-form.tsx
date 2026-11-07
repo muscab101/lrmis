@@ -15,6 +15,8 @@ import type { z } from "zod";
 import { savePartyAction, updateMyPartyAction } from "@/app/[locale]/(staff)/applications/actions";
 import { listOwnerTypesAction, type OwnerTypeOption } from "@/app/[locale]/(staff)/owners/actions";
 import { FormError } from "@/components/forms/form-error";
+import { OwnerMatchNotice } from "@/components/owners/owner-match";
+import type { OwnerMatch } from "@/app/[locale]/(staff)/owners/actions";
 import { applyFieldErrors, useValidationMessage } from "@/lib/client/errors";
 import type { PartyRow } from "@/lib/server/applications";
 
@@ -51,10 +53,12 @@ interface Props {
   onSaved: (id: string, values: PartyInput) => void;
   onCancel?: () => void;
   submitLabel?: string;
+  /** New owner only: an owner with the same name and phone is already on the register; use them instead. */
+  onMerge?: (match: OwnerMatch) => void;
 }
 
 /** Owner (person/organisation) form. A clashing ID number is refused when saving. */
-export function PartyForm({ party, mode = "staff", districtId, districts, onSaved, onCancel, submitLabel }: Props) {
+export function PartyForm({ party, mode = "staff", districtId, districts, onSaved, onCancel, submitLabel, onMerge }: Props) {
   const locale = useLocale();
   const t = useTranslations("owners");
   const tc = useTranslations("common");
@@ -228,6 +232,11 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
         <Field id="phone" label={t("phone")} hint={t("phoneHint")} error={vm(e.phone?.message)} required={mode === "staff"}>
           <Input type="tel" inputMode="tel" placeholder={`${dialCode(form.watch("nationality")) || "+252"} …`} disabled={mode === "self"} {...form.register("phone")} />
         </Field>
+        {!party && onMerge && (
+          <div className="sm:col-span-2">
+            <OwnerMatchNotice name={form.watch("fullName") ?? ""} phone={form.watch("phone") ?? ""} onMerge={onMerge} />
+          </div>
+        )}
         <Field id="email" label={t("email")} error={vm(e.email?.message)} required={mode === "staff"}>
           <Input type="email" {...form.register("email")} />
         </Field>

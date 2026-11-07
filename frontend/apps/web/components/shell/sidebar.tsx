@@ -26,9 +26,9 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
     .sort((a, b) => b.length - a.length)[0];
 
   return (
-    <nav aria-label={t("label")} className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+    <nav aria-label={t("label")} className="glass-bar flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed && "justify-center px-0")}>
-        {collapsed ? <BrandMark title={tc("appShortName")} /> : <BrandLockup name={tc("appShortName")} sub={tc("orgName")} inverted />}
+        {collapsed ? <BrandMark title={tc("appShortName")} /> : <BrandLockup name={tc("appShortName")} sub={tc("orgName")} />}
       </div>
 
       <div className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-2.5 py-5">
@@ -51,7 +51,7 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
                       collapsed && "justify-center px-0",
                       active
                         ? "bg-sidebar-active font-medium text-sidebar-active-foreground before:absolute before:inset-y-2 before:-start-2.5 before:w-[3px] before:rounded-e before:bg-flag"
-                        : "hover:bg-sidebar-active/60 hover:text-white",
+                        : "hover:bg-sidebar-active/60 hover:text-sidebar-active-foreground",
                       soon && "opacity-45 hover:bg-transparent hover:text-sidebar-foreground",
                     )}
                   >
@@ -93,7 +93,7 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
       <button
         type="button"
         onClick={onToggle}
-        className="hidden h-11 items-center gap-2 border-t border-sidebar-border px-4 text-xs text-sidebar-foreground/70 hover:text-white lg:flex"
+        className="hidden h-11 items-center gap-2 border-t border-sidebar-border px-4 text-xs text-sidebar-foreground/70 hover:text-sidebar-active-foreground lg:flex"
         aria-label={collapsed ? t("expand") : t("collapse")}
       >
         <ChevronsLeft className={cn("size-4 transition-transform", collapsed && "rotate-180")} aria-hidden />

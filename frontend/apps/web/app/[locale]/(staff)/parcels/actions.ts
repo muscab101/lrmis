@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { optionalPhone } from "@dhulka/core/schemas";
+import { optionalPhone, partySchema, type PartyInput } from "@dhulka/core/schemas";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
+import { partyErrors, partyPayload } from "@/lib/server/party-payload";
 
 const text = (max: number) => z.string().trim().max(max, "validation.too_long").default("");
 const reason = z.string().trim().min(5, "validation.reason").max(500, "validation.too_long");
@@ -40,6 +41,9 @@ export const updateParcelDetailsAction = defineAction(
     /** Partial land only (registered land changes owners by transfer). */
     ownerName: z.string().trim().max(120).optional(),
     ownerPhone: z.string().trim().max(30).optional(),
+    /** Partial land: the owner's full details, saved together with the land. */
+    ownerId: z.uuid().optional(),
+    owner: partySchema.optional(),
   }),
   async (v, ctx) => {
     const p: Record<string, string> = { house_no: v.houseNo, govt_receipt_no: v.govtReceiptNo, plot_no: v.plotNo };
@@ -64,6 +68,14 @@ export const updateParcelDetailsAction = defineAction(
       if (err instanceof AppFailure && err.code === "VALIDATION" && field) throw new AppFailure("VALIDATION", undefined, { [field]: ["validation.required"] });
       throw err;
     }
+    if (v.owner && v.ownerId) {
+      try {
+        unwrap(await ctx.supabase.rpc("save_party", { p_id: v.ownerId, p: partyPayload(v.owner) }), "owner details");
+      } catch (err) {
+        partyErrors(err, "owner.");
+      }
+      revalidatePath("/[locale]/owners", "layout");
+    }
     refresh();
     // Land not registered yet is billed again when it changes.
     revalidatePath("/[locale]/invoices", "layout");
@@ -72,14 +84,56 @@ export const updateParcelDetailsAction = defineAction(
 );
 
 /** For the parcel edit dialog: its property type and unit now, and the types to choose from. */
+interface PartyDb {
+  id: string;
+  kind: "person" | "organisation";
+  full_name: string;
+  mother_name: string | null;
+  gender: "male" | "female" | null;
+  date_of_birth: string | null;
+  nationality: string | null;
+  id_type: string | null;
+  id_number: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  next_of_kin: { name?: string | null; phone?: string | null } | null;
+  org_registration_no: string | null;
+  district_id: string | null;
+  owner_type_id: string | null;
+}
+
+/** An owner as the owner fields hold it. */
+function partyInput(o: PartyDb): PartyInput {
+  return {
+    kind: o.kind,
+    fullName: o.full_name,
+    motherName: o.mother_name ?? "",
+    gender: o.gender ?? "",
+    dateOfBirth: o.date_of_birth ?? "",
+    nationality: o.nationality ?? "SO",
+    idType: (o.id_type ?? "") as PartyInput["idType"],
+    idNumber: o.id_number ?? "",
+    phone: o.phone ?? "",
+    email: o.email ?? "",
+    address: o.address ?? "",
+    orgRegistrationNo: o.org_registration_no ?? "",
+    nextOfKinName: o.next_of_kin?.name ?? "",
+    nextOfKinPhone: o.next_of_kin?.phone ?? "",
+    districtId: o.district_id ?? "",
+    ownerTypeId: o.owner_type_id ?? "",
+  };
+}
+
 export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({ id: z.uuid() }), async (v, ctx) => {
-  const [{ data: parcel }, { data: types }] = await Promise.all([
+  const [{ data: parcel }, { data: types }, { data: canEditOwner }] = await Promise.all([
     ctx.supabase
       .from("parcels")
-      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parent_id, own_m2, unit_floor, parcel_owners(role, valid_to, party:parties(full_name, phone))")
+      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parent_id, own_m2, unit_floor, parcel_owners(role, valid_to, party:parties(id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, email, address, next_of_kin, org_registration_no, district_id, owner_type_id))")
       .eq("id", v.id)
       .maybeSingle(),
     ctx.supabase.from("property_grades").select("code, name_so, name_en, active").order("sort").order("name_en"),
+    ctx.supabase.rpc("has_permission", { p_key: "owners.update" }),
   ]);
   const p = parcel as {
     property_type: string | null;
@@ -92,7 +146,7 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     parent_id: string | null;
     own_m2: number | null;
     unit_floor: number | null;
-    parcel_owners: { role: string; valid_to: string | null; party: { full_name: string; phone: string | null } | null }[];
+    parcel_owners: { role: string; valid_to: string | null; party: PartyDb | null }[];
   } | null;
   // The building a flat belongs to, or the compound a house belongs to.
   const { data: above } = p?.parent_id ? await ctx.supabase.from("parcels").select("layout, floors").eq("id", p.parent_id).maybeSingle() : { data: null };
@@ -107,6 +161,9 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     units: p?.units != null ? String(p.units) : "",
     /** Partial land: its owner's name and phone can be fixed here. */
     owner: p && ["draft", "surveyed", "verified"].includes(p.status) && owner ? { name: owner.full_name, phone: owner.phone ?? "" } : null,
+    /** Partial land, staff who may change owners: every owner field, saved with the land. */
+    ownerDetails:
+      p && ["draft", "surveyed", "verified"].includes(p.status) && owner && canEditOwner === true ? { id: owner.id, input: partyInput(owner) } : null,
     /** A flat or compound house: its size is its own m², not a width and length. */
     unit: p?.parent_id
       ? {

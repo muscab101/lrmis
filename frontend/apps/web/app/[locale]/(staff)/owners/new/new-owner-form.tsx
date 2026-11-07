@@ -21,6 +21,14 @@ export function NewOwnerForm({
       districts={districts}
       onCancel={() => router.back()}
       submitLabel={fromZone ? t("saveAndAddLand") : undefined}
+      onMerge={(m) => {
+        // Same name and phone as an owner already on the register: no second copy, carry on with them.
+        if (fromZone) {
+          toast.success(t("match.mergedNextLand", { name: m.full_name }));
+          return router.push(`/parcels/new?${new URLSearchParams({ nbhd: fromZone.nbhd, zone: fromZone.zone, owner: m.party_id })}`);
+        }
+        router.push(`/owners/${m.party_id}`);
+      }}
       onSaved={(id) => {
         if (fromZone) {
           toast.success(t("createdNextLand"));

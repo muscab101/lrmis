@@ -85,6 +85,7 @@ export default async function StaffActivityPage({
                 <TableHead className="text-end">{t("colActions")}</TableHead>
                 <TableHead>{t("colLast")}</TableHead>
                 <TableHead className="text-end">{t("colRecordings")}</TableHead>
+                <TableHead className="w-0" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -133,6 +134,13 @@ export default async function StaffActivityPage({
                       )}
                     </TableCell>
                     <TableCell className="text-end tabular-nums">{r.recordings}</TableCell>
+                    <TableCell>
+                      <Button asChild size="sm" variant="outline" className="whitespace-nowrap">
+                        <Link href={`/admin/activity/${r.user_id}/work${day ? `?day=${day}` : ""}`}>
+                          {t("viewWork")}
+                        </Link>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}

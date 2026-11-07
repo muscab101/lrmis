@@ -4,6 +4,14 @@ import { Circle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
+import {
+  SCREEN_EVENT,
+  WATCH_EVENT,
+  WATCH_EVERY_MS,
+  closeLiveChannel,
+  encodeScreen,
+  openLiveChannel,
+} from "@/lib/live-screen";
 
 const SEND_EVERY_MS = 30_000;
 // While a super admin watches live: send what is new this often, and still check in now and then.
@@ -11,6 +19,8 @@ const LIVE_LOOK_MS = 3_000;
 const LIVE_CHECK_MS = 10_000;
 const NEW_RECORDING_EVERY_MS = 30 * 60_000;
 const MAX_HELD_EVENTS = 20_000;
+// While watched, the screen goes straight to the watcher this often.
+const STREAM_EVERY_MS = 150;
 
 type Session = { id: string; seq: number; started: number };
 
@@ -63,6 +73,11 @@ export function WorkRecorder({ userId }: { userId: string }) {
     let live = false;
     let lastSend = 0;
     const events: unknown[] = [];
+    // Straight to a super admin watching right now, until their "watch" stops coming.
+    let watchedUntil = 0;
+    let streaming = false;
+    const stream: unknown[] = [];
+    let channel: Awaited<ReturnType<typeof openLiveChannel>> | null = null;
     let session = loadSession(userId);
     saveSession(userId, session);
 
@@ -110,7 +125,10 @@ export function WorkRecorder({ userId }: { userId: string }) {
       if (gone) return;
       stop =
         record({
-          emit: (e) => void events.push(e),
+          emit: (e) => {
+            events.push(e);
+            if (Date.now() < watchedUntil) stream.push(e);
+          },
           maskInputOptions: { password: true },
           blockClass: "rr-block",
           inlineStylesheet: true,
@@ -123,6 +141,38 @@ export function WorkRecorder({ userId }: { userId: string }) {
       snapshot = () => record.takeFullSnapshot(true);
     });
 
+    void openLiveChannel(userId).then((ch) => {
+      if (gone) return closeLiveChannel(ch);
+      channel = ch
+        .on("broadcast", { event: WATCH_EVENT }, ({ payload }) => {
+          const fresh = (payload as { fresh?: boolean } | undefined)?.fresh === true;
+          const wasWatched = Date.now() < watchedUntil;
+          watchedUntil = Date.now() + WATCH_EVERY_MS * 3;
+          live = true;
+          // A new watcher needs a full picture of the page to start from.
+          if (fresh || !wasWatched) snapshot?.();
+        })
+        .subscribe();
+    });
+    const streamer = setInterval(() => {
+      if (streaming || !stream.length || !channel) return;
+      if (Date.now() >= watchedUntil) {
+        stream.length = 0;
+        return;
+      }
+      streaming = true;
+      const batch = stream.splice(0);
+      void encodeScreen(batch)
+        .then(async (parts) => {
+          for (const part of parts)
+            await channel?.send({ type: "broadcast", event: SCREEN_EVENT, payload: part });
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          streaming = false;
+        });
+    }, STREAM_EVERY_MS);
+
     const timer = setInterval(() => {
       const waited = Date.now() - lastSend;
       if (live ? events.length > 0 || waited >= LIVE_CHECK_MS : waited >= SEND_EVERY_MS)
@@ -134,7 +184,9 @@ export function WorkRecorder({ userId }: { userId: string }) {
     return () => {
       gone = true;
       clearInterval(timer);
+      clearInterval(streamer);
       clearTimeout(first);
+      if (channel) closeLiveChannel(channel);
       window.removeEventListener("pagehide", onLeave);
       stop?.();
       void send(true);

@@ -14,6 +14,7 @@ import { StatusBadge } from "@dhulka/ui/badge";
 import { OwnerRowActions } from "@/components/owners/owner-row-actions";
 import { PartyPhoto } from "@/components/owners/party-photo";
 import { partyPhotoUrl } from "@/lib/server/party-photo";
+import { OwnerHouses, OwnerStatement, type OwnerHouse, type Statement } from "@/components/owners/owner-statement";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,17 +33,47 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
   const ta = await getTranslations("applications");
   const format = await getFormatter();
   const supabase = await createClient();
-  const [{ data }, links, districts] = await Promise.all([
+  const canBills = viewer.can("invoices.view") || viewer.can("billing.view") || viewer.can("payments.view");
+  const [{ data }, links, districts, owned, statement] = await Promise.all([
     supabase.from("parties").select(PARTY_COLUMNS).eq("id", id).maybeSingle(),
     supabase
       .from("application_parties")
       .select("role, share_pct, application:applications(id, number, type, status, created_at)")
       .eq("party_id", id),
     listDistricts(),
+    // Every house this owner has now.
+    supabase
+      .from("parcel_owners")
+      .select("share_pct, parcel:parcels!inner(id, pun, house_no, status, created_at, deleted_at, neighbourhood:neighbourhoods(name_so, name_en), district:districts(name_so, name_en))")
+      .eq("party_id", id)
+      .is("valid_to", null)
+      .is("parcel.deleted_at", null),
+    canBills ? supabase.rpc("owner_statement", { p_party: id }) : Promise.resolve({ data: null }),
   ]);
   const party = data as unknown as PartyRow | null;
   if (!party) notFound();
   const photo = await partyPhotoUrl(party.id);
+  const s = statement.data as Statement | null;
+  const balances = new Map((s?.houses ?? []).map((h) => [h.id, Number(h.balance)]));
+  const houses: OwnerHouse[] = (
+    (owned.data ?? []) as unknown as {
+      share_pct: number | null;
+      parcel: { id: string; pun: string | null; house_no: string | null; status: OwnerHouse["status"]; created_at: string; neighbourhood: { name_so: string; name_en: string } | null; district: { name_so: string; name_en: string } };
+    }[]
+  )
+    .sort((a, b) => a.parcel.created_at.localeCompare(b.parcel.created_at))
+    .map(({ share_pct, parcel: p }) => ({
+      id: p.id,
+      pun: p.pun,
+      house_no: p.house_no,
+      status: p.status,
+      share_pct,
+      neighbourhood_so: p.neighbourhood?.name_so ?? null,
+      neighbourhood_en: p.neighbourhood?.name_en ?? null,
+      district_so: p.district.name_so,
+      district_en: p.district.name_en,
+      balance: balances.get(p.id),
+    }));
   const apps = ((links.data ?? []) as unknown as { role: string; share_pct: number | null; application: { id: string; number: string; type: string; status: ApplicationStatus; created_at: string } | null }[]).filter(
     (l) => l.application,
   );
@@ -152,6 +183,10 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
             </Table>
           )}
         </Card>
+      </div>
+      <div className="mt-6 space-y-6">
+        <OwnerHouses houses={houses} />
+        {s && <OwnerStatement s={s} />}
       </div>
     </div>
   );

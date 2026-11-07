@@ -1,25 +1,26 @@
 /*
- * Dhulka design tokens — "civic register" style.
- * Warm paper surfaces, deep ink navy for structure, Somali-flag blue as the one bright
- * accent, tight 6px corners and hairline rules like a printed land register.
+ * Dhulka design tokens — glass style.
+ * Frosted glass panels over a soft, colourful canvas: see-through surfaces, a bright edge on top,
+ * a gentle shadow below and a little grain. Civic blue stays the one strong accent.
  * Every colour has light + dark values; Tailwind utilities are generated from @theme.
  */
 
 :root {
-  --radius: 0.375rem;
+  --radius: 0.625rem;
 
   /* Surfaces */
-  --background: #fbfaf7;
+  --background: rgb(255 255 255 / 0.55);
   --foreground: #0d1b2e;
-  --surface: #f4f1ea; /* app canvas: warm paper */
-  --card: #ffffff;
+  --surface: #e8eef8; /* app canvas, under the glass */
+  --card: rgb(255 255 255 / 0.5);
+  --card-solid: #ffffff; /* panels over a map: nothing shows through */
   --card-foreground: #0d1b2e;
-  --popover: #ffffff;
+  --popover: rgb(255 255 255 / 0.8);
   --popover-foreground: #0d1b2e;
-  --muted: #efebe2;
+  --muted: rgb(13 27 46 / 0.045);
   --muted-foreground: #5d6573;
-  --border: #e2ddd1;
-  --input: #cfc8b8;
+  --border: rgb(13 27 46 / 0.09);
+  --input: rgb(13 27 46 / 0.16);
   --ring: #2f6fd6;
 
   /* Brand */
@@ -32,7 +33,7 @@
   --accent: #0e8f8e; /* teal: data and secondary emphasis */
   --accent-foreground: #ffffff;
   --accent-soft: #e2f2f1;
-  --secondary: #efebe2;
+  --secondary: rgb(13 27 46 / 0.05);
   --secondary-foreground: #0d1b2e;
 
   /* Feedback */
@@ -52,11 +53,21 @@
   --status-partial: #1d5fc2;
 
   /* Sidebar (ink) */
-  --sidebar: #0d1b2e;
-  --sidebar-foreground: #b9c2d0;
-  --sidebar-active: #18304f;
-  --sidebar-active-foreground: #ffffff;
-  --sidebar-border: #1c2c44;
+  --sidebar: rgb(255 255 255 / 0.45);
+  --sidebar-foreground: #46526a;
+  --sidebar-active: rgb(30 79 163 / 0.1);
+  --sidebar-active-foreground: #0d1b2e;
+  --sidebar-border: rgb(13 27 46 / 0.07);
+
+  /* Glass: what shows behind it, how it is frosted, its bright edge and its shadow */
+  --canvas:
+    radial-gradient(46rem 34rem at 10% 2%, rgb(96 165 250 / 0.55), transparent 70%),
+    radial-gradient(40rem 32rem at 95% 10%, rgb(45 212 191 / 0.42), transparent 70%),
+    radial-gradient(48rem 36rem at 75% 100%, rgb(244 114 182 / 0.32), transparent 70%),
+    radial-gradient(40rem 30rem at 0% 95%, rgb(167 139 250 / 0.4), transparent 70%);
+  --glass-filter: blur(26px) saturate(180%);
+  --glass-edge: 255 255 255;
+  --glass-shadow: 205 30% 20%;
 
   /* Charts */
   --chart-1: #1e4fa3;
@@ -67,17 +78,18 @@
 }
 
 .dark {
-  --background: #080e17;
+  --background: rgb(8 14 24 / 0.5);
   --foreground: #e8e4da;
-  --surface: #0a111b;
-  --card: #0e1724;
+  --surface: #060b13;
+  --card: rgb(20 32 50 / 0.42);
+  --card-solid: #111c2b;
   --card-foreground: #e8e4da;
-  --popover: #111b2a;
+  --popover: rgb(14 24 38 / 0.9);
   --popover-foreground: #e8e4da;
-  --muted: #152030;
+  --muted: rgb(255 255 255 / 0.045);
   --muted-foreground: #98a2b2;
-  --border: #1d2a3d;
-  --input: #283850;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.14);
   --ring: #5f9be8;
 
   --ink: #040a12;
@@ -89,7 +101,7 @@
   --accent: #3cc4bf;
   --accent-foreground: #04201f;
   --accent-soft: #0f2e30;
-  --secondary: #152030;
+  --secondary: rgb(255 255 255 / 0.05);
   --secondary-foreground: #e8e4da;
 
   --success: #34c26b;
@@ -103,11 +115,20 @@
   --status-rejected: #f2615a;
   --status-partial: #6aa6ec;
 
-  --sidebar: #040a12;
+  --sidebar: rgb(4 10 18 / 0.6);
   --sidebar-foreground: #98a2b2;
-  --sidebar-active: #111b2a;
+  --sidebar-active: rgb(255 255 255 / 0.08);
   --sidebar-active-foreground: #ffffff;
-  --sidebar-border: #111b2a;
+  --sidebar-border: rgb(255 255 255 / 0.06);
+
+  --canvas:
+    radial-gradient(46rem 34rem at 12% 4%, rgb(37 99 235 / 0.42), transparent 70%),
+    radial-gradient(40rem 32rem at 95% 18%, rgb(20 184 166 / 0.32), transparent 70%),
+    radial-gradient(48rem 36rem at 72% 100%, rgb(124 58 237 / 0.34), transparent 70%),
+    radial-gradient(40rem 30rem at 0% 92%, rgb(14 116 144 / 0.4), transparent 70%);
+  --glass-filter: blur(36px) brightness(0.9) saturate(1.1);
+  --glass-edge: 220 230 240;
+  --glass-shadow: 205 20% 2%;
 
   --chart-1: #5b8fe0;
   --chart-2: #3cc4bf;
@@ -131,6 +152,7 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-card: var(--card);
+  --color-card-solid: var(--card-solid);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
@@ -182,7 +204,8 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    background: var(--surface);
+    background: var(--canvas), var(--surface);
+    background-attachment: fixed;
     color: var(--foreground);
     font-size: 0.875rem;
     letter-spacing: -0.005em;
@@ -218,6 +241,75 @@
   }
 }
 
+/*
+ * Glass panels: cards, the header, the sidebar, menus and dialogs. Frosted see-through background, a little grain,
+ * a bright inner edge on the top-left and a soft layered shadow below (after the "glass3d" style).
+ */
+@layer components {
+  .glass,
+  [data-slot="card"],
+  .bg-card.rounded-xl,
+  .bg-card.rounded-lg,
+  .bg-popover {
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 120px;
+    box-shadow:
+      inset 1px 1px 0 0 rgb(var(--glass-edge) / 0.55),
+      inset 0 0 0 0.5px rgb(var(--glass-edge) / 0.12),
+      0 0 0.75px hsl(var(--glass-shadow) / 0.18),
+      1.3px 1.5px 2.2px -0.8px hsl(var(--glass-shadow) / 0.08),
+      3.9px 4.4px 6.6px -1.7px hsl(var(--glass-shadow) / 0.08),
+      8px 9px 14px -2.5px hsl(var(--glass-shadow) / 0.12);
+  }
+  .dark .glass,
+  .dark [data-slot="card"],
+  .dark .bg-card.rounded-xl,
+  .dark .bg-card.rounded-lg,
+  .dark .bg-popover {
+    box-shadow:
+      inset 1.5px 1.5px 1px -1px rgb(var(--glass-edge) / 0.35),
+      inset 0 0 0 0.5px rgb(var(--glass-edge) / 0.06),
+      0 0 0.75px hsl(var(--glass-shadow) / 0.4),
+      2.3px 2.6px 3.9px -1.2px hsl(var(--glass-shadow) / 0.25),
+      8px 9px 14px -2.5px hsl(var(--glass-shadow) / 0.4);
+  }
+  /* The sidebar and the sticky header: the same frosting, without the card shadow. */
+  .glass-bar {
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+  }
+}
+
+/* Every box and table: medium corners (rounded-md), whatever corner the page asked for. */
+[data-slot="card"],
+.bg-card.rounded-lg,
+.bg-card.rounded-xl,
+.bg-card.rounded-2xl,
+.bg-popover.rounded-lg,
+[role="dialog"].bg-card,
+[role="alertdialog"].bg-card {
+  border-radius: var(--radius-md);
+}
+
+/* Paper: no glass, no canvas. */
+@media print {
+  body {
+    background: #fff;
+  }
+  .glass,
+  [data-slot="card"],
+  .bg-card.rounded-xl,
+  .bg-card.rounded-lg,
+  .bg-popover {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-image: none;
+    box-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -225,4 +317,35 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Loading boxes: soft frosted shapes with a blurred light passing over them while a page loads. */
+@keyframes skeleton-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@keyframes skeleton-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  backdrop-filter: blur(10px);
+  animation: skeleton-breathe 1.8s ease-in-out infinite;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  filter: blur(10px);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+.dark .skeleton { background: color-mix(in oklab, var(--foreground) 7%, transparent); }
+.dark .skeleton::after { background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.09), transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .skeleton::after { animation: none; }
 }

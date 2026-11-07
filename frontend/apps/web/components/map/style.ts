@@ -25,7 +25,7 @@ const TEAL = "#0e8f8e";
  */
 export const LEVEL_COLOURS: Record<BoundaryLayer, string> = {
   districts: "#dc2626",
-  sections: "#eab308",
+  sections: "#d97706",
   sectors: "#16a34a",
   neighbourhoods: "#2563eb",
   streets: "#9333ea",
@@ -76,7 +76,28 @@ const districtColour = [
   ...districtPairs,
   ["match", ["downcase", ["get", "name_en"]], ...districtPairs, C.districts],
 ];
-const softFill = (hoverOpacity: number, opacity: number) => ["case", ["boolean", ["feature-state", "hover"], false], hoverOpacity, opacity];
+/**
+ * How each level's border looks, biggest first: thick and solid for a district, then thinner and lighter at each level
+ * down, so you can tell which border is which at a glance. `from` is the zoom where the level fades in.
+ */
+const hoverOr = (opacity: number) => ["case", ["boolean", ["feature-state", "hover"], false], 0.3, opacity];
+const zoomWidth = (a: number, b: number) => ["interpolate", ["linear"], ["zoom"], 10, a, 16, b];
+// The two biggest levels also get a soft band of their colour along the border, so their edge reads from far away.
+const BORDERS = [
+  { level: "neighbourhoods", colour: C.neighbourhoods, width: zoomWidth(0.8, 1.4), halo: zoomWidth(2.5, 3.5), dash: [2, 2], band: null, from: 12.6 },
+  { level: "sectors", colour: C.sectors, width: zoomWidth(1.6, 2.6), halo: zoomWidth(3.5, 5), dash: null, band: null, from: 12 },
+  { level: "sections", colour: C.sections, width: zoomWidth(2.2, 3.2), halo: zoomWidth(4.5, 6.5), dash: null, band: zoomWidth(6, 12), from: 11 },
+  { level: "districts", colour: districtColour, width: zoomWidth(3, 5), halo: zoomWidth(6, 9), dash: null, band: zoomWidth(10, 22), from: 0 },
+] as const;
+
+/** A level's tint while it is the one to read, so each area stands out from the next; brighter under the pointer. */
+const tintAt = (stops: [number, number][]) => ["interpolate", ["linear"], ["zoom"], ...stops.flatMap(([z, o]) => [z, hoverOr(o)])];
+const LEVEL_TINT: Record<"sections" | "sectors" | "neighbourhoods", unknown> = {
+  sections: tintAt([[11, 0], [12, 0.12], [14, 0.08], [15, 0.02]]),
+  sectors: tintAt([[13.2, 0], [14.2, 0.1], [15.5, 0.06], [16.5, 0.02]]),
+  neighbourhoods: tintAt([[15, 0], [16, 0.05]]),
+};
+
 const FONT = ["Open Sans Semibold"];
 
 /** Mogadishu (Banadir) — used when nothing is mapped yet. */
@@ -148,64 +169,66 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
     layers: [
       { id: "base-streets", type: "raster", source: "base-streets", layout: { visibility: "visible" } },
       { id: "base-satellite", type: "raster", source: "base-satellite", layout: { visibility: "none" } },
-      // Fills, widest level first so the smaller ones sit on top.
+      // Only the district is tinted, and less as you zoom in; the smaller levels are told apart by their borders. Their
+      // fills stay (clear) so they can still be hovered and clicked, and light up under the pointer.
       {
         id: "districts-fill",
         type: "fill",
         source: "districts",
         "source-layer": "districts",
-        paint: { "fill-color": districtColour as never, "fill-opacity": softFill(0.4, 0.22) as never },
+        paint: {
+          "fill-color": districtColour as never,
+          // Zoom has to come first in MapLibre, so the hover choice sits inside each step.
+          "fill-opacity": ["interpolate", ["linear"], ["zoom"], 10, hoverOr(0.2), 13, hoverOr(0.07), 15, hoverOr(0.03)] as never,
+        },
       },
-      {
-        id: "sections-fill",
-        type: "fill",
-        source: "sections",
-        "source-layer": "sections",
-        paint: { "fill-color": C.sections, "fill-opacity": softFill(0.2, 0.08) as never },
-      },
-      {
-        id: "sectors-fill",
-        type: "fill",
-        source: "sectors",
-        "source-layer": "sectors",
-        paint: { "fill-color": C.sectors, "fill-opacity": softFill(0.2, 0.08) as never },
-      },
-      {
-        id: "neighbourhoods-fill",
-        type: "fill",
-        source: "neighbourhoods",
-        "source-layer": "neighbourhoods",
-        paint: { "fill-color": C.neighbourhoods, "fill-opacity": softFill(0.28, 0.12) as never },
-      },
-      // Outlines, smallest level first so district borders stay on top.
-      {
-        id: "neighbourhoods-line",
-        type: "line",
-        source: "neighbourhoods",
-        "source-layer": "neighbourhoods",
-        paint: { "line-color": C.neighbourhoods, "line-width": 1.4 },
-      },
-      {
-        id: "sectors-line",
-        type: "line",
-        source: "sectors",
-        "source-layer": "sectors",
-        paint: { "line-color": C.sectors, "line-width": 1.6, "line-dasharray": [2, 1.5] },
-      },
-      {
-        id: "sections-line",
-        type: "line",
-        source: "sections",
-        "source-layer": "sections",
-        paint: { "line-color": C.sections, "line-width": 2 },
-      },
-      {
-        id: "districts-line",
-        type: "line",
-        source: "districts",
-        "source-layer": "districts",
-        paint: { "line-color": districtColour as never, "line-width": ["interpolate", ["linear"], ["zoom"], 9, 2, 14, 3.5] },
-      },
+      ...(["sections", "sectors", "neighbourhoods"] as const).map((level) => ({
+        id: `${level}-fill`,
+        type: "fill" as const,
+        source: level,
+        "source-layer": level,
+        paint: { "fill-color": C[level], "fill-opacity": LEVEL_TINT[level] as never },
+      })),
+      // Borders, smallest level first so the bigger ones stay on top: the bigger the level, the thicker its line. Each
+      // has a white edge under it to stand out on any base map, and fades in at its own zoom.
+      ...BORDERS.flatMap(({ level, colour, width, halo, dash, band, from }) => {
+        const fade = (top: number) => ["interpolate", ["linear"], ["zoom"], from, 0, from + 0.6, top];
+        return [
+          ...(band
+            ? [
+                {
+                  id: `${level}-band`,
+                  type: "line" as const,
+                  source: level,
+                  "source-layer": level,
+                  layout: { "line-join": "round" as const },
+                  paint: { "line-color": colour as never, "line-width": band as never, "line-blur": 4, "line-opacity": fade(0.22) as never },
+                },
+              ]
+            : []),
+          {
+            id: `${level}-halo`,
+            type: "line" as const,
+            source: level,
+            "source-layer": level,
+            layout: { "line-join": "round" as const },
+            paint: { "line-color": "#ffffff", "line-width": halo as never, "line-opacity": fade(0.85) as never },
+          },
+          {
+            id: `${level}-line`,
+            type: "line" as const,
+            source: level,
+            "source-layer": level,
+            layout: { "line-join": "round" as const, "line-cap": "round" as const },
+            paint: {
+              "line-color": colour as never,
+              "line-width": width as never,
+              "line-opacity": fade(1) as never,
+              ...(dash ? { "line-dasharray": [...dash] } : {}),
+            },
+          },
+        ];
+      }),
       {
         id: "streets-line",
         type: "line",
@@ -276,14 +299,35 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         source: "highlight",
         paint: { "line-color": FLAG, "line-width": 3 },
       },
+      // Names: the bigger the level, the bigger its name; each shows only while its level is the one to read.
       {
         id: "neighbourhoods-label",
         type: "symbol",
         source: "neighbourhoods",
         "source-layer": "neighbourhoods",
-        minzoom: 13,
-        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 12 },
-        paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 1.5 },
+        minzoom: 15.2,
+        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 11.5 },
+        paint: { "text-color": "#1e3a8a", "text-halo-color": "#fff", "text-halo-width": 1.5 },
+      },
+      {
+        id: "sectors-label",
+        type: "symbol",
+        source: "sectors",
+        "source-layer": "sectors",
+        minzoom: 13.8,
+        maxzoom: 15.6,
+        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 13.5, "text-letter-spacing": 0.04 },
+        paint: { "text-color": "#14532d", "text-halo-color": "#fff", "text-halo-width": 1.8 },
+      },
+      {
+        id: "sections-label",
+        type: "symbol",
+        source: "sections",
+        "source-layer": "sections",
+        minzoom: 11.5,
+        maxzoom: 14.2,
+        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 14, "text-transform": "uppercase", "text-letter-spacing": 0.1 },
+        paint: { "text-color": "#78350f", "text-halo-color": "#fff", "text-halo-width": 2 },
       },
       {
         id: "districts-label",
@@ -291,8 +335,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         source: "districts",
         // One point per district (public.districts.label_point), so a name is drawn once, not once per tile.
         "source-layer": "district_labels",
-        maxzoom: 13,
-        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 14, "text-transform": "uppercase" },
+        maxzoom: 12.5,
+        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 16, "text-transform": "uppercase", "text-letter-spacing": 0.12 },
         paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 2 },
       },
     ],
@@ -301,10 +345,10 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
 
 /** Map layer ids that belong to each toggle in the layers panel. */
 export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
-  districts: ["districts-fill", "districts-line", "districts-label"],
-  sections: ["sections-fill", "sections-line"],
-  sectors: ["sectors-fill", "sectors-line"],
-  neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-line", "neighbourhoods-label"],
+  districts: ["districts-fill", "districts-band", "districts-halo", "districts-line", "districts-label"],
+  sections: ["sections-fill", "sections-band", "sections-halo", "sections-line", "sections-label"],
+  sectors: ["sectors-fill", "sectors-halo", "sectors-line", "sectors-label"],
+  neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-halo", "neighbourhoods-line", "neighbourhoods-label"],
   streets: ["streets-line"],
   facilities: ["facilities-circle"],
 };
@@ -315,9 +359,9 @@ export const PIN_OWING = "#dc2626";
 
 export const LEGEND: { layer: BoundaryLayer; swatch: string; kind: "line" | "fill" | "dashed" | "dot" }[] = [
   { layer: "districts", swatch: C.districts, kind: "fill" },
-  { layer: "sections", swatch: C.sections, kind: "fill" },
-  { layer: "sectors", swatch: C.sectors, kind: "fill" },
-  { layer: "neighbourhoods", swatch: C.neighbourhoods, kind: "fill" },
+  { layer: "sections", swatch: C.sections, kind: "line" },
+  { layer: "sectors", swatch: C.sectors, kind: "line" },
+  { layer: "neighbourhoods", swatch: C.neighbourhoods, kind: "dashed" },
   { layer: "streets", swatch: C.streets, kind: "line" },
   { layer: "facilities", swatch: TEAL, kind: "dot" },
 ];

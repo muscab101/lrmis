@@ -1,6 +1,5 @@
 import "server-only";
 import type { PermissionKey } from "@dhulka/core/permissions";
-import type { User } from "@supabase/supabase-js";
 import { forbidden } from "next/navigation";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
@@ -19,10 +18,13 @@ export interface Profile {
   all_districts: boolean;
   /** The cashier's own cash desk (Admin → Users). */
   point_of_sale_id: string | null;
+  /** Their own photo (private file; shown by a short-lived link). */
+  avatar_path: string | null;
 }
 
 export interface Viewer {
-  user: User;
+  /** The signed-in account (from its checked sign-in token). */
+  user: { id: string; email: string | null };
   profile: Profile;
   permissions: ReadonlySet<string>;
   aal: "aal1" | "aal2";
@@ -36,21 +38,29 @@ export interface Viewer {
 /** The signed-in user with profile + effective permissions. Cached per request. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // The sign-in token is checked here with the project's public key: no trip to the auth server on every page.
+  // (The database still checks the account is active and not signed out everywhere on every query.)
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) return null;
+  const user = { id: claims.sub, email: (claims.email as string | undefined) ?? null };
 
   const [profileRes, permsRes, aalRes, stateRes, superRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("user_id, kind, full_name, email, phone, status, must_change_password, locale, all_districts, point_of_sale_id")
+      .select(
+        "user_id, kind, full_name, email, phone, status, must_change_password, locale, all_districts, point_of_sale_id, avatar_path",
+      )
       .eq("user_id", user.id)
       .single(),
     supabase.rpc("my_permissions"),
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
     supabase.rpc("my_session_state"),
-    supabase.from("user_roles").select("roles!inner(grants_all)").eq("user_id", user.id).eq("roles.grants_all", true),
+    supabase
+      .from("user_roles")
+      .select("roles!inner(grants_all)")
+      .eq("user_id", user.id)
+      .eq("roles.grants_all", true),
   ]);
   if (!profileRes.data) return null;
 
@@ -76,7 +86,8 @@ export async function requireStaff(locale: string): Promise<Viewer> {
   if (v.profile.kind !== "staff") redirect({ href: "/my-properties", locale });
   // A super admin testing this account doesn't set its password or do its 2FA.
   if (v.testing) return v;
-  if (v.profile.must_change_password || v.profile.status === "invited") redirect({ href: "/change-password", locale });
+  if (v.profile.must_change_password || v.profile.status === "invited")
+    redirect({ href: "/change-password", locale });
   if (v.mfaRequired && v.aal !== "aal2") redirect({ href: "/mfa", locale });
   return v;
 }

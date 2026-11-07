@@ -2,7 +2,8 @@ import * as React from "react";
 import { cn } from "../lib/cn";
 
 export function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
+  // Frosted box with a soft light passing over it (see .skeleton in tokens.css).
+  return <div aria-hidden className={cn("skeleton rounded-md", className)} {...props} />;
 }
 
 export function Separator({ className, vertical = false }: { className?: string; vertical?: boolean }) {

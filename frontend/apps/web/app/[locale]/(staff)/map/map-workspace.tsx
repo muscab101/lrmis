@@ -166,7 +166,7 @@ export function MapWorkspace({
       />
 
       {/* Search */}
-      <div className="absolute start-3 top-3 z-10 w-[min(360px,calc(100%-5rem))] rounded-md border bg-card shadow-lg">
+      <div className="absolute start-3 top-3 z-10 w-[min(360px,calc(100%-5rem))] rounded-md border bg-card-solid shadow-lg">
         <AsyncCombobox
           search={searchNeighbourhoods}
           value={search}
@@ -182,11 +182,11 @@ export function MapWorkspace({
 
       {/* Layers */}
       <div className="absolute end-3 top-3 z-10 flex flex-col items-end gap-2">
-        <Button variant="outline" size="icon" className="bg-card shadow-lg" onClick={() => setPanelOpen((o) => !o)} aria-expanded={panelOpen} aria-label={t("layers")}>
+        <Button variant="outline" size="icon" className="bg-card-solid shadow-lg" onClick={() => setPanelOpen((o) => !o)} aria-expanded={panelOpen} aria-label={t("layers")}>
           <Layers aria-hidden />
         </Button>
         {panelOpen && (
-          <div className="w-64 rounded-md border bg-card p-4 shadow-lg">
+          <div className="w-64 rounded-md border bg-card-solid p-4 shadow-lg">
             <div className="label-caps mb-2 text-muted-foreground">{t("baseMap")}</div>
             <div className="mb-4 grid grid-cols-2 gap-1 rounded-md border p-1">
               {(["streets", "satellite"] as const).map((b) => (
@@ -281,7 +281,7 @@ export function MapWorkspace({
 
       {/* Selected feature */}
       {selected && (
-        <aside className="absolute inset-x-3 bottom-12 z-10 rounded-md border bg-card p-4 shadow-lg sm:start-auto sm:end-3 sm:w-80" aria-live="polite">
+        <aside className="absolute inset-x-3 bottom-12 z-10 rounded-md border bg-card-solid p-4 shadow-lg sm:start-auto sm:end-3 sm:w-80" aria-live="polite">
           <div className="mb-3 flex items-start justify-between gap-2">
             <div>
               <div className="label-caps text-flag">{t(`layer_${selected.layer as BoundaryLayer}`)}</div>
@@ -437,7 +437,7 @@ export function MapWorkspace({
       )}
 
       {!extent && (
-        <div className="absolute inset-x-3 top-16 z-10 mx-auto max-w-md rounded-md border border-s-[3px] border-s-warning bg-card px-4 py-3 text-sm shadow-lg">
+        <div className="absolute inset-x-3 top-16 z-10 mx-auto max-w-md rounded-md border border-s-[3px] border-s-warning bg-card-solid px-4 py-3 text-sm shadow-lg">
           {t("noBoundaries")}
         </div>
       )}

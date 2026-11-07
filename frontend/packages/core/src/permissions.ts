@@ -60,6 +60,7 @@ export const SPECIAL_PERMISSIONS = [
   "parcels.yet_to_register",
   "certificates.id_cards",
   "certificates.printers",
+  "certificates.signature",
   "reports.assistant",
   "parcels.registered",
   "parcels.delete_registered",

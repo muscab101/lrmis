@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
+import { withPhotos } from "@/lib/server/profile-photo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const BUCKET = "chat-media";
@@ -29,6 +30,10 @@ export interface ChatRow {
   unread: number;
   member_count: number;
   created_by: string | null;
+  /** In a direct chat, the other person, and a link to their photo. */
+  other_user: string | null;
+  photo: string | null;
+  photo_key: string | null;
 }
 
 export interface ChatMessage {
@@ -46,12 +51,36 @@ export interface ChatMessage {
   file_url: string | null;
 }
 
-export type ChatPerson = { user_id: string; full_name: string; email: string | null };
+export type ChatPerson = {
+  user_id: string;
+  full_name: string;
+  email: string | null;
+  photo: string | null;
+};
+
+export interface ChatProfile {
+  user_id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  photo: string | null;
+  roles_en: string[];
+  roles_so: string[];
+  districts: string[];
+  all_districts: boolean;
+  last_seen: string | null;
+  joined: string;
+}
 
 export const chatListAction = defineAction(
   "chat.list",
   z.object({}),
-  async (_v, ctx) => unwrap(await ctx.supabase.rpc("chat_list"), "chats") as ChatRow[],
+  async (_v, ctx) =>
+    (await withPhotos(
+      (unwrap(await ctx.supabase.rpc("chat_list"), "chats") ?? []) as {
+        photo_path: string | null;
+      }[],
+    )) as unknown as ChatRow[],
 );
 
 /** A page of messages, oldest first. The database only answers members, so only they get links to the files. */
@@ -87,7 +116,23 @@ export const chatDirectoryAction = defineAction(
   "chat.directory",
   z.object({ q: z.string().max(80).default("") }),
   async (v, ctx) =>
-    unwrap(await ctx.supabase.rpc("chat_directory", { p_q: v.q }), "directory") as ChatPerson[],
+    (await withPhotos(
+      (unwrap(await ctx.supabase.rpc("chat_directory", { p_q: v.q }), "directory") ?? []) as {
+        photo_path: string | null;
+      }[],
+    )) as unknown as ChatPerson[],
+);
+
+/** A staff member's profile, with a link to their photo. */
+export const chatProfileAction = defineAction(
+  "chat.profile",
+  z.object({ userId: z.uuid() }),
+  async (v, ctx) => {
+    const rows = (unwrap(await ctx.supabase.rpc("chat_profile", { p_user: v.userId }), "profile") ??
+      []) as { photo_path: string | null }[];
+    if (!rows.length) throw new AppFailure("NOT_FOUND");
+    return (await withPhotos(rows))[0] as unknown as ChatProfile;
+  },
 );
 
 export const chatOpenDirectAction = defineAction(
@@ -121,10 +166,12 @@ export const chatMembersAction = defineAction(
   "chat.members",
   z.object({ conversationId: z.uuid() }),
   async (v, ctx) =>
-    unwrap(
-      await ctx.supabase.rpc("chat_members_of", { p_conversation: v.conversationId }),
-      "members",
-    ) as ChatPerson[],
+    (await withPhotos(
+      (unwrap(
+        await ctx.supabase.rpc("chat_members_of", { p_conversation: v.conversationId }),
+        "members",
+      ) ?? []) as { photo_path: string | null }[],
+    )) as unknown as ChatPerson[],
 );
 
 export const chatAddMembersAction = defineAction(
