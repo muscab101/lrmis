@@ -27,7 +27,8 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
 
   return (
     <nav aria-label={t("label")} className="glass-bar flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed && "justify-center px-0")}>
+      {/* data-brand-logo: where the welcome screen's emblem lands after signing in. */}
+      <div data-brand-logo className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed && "justify-center px-0")}>
         {collapsed ? <BrandMark title={tc("appShortName")} /> : <BrandLockup name={tc("appShortName")} sub={tc("orgName")} />}
       </div>
 

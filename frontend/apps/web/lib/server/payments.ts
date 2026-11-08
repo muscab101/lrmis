@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
-import { normalizePun } from "@/lib/pun";
+import { normalizePun, punFilter } from "@/lib/pun";
 import { getLandUnits } from "./parcels";
 
 export type PaymentStatus = "completed" | "unmatched" | "reversed";
@@ -46,7 +46,7 @@ export async function listPayments(opts: {
     const { data } = await supabase
       .from("parcels")
       .select("id")
-      .ilike("pun", `%${normalizePun(term)}%`)
+      .or(`pun.ilike.%${normalizePun(term)}%,pun_old.ilike.%${normalizePun(term)}%`)
       .limit(50);
     const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
     req = req.or(
@@ -381,7 +381,7 @@ export async function parcelForCashier(term: string) {
   }
   const { data: p } = parcelId
     ? await supabase.from("parcels").select(cols).eq("id", parcelId).maybeSingle()
-    : await supabase.from("parcels").select(cols).eq("pun", normalizePun(key)).maybeSingle();
+    : await supabase.from("parcels").select(cols).or(punFilter(normalizePun(key))).maybeSingle();
   if (!p) return null;
   const parcel = p as unknown as {
     id: string;

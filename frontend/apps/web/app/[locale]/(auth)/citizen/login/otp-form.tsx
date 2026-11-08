@@ -1,5 +1,6 @@
 "use client";
 
+import { markJustSignedIn } from "@/lib/welcome";
 import type { AppError } from "@dhulka/core/errors";
 import { otpRequestSchema, otpVerifySchema } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
@@ -45,6 +46,7 @@ export function OtpForm() {
       applyFieldErrors(res.error, verify.setError);
       return setError(res.error.code === "VALIDATION" ? null : res.error);
     }
+    markJustSignedIn();
     window.location.assign(`/${locale}/portal`);
   });
 

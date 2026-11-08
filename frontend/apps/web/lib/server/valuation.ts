@@ -147,7 +147,10 @@ export interface Breakdown {
   year: number;
   area_m2: number;
   rate_m2: number;
-  rate_source: "default" | "neighbourhood";
+  /** property_type: the property type's rate, the same sum as the bill. */
+  rate_source: "default" | "neighbourhood" | "property_type";
+  property_type_so?: string | null;
+  property_type_en?: string | null;
   rate_valid_from: string | null;
   land_amount: number;
   buildings: { grade: string; grade_so: string; grade_en: string; units: number; amount: number; line: number }[];

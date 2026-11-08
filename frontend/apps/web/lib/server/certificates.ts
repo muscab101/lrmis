@@ -63,7 +63,7 @@ export async function listDocuments(opts: { q: string; status: "valid" | "any"; 
   const term = opts.q.replace(/[,()*%\\]/g, " ").trim();
   if (term) {
     // A serial, or the PUN of the land (dashes and an old BN typed from a printout are ignored).
-    const { data } = await supabase.from("parcels").select("id").ilike("pun", `%${normalizePun(term)}%`).limit(50);
+    const { data } = await supabase.from("parcels").select("id").or(`pun.ilike.%${normalizePun(term)}%,pun_old.ilike.%${normalizePun(term)}%`).limit(50);
     const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
     req = req.or([`serial.ilike.%${term}%`, ...(ids.length ? [`parcel_id.in.(${ids.join(",")})`] : [])].join(","));
   }

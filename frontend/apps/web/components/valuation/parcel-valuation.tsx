@@ -135,7 +135,11 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
               <dt>
                 {t("landLine", { area: format.number(Number(preview.area_m2)), rate: format.number(Number(preview.rate_m2), { maximumFractionDigits: 4 }) })}
                 <span className="block text-xs text-muted-foreground">
-                  {preview.rate_source === "default" ? t("defaultRate") : t("rateFrom", { date: preview.rate_valid_from ?? "" })}
+                  {preview.rate_source === "property_type"
+                    ? t("typeRate", { type: (locale === "so" ? preview.property_type_so : preview.property_type_en) ?? "" })
+                    : preview.rate_source === "default"
+                      ? t("defaultRate")
+                      : t("rateFrom", { date: preview.rate_valid_from ?? "" })}
                 </span>
               </dt>
               <dd className="tabular-nums">{usd(preview.land_amount)}</dd>

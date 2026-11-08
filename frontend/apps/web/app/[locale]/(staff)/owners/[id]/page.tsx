@@ -14,7 +14,8 @@ import { StatusBadge } from "@dhulka/ui/badge";
 import { OwnerRowActions } from "@/components/owners/owner-row-actions";
 import { PartyPhoto } from "@/components/owners/party-photo";
 import { partyPhotoUrl } from "@/lib/server/party-photo";
-import { OwnerHouses, OwnerStatement, type OwnerHouse, type Statement } from "@/components/owners/owner-statement";
+import { OwnerHouses } from "@/components/owners/owner-houses";
+import { OwnerStatement, type OwnerHouse, type Statement } from "@/components/owners/owner-statement";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

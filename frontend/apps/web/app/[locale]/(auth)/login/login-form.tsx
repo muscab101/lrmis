@@ -15,6 +15,7 @@ import { FormError } from "@/components/forms/form-error";
 import { PasswordInput } from "@/components/forms/password-input";
 import { Link } from "@/i18n/navigation";
 import { applyFieldErrors, useValidationMessage } from "@/lib/client/errors";
+import { markJustSignedIn } from "@/lib/welcome";
 import { googleSignInAction, loginAction } from "../actions";
 
 export function LoginForm({ next, initialError, googleEnabled }: { next?: string | undefined; initialError: string | null; googleEnabled: boolean }) {
@@ -36,6 +37,7 @@ export function LoginForm({ next, initialError, googleEnabled }: { next?: string
       return;
     }
     // Full navigation so middleware runs the password-change / 2FA gates with fresh cookies.
+    markJustSignedIn();
     window.location.assign(next ?? `/${locale}/${res.data.kind === "staff" ? "dashboard" : "portal"}`);
   });
 

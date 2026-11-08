@@ -7,7 +7,7 @@ import { EVIDENCE_BUCKET } from "@/lib/server/collections";
 import { log } from "@/lib/server/log";
 import { parcelForCashier } from "@/lib/server/payments";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { normalizePun } from "@/lib/pun";
+import { normalizePun, punFilter } from "@/lib/pun";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
 const money = z.coerce.number().positive("validation.amount").max(100_000_000, "validation.amount");
@@ -160,7 +160,7 @@ export const recordBankPaymentAction = defineAction(
       const { data } = await ctx.supabase
         .from("parcels")
         .select("id")
-        .eq("pun", normalizePun(v.pun))
+        .or(punFilter(normalizePun(v.pun)))
         .maybeSingle();
       if (!data)
         throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
@@ -196,7 +196,7 @@ export const matchPaymentAction = defineAction(
     const { data } = await ctx.supabase
       .from("parcels")
       .select("id")
-      .eq("pun", normalizePun(v.pun))
+      .or(punFilter(normalizePun(v.pun)))
       .maybeSingle();
     if (!data) throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
     return done(

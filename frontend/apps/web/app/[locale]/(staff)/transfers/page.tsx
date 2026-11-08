@@ -12,7 +12,7 @@ import { legalCounts, listTransfers, parcelLegal, type RequestStatus } from "@/l
 import { getParcel } from "@/lib/server/parcels";
 import { createClient } from "@/lib/supabase/server";
 import { listDistricts } from "@/lib/server/users";
-import { normalizePun } from "@/lib/pun";
+import { normalizePun, punFilter } from "@/lib/pun";
 
 export async function generateMetadata() {
   const t = await getTranslations("legal");
@@ -37,7 +37,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
   // order): find it by its PUN (dashes from an old printout are ignored).
   const pun = normalizePun(sp.pun ?? "").slice(0, 30);
   const found = pun
-    ? ((await (await createClient()).from("parcels").select("id").eq("pun", pun).is("deleted_at", null).maybeSingle()).data as { id: string } | null)
+    ? ((await (await createClient()).from("parcels").select("id").or(punFilter(pun)).is("deleted_at", null).maybeSingle()).data as { id: string } | null)
     : null;
   const parcel = found ? await getParcel(found.id) : null;
   const legal = parcel ? await parcelLegal(parcel.id) : null;

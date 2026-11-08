@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { normalizePun } from "@/lib/pun";
 
 describe("normalizePun", () => {
+  it("reads the short PUN (2026-11-07) and a flat's own number", () => {
+    expect(normalizePun(" 3441712 ")).toBe("3441712");
+    expect(normalizePun("3441718-1")).toBe("3441718-1");
+    expect(normalizePun("21111-2")).toBe("21111-2");
+    expect(normalizePun("3441113a")).toBe("3441113A");
+  });
+
   it("drops the old BN, dashes and case", () => {
     expect(normalizePun(" bn34krwjxl0107 ")).toBe("34KRWJXL0107");
     expect(normalizePun("BN-HDN-012-01")).toBe("HDN01201");

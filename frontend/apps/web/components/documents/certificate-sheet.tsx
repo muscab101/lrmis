@@ -11,6 +11,7 @@ export async function CertificateSheet({ doc, verifyUrl, watermarkFacts }: { doc
   const ts = await getTranslations("stage");
   const tc = await getTranslations("common");
   const tm = await getTranslations("signatureStamp");
+  const to = await getTranslations("owners");
   // The official signature and office stamp set by an admin (Admin → Signature and stamp).
   const marks = await getCertificateMarks();
   const format = await getFormatter();
@@ -106,7 +107,7 @@ export async function CertificateSheet({ doc, verifyUrl, watermarkFacts }: { doc
               <tr key={o.party_id} className="border-b border-neutral-200">
                 <td className="py-1.5 font-semibold">{o.full_name}</td>
                 <td className="py-1.5">{o.mother_name ?? "—"}</td>
-                <td className="py-1.5 font-mono text-[10px]">{o.id_number ? `${o.id_type ?? ""} ${o.id_number}` : "—"}</td>
+                <td className="py-1.5 font-mono text-[10px]">{o.id_number ? `${o.id_type ? `${to(`id_${o.id_type}`)} · ` : ""}${o.id_number}` : "—"}</td>
                 <td className="py-1.5 text-end">{o.share_pct != null ? `${Number(o.share_pct)}%` : "—"}</td>
               </tr>
             ))}

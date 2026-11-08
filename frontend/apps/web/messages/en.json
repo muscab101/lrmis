@@ -2801,7 +2801,8 @@
     "deleteGradeBody": "If land or buildings already use this grade it's switched off instead, so they keep it. Otherwise it's removed.",
     "gradeDeleted": "Grade deleted",
     "gradeHidden": "Grade is in use, so it was switched off",
-    "deleteFeeBuiltInBody": "This fee is built in: the system uses it by name, so it's switched off instead of removed. It's no longer charged, and you can switch it on again with Edit."
+    "deleteFeeBuiltInBody": "This fee is built in: the system uses it by name, so it's switched off instead of removed. It's no longer charged, and you can switch it on again with Edit.",
+    "typeRate": "{type} rate, the same as the bill"
   },
   "billing": {
     "runsTitle": "Billing runs",
@@ -3746,7 +3747,7 @@
   },
   "documents": {
     "title": "Certificates",
-    "subtitle": "Title certificates and property ID cards: issue, print, reprint and verify.",
+    "subtitle": "Annual tax certificates and property ID cards: issue, print, reprint and verify.",
     "tabs": {
       "issue": "To issue",
       "print": "To print",
@@ -3774,7 +3775,7 @@
     },
     "issue": "Issue certificate",
     "issueTitle": "Issue the certificate?",
-    "issueBody": "A title certificate for {pun} and an ID card for each owner are issued from today's register. Later changes need a new certificate.",
+    "issueBody": "An annual tax certificate for {pun} and an ID card for each owner are issued from today's register. Later changes need a new certificate.",
     "issued": "Certificate issued with {cards, plural, =0 {no new ID cards} one {# ID card} other {# ID cards}}.",
     "nothingToPrint": "Nothing waiting to print",
     "nothingToPrintBody": "Newly issued certificates and ID cards appear here until they are printed.",
@@ -3789,7 +3790,7 @@
     "printed": "printed",
     "notPrinted": "Not printed yet",
     "types": {
-      "certificate": "Title certificate",
+      "certificate": "Annual tax certificate",
       "id_card": "Property ID card"
     },
     "status": {
@@ -3916,7 +3917,7 @@
     "selectAll": "Select all",
     "issueSelected": "{count, plural, =0 {Issue selected} =1 {Issue 1 certificate} other {Issue # certificates}}",
     "issueSelectedTitle": "{count, plural, =1 {Issue 1 certificate?} other {Issue # certificates?}}",
-    "issueSelectedBody": "Each parcel gets its title certificate and an ID card for every owner. Any that can't be issued are listed afterwards.",
+    "issueSelectedBody": "Each parcel gets its annual tax certificate and an ID card for every owner. Any that can't be issued are listed afterwards.",
     "bulkIssueFailed": "{count, plural, =1 {1 parcel wasn't issued} other {# parcels weren't issued}}",
     "bulkIssued": "{count, plural, =1 {1 certificate} other {# certificates}} and {cards, plural, =1 {1 ID card} other {# ID cards}} issued.",
     "printSelected": "{count, plural, =0 {Print selected} =1 {Print 1 document} other {Print # documents}}",

@@ -349,3 +349,109 @@
 @media (prefers-reduced-motion: reduce) {
   .skeleton, .skeleton::after { animation: none; }
 }
+
+/* Welcome screen after signing in: a soft off-white page with gentle colour, faint rings and dots; the emblem grows
+   in with one shine and the greeting rises in. On the way out the emblem flies to the dashboard's logo (top left)
+   while the background and words fade away. */
+.welcome-splash { color: #0b1a3a; }
+.welcome-out { pointer-events: none; }
+.welcome-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eef2f8 100%);
+  transition: opacity 650ms cubic-bezier(0.4, 0, 0.2, 1) 120ms;
+}
+.welcome-out .welcome-bg { opacity: 0; }
+.welcome-glow {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: welcome-drift 8s ease-in-out infinite alternate;
+}
+.welcome-glow-1 { left: -18vmax; top: -22vmax; background: radial-gradient(circle, #c7d7fb, transparent 65%); }
+.welcome-glow-2 { right: -20vmax; bottom: -24vmax; background: radial-gradient(circle, #c9efe0, transparent 65%); animation-delay: -4s; }
+/* Faint rings around the emblem, like ripples on a map. */
+.welcome-rings {
+  position: absolute;
+  inset: 0;
+  background: repeating-radial-gradient(circle at 50% 42%, transparent 0 46px, rgb(31 69 184 / 0.07) 46px 47px);
+  -webkit-mask: radial-gradient(circle at 50% 42%, #000 0%, transparent 55%);
+  mask: radial-gradient(circle at 50% 42%, #000 0%, transparent 55%);
+  animation: welcome-rings 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.welcome-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(11 26 58 / 0.09) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask: radial-gradient(circle at 50% 42%, transparent 18%, #000 75%);
+  mask: radial-gradient(circle at 50% 42%, transparent 18%, #000 75%);
+}
+.welcome-flight {
+  transform-origin: center;
+  transition: transform 800ms cubic-bezier(0.65, 0, 0.35, 1), opacity 220ms ease 620ms;
+}
+.welcome-out .welcome-flight { opacity: 0; }
+.welcome-emblem {
+  animation: welcome-emblem 900ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  /* The shine shows only on the emblem itself, not the square around it. */
+  -webkit-mask: url("/brand/banadir-emblem-256.png") center / contain no-repeat;
+  mask: url("/brand/banadir-emblem-256.png") center / contain no-repeat;
+}
+.welcome-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.8) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: welcome-shine 900ms 650ms ease-in-out both;
+}
+.welcome-words { transition: opacity 260ms ease, transform 400ms ease; }
+.welcome-out .welcome-words { opacity: 0; transform: translateY(8px); }
+.welcome-greet { color: #0b1a3a; animation: welcome-greet 800ms 350ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.welcome-rule {
+  background: #1f45b8;
+  transform-origin: center;
+  animation: welcome-rule 600ms 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes welcome-emblem {
+  0% { opacity: 0; transform: scale(0.55) translateY(12px); filter: blur(6px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes welcome-greet {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); letter-spacing: 0.08em; }
+  to { opacity: 1; transform: none; filter: blur(0); letter-spacing: -0.01em; }
+}
+@keyframes welcome-shine { to { transform: translateX(120%); } }
+@keyframes welcome-rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes welcome-rings {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes welcome-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(4vmax, 3vmax); }
+}
+/* Dark mode: deep navy instead of off-white, the same shapes in quieter light. */
+.dark .welcome-bg { background: linear-gradient(180deg, #0c1626 0%, #070d18 100%); }
+.dark .welcome-glow { opacity: 0.45; }
+.dark .welcome-glow-1 { background: radial-gradient(circle, #1d3a7a, transparent 65%); }
+.dark .welcome-glow-2 { background: radial-gradient(circle, #0f4a3c, transparent 65%); }
+.dark .welcome-rings { background: repeating-radial-gradient(circle at 50% 42%, transparent 0 46px, rgb(147 178 255 / 0.09) 46px 47px); }
+.dark .welcome-dots { background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1.2px); }
+.dark .welcome-greet { color: #f1f5fb; }
+.dark .welcome-rule { background: #6f95ff; }
+.dark .welcome-shine { background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%); }
+.dark .welcome-emblem img { filter: drop-shadow(0 8px 28px rgb(111 149 255 / 0.25)); }
+@media (prefers-reduced-motion: reduce) {
+  .welcome-emblem, .welcome-shine, .welcome-greet, .welcome-rule, .welcome-rings, .welcome-glow { animation: none; }
+  .welcome-shine { display: none; }
+  .welcome-flight { transition: opacity 300ms ease; }
+}
