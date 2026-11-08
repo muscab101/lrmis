@@ -121,6 +121,7 @@ export default async function PrintersPage({ params }: { params: Promise<{ local
                     )}
                   </TableCell>
                   <TableCell className="text-sm">
+                    {p.pos_name && <span className="block font-medium">{p.pos_name}</span>}
                     {p.location}
                     {p.department && (
                       <span className="text-muted-foreground block text-xs">{p.department}</span>

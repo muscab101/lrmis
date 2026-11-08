@@ -506,7 +506,8 @@
     "demolish_selection": "Choose at least one land.",
     "demolish_date": "Enter a demolition date, not in the future.",
     "chat_group_name": "Give the group a name of 2 to 80 letters.",
-    "chat_members": "Choose at least one person."
+    "chat_members": "Choose at least one person.",
+    "printer_pos": "Pick an active point of sale."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -3990,7 +3991,8 @@
     "rate": "Rate",
     "perM2": "{amount} per m²",
     "yearlyTax": "Yearly tax",
-    "yearNote": "This certificate is valid for one tax year only. A new one is issued each year once that year's bills are paid."
+    "yearNote": "This certificate is valid for one tax year only. A new one is issued each year once that year's bills are paid.",
+    "yourDesk": "your desk"
   },
   "verify": {
     "title": "Verify a certificate",
@@ -4851,7 +4853,10 @@
       "closed_cancelled": "This zone was cancelled.",
       "closed_open": "Open",
       "empty": "No houses yet",
-      "emptyBody": "Use Add land for each house in this neighbourhood; the count goes up by one each time."
+      "emptyBody": "Use Add land for each house in this neighbourhood; the count goes up by one each time.",
+      "waitingOwners": "{n, plural, one {1 owner waiting for land} other {# owners waiting for land}}",
+      "waitingOwnersBody": "Saved here, but their land was not added yet. Carry on where you stopped.",
+      "addLandFor": "Add land"
     },
     "assignZone": "Assign zone"
   },
@@ -5360,7 +5365,10 @@
       "printing": "Printing",
       "printed": "Printed",
       "failed": "Failed"
-    }
+    },
+    "pos": "Point of sale",
+    "posHint": "The office or cash desk this printer belongs to. Its staff see it first when printing.",
+    "posNone": "Not assigned"
   },
   "chat": {
     "title": "Staff chat",

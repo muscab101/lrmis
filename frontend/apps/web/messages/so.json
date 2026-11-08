@@ -506,7 +506,8 @@
     "demolish_selection": "Dooro ugu yaraan hal dhul.",
     "demolish_date": "Geli taariikhda dumista.",
     "chat_group_name": "Kooxda sii magac 2 ilaa 80 xaraf ah.",
-    "chat_members": "Dooro ugu yaraan hal qof."
+    "chat_members": "Dooro ugu yaraan hal qof.",
+    "printer_pos": "Dooro goob lacag bixin oo shaqaynaysa."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -3990,7 +3991,8 @@
     "rate": "Qiimaha",
     "perM2": "{amount} m² kiiba",
     "yearlyTax": "Canshuurta sanadka",
-    "yearNote": "Shahaadadan waxay ansax tahay hal sano oo canshuur oo keliya. Mid cusub ayaa la bixiyaa sanad walba marka biilasha sanadkaas la bixiyo."
+    "yearNote": "Shahaadadan waxay ansax tahay hal sano oo canshuur oo keliya. Mid cusub ayaa la bixiyaa sanad walba marka biilasha sanadkaas la bixiyo.",
+    "yourDesk": "miiskaaga"
   },
   "verify": {
     "title": "Hubi shahaado",
@@ -4851,7 +4853,10 @@
       "closed_cancelled": "Aaggan waa la joojiyay.",
       "closed_open": "Furan",
       "empty": "Weli guri ma jiro",
-      "emptyBody": "Isticmaal Ku dar dhul guri kasta oo xaafaddan ku yaal; tirada waxay kordhaysaa mar kasta hal."
+      "emptyBody": "Isticmaal Ku dar dhul guri kasta oo xaafaddan ku yaal; tirada waxay kordhaysaa mar kasta hal.",
+      "waitingOwners": "{n, plural, one {1 milkiile oo sugaya dhul} other {# milkiile oo sugaya dhul}}",
+      "waitingOwnersBody": "Halkan ayaa lagu kaydiyay, laakiin dhulkooda weli lama gelin. Ka sii wad meeshii aad joogsatay.",
+      "addLandFor": "Ku dar dhul"
     },
     "assignZone": "Xilsaar aag"
   },
@@ -5360,7 +5365,10 @@
       "printing": "Daabacaya",
       "printed": "La daabacay",
       "failed": "Fashilmay"
-    }
+    },
+    "pos": "Goobta lacag bixinta",
+    "posHint": "Xafiiska ama miiska lacagta ee daabacahan leeyahay. Shaqaalihiisa ayaa marka hore arka marka ay daabacayaan.",
+    "posNone": "Lama qoondeyn"
   },
   "chat": {
     "title": "Wada-hadalka shaqaalaha",

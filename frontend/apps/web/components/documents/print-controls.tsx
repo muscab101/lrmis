@@ -16,7 +16,15 @@ import {
 import { FormError } from "@/components/forms/form-error";
 import { useRouter } from "@/i18n/navigation";
 
-type Choice = { id: string; code: string; name: string; location: string; online: boolean };
+type Choice = {
+  id: string;
+  code: string;
+  name: string;
+  location: string;
+  online: boolean;
+  pos_name: string | null;
+  mine: boolean;
+};
 type JobState = {
   document_id: string;
   status: "queued" | "printing" | "printed" | "failed";
@@ -42,10 +50,14 @@ function useQueue(ids: string[], started: number) {
       if (!live || !r.ok) return;
       setJobs(r.data);
       // Something just finished: the page reloads to show it as printed.
-      const printed = new Set(r.data.filter((j) => j.status === "printed").map((j) => j.document_id));
-      if (printedBefore.current && [...printed].some((id) => !printedBefore.current!.has(id))) refresh.current();
+      const printed = new Set(
+        r.data.filter((j) => j.status === "printed").map((j) => j.document_id),
+      );
+      if (printedBefore.current && [...printed].some((id) => !printedBefore.current!.has(id)))
+        refresh.current();
       printedBefore.current = printed;
-      if (r.data.some((j) => j.status === "queued" || j.status === "printing")) timer = setTimeout(() => void check(), 3000);
+      if (r.data.some((j) => j.status === "queued" || j.status === "printing"))
+        timer = setTimeout(() => void check(), 3000);
     };
     void check();
     return () => {
@@ -55,6 +67,10 @@ function useQueue(ids: string[], started: number) {
   }, [key, started]);
   return jobs;
 }
+
+/** Picked at the start: the only printer, else the one at this person's own point of sale. */
+const defaultPrinter = (printers: Choice[]) =>
+  printers.length === 1 ? printers[0]!.id : (printers.find((p) => p.mine)?.id ?? "");
 
 /** Choose an added printer. Nothing else can print official copies. */
 function PrinterSelect({
@@ -77,7 +93,8 @@ function PrinterSelect({
       <option value="">{t("choosePrinter")}</option>
       {printers.map((p) => (
         <option key={p.id} value={p.id}>
-          {p.name} · {p.location}
+          {p.name} · {p.pos_name ?? p.location}
+          {p.mine ? ` · ${t("yourDesk")}` : ""}
           {p.online ? "" : ` (${t("printerOffline")})`}
         </option>
       ))}
@@ -128,7 +145,7 @@ export function PrintControls({
 }) {
   const t = useTranslations("documents");
   const locale = useLocale() as "so" | "en";
-  const [printer, setPrinter] = useState(printers.length === 1 ? printers[0]!.id : "");
+  const [printer, setPrinter] = useState(defaultPrinter(printers));
   const [started, setStarted] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
@@ -228,7 +245,7 @@ export function BatchPrintControls({
 }) {
   const t = useTranslations("documents");
   const locale = useLocale() as "so" | "en";
-  const [printer, setPrinter] = useState(printers.length === 1 ? printers[0]!.id : "");
+  const [printer, setPrinter] = useState(defaultPrinter(printers));
   const [started, setStarted] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);

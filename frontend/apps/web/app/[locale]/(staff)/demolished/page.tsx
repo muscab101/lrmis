@@ -1,6 +1,6 @@
 import { StatusBadge } from "@dhulka/ui/badge";
 import { Button } from "@dhulka/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
+import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -91,11 +91,6 @@ export default async function DemolishedPage({
     return q.toString();
   };
   const exportQuery = query({});
-  const groups = [
-    { title: t("byDistrict"), rows: stats.by_district },
-    { title: t("bySector"), rows: stats.by_sector },
-    { title: t("byNeighbourhood"), rows: stats.by_neighbourhood },
-  ];
 
   return (
     <>
@@ -136,27 +131,6 @@ export default async function DemolishedPage({
         <KpiChip label={t("kpiOutstanding")} value={usd(stats.outstanding)} />
       </div>
 
-      {stats.total > 0 && (
-        <div className="mb-5 grid gap-4 md:grid-cols-3">
-          {groups.map((g) => (
-            <Card key={g.title}>
-              <CardHeader>
-                <CardTitle className="text-sm">{g.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="max-h-40 space-y-1 overflow-y-auto text-sm">
-                  {g.rows.map((r) => (
-                    <li key={r.name} className="flex justify-between gap-3">
-                      <span className="min-w-0 truncate">{lang === "so" ? r.name_so : r.name}</span>
-                      <span className="font-medium tabular-nums">{format.number(r.count)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
       <nav className="mb-4 flex flex-wrap gap-x-5 gap-y-2 border-b text-sm" aria-label={t("title")}>
         {TABS.map((k) => (

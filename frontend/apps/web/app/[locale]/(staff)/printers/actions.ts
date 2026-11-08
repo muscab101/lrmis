@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
+import { printerPointsOfSale } from "@/lib/server/printers";
 
 const done = <T>(v: T) => {
   revalidatePath("/[locale]/printers", "page");
@@ -22,6 +23,7 @@ const FIELDS: Record<string, string> = {
   ip_taken: "ipAddress",
   system_name: "systemName",
   location: "location",
+  pos: "posId",
 };
 
 export const savePrinterAction = defineAction(
@@ -38,6 +40,7 @@ export const savePrinterAction = defineAction(
     systemName: z.string().trim().max(120),
     location: z.string().trim().max(120),
     department: z.string().trim().max(80).default(""),
+    posId: z.uuid().nullable().default(null),
   }),
   async (v, ctx) => {
     try {
@@ -56,6 +59,7 @@ export const savePrinterAction = defineAction(
               system_name: v.systemName,
               location: v.location,
               department: v.department,
+              pos_id: v.posId,
             },
           }),
           "save printer",
@@ -99,4 +103,11 @@ export const resolvePrinterAlertAction = defineAction(
   z.object({ id: z.uuid() }),
   async (v, ctx) =>
     done(unwrap(await ctx.supabase.rpc("printer_resolve_alert", { p_id: v.id }), "printer alert")),
+);
+
+/** The points of sale a printer can belong to, for the printer form. */
+export const printerPosChoicesAction = defineAction(
+  "printers.pos_choices",
+  z.object({}),
+  async () => printerPointsOfSale(),
 );

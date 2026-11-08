@@ -8,9 +8,10 @@ import { Alert, Mono } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
 import { Check, Copy, KeyRound, Pencil, Plus, Power, PowerOff } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   newPrinterKeyAction,
+  printerPosChoicesAction,
   resolvePrinterAlertAction,
   savePrinterAction,
   setPrinterActiveAction,
@@ -30,6 +31,7 @@ const EMPTY = {
   systemName: "",
   location: "",
   department: "",
+  posId: "",
 };
 
 /** Add or edit a printer. */
@@ -59,9 +61,16 @@ function PrinterForm({
           systemName: printer.system_name,
           location: printer.location,
           department: printer.department ?? "",
+          posId: printer.pos_id ?? "",
         }
       : EMPTY,
   );
+  // The offices and cash desks to choose from, loaded when the form opens.
+  const [places, setPlaces] = useState<{ id: string; code: string; name: string }[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    void printerPosChoicesAction({}).then((r) => r.ok && setPlaces(r.data ?? []));
+  }, [open]);
   const set = (k: keyof typeof EMPTY) => (e: { target: { value: string } }) =>
     setV((s) => ({ ...s, [k]: e.target.value }));
   const usb = v.connectionType === "usb";
@@ -74,7 +83,7 @@ function PrinterForm({
       description={t("addBody")}
       confirmLabel={printer ? tc("saveChanges") : t("add")}
       successMessage={tc("saved")}
-      submit={() => savePrinterAction({ id: printer?.id ?? null, ...v })}
+      submit={() => savePrinterAction({ id: printer?.id ?? null, ...v, posId: v.posId || null })}
       onDone={(id) => {
         if (!printer) setV(EMPTY);
         onSaved?.(id as string);
@@ -84,6 +93,22 @@ function PrinterForm({
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="p-name" label={t("name")} hint={t("nameHint")} error={fe("name")} required>
             <Input value={v.name} maxLength={80} onChange={set("name")} />
+          </Field>
+          <Field
+            id="p-pos"
+            label={t("pos")}
+            hint={t("posHint")}
+            error={fe("posId")}
+            className="sm:col-span-2"
+          >
+            <NativeSelect value={v.posId} onChange={set("posId")}>
+              <option value="">{t("posNone")}</option>
+              {places.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} · {s.code}
+                </option>
+              ))}
+            </NativeSelect>
           </Field>
           <Field id="p-conn" label={t("connectionLabel")} required>
             <NativeSelect value={v.connectionType} onChange={set("connectionType")}>
