@@ -191,7 +191,7 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             }}
           >
             <Field id="pun" label={t("findByPun")} error={fe("pun")} className="flex-1">
-              <Input value={pun} onChange={(e) => setPun(e.target.value)} placeholder="34KRWJXL0107 · INV-2026-000001 · APP-2026-000001" className="font-mono" autoComplete="off" />
+              <Input value={pun} onChange={(e) => setPun(e.target.value)} placeholder="3441712 · INV-2026-000001 · APP-2026-000001" className="font-mono" autoComplete="off" />
             </Field>
             <Button type="submit" variant="outline" className="mt-6" loading={busy && !found}>
               <Search aria-hidden />

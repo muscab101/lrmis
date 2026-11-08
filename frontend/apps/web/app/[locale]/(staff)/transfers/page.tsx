@@ -53,7 +53,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
           <form className="flex flex-wrap items-end gap-2" role="search">
             <label className="grid min-w-60 flex-1 gap-1 text-sm">
               <span className="text-muted-foreground text-xs">{t("findParcel")}</span>
-              <Input name="pun" defaultValue={pun} placeholder="34KRWJXL0107" className="font-mono" autoComplete="off" />
+              <Input name="pun" defaultValue={pun} placeholder="3441712" className="font-mono" autoComplete="off" />
             </label>
             <Button type="submit" variant="outline">
               <Search aria-hidden />
@@ -97,7 +97,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
           ))}
         </nav>
         {rows.length === 0 ? (
-          <EmptyState icon={<ArrowRightLeft />} title={t("noTransfers")} description={t("noTransfersBody")} />
+          <EmptyState icon={<ArrowRightLeft />} title={t("noTransfersList")} description={t("noTransfersBody")} />
         ) : (
           <Table>
             <TableHeader>

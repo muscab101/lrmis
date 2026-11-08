@@ -392,7 +392,7 @@
     "start_date": "The first instalment can't be in the past.",
     "due_date": "The due date can't be in the past.",
     "fee_type": "Choose a fee that can be used here.",
-    "pun": "Enter a PUN like 34KRWJXL0107.",
+    "pun": "Enter a PUN like 3441712.",
     "pun_not_found": "Nothing found with that PUN, invoice or application number.",
     "phone_so": "Enter a Somali mobile number like +252 61 234 5678.",
     "provider": "Choose a payment method that's available.",
@@ -4289,7 +4289,8 @@
     "openParcel": "Open parcel",
     "transferHistory": "Transfer history",
     "changeChildrenPending": "{n} new parcels once approved",
-    "transferredTo": "transferred to"
+    "transferredTo": "transferred to",
+    "noTransfersList": "Nothing in this list"
   },
   "reports": {
     "title": "Reports",

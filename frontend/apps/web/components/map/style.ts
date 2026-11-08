@@ -114,6 +114,8 @@ export const PARCEL_COLOURS: Record<string, string> = {
 
 export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?: boolean } = {}): StyleSpecification {
   const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+  // Set to "on" next to GOOGLE_MAPS_API_KEY: satellite pictures come from Google.
+  const google = process.env.NEXT_PUBLIC_GOOGLE_SATELLITE === "on";
   const nameField = locale === "so" ? "name_so" : "name_en";
   const vector = (layer: BoundaryLayer) => ({
     type: "vector" as const,
@@ -135,17 +137,26 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         tiles: [key ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${key}` : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
         attribution: key ? "© MapTiler © OpenStreetMap contributors" : "© OpenStreetMap contributors",
       },
-      "base-satellite": {
-        type: "raster",
-        tileSize: 256,
-        maxzoom: 19,
-        tiles: [
-          key
-            ? `https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=${key}`
-            : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        ],
-        attribution: key ? "© MapTiler © Maxar" : "Imagery © Esri, Maxar, Earthstar Geographics",
-      },
+      // Google's satellite pictures when the server has a Google key (sharper, buildings clearly seen); else MapTiler, else Esri.
+      "base-satellite": google
+        ? {
+            type: "raster",
+            tileSize: 256,
+            maxzoom: 21,
+            tiles: [`${origin}/api/google-tiles/{z}/{x}/{y}`],
+            attribution: "Imagery © Google",
+          }
+        : {
+            type: "raster",
+            tileSize: 256,
+            maxzoom: 19,
+            tiles: [
+              key
+                ? `https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=${key}`
+                : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            attribution: key ? "© MapTiler © Maxar" : "Imagery © Esri, Maxar, Earthstar Geographics",
+          },
       districts: vector("districts"),
       sections: vector("sections"),
       sectors: vector("sectors"),
