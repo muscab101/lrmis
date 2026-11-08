@@ -69,6 +69,7 @@ export const SPECIAL_PERMISSIONS = [
   "parcels.demolish_approve",
   "owners.registered",
   "owners.delete_registered",
+  "messages.broadcast",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

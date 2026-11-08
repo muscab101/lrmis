@@ -17,6 +17,7 @@ import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table
 import {
   accountTotals,
   AREA_REPORTS,
+  AUDIT_REPORTS,
   BASIS_REPORTS,
   BILL_STATUSES,
   billStatus as parseBillStatus,
@@ -82,9 +83,13 @@ export default async function ReportsPage({
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const report = (REPORTS as readonly string[]).includes(sp.r ?? "")
-    ? (sp.r as ReportName)
-    : "revenue";
+  // Reports this person may open: the staff work report also needs the activity log.
+  const canOpen = (r: ReportName) => !AUDIT_REPORTS.includes(r) || viewer.can("audit.view");
+  const groups = REPORT_GROUPS.map((g) => ({ ...g, reports: g.reports.filter(canOpen) })).filter(
+    (g) => g.reports.length > 0,
+  );
+  const picked = (REPORTS as readonly string[]).includes(sp.r ?? "") ? (sp.r as ReportName) : null;
+  const report: ReportName = picked && canOpen(picked) ? picked : "revenue";
   const { from, to } = reportRange(sp);
   // Only the districts (and desks) the user covers are offered; the figures are limited by the database anyway.
   const districts = await myDistricts();
@@ -666,7 +671,7 @@ export default async function ReportsPage({
         <ReportPicker
           label={t("report")}
           current={report}
-          groups={REPORT_GROUPS.map((g) => ({
+          groups={groups.map((g) => ({
             label: t(`groups.${g.key}`),
             reports: g.reports.map((r) => ({
               value: r,
@@ -863,7 +868,7 @@ export default async function ReportsPage({
           </form>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">{t("related")}</span>
-            {RELATED_REPORTS[report].map((r) => (
+            {RELATED_REPORTS[report].filter(canOpen).map((r) => (
               <Link
                 key={r}
                 href={reportHref(r)}

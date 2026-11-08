@@ -418,7 +418,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
               <li key={st.key}>
                 <button type="button" onClick={() => go(st.key)} className={`flex items-center gap-2 ${st === nextStep ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}>
                   <span
-                    className={`grid size-6 shrink-0 place-items-center rounded-full border text-xs tabular-nums ${st.done ? "border-success bg-success text-white" : st === nextStep ? "border-primary text-primary" : ""}`}
+                    className={`grid size-6 shrink-0 place-items-center rounded-full border text-xs tabular-nums ${st.done ? "border-success text-success" : st === nextStep ? "border-primary text-primary" : ""}`}
                   >
                     {st.done ? <Check className="size-3.5" aria-label={t("flow.done")} /> : i + 1}
                   </span>

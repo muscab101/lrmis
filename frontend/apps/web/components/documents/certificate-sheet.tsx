@@ -128,7 +128,8 @@ export async function CertificateSheet({
   // Yearly certificates carry their tax year; older ones cover the year they were issued in.
   const year = s.tax_year ?? new Date(doc.issued_at).getUTCFullYear();
   const validTo = s.valid_to ?? doc.expires_at;
-  const bills = s.bills ?? [];
+  // The tax paid box lists the year's tax bills; the service charge is not shown there.
+  const bills = (s.bills ?? []).filter((b) => b.code !== "service_charge");
   const val = s.valuation;
   const facts: [string, string][] = [
     ["PUN", s.pun],

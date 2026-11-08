@@ -120,6 +120,23 @@ export const demolitionRestoreAction = defineAction(
   },
 );
 
+/** Undo many at once (a whole neighbourhood marked by mistake). Returns how many were put back. */
+export const demolitionRestoreManyAction = defineAction(
+  "demolitions.restore_many",
+  z.object({
+    ids: z.array(z.uuid()).min(1, "validation.demolish_selection").max(2000),
+    reason: z.string().trim().min(5, "validation.reason").max(1000),
+  }),
+  async (v, ctx) => {
+    const n = unwrap(
+      await ctx.supabase.rpc("demolition_restore_many", { p_ids: v.ids, p_reason: v.reason }),
+      "demolition restore many",
+    ) as number;
+    refresh();
+    return { count: n };
+  },
+);
+
 export const demolitionReregisterAction = defineAction(
   "demolitions.reregister",
   z.object({

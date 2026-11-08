@@ -315,7 +315,8 @@
       "test_login_person": "This user can't be tested: they must be active or invited.",
       "test_login_super_admin": "You can't sign in as a super admin, or as yourself.",
       "chat_edit_expired": "A message can only be edited for 5 minutes after sending it.",
-      "chat_upload_failed": "The file could not be uploaded. Try again."
+      "chat_upload_failed": "The file could not be uploaded. Try again.",
+      "warning_too_soon": "A warning was just sent. Wait a few seconds before sending another."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -507,7 +508,8 @@
     "demolish_date": "Enter a demolition date, not in the future.",
     "chat_group_name": "Give the group a name of 2 to 80 letters.",
     "chat_members": "Choose at least one person.",
-    "printer_pos": "Pick an active point of sale."
+    "printer_pos": "Pick an active point of sale.",
+    "warning_message": "Write a warning between 3 and 300 letters."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -4315,7 +4317,15 @@
       "collections": "Daily, weekly & monthly collections",
       "collectionsCashier": "Collections by cashier",
       "shortages": "Cashier shortages & excess",
-      "unreconciled": "Unreconciled transactions"
+      "unreconciled": "Unreconciled transactions",
+      "transfers": "Transfers",
+      "permits": "Building permits",
+      "disputes": "Disputes",
+      "demolished": "Demolished houses",
+      "surveyZones": "Survey zones",
+      "certificateStatus": "This year's certificates",
+      "staffActivity": "Staff work",
+      "messages": "SMS & messages"
     },
     "notes": {
       "revenue": "Money received, by the month it was received, split by what it paid for. Unallocated credit is money not yet matched to a bill.",
@@ -4335,7 +4345,15 @@
       "collections": "Total collections = Cash + EVC Plus + eDahab + ZAAD + Bank transfer (+ Visa / Mastercard and Other), per day, per week (Monday to Sunday) or per month. By default only payments a finance officer verified count.",
       "collectionsCashier": "What each cashier collected by way of paying, how much is not yet verified, how many of their days are reconciled, and the shortages and excess found.",
       "shortages": "Each cashier day reconciled in the period: recorded against actually received, the difference per way of paying (± column), shortage = recorded − received, excess = received − recorded, and who prepared and approved it.",
-      "unreconciled": "Payments not yet in an approved cashier reconciliation: pending, verified or disputed, oldest first."
+      "unreconciled": "Payments not yet in an approved cashier reconciliation: pending, verified or disputed, oldest first.",
+      "transfers": "Transfers started or decided in the period, with the owners before and after and any transfer duty still owed.",
+      "permits": "Building permits asked for or decided in the period.",
+      "disputes": "Disputes opened in the period, and every one still open however old.",
+      "demolished": "Houses taken down in the period (by the demolition date), and whether they were rebuilt or brought back.",
+      "surveyZones": "Survey zones as they are today: houses recorded against the target, and owners added but still waiting for their land.",
+      "certificateStatus": "Every registered house and its latest certificate. Houses with no valid certificate this year are listed first, with what they still owe.",
+      "staffActivity": "What each staff member did in the period. Changes counts every save they made in the system.",
+      "messages": "Messages the system made in the period, by kind: sent, still waiting, failed or stopped."
     },
     "buckets": {
       "not_due": "Not due",
@@ -4460,10 +4478,12 @@
     "allNeighbourhoods": "All neighbourhoods",
     "related": "Related reports:",
     "groups": {
-      "money": "Money",
-      "land": "Land",
-      "documents": "Documents",
-      "collections": "Collections & reconciliation"
+      "money": "Bills & income",
+      "land": "Land & field work",
+      "documents": "Certificates",
+      "collections": "Daily collections & cash",
+      "cases": "Transfers, permits & disputes",
+      "staff": "Staff & messages"
     },
     "report": "Report",
     "methods": {
@@ -4533,6 +4553,69 @@
     "views": {
       "summary": "Summary",
       "detail": "Every payment"
+    },
+    "typeLabel": "Type",
+    "fromOwners": "From",
+    "toOwners": "To",
+    "declaredValue": "Declared value",
+    "started": "Started",
+    "decided": "Decided",
+    "decidedBy": "Decided by",
+    "dutyOwing": "Duty owing",
+    "applicant": "Applicant",
+    "floors": "Floors",
+    "requested": "Asked for",
+    "validUntil": "Valid until",
+    "claimant": "Claimant",
+    "courtCase": "Court case",
+    "opened": "Opened",
+    "resolvedOn": "Closed",
+    "daysOpen": "Days open",
+    "demolishedOn": "Demolished on",
+    "reason": "Reason",
+    "demolishedState": {
+      "demolished": "Demolished",
+      "restored": "Brought back",
+      "rebuilt": "Rebuilt"
+    },
+    "surveyor": "Surveyor",
+    "target": "Target",
+    "recordedHouses": "Recorded",
+    "done": "Done",
+    "ownersWaiting": "Owners waiting",
+    "assigned": "Assigned",
+    "zoneState": {
+      "open": "Open",
+      "done": "Finished"
+    },
+    "certificate": "Certificate",
+    "expires": "Expires",
+    "owing": "Owing",
+    "certState": {
+      "valid": "Valid",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "none": "None yet"
+    },
+    "staff": "Staff",
+    "roleLabel": "Role",
+    "landAdded": "Land added",
+    "certificates": "Certificates",
+    "decisions": "Decisions",
+    "changes": "Changes",
+    "lastActive": "Last active",
+    "messageKind": "Message",
+    "channel": "Sent by",
+    "sent": "Sent",
+    "waiting": "Waiting",
+    "failed": "Failed",
+    "stopped": "Stopped",
+    "sentRate": "Sent rate",
+    "email": "Email",
+    "messageKinds": {
+      "certificate_ready": "Certificate ready",
+      "payment_receipt": "Payment receipt",
+      "application_status": "Application update"
     }
   },
   "messages": {
@@ -4541,7 +4624,8 @@
     "sections": {
       "outbox": "Outbox",
       "campaigns": "Campaigns",
-      "templates": "Templates"
+      "templates": "Templates",
+      "warning": "Warning to all screens"
     },
     "status": {
       "queued": "Waiting",
@@ -4612,7 +4696,27 @@
     "chars": "{n} / 640 characters",
     "activeLabel": "Send this message",
     "placeholdersHint": "Words in curly brackets are filled in for each person. Keep them exactly as they are.",
-    "hint": "Phone numbers are partly hidden. Messages go out through the configured SMS provider; failed ones are retried with a growing pause."
+    "hint": "Phone numbers are partly hidden. Messages go out through the configured SMS provider; failed ones are retried with a growing pause.",
+    "warning": {
+      "title": "Send a warning to every screen",
+      "body": "Everyone using the system sees it straight away, on whatever page they are on. It stays for 5 seconds, then goes away by itself.",
+      "label": "Warning",
+      "placeholder": "e.g. The system will restart in 10 minutes. Save your work.",
+      "send": "Send warning",
+      "sent": "Warning sent to every screen",
+      "preview": "How it looks",
+      "recent": "Recent warnings",
+      "none": "No warnings sent yet.",
+      "by": "by {name}",
+      "all": "All districts",
+      "allBody": "Everyone in the system",
+      "one": "One district",
+      "oneBody": "Only staff working in that district",
+      "pick": "Choose the district",
+      "to": "Send to",
+      "toAll": "everyone",
+      "toDistrict": "to {district}"
+    }
   },
   "channels": {
     "menu": "LRMIS Banadir\n1. My balance\n2. Pay a bill\n3. Track application\n4. Verify certificate\n5. Soomaali",
@@ -4858,7 +4962,8 @@
       "waitingOwnersBody": "Saved here, but their land was not added yet. Carry on where you stopped.",
       "addLandFor": "Add land"
     },
-    "assignZone": "Assign zone"
+    "assignZone": "Assign zone",
+    "subtitle": "Give neighbourhoods to surveyors, follow their zones, and see where land is still waiting."
   },
   "idCards": {
     "title": "ID cards",
@@ -5693,7 +5798,14 @@
     "audit_delete": "Record removed",
     "parcelDemolished": "The house on this land was demolished",
     "parcelDemolishedBody": "It stays an archive until it's undone or the land is registered again.",
-    "parcelWaiting": "A demolition is waiting for approval"
+    "parcelWaiting": "A demolition is waiting for approval",
+    "undoAll": "Undo all ({count})",
+    "undoAllTitle": "Undo {count, plural, =1 {this demolition} other {these # demolitions}}?",
+    "undoAllBody": "For houses marked demolished by mistake, for example a whole neighbourhood. Every house shown here goes back as it was; houses already registered again are left alone. Each record stays, marked undone.",
+    "doneUndoAll": "The houses are back as they were",
+    "undoAllLine": "{count, plural, =1 {1 demolished house shown} other {# demolished houses shown}}",
+    "undoAllHint": "choose a neighbourhood above to undo just that one",
+    "registerNow": "Register now"
   },
   "signatureStamp": {
     "title": "Signature and stamp",
@@ -5724,5 +5836,11 @@
     "previewTitle": "How it looks on a certificate",
     "previewHint": "The bottom of the certificate, as it will print.",
     "previewIssued": "Issued"
+  },
+  "systemWarning": {
+    "title": "Warning from the admin",
+    "close": "Close",
+    "everyone": "Everyone",
+    "seconds": "{n}s"
   }
 }

@@ -4,10 +4,10 @@ import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Download, Hammer, MapPinned } from "lucide-react";
+import { Download, Hammer, Home, MapPinned } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { PlaceFilter } from "@/components/billing/place-filter";
-import { DecideDemolition } from "@/components/demolitions/demolition-actions";
+import { DecideDemolition, UndoAllDemolitions } from "@/components/demolitions/demolition-actions";
 import { MarkDemolished } from "@/components/demolitions/mark-demolished";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -91,6 +91,9 @@ export default async function DemolishedPage({
     return q.toString();
   };
   const exportQuery = query({});
+  // Demolished and not yet registered again: these can be undone or registered now.
+  const open = rows.filter((r) => r.status === "approved" && !r.rebuilt_at);
+  const actions = (tab === "pending" || tab === "archive") && canApprove;
 
   return (
     <>
@@ -193,6 +196,16 @@ export default async function DemolishedPage({
         </div>
       )}
 
+      {tab === "archive" && canApprove && open.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <span>
+            {t("undoAllLine", { count: open.length })}
+            {!sp.n && <span className="text-muted-foreground"> · {t("undoAllHint")}</span>}
+          </span>
+          <UndoAllDemolitions ids={open.map((r) => r.id)} />
+        </div>
+      )}
+
       <Card className="overflow-hidden">
         {rows.length === 0 ? (
           <EmptyState icon={<Hammer />} title={t("none")} description={t(`noneBody_${tab}`)} />
@@ -207,9 +220,7 @@ export default async function DemolishedPage({
                 <TableHead>{t("colDate")}</TableHead>
                 <TableHead className="text-end">{t("colOwed")}</TableHead>
                 <TableHead>{t("colStatus")}</TableHead>
-                {tab === "pending" && canApprove && (
-                  <TableHead className="text-end">{t("colActions")}</TableHead>
-                )}
+                {actions && <TableHead className="text-end">{t("colActions")}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -268,9 +279,18 @@ export default async function DemolishedPage({
                       {r.rebuilt_at && <StatusBadge tone="approved">{t("rebuilt")}</StatusBadge>}
                     </span>
                   </TableCell>
-                  {tab === "pending" && canApprove && (
+                  {actions && (
                     <TableCell className="text-end">
-                      <DecideDemolition ids={[r.id]} />
+                      {tab === "pending" ? (
+                        <DecideDemolition ids={[r.id]} />
+                      ) : r.status === "approved" && !r.rebuilt_at ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/demolished/${r.id}/register`}>
+                            <Home aria-hidden />
+                            {t("registerNow")}
+                          </Link>
+                        </Button>
+                      ) : null}
                     </TableCell>
                   )}
                 </TableRow>

@@ -31,10 +31,10 @@ const verbOf = (action: string): Verb =>
         : "other";
 
 const VERB_STYLE: Record<Verb, string> = {
-  added: "bg-success/15 text-success",
-  changed: "bg-primary/15 text-primary",
-  removed: "bg-danger/15 text-danger",
-  other: "bg-muted text-muted-foreground",
+  added: "text-success",
+  changed: "text-primary",
+  removed: "text-danger",
+  other: "text-muted-foreground",
 };
 const VERBS = ["added", "changed", "removed", "other"] as const;
 const BAR: Record<Verb, string> = {
@@ -245,7 +245,7 @@ export default async function StaffWorkPage({
                     return (
                       <li key={`${w.at}-${i}`} className="relative">
                         <span
-                          className={`ring-background absolute -start-8 top-3 grid size-6 place-items-center rounded-full ring-4 ${VERB_STYLE[verb]}`}
+                          className={`bg-background ring-background absolute -start-8 top-3 grid size-6 place-items-center rounded-full ring-4 ${VERB_STYLE[verb]}`}
                         >
                           <Icon className="size-3.5" aria-hidden />
                         </span>

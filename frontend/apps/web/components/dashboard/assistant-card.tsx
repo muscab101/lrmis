@@ -13,8 +13,8 @@ export function AssistantCard({ title, body, placeholder, send }: { title: strin
     <div className="bg-card relative overflow-hidden rounded-xl border p-4 shadow-xs">
       <div className="from-primary/15 to-accent/10 pointer-events-none absolute -top-16 -right-16 size-44 rounded-full bg-gradient-to-br blur-2xl" aria-hidden />
       <div className="relative flex items-center gap-3">
-        <span className="from-primary to-flag grid size-10 place-items-center rounded-full bg-gradient-to-br text-white shadow-md">
-          <Sparkles className="size-5" aria-hidden />
+        <span className="text-primary grid size-10 place-items-center">
+          <Sparkles className="size-6" aria-hidden />
         </span>
         <div>
           <p className="font-semibold">{title}</p>

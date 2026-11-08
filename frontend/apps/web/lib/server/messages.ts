@@ -81,3 +81,45 @@ export async function listTemplates() {
   const supabase = await createClient();
   return unwrap(await supabase.from("message_templates").select("code, body_so, body_en, description, is_system, active, updated_at").order("is_system", { ascending: false }).order("code"), "templates") as TemplateRow[];
 }
+
+export interface SystemWarning {
+  id: string;
+  message: string;
+  created_at: string;
+  sender: string | null;
+  /** The district it went to, or null for every district. */
+  district: { name_so: string; name_en: string } | null;
+}
+
+/** The last warnings sent to every screen, newest first, with who sent them. */
+export async function listWarnings(limit = 10): Promise<SystemWarning[]> {
+  const supabase = await createClient();
+  const rows = (unwrap(
+    await supabase
+      .from("system_warnings")
+      .select("id, message, created_at, created_by, district:districts(name_so, name_en)")
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    "warnings",
+  ) ?? []) as unknown as {
+    id: string;
+    message: string;
+    created_at: string;
+    created_by: string;
+    district: { name_so: string; name_en: string } | null;
+  }[];
+  const ids = [...new Set(rows.map((r) => r.created_by))];
+  const names = ids.length
+    ? (((await supabase.from("profiles").select("user_id, full_name").in("user_id", ids)).data ?? []) as {
+        user_id: string;
+        full_name: string;
+      }[])
+    : [];
+  return rows.map((r) => ({
+    id: r.id,
+    message: r.message,
+    created_at: r.created_at,
+    sender: names.find((n) => n.user_id === r.created_by)?.full_name ?? null,
+    district: r.district,
+  }));
+}

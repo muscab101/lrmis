@@ -103,10 +103,10 @@ function Tile({
   tone: "primary" | "accent" | "warning" | "flag";
 }) {
   const toneClass = {
-    primary: "bg-primary-soft text-primary",
-    accent: "bg-accent-soft text-accent",
-    warning: "bg-warning/10 text-warning",
-    flag: "bg-flag/10 text-flag",
+    primary: "text-primary",
+    accent: "text-accent",
+    warning: "text-warning",
+    flag: "text-flag",
   }[tone];
   return (
     <div className="bg-card shadow-xs rounded-xl border p-4">
@@ -114,7 +114,7 @@ function Tile({
         <p className="text-muted-foreground text-sm font-medium">{label}</p>
         <span
           className={cn(
-            "grid size-8 shrink-0 place-items-center rounded-lg [&_svg]:size-4",
+            "grid size-8 shrink-0 place-items-center [&_svg]:size-5",
             toneClass,
           )}
         >

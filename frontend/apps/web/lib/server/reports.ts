@@ -85,6 +85,14 @@ export const REPORTS = [
   "collectionsCashier",
   "shortages",
   "unreconciled",
+  "transfers",
+  "permits",
+  "disputes",
+  "demolished",
+  "surveyZones",
+  "certificateStatus",
+  "staffActivity",
+  "messages",
 ] as const;
 export type ReportName = (typeof REPORTS)[number];
 
@@ -191,6 +199,8 @@ export const SNAPSHOT_REPORTS: readonly ReportName[] = [
   "parcels",
   "owners",
   "locations",
+  "surveyZones",
+  "certificateStatus",
 ];
 /** Reports that take a district filter. */
 export const DISTRICT_REPORTS: readonly ReportName[] = [
@@ -211,15 +221,25 @@ export const DISTRICT_REPORTS: readonly ReportName[] = [
   "collectionsCashier",
   "shortages",
   "unreconciled",
+  "transfers",
+  "permits",
+  "disputes",
+  "demolished",
+  "surveyZones",
+  "certificateStatus",
+  "staffActivity",
+  "messages",
 ];
 /** Reports that also take a section, sector and neighbourhood filter. */
 export const AREA_REPORTS: readonly ReportName[] = DISTRICT_REPORTS.filter(
-  (r) => r !== "income" && r !== "shortages",
+  (r) => !["income", "shortages", "staffActivity", "messages"].includes(r),
 );
+/** Reports only people who can see the activity log are offered. */
+export const AUDIT_REPORTS: readonly ReportName[] = ["staffActivity"];
 
 /** Reports grouped by what they are about, in the order the page shows them. */
 export const REPORT_GROUPS: {
-  key: "collections" | "money" | "land" | "documents";
+  key: "collections" | "money" | "land" | "cases" | "documents" | "staff";
   reports: ReportName[];
 }[] = [
   {
@@ -239,8 +259,13 @@ export const REPORT_GROUPS: {
       "cashiers",
     ],
   },
-  { key: "land", reports: ["parcels", "owners", "locations", "registrations"] },
-  { key: "documents", reports: ["certificates"] },
+  {
+    key: "land",
+    reports: ["parcels", "owners", "locations", "registrations", "surveyZones", "demolished"],
+  },
+  { key: "cases", reports: ["transfers", "permits", "disputes"] },
+  { key: "documents", reports: ["certificates", "certificateStatus"] },
+  { key: "staff", reports: ["staffActivity", "messages"] },
 ];
 
 /** Reports about the same things, offered as next steps from each report (filters carry over). */
@@ -258,11 +283,19 @@ export const RELATED_REPORTS: Record<ReportName, ReportName[]> = {
   collectionsCashier: ["shortages", "collections", "unreconciled", "cashiers"],
   shortages: ["collectionsCashier", "unreconciled", "cashiers"],
   unreconciled: ["shortages", "collectionsCashier", "payments"],
-  parcels: ["owners", "locations", "certificates", "invoices"],
-  owners: ["parcels", "certificates"],
-  locations: ["parcels", "owners"],
-  registrations: ["parcels", "certificates"],
-  certificates: ["parcels", "owners"],
+  parcels: ["owners", "locations", "certificateStatus", "invoices"],
+  owners: ["parcels", "certificates", "transfers"],
+  locations: ["parcels", "surveyZones", "owners"],
+  registrations: ["parcels", "surveyZones", "certificates"],
+  certificates: ["certificateStatus", "parcels", "owners"],
+  transfers: ["owners", "certificates", "disputes"],
+  permits: ["parcels", "demolished", "invoices"],
+  disputes: ["transfers", "parcels"],
+  demolished: ["parcels", "permits"],
+  surveyZones: ["locations", "registrations", "staffActivity"],
+  certificateStatus: ["certificates", "arrears", "invoices"],
+  staffActivity: ["cashiers", "surveyZones", "certificates"],
+  messages: ["certificates", "payments"],
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -471,6 +504,34 @@ export async function runReport(name: ReportName, args: ReportArgs, client?: Sup
         await supabase.rpc("report_locations", { p_district: d, ...area }),
         "report",
       ) as LocationRow[];
+    case "transfers":
+    case "permits":
+    case "disputes":
+    case "demolished":
+      return unwrap(
+        await supabase.rpc(`report_${name}`, { p_from: args.from, p_to: args.to, p_district: d, ...area }),
+        "report",
+      ) as TransferRow[] | PermitRow[] | DisputeRow[] | DemolishedRow[];
+    case "surveyZones":
+      return unwrap(
+        await supabase.rpc("report_survey_zones", { p_district: d, ...area }),
+        "report",
+      ) as SurveyZoneRow[];
+    case "certificateStatus":
+      return unwrap(
+        await supabase.rpc("report_certificate_status", { p_district: d, ...area }),
+        "report",
+      ) as CertificateStatusRow[];
+    case "staffActivity":
+      return unwrap(
+        await supabase.rpc("report_staff_activity", { p_from: args.from, p_to: args.to, p_district: d }),
+        "report",
+      ) as StaffActivityRow[];
+    case "messages":
+      return unwrap(
+        await supabase.rpc("report_messages", { p_from: args.from, p_to: args.to, p_district: d }),
+        "report",
+      ) as MessageRow[];
   }
 }
 
@@ -809,4 +870,127 @@ export function reportRange(sp: Record<string, string | undefined>) {
 
 export function parcelKind(v: string | undefined): ParcelKind {
   return (PARCEL_KINDS as readonly string[]).includes(v ?? "") ? (v as ParcelKind) : "all";
+}
+
+export interface TransferRow {
+  transfer_id: string;
+  parcel_id: string | null;
+  number: string;
+  pun: string | null;
+  kind: string;
+  from_owners: string | null;
+  to_owners: string | null;
+  declared_value: number | null;
+  district_so: string;
+  district_en: string;
+  created_at: string;
+  decided_at: string | null;
+  decided_by: string | null;
+  status: string;
+  duty_balance: number | null;
+}
+export interface PermitRow {
+  permit_id: string;
+  parcel_id: string | null;
+  number: string;
+  pun: string | null;
+  kind: string;
+  applicant: string | null;
+  phone: string | null;
+  floors: number | null;
+  area_m2: number | null;
+  district_so: string;
+  district_en: string;
+  requested_at: string;
+  decided_at: string | null;
+  decided_by: string | null;
+  status: string;
+  valid_until: string | null;
+}
+export interface DisputeRow {
+  dispute_id: string;
+  parcel_id: string | null;
+  number: string;
+  pun: string | null;
+  kind: string;
+  claimant: string | null;
+  court_case_no: string | null;
+  district_so: string;
+  district_en: string;
+  opened_at: string;
+  resolved_at: string | null;
+  days_open: number;
+  status: string;
+  resolution: string | null;
+}
+export interface DemolishedRow {
+  demolition_id: string;
+  parcel_id: string | null;
+  number: string;
+  pun: string | null;
+  house_no: string | null;
+  owners: string | null;
+  district_so: string;
+  district_en: string;
+  neighbourhood_so: string | null;
+  neighbourhood_en: string | null;
+  demolition_date: string;
+  reason: string | null;
+  status: string;
+  rebuilt: boolean;
+}
+export interface SurveyZoneRow {
+  zone_id: string;
+  code: string;
+  name_so: string;
+  name_en: string;
+  district_so: string;
+  district_en: string;
+  surveyor: string | null;
+  target: number;
+  recorded: number;
+  partial: number;
+  registered: number;
+  pct: number | null;
+  owners_waiting: number;
+  assigned_at: string;
+  status: string;
+}
+export interface CertificateStatusRow {
+  parcel_id: string;
+  pun: string | null;
+  owner: string | null;
+  phone: string | null;
+  district_so: string;
+  district_en: string;
+  neighbourhood_so: string | null;
+  neighbourhood_en: string | null;
+  serial: string | null;
+  issued_at: string | null;
+  expires_at: string | null;
+  cert_status: "valid" | "expired" | "cancelled" | "none";
+  owing: number;
+}
+export interface StaffActivityRow {
+  user_id: string;
+  staff: string;
+  role: string | null;
+  parcels_added: number;
+  parcels_registered: number;
+  payments: number;
+  payments_amount: number;
+  certificates: number;
+  decisions: number;
+  changes: number;
+  last_active: string | null;
+}
+export interface MessageRow {
+  template_code: string;
+  channel: string;
+  total: number;
+  sent: number;
+  waiting: number;
+  failed: number;
+  cancelled: number;
+  rate: number | null;
 }

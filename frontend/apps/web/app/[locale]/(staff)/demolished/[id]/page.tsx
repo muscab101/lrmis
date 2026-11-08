@@ -3,20 +3,14 @@ import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { MapPinned } from "lucide-react";
+import { Home, MapPinned } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import {
-  DecideDemolition,
-  RegisterAgain,
-  RestoreDemolition,
-} from "@/components/demolitions/demolition-actions";
+import { DecideDemolition, RestoreDemolition } from "@/components/demolitions/demolition-actions";
 import { GeometryPreview } from "@/components/map/geometry-preview";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getDemolition } from "@/lib/server/demolitions";
-import { listPropertyTypes } from "@/lib/server/property-types";
-import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -53,29 +47,6 @@ export default async function DemolitionPage({
     n != null ? `${format.number(Number(n), { maximumFractionDigits: 2 })} m²` : "—";
   const canApprove = viewer.can("parcels.demolish_approve");
   const open = d.status === "approved" && !d.rebuilt_at;
-  const grades =
-    canApprove && open
-      ? (await listPropertyTypes())
-          .filter((g) => g.active)
-          .map((g) => ({ code: g.code, name: lang === "so" ? g.name_so : g.name_en }))
-      : [];
-  const owners =
-    canApprove && open
-      ? (
-          ((
-            await (
-              await createClient()
-            )
-              .from("parcel_owners")
-              .select("party:parties(full_name)")
-              .eq("parcel_id", d.parcel_id)
-              .is("valid_to", null)
-          ).data ?? []) as unknown as { party: { full_name: string } | null }[]
-        )
-          .map((o) => o.party?.full_name)
-          .filter(Boolean)
-          .join(", ")
-      : "";
   const owed = h.invoices
     .filter((i) => ["issued", "partially_paid"].includes(i.status))
     .reduce((sum, i) => sum + Number(i.balance), 0);
@@ -145,7 +116,12 @@ export default async function DemolitionPage({
           <div className="flex flex-wrap items-center gap-2">
             {canApprove && d.status === "pending" && <DecideDemolition ids={[d.id]} />}
             {canApprove && open && (
-              <RegisterAgain id={d.id} houseNo={s.house_no} owners={owners} grades={grades} />
+              <Button asChild size="sm">
+                <Link href={`/demolished/${d.id}/register`}>
+                  <Home aria-hidden />
+                  {t("registerNow")}
+                </Link>
+              </Button>
             )}
             {canApprove && open && <RestoreDemolition id={d.id} />}
             <Button asChild variant="outline" size="sm">

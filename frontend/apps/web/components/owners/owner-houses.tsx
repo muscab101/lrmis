@@ -31,7 +31,7 @@ export async function OwnerHouses({ houses }: { houses: OwnerHouse[] }) {
                 href={`/parcels/${h.id}`}
                 className="hover:bg-muted/50 flex flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3 text-sm"
               >
-                <span className="bg-primary/10 text-primary grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold">
+                <span className="text-primary grid size-7 shrink-0 place-items-center text-sm font-semibold tabular-nums">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1">

@@ -72,3 +72,20 @@ export const updateTemplateAction = defineAction(
     }
   },
 );
+
+/** A warning that shows on every open screen in the system for 5 seconds (admins only). */
+export const systemWarningSendAction = defineAction(
+  "messages.warning",
+  z.object({
+    message: z.string().trim().min(3, "validation.warning_message").max(300, "validation.warning_message"),
+    /** One district, or null for every district. */
+    district: z.uuid().nullable(),
+  }),
+  async (v, ctx) =>
+    done(
+      unwrap(
+        await ctx.supabase.rpc("system_warning_send", { p_message: v.message, p_district: v.district }),
+        "warning",
+      ) as string,
+    ),
+);

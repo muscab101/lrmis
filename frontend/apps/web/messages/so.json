@@ -315,7 +315,8 @@
       "test_login_person": "Isticmaalahan lama tijaabin karo: waa inuu firfircoon yahay ama la casuumay.",
       "test_login_super_admin": "Kuma geli kartid maamule sare ama adiga naftaada.",
       "chat_edit_expired": "Fariinta waxaa wax laga beddeli karaa 5 daqiiqo oo keliya ka dib markii la diro.",
-      "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day."
+      "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day.",
+      "warning_too_soon": "Digniin hadda ayaa la diray. Dhowr ilbiriqsi sug ka hor intaadan mid kale dirin."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -507,7 +508,8 @@
     "demolish_date": "Geli taariikhda dumista.",
     "chat_group_name": "Kooxda sii magac 2 ilaa 80 xaraf ah.",
     "chat_members": "Dooro ugu yaraan hal qof.",
-    "printer_pos": "Dooro goob lacag bixin oo shaqaynaysa."
+    "printer_pos": "Dooro goob lacag bixin oo shaqaynaysa.",
+    "warning_message": "Qor digniin u dhaxaysa 3 iyo 300 xaraf."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -4315,7 +4317,15 @@
       "collections": "Ururinta maalinlaha, toddobaadlaha iyo bishii",
       "collectionsCashier": "Ururinta khasnaji ahaan",
       "shortages": "Yaraanshaha iyo dheeraadka khasnajiyada",
-      "unreconciled": "Lacag-bixinno aan la isku dheelitirin"
+      "unreconciled": "Lacag-bixinno aan la isku dheelitirin",
+      "transfers": "Wareejinta",
+      "permits": "Ruqsadaha dhismaha",
+      "disputes": "Khilaafaadka",
+      "demolished": "Guryaha la dumiyay",
+      "surveyZones": "Aagagga sahanka",
+      "certificateStatus": "Shahaadooyinka sannadkan",
+      "staffActivity": "Shaqada shaqaalaha",
+      "messages": "SMS iyo fariimaha"
     },
     "notes": {
       "revenue": "Lacagta la helay, bisha la helay, loona kala qaybiyay waxa ay bixisay. Lacagta aan la qoondeyn waa lacag aan weli biil lagu xirin.",
@@ -4335,7 +4345,15 @@
       "collections": "Wadarta ururinta = Caddaan + EVC Plus + eDahab + ZAAD + Wareejin bangi (+ Visa / Mastercard iyo Kale), maalin kasta, toddobaad kasta (Isniin ilaa Axad) ama bil kasta. Sida caadiga ah waxaa la tiriyaa kaliya lacag-bixinnada uu sarkaal maaliyadeed hubiyay.",
       "collectionsCashier": "Waxa khasnaji kastaa ururiyay hab lacag-bixin ahaan, inta aan weli la hubin, inta maalmood ee la isku dheelitiray, iyo yaraanshaha iyo dheeraadka la helay.",
       "shortages": "Maalin kasta oo khasnaji oo muddadan la isku dheelitiray: la diiwaangeliyay iyo dhab ahaan la helay, farqiga hab kasta (tiirka ±), yaraansho = la diiwaangeliyay − la helay, dheeraad = la helay − la diiwaangeliyay, iyo cidda diyaarisay iyo cidda oggolaatay.",
-      "unreconciled": "Lacag-bixinno aan weli ku jirin isku-dheelitir khasnaji oo la oggolaaday: sugaya, la hubiyay ama lagu murmay, kuwa ugu da'da weyn marka hore."
+      "unreconciled": "Lacag-bixinno aan weli ku jirin isku-dheelitir khasnaji oo la oggolaaday: sugaya, la hubiyay ama lagu murmay, kuwa ugu da'da weyn marka hore.",
+      "transfers": "Wareejinta la bilaabay ama go'aan laga gaaray muddadan, milkiilayaasha ka hor iyo ka dib iyo canshuurta wareejinta ee weli la rabo.",
+      "permits": "Ruqsadaha dhismaha ee la codsaday ama go'aan laga gaaray muddadan.",
+      "disputes": "Khilaafaadka la furay muddadan, iyo kuwa weli furan oo dhan.",
+      "demolished": "Guryaha la dumiyay muddadan (taariikhda dumista), iyo haddii dib loo dhisay ama la soo celiyay.",
+      "surveyZones": "Aagagga sahanka sida ay maanta yihiin: guryaha la diiwaangeliyay iyo hadafka, iyo milkiilayaal la daray oo weli sugaya dhulkooda.",
+      "certificateStatus": "Guri kasta oo diiwaangashan iyo shahaadadiisii ugu dambeysay. Kuwa aan haysan shahaado ansax ah sannadkan ayaa ugu horreeya, iyo waxa weli lagu leeyahay.",
+      "staffActivity": "Waxa shaqaale kastaa qabtay muddadan. Isbeddellada waa kayd kasta oo uu sameeyay.",
+      "messages": "Fariimaha nidaamku sameeyay muddadan, nooc ahaan: la diray, sugaya, fashilmay ama la joojiyay."
     },
     "buckets": {
       "not_due": "Waqtigii ma gaarin",
@@ -4460,10 +4478,12 @@
     "allNeighbourhoods": "Dhammaan xaafadaha",
     "related": "Warbixinno la xiriira:",
     "groups": {
-      "money": "Lacagta",
-      "land": "Dhulka",
-      "documents": "Dukumentiyada",
-      "collections": "Ururinta iyo isku-dheelitirka"
+      "money": "Biilasha iyo dakhliga",
+      "land": "Dhulka iyo shaqada goobta",
+      "documents": "Shahaadooyinka",
+      "collections": "Ururinta maalinlaha iyo lacagta caddaanka",
+      "cases": "Wareejinta, ruqsadaha iyo khilaafaadka",
+      "staff": "Shaqaalaha iyo fariimaha"
     },
     "report": "Warbixin",
     "methods": {
@@ -4533,6 +4553,69 @@
     "views": {
       "summary": "Soo koobid",
       "detail": "Lacag-bixin kasta"
+    },
+    "typeLabel": "Nooca",
+    "fromOwners": "Ka",
+    "toOwners": "Loo",
+    "declaredValue": "Qiimaha la sheegay",
+    "started": "La bilaabay",
+    "decided": "Go'aan",
+    "decidedBy": "Go'aamiyay",
+    "dutyOwing": "Canshuur la rabo",
+    "applicant": "Codsade",
+    "floors": "Dabaqyada",
+    "requested": "La codsaday",
+    "validUntil": "Ansax ilaa",
+    "claimant": "Sheegte",
+    "courtCase": "Kiiska maxkamadda",
+    "opened": "La furay",
+    "resolvedOn": "La xiray",
+    "daysOpen": "Maalmo furan",
+    "demolishedOn": "La dumiyay",
+    "reason": "Sababta",
+    "demolishedState": {
+      "demolished": "La dumiyay",
+      "restored": "La soo celiyay",
+      "rebuilt": "Dib loo dhisay"
+    },
+    "surveyor": "Sahamiye",
+    "target": "Hadafka",
+    "recordedHouses": "La diiwaangeliyay",
+    "done": "La dhammeeyay",
+    "ownersWaiting": "Milkiilayaal sugaya",
+    "assigned": "La qoondeeyay",
+    "zoneState": {
+      "open": "Furan",
+      "done": "Dhammaaday"
+    },
+    "certificate": "Shahaado",
+    "expires": "Dhacaya",
+    "owing": "La rabo",
+    "certState": {
+      "valid": "Ansax",
+      "expired": "Dhacay",
+      "cancelled": "La joojiyay",
+      "none": "Weli ma jirto"
+    },
+    "staff": "Shaqaale",
+    "roleLabel": "Doorka",
+    "landAdded": "Dhul la daray",
+    "certificates": "Shahaadooyin",
+    "decisions": "Go'aamo",
+    "changes": "Isbeddello",
+    "lastActive": "Markii ugu dambeysay",
+    "messageKind": "Fariin",
+    "channel": "Lagu diray",
+    "sent": "La diray",
+    "waiting": "Sugaya",
+    "failed": "Fashilmay",
+    "stopped": "La joojiyay",
+    "sentRate": "Heerka la diray",
+    "email": "Iimayl",
+    "messageKinds": {
+      "certificate_ready": "Shahaadadu waa diyaar",
+      "payment_receipt": "Rasiidka lacagta",
+      "application_status": "Warka codsiga"
     }
   },
   "messages": {
@@ -4541,7 +4624,8 @@
     "sections": {
       "outbox": "Sanduuqa dirista",
       "campaigns": "Ololeyaasha",
-      "templates": "Qaababka"
+      "templates": "Qaababka",
+      "warning": "Digniin dhammaan shaashadaha"
     },
     "status": {
       "queued": "Sugaya",
@@ -4612,7 +4696,27 @@
     "chars": "{n} / 640 xaraf",
     "activeLabel": "Dir fariintan",
     "placeholdersHint": "Erayada ku jira qaansooyinka waxaa loo buuxiyaa qof kasta. Sidooda u daa.",
-    "hint": "Lambarada telefoonka qayb ayaa la qariyay. Fariimuhu waxay maraan bixiyaha SMS-ka; kuwa fashilma mar kale ayaa la isku dayaa iyadoo nasashadu korodho."
+    "hint": "Lambarada telefoonka qayb ayaa la qariyay. Fariimuhu waxay maraan bixiyaha SMS-ka; kuwa fashilma mar kale ayaa la isku dayaa iyadoo nasashadu korodho.",
+    "warning": {
+      "title": "U dir digniin shaashad kasta",
+      "body": "Qof kasta oo isticmaalaya nidaamka ayaa isla markiiba arka, bog kasta oo uu joogo. Waxay joogtaa 5 ilbiriqsi, kadibna iskeed ayay u baxdaa.",
+      "label": "Digniin",
+      "placeholder": "tusaale: Nidaamku wuxuu dib u bilaabanayaa 10 daqiiqo kadib. Kaydi shaqadaada.",
+      "send": "Dir digniinta",
+      "sent": "Digniinta waxaa loo diray shaashad kasta",
+      "preview": "Sida ay u muuqato",
+      "recent": "Digniinihii ugu dambeeyay",
+      "none": "Weli digniin lama dirin.",
+      "by": "waxaa diray {name}",
+      "all": "Dhammaan degmooyinka",
+      "allBody": "Qof kasta oo nidaamka ku jira",
+      "one": "Hal degmo",
+      "oneBody": "Kaliya shaqaalaha ka shaqeeya degmadaas",
+      "pick": "Dooro degmada",
+      "to": "U dir",
+      "toAll": "dhammaan",
+      "toDistrict": "{district}"
+    }
   },
   "channels": {
     "menu": "LRMIS Banaadir\n1. Haraagayga\n2. Bixi biil\n3. Raadi codsi\n4. Hubi shahaado\n5. English",
@@ -4858,7 +4962,8 @@
       "waitingOwnersBody": "Halkan ayaa lagu kaydiyay, laakiin dhulkooda weli lama gelin. Ka sii wad meeshii aad joogsatay.",
       "addLandFor": "Ku dar dhul"
     },
-    "assignZone": "Xilsaar aag"
+    "assignZone": "Xilsaar aag",
+    "subtitle": "Sahamiyeyaasha u qoondee xaafadaha, la soco aagaggooda, oo arag halka dhul weli sugayo."
   },
   "idCards": {
     "title": "Kaararka aqoonsiga",
@@ -5693,7 +5798,14 @@
     "audit_delete": "Diiwaanka waa la saaray",
     "parcelDemolished": "Guriga dhulkan waa la dumiyay",
     "parcelDemolishedBody": "Wuxuu ahaanayaa kayd ilaa la laabto ama dhulka dib loo diiwaangeliyo.",
-    "parcelWaiting": "Dumis ayaa sugaysa oggolaansho"
+    "parcelWaiting": "Dumis ayaa sugaysa oggolaansho",
+    "undoAll": "Dib u celi dhammaan ({count})",
+    "undoAllTitle": "Dib u celi {count, plural, =1 {dumintan} other {# dumimadan}}?",
+    "undoAllBody": "Guryo si khalad ah loogu calaameeyay la dumiyay, tusaale xaafad dhan. Guri kasta oo halkan ka muuqda wuu ku noqonayaa sidii uu ahaa; guryaha mar kale la diiwaangeliyay lama taabanayo. Diiwaan kasta wuu sii jirayaa, waxaana lagu calaamadinayaa dib loo celiyay.",
+    "doneUndoAll": "Guryihii way ku noqdeen sidii ay ahaayeen",
+    "undoAllLine": "{count, plural, =1 {1 guri oo la dumiyay ayaa muuqda} other {# guri oo la dumiyay ayaa muuqda}}",
+    "undoAllHint": "kor ka dooro xaafad si aad iyada oo keliya dib ugu celiso",
+    "registerNow": "Hadda diiwaangeli"
   },
   "signatureStamp": {
     "title": "Saxiixa iyo shaabadda",
@@ -5724,5 +5836,11 @@
     "previewTitle": "Sida ay uga muuqato shahaadada",
     "previewHint": "Hoosta shahaadada, sida loo daabici doono.",
     "previewIssued": "La bixiyay"
+  },
+  "systemWarning": {
+    "title": "Digniin ka timid maamulka",
+    "close": "Xir",
+    "everyone": "Dhammaan",
+    "seconds": "{n}s"
   }
 }

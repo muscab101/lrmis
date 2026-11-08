@@ -13,6 +13,7 @@ import { EnvBadge } from "./env-badge";
 import { LocaleSwitch } from "./locale-switch";
 import { visibleNav } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
+import { SystemWarning } from "./system-warning";
 import { Sidebar } from "./sidebar";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
@@ -82,6 +83,7 @@ export function AppShell({ permissions, user, env, testingAs, children }: AppShe
 
       <div className="flex min-w-0 flex-1 flex-col">
         {testingAs && <TestingBanner name={testingAs} />}
+        <SystemWarning />
         <header className="glass-bar sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t("open")}>
             <Menu aria-hidden />

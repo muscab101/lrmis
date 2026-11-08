@@ -116,6 +116,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
   const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
   // Set to "on" next to GOOGLE_MAPS_API_KEY: satellite pictures come from Google.
   const google = process.env.NEXT_PUBLIC_GOOGLE_SATELLITE === "on";
+  // Set to "on" next to MAPBOX_ACCESS_TOKEN: streets and satellite pictures come from Mapbox (through our server).
+  const mapbox = process.env.NEXT_PUBLIC_MAPBOX === "on";
   const nameField = locale === "so" ? "name_so" : "name_en";
   const vector = (layer: BoundaryLayer) => ({
     type: "vector" as const,
@@ -130,14 +132,23 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
     version: 8,
     glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
     sources: {
-      "base-streets": {
-        type: "raster",
-        tileSize: 256,
-        maxzoom: 19,
-        tiles: [key ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${key}` : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        attribution: key ? "© MapTiler © OpenStreetMap contributors" : "© OpenStreetMap contributors",
-      },
-      // Google's satellite pictures when the server has a Google key (sharper, buildings clearly seen); else MapTiler, else Esri.
+      "base-streets": mapbox
+        ? {
+            type: "raster",
+            tileSize: 256,
+            maxzoom: 20,
+            tiles: [`${origin}/api/mapbox-tiles/streets/{z}/{x}/{y}`],
+            attribution: "© Mapbox © OpenStreetMap contributors",
+          }
+        : {
+            type: "raster",
+            tileSize: 256,
+            maxzoom: 19,
+            tiles: [key ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${key}` : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            attribution: key ? "© MapTiler © OpenStreetMap contributors" : "© OpenStreetMap contributors",
+          },
+      // Google's satellite pictures when the server has a Google key (sharper, buildings clearly seen); else Mapbox
+      // (satellite with street names); else MapTiler, else Esri.
       "base-satellite": google
         ? {
             type: "raster",
@@ -145,6 +156,14 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
             maxzoom: 21,
             tiles: [`${origin}/api/google-tiles/{z}/{x}/{y}`],
             attribution: "Imagery © Google",
+          }
+        : mapbox
+        ? {
+            type: "raster",
+            tileSize: 256,
+            maxzoom: 20,
+            tiles: [`${origin}/api/mapbox-tiles/satellite/{z}/{x}/{y}`],
+            attribution: "© Mapbox © OpenStreetMap contributors © Maxar",
           }
         : {
             type: "raster",

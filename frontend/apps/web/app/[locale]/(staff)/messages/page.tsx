@@ -4,9 +4,11 @@ import { PageHeader } from "@dhulka/ui/misc";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { CampaignTable, NewCampaign, Outbox, TemplateList } from "@/components/messages/messages-ui";
+import { WarningComposer } from "@/components/messages/warning-composer";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { listCampaigns, listMessages, listTemplates, messageCounts, type MessageStatus } from "@/lib/server/messages";
+import { listCampaigns, listMessages, listTemplates, listWarnings, messageCounts, type MessageStatus } from "@/lib/server/messages";
+import { myDistricts } from "@/lib/server/scope";
 import { listDistricts } from "@/lib/server/users";
 
 export async function generateMetadata() {
@@ -14,7 +16,7 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const SECTIONS = ["outbox", "campaigns", "templates"] as const;
+const SECTIONS = ["outbox", "campaigns", "templates", "warning"] as const;
 const FILTERS = ["any", "queued", "sent", "failed", "cancelled"] as const;
 
 export default async function MessagesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -23,13 +25,19 @@ export default async function MessagesPage({ params, searchParams }: { params: P
   const viewer = await requirePermission(locale, "messages.view");
   const t = await getTranslations("messages");
   const sp = await searchParams;
-  const section = (SECTIONS as readonly string[]).includes(sp.s ?? "") ? (sp.s as (typeof SECTIONS)[number]) : "outbox";
+  // The warning to every screen is for admins only.
+  const sections = SECTIONS.filter((s) => s !== "warning" || viewer.can("messages.broadcast"));
+  const section = (sections as readonly string[]).includes(sp.s ?? "") ? (sp.s as (typeof SECTIONS)[number]) : "outbox";
   const filter = (FILTERS as readonly string[]).includes(sp.f ?? "") ? (sp.f as MessageStatus | "any") : "any";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await messageCounts();
 
   let body: React.ReactNode;
-  if (section === "campaigns") body = <CampaignTable rows={await listCampaigns()} me={viewer.user.id} canDecide={viewer.can("messages.approve")} />;
+  if (section === "warning") {
+    const [recent, places] = await Promise.all([listWarnings(), myDistricts()]);
+    body = <WarningComposer recent={recent} districts={places.map((d) => ({ id: d.id, name: locale === "so" ? d.name_so : d.name_en }))} />;
+  }
+  else if (section === "campaigns") body = <CampaignTable rows={await listCampaigns()} me={viewer.user.id} canDecide={viewer.can("messages.approve")} />;
   else if (section === "templates") body = <TemplateList rows={await listTemplates()} canEdit={viewer.can("messages.update")} />;
   else {
     const q = (sp.q ?? "").replace(/[^\d+]/g, "").slice(0, 16);
@@ -55,8 +63,8 @@ export default async function MessagesPage({ params, searchParams }: { params: P
       </>
     );
   }
-  const tabCount = { outbox: counts.queued, campaigns: counts.campaigns_draft, templates: null };
-  const showNew = viewer.can("messages.create") && section !== "templates";
+  const tabCount = { outbox: counts.queued, campaigns: counts.campaigns_draft, templates: null, warning: null };
+  const showNew = viewer.can("messages.create") && section !== "templates" && section !== "warning";
   const districts = showNew ? await listDistricts() : [];
 
   return (
@@ -64,7 +72,7 @@ export default async function MessagesPage({ params, searchParams }: { params: P
       <PageHeader title={t("title")} description={t("subtitle", { sent: counts.sent_today, queued: counts.queued })}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <nav className="flex gap-5 overflow-x-auto text-sm">
-            {SECTIONS.map((s) => (
+            {sections.map((s) => (
               <Link
                 key={s}
                 href={`/messages?s=${s}`}

@@ -5,7 +5,15 @@ import type {
   BillingRow,
   CashierRow,
   CertificateRow,
+  CertificateStatusRow,
   CollectionRow,
+  DemolishedRow,
+  DisputeRow,
+  MessageRow,
+  PermitRow,
+  StaffActivityRow,
+  SurveyZoneRow,
+  TransferRow,
   IncomeRow,
   InvoiceRow,
   LocationRow,
@@ -74,6 +82,8 @@ export async function reportTable(
   /** A value label from an existing catalog section, or the raw value when there is none. */
   const label = (ns: string, v: string | null) =>
     v === null ? null : all.has(`${ns}.${v}`) ? all(`${ns}.${v}`) : v;
+  /** Just the day of a date-time (the page and files show it as a date). */
+  const day = (v: string | null) => (v ? v.slice(0, 10) : null);
   const yesNo = (v: boolean | null) => (v === null ? null : v ? t("yes") : t("no"));
   // Cash, EVC Plus, eDahab, ZAAD, Bank transfer, Visa / Mastercard, Other: the columns of every collections report.
   const channelColumns: Column[] = CHANNEL_COLUMNS.map((c) => ({
@@ -573,6 +583,242 @@ export async function reportTable(
         null,
         null,
         to("parcels", r.parcel_id),
+      ]);
+      break;
+    }
+    case "transfers": {
+      columns = [
+        { label: t("number"), kind: "mono" },
+        { label: t("pun"), kind: "mono" },
+        { label: t("typeLabel"), kind: "text" },
+        { label: t("fromOwners"), kind: "text" },
+        { label: t("toOwners"), kind: "text" },
+        { label: t("declaredValue"), kind: "money", sum: true },
+        { label: t("district"), kind: "text" },
+        { label: t("started"), kind: "date" },
+        { label: t("decided"), kind: "date" },
+        { label: t("decidedBy"), kind: "text" },
+        { label: t("status"), kind: "text" },
+        { label: t("dutyOwing"), kind: "money", sum: true },
+      ];
+      const r = data as TransferRow[];
+      rows = r.map((x) => [
+        x.number,
+        x.pun,
+        label("legal.transferKinds", x.kind),
+        x.from_owners,
+        x.to_owners,
+        num(x.declared_value),
+        pick(x as never, "district"),
+        day(x.created_at),
+        day(x.decided_at),
+        x.decided_by,
+        label("legal.status", x.status),
+        num(x.duty_balance),
+      ]);
+      links = r.map((x) => [to("transfers", x.transfer_id), to("parcels", x.parcel_id)]);
+      break;
+    }
+    case "permits": {
+      columns = [
+        { label: t("number"), kind: "mono" },
+        { label: t("pun"), kind: "mono" },
+        { label: t("typeLabel"), kind: "text" },
+        { label: t("applicant"), kind: "text" },
+        { label: t("phone"), kind: "mono" },
+        { label: t("floors"), kind: "int" },
+        { label: t("area"), kind: "num", sum: true },
+        { label: t("district"), kind: "text" },
+        { label: t("requested"), kind: "date" },
+        { label: t("decided"), kind: "date" },
+        { label: t("status"), kind: "text" },
+        { label: t("validUntil"), kind: "date" },
+      ];
+      const r = data as PermitRow[];
+      rows = r.map((x) => [
+        x.number,
+        x.pun,
+        label("legal.permitKinds", x.kind),
+        x.applicant,
+        x.phone,
+        num(x.floors),
+        num(x.area_m2),
+        pick(x as never, "district"),
+        day(x.requested_at),
+        day(x.decided_at),
+        label("legal.status", x.status),
+        x.valid_until,
+      ]);
+      links = r.map((x) => [null, to("parcels", x.parcel_id)]);
+      break;
+    }
+    case "disputes": {
+      columns = [
+        { label: t("number"), kind: "mono" },
+        { label: t("pun"), kind: "mono" },
+        { label: t("typeLabel"), kind: "text" },
+        { label: t("claimant"), kind: "text" },
+        { label: t("courtCase"), kind: "mono" },
+        { label: t("district"), kind: "text" },
+        { label: t("opened"), kind: "date" },
+        { label: t("resolvedOn"), kind: "date" },
+        { label: t("daysOpen"), kind: "int" },
+        { label: t("status"), kind: "text" },
+      ];
+      const r = data as DisputeRow[];
+      rows = r.map((x) => [
+        x.number,
+        x.pun,
+        label("legal.disputeKinds", x.kind),
+        x.claimant,
+        x.court_case_no,
+        pick(x as never, "district"),
+        day(x.opened_at),
+        day(x.resolved_at),
+        num(x.days_open),
+        label("legal.disputeStatus", x.status),
+      ]);
+      links = r.map((x) => [null, to("parcels", x.parcel_id)]);
+      break;
+    }
+    case "demolished": {
+      columns = [
+        { label: t("number"), kind: "mono" },
+        { label: t("pun"), kind: "mono" },
+        { label: t("houseNo"), kind: "text" },
+        { label: t("owners"), kind: "text" },
+        { label: t("district"), kind: "text" },
+        { label: t("neighbourhood"), kind: "text" },
+        { label: t("demolishedOn"), kind: "date" },
+        { label: t("reason"), kind: "text" },
+        { label: t("status"), kind: "text" },
+      ];
+      const r = data as DemolishedRow[];
+      rows = r.map((x) => [
+        x.number,
+        x.pun,
+        x.house_no,
+        x.owners,
+        pick(x as never, "district"),
+        pick(x as never, "neighbourhood"),
+        x.demolition_date,
+        x.reason,
+        x.rebuilt ? t("demolishedState.rebuilt") : t(`demolishedState.${x.status === "restored" ? "restored" : "demolished"}`),
+      ]);
+      links = r.map((x) => [to("demolished", x.demolition_id)]);
+      break;
+    }
+    case "surveyZones": {
+      columns = [
+        { label: t("code"), kind: "mono" },
+        { label: t("neighbourhood"), kind: "text" },
+        { label: t("district"), kind: "text" },
+        { label: t("surveyor"), kind: "text" },
+        { label: t("target"), kind: "int", sum: true },
+        { label: t("recordedHouses"), kind: "int", sum: true },
+        { label: t("partial"), kind: "int", sum: true },
+        { label: t("registered"), kind: "int", sum: true },
+        { label: t("done"), kind: "pct" },
+        { label: t("ownersWaiting"), kind: "int", sum: true },
+        { label: t("assigned"), kind: "date" },
+        { label: t("status"), kind: "text" },
+      ];
+      const r = data as SurveyZoneRow[];
+      rows = r.map((x) => [
+        x.code,
+        pick(x as never, "name"),
+        pick(x as never, "district"),
+        x.surveyor,
+        num(x.target),
+        num(x.recorded),
+        num(x.partial),
+        num(x.registered),
+        num(x.pct),
+        num(x.owners_waiting),
+        day(x.assigned_at),
+        t(`zoneState.${x.status === "open" ? "open" : "done"}`),
+      ]);
+      links = r.map((x) => [to("surveys/zones", x.zone_id), to("surveys/zones", x.zone_id)]);
+      break;
+    }
+    case "certificateStatus": {
+      columns = [
+        { label: t("pun"), kind: "mono" },
+        { label: t("owner"), kind: "text" },
+        { label: t("phone"), kind: "mono" },
+        { label: t("district"), kind: "text" },
+        { label: t("neighbourhood"), kind: "text" },
+        { label: t("certificate"), kind: "text" },
+        { label: t("serial"), kind: "mono" },
+        { label: t("issuedAt"), kind: "date" },
+        { label: t("expires"), kind: "date" },
+        { label: t("owing"), kind: "money", sum: true },
+      ];
+      const r = data as CertificateStatusRow[];
+      rows = r.map((x) => [
+        x.pun,
+        x.owner,
+        x.phone,
+        pick(x as never, "district"),
+        pick(x as never, "neighbourhood"),
+        t(`certState.${x.cert_status}`),
+        x.serial,
+        day(x.issued_at),
+        x.expires_at,
+        num(x.owing),
+      ]);
+      links = r.map((x) => [to("parcels", x.parcel_id)]);
+      break;
+    }
+    case "staffActivity": {
+      columns = [
+        { label: t("staff"), kind: "text" },
+        { label: t("roleLabel"), kind: "text" },
+        { label: t("landAdded"), kind: "int", sum: true },
+        { label: t("registered"), kind: "int", sum: true },
+        { label: t("payments"), kind: "int", sum: true },
+        { label: t("amount"), kind: "money", sum: true },
+        { label: t("certificates"), kind: "int", sum: true },
+        { label: t("decisions"), kind: "int", sum: true },
+        { label: t("changes"), kind: "int", sum: true },
+        { label: t("lastActive"), kind: "datetime" },
+      ];
+      const r = data as StaffActivityRow[];
+      rows = r.map((x) => [
+        x.staff,
+        x.role,
+        num(x.parcels_added),
+        num(x.parcels_registered),
+        num(x.payments),
+        num(x.payments_amount),
+        num(x.certificates),
+        num(x.decisions),
+        num(x.changes),
+        x.last_active,
+      ]);
+      links = r.map((x) => [to("admin/users", x.user_id)]);
+      break;
+    }
+    case "messages": {
+      columns = [
+        { label: t("messageKind"), kind: "text" },
+        { label: t("channel"), kind: "text" },
+        { label: t("total"), kind: "int", sum: true },
+        { label: t("sent"), kind: "int", sum: true },
+        { label: t("waiting"), kind: "int", sum: true },
+        { label: t("failed"), kind: "int", sum: true },
+        { label: t("stopped"), kind: "int", sum: true },
+        { label: t("sentRate"), kind: "pct" },
+      ];
+      rows = (data as MessageRow[]).map((x) => [
+        t.has(`messageKinds.${x.template_code}`) ? t(`messageKinds.${x.template_code}`) : x.template_code.replace(/_/g, " "),
+        x.channel === "sms" ? "SMS" : x.channel === "whatsapp" ? "WhatsApp" : t("email"),
+        num(x.total),
+        num(x.sent),
+        num(x.waiting),
+        num(x.failed),
+        num(x.cancelled),
+        num(x.rate),
       ]);
       break;
     }
