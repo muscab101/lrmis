@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,10 +8,11 @@ import { Providers } from "@/components/providers/providers";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-const poppins = Poppins({
+// One font for the whole system: Plus Jakarta Sans (narrower than Poppins, so tables fit better; clear at small sizes).
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -48,7 +49,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} suppressHydrationWarning className={poppins.variable}>
+    <html lang={locale} suppressHydrationWarning className={jakarta.variable}>
       <body className="min-h-dvh font-sans antialiased">
         <NextIntlClientProvider>
           <Providers>{children}</Providers>

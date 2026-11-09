@@ -155,7 +155,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
             new TerraDrawPolygonMode({
               snapping,
               editable: true,
-              styles: { fillColor: "#1d5fc2", fillOpacity: 0.2, outlineColor: "#1d5fc2", outlineWidth: 2.5, closingPointColor: "#ffffff", closingPointOutlineColor: "#1d5fc2" },
+              styles: { fillColor: "#1d5fc2", fillOpacity: 0.2, outlineColor: "#1d5fc2", outlineWidth: 2.5, closingPointColor: "#f8fafc", closingPointOutlineColor: "#1d5fc2" },
             }),
             new TerraDrawSelectMode({
               flags: {

@@ -57,6 +57,44 @@ describe("citizen portal and channels (Phase 11)", () => {
     expect(s.parcels).toHaveLength(0);
   });
 
+  it("a citizen sees every owner on their confirmed phone; an unconfirmed phone sees nothing", async () => {
+    const hodan = await scalar<string>(db, `select id from public.districts where code = 'HDN'`);
+    const nbhd = await scalar<string>(db, `select id from public.neighbourhoods where code = '012'`);
+    const land = async (pun: string, phone: string, name: string, lon: number) => {
+      const pc = await scalar<string>(
+        db,
+        `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, geom, status, registered_at)
+         values ($1, $1, $2, $3, 'residential', 300, extensions.st_setsrid(extensions.st_geomfromgeojson($4), 4326), 'registered', now()) returning id`,
+        [pun, hodan, nbhd, JSON.stringify(square(lon, 2.041, 0.0001))],
+      );
+      const pa = await scalar<string>(db, `insert into public.parties (full_name, phone) values ($1, $2) returning id`, [name, phone]);
+      await db.query(`insert into public.parcel_owners (parcel_id, party_id, role, share_pct) values ($1, $2, 'owner', 100)`, [pc, pa]);
+    };
+    // Two owners share one contact phone; a third has another.
+    await land("BN-HDN-012-000101", "+252615550202", "Owner One", 45.3011);
+    await land("BN-HDN-012-000102", "+252615550202", "Owner Two", 45.3013);
+    await land("BN-HDN-012-000103", "+252615550303", "Owner Three", 45.3015);
+
+    // Signed in with the shared phone (stored without "+", confirmed by the SMS code): both owners' land.
+    const holder = await createAuthUser(db, { phone: "252615550202", fullName: "" });
+    await db.query(`update auth.users set phone_confirmed_at = now() where id = $1`, [holder]);
+    const o = await asUser(db, holder, (tx) => scalar<{ parcels: { pun: string }[] }>(tx, `select public.citizen_overview()`), "aal1");
+    expect(o.parcels.map((x) => x.pun).sort()).toEqual(["BN-HDN-012-000101", "BN-HDN-012-000102"]);
+    expect(await asUser(db, holder, (tx) => scalar<boolean>(tx, `select private.is_parcel_owner((select id from public.parcels where pun = 'BN-HDN-012-000103'))`), "aal1")).toBe(false);
+
+    // Land still in partial registration is marked, so the portal sends the citizen to the district (paying it is refused).
+    expect(o.parcels.every((x) => !(x as { partial: boolean }).partial)).toBe(true);
+    await db.query(`update public.parcels set status = 'surveyed' where pun = 'BN-HDN-012-000101'`);
+    const o2 = await asUser(db, holder, (tx) => scalar<{ parcels: { pun: string; partial: boolean }[] }>(tx, `select public.citizen_overview()`), "aal1");
+    expect(o2.parcels.find((x) => x.pun === "BN-HDN-012-000101")!.partial).toBe(true);
+    expect(o2.parcels.find((x) => x.pun === "BN-HDN-012-000102")!.partial).toBe(false);
+
+    // A phone that was never confirmed gives nothing.
+    const unconfirmed = await createAuthUser(db, { phone: "252615550303", fullName: "" });
+    const u = await asUser(db, unconfirmed, (tx) => scalar<{ parcels: unknown[] }>(tx, `select public.citizen_overview()`), "aal1");
+    expect(u.parcels).toHaveLength(0);
+  });
+
   it("channel functions are service-only", async () => {
     await expectError(asUser(db, citizen, (tx) => tx.query(`select public.channel_balance($1)`, [PHONE]), "aal1"), "permission denied");
   });

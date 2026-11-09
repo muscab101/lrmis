@@ -25,10 +25,8 @@ type Found = Awaited<ReturnType<typeof findParcelAction>> extends { ok: true; da
 
 export function OpenShift({ points }: { points: { id: string; code: string; name: string }[] }) {
   const t = useTranslations("payments");
-  const vm = useValidationMessage();
   const router = useRouter();
   const [posId, setPosId] = useState(points[0]?.id ?? "");
-  const [float, setFloat] = useState("0");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
   if (points.length === 0) return <Alert tone="warning" title={t("noPointsOfSale")}>{t("noPointsOfSaleBody")}</Alert>;
@@ -48,15 +46,12 @@ export function OpenShift({ points }: { points: { id: string; code: string; name
             ))}
           </NativeSelect>
         </Field>
-        <Field id="float" label={t("openingFloat")} hint={t("openingFloatHint")} error={vm(error?.fieldErrors?.float?.[0])}>
-          <Input type="number" min={0} step="0.01" value={float} onChange={(e) => setFloat(e.target.value)} />
-        </Field>
         <Button
           loading={busy}
           onClick={async () => {
             setBusy(true);
             setError(null);
-            const res = await openShiftAction({ posId, float });
+            const res = await openShiftAction({ posId });
             setBusy(false);
             if (!res.ok) return setError(res.error);
             toast.success(t("shiftOpened"));
@@ -87,8 +82,6 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
   const needsRef = v.how !== "cash" && v.how !== "cheque";
   const [receipt, setReceipt] = useState<{ id: string; no: string; leftover: number; discount: number } | null>(null);
   const [closing, setClosing] = useState(false);
-  const [counted, setCounted] = useState("");
-  const [note, setNote] = useState("");
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const owed = found?.invoices.reduce((s, i) => s + Number(i.balance), 0) ?? 0;
   const demolishedLand = found?.parcel.building_state === "demolished";
@@ -334,23 +327,9 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
         title={t("closeShift")}
         description={t("closeShiftBody")}
         confirmLabel={t("closeShift")}
-        submit={() => closeShiftAction({ id: shift.id, counted, note })}
-        onDone={(d) => {
-          const r = d as { expected: number; difference: number };
-          toast.success(t("shiftClosed", { expected: usd(r.expected), difference: usd(r.difference) }));
-        }}
-      >
-        {(fe2) => (
-          <>
-            <Field id="counted" label={t("countedCash")} error={fe2("counted")} required>
-              <Input type="number" min={0} step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} />
-            </Field>
-            <Field id="note" label={t("closeNote")} hint={t("closeNoteHint")} error={fe2("note")}>
-              <Input value={note} onChange={(e) => setNote(e.target.value)} />
-            </Field>
-          </>
-        )}
-      </FormDialog>
+        submit={() => closeShiftAction({ id: shift.id })}
+        successMessage={t("shiftClosed")}
+      />
     </div>
   );
 }

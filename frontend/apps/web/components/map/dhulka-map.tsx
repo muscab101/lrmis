@@ -47,7 +47,7 @@ function housePin(colour: string): { width: number; height: number; data: Uint8A
   const c = canvas.getContext("2d");
   if (!c) return null;
   c.fillStyle = colour;
-  c.strokeStyle = "#ffffff";
+  c.strokeStyle = "#f8fafc";
   c.lineWidth = 3;
   c.beginPath();
   c.arc(w / 2, 22, 19, Math.PI, 0);
@@ -56,7 +56,7 @@ function housePin(colour: string): { width: number; height: number; data: Uint8A
   c.closePath();
   c.fill();
   c.stroke();
-  c.fillStyle = "#ffffff";
+  c.fillStyle = "#f8fafc";
   c.beginPath();
   c.arc(w / 2, 22, 7, 0, Math.PI * 2);
   c.fill();

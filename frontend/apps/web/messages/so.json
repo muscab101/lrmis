@@ -714,7 +714,12 @@
       "id_card": "Kaarka aqoonsiga hantida"
     },
     "issuedOn": "la bixiyay {date}",
-    "verifyLink": "Hubi"
+    "verifyLink": "Hubi",
+    "partialTitle": "Weli si buuxda looma diiwaangelin",
+    "partialNotice": "Dhulkan ama xogtaadu weli si buuxda looma diiwaangelin. Fadlan booqo xafiiska degmada {district} si aad u cusboonaysiiso xogtaada iyo dhulkaaga. Biilashiisa waad bixin kartaa marka la diiwaangeliyo.",
+    "demolishedTitle": "Dhul la dumiyay",
+    "demolishedNotice": "Dhulkan waxaa loo diiwaangeliyay inuu dumay. Fadlan booqo xafiiska degmada {district}.",
+    "payAfterRegistered": "Bixi kadib diiwaangelinta"
   },
   "dashboard": {
     "title": "Shaashadda guud",
@@ -3249,7 +3254,7 @@
     "totalPaid": "Wadarta la bixiyay",
     "receiptThanks": "Mahadsanid. Hay rasiidkan. Ka hubi xafiiska dhulka adoo isticmaalaya lambarka rasiidka.",
     "cashierTitle": "Khasnaji",
-    "cashierSubtitle": "Fur wareegaaga, lacag ku qaado PUN, lambarka biilka ama codsiga, kuna xir tirinta lacagta caddaanka ah.",
+    "cashierSubtitle": "Fur wareegaaga, lacag ku qaado PUN, lambarka biilka ama codsiga, xirna markaad dhammayso.",
     "noPointsOfSale": "Goob lacag qaadasho degmadaada uma jirto",
     "noPointsOfSaleBody": "Maamule ayaa waa inuu dejiyaa miis khasnaji (goob lacag qaadasho) ka hor inta aan wareegyo la furin.",
     "openShift": "Fur wareeg",
@@ -3258,11 +3263,11 @@
     "shiftOpened": "Wareegga waa la furay.",
     "shiftLine": "Wareeg {number} ee {pos}, furan tan iyo {since}",
     "closeShift": "Xir wareegga",
-    "closeShiftBody": "Tiri lacagta caddaanka ah ee khaanadda. Lacagta la filayo waa lacagta bilowga iyo lacagta caddaanka ah ee wareeggan la qaaday.",
+    "closeShiftBody": "Ma xiraysaa wareeggan? Mid cusub waad furi kartaa mar kasta.",
     "countedCash": "Lacagta la tiriyay (USD)",
     "closeNote": "Qoraal",
     "closeNoteHint": "Waa loo baahan yahay haddii tirintu ku kala duwan tahay dhowr doolar wax ka badan.",
-    "shiftClosed": "Wareegga waa la xiray. La filayay {expected}, farqi {difference}.",
+    "shiftClosed": "Wareegga waa la xiray.",
     "findByPun": "PUN, lambarka biilka ama codsiga",
     "find": "Raadi",
     "oldUnitBills": "Guryihii halkan ku yiil weli waxaa ku haray biilashan hore. Fur mid si aad lacagtiisa u qaadato, ama isticmaal foomka hoose biilasha dhulka.",

@@ -28,7 +28,7 @@ export function AuthVisual() {
         intensity={0.25}
         noise={0.3}
         shape="corners"
-        colors={["#ffffff", "#7c9cf0", "#2a55d6", "#ffffff"]}
+        colors={["#f8fafc", "#7c9cf0", "#2a55d6", "#f8fafc"]}
         colorBack="#00000000"
         className="pointer-events-none absolute inset-0 opacity-20 mix-blend-soft-light"
       />

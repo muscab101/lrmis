@@ -64,7 +64,7 @@ export function ArrowField({ className, flip = false }: { className?: string; /*
       sky.addColorStop(0, "#0b2a8f");
       sky.addColorStop(0.35, "#2a55d6");
       sky.addColorStop(0.68, "#7c9cf0");
-      sky.addColorStop(1, "#ffffff");
+      sky.addColorStop(1, "#f8fafc");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, w, h);
 

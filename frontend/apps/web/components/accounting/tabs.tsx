@@ -94,29 +94,20 @@ function Tile({
   value,
   hint,
   icon,
-  tone,
 }: {
   label: string;
   value: string;
   hint?: string;
   icon: React.ReactNode;
-  tone: "primary" | "accent" | "warning" | "flag";
+  /** Kept for callers; every icon is now the same plain colour, like the dashboard. */
+  tone?: "primary" | "accent" | "warning" | "flag";
 }) {
-  const toneClass = {
-    primary: "text-primary",
-    accent: "text-accent",
-    warning: "text-warning",
-    flag: "text-flag",
-  }[tone];
   return (
     <div className="bg-card shadow-xs rounded-xl border p-4">
       <div className="flex items-start justify-between gap-3">
         <p className="text-muted-foreground text-sm font-medium">{label}</p>
         <span
-          className={cn(
-            "grid size-8 shrink-0 place-items-center [&_svg]:size-5",
-            toneClass,
-          )}
+          className="text-primary grid size-8 shrink-0 place-items-center [&_svg]:size-5"
         >
           {icon}
         </span>
@@ -184,6 +175,7 @@ export async function OverviewTab({ from, to }: { from: string; to: string }) {
               billed: Number(p.out),
             }))}
             labels={{ collected: t("overview.moneyIn"), billed: t("overview.moneyOut") }}
+            legend
           />
         </Panel>
         <Panel title={t("overview.holdingsTitle")}>

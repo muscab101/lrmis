@@ -220,7 +220,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
             source: level,
             "source-layer": level,
             layout: { "line-join": "round" as const },
-            paint: { "line-color": "#ffffff", "line-width": halo as never, "line-opacity": fade(0.85) as never },
+            paint: { "line-color": "#f8fafc", "line-width": halo as never, "line-opacity": fade(0.85) as never },
           },
           {
             id: `${level}-line`,
@@ -249,7 +249,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         type: "circle",
         source: "facilities",
         "source-layer": "facilities",
-        paint: { "circle-radius": 5, "circle-color": TEAL, "circle-stroke-color": "#fff", "circle-stroke-width": 1.5 },
+        paint: { "circle-radius": 5, "circle-color": TEAL, "circle-stroke-color": "#f8fafc", "circle-stroke-width": 1.5 },
       },
       ...(opts.parcels
         ? ([
@@ -277,7 +277,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               "source-layer": "parcels",
               minzoom: 17,
               layout: { "text-field": ["coalesce", ["get", "pun"], ""], "text-font": FONT, "text-size": 10 },
-              paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 1.5 },
+              paint: { "text-color": INK, "text-halo-color": "#f8fafc", "text-halo-width": 1.5 },
             },
             // A pin on every registered house: blue when nothing is owed, red when a bill is unpaid (DhulkaMap draws them when the style asks).
             {
@@ -315,7 +315,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         "source-layer": "neighbourhoods",
         minzoom: 15.2,
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 11.5 },
-        paint: { "text-color": "#1e3a8a", "text-halo-color": "#fff", "text-halo-width": 1.5 },
+        paint: { "text-color": "#1e3a8a", "text-halo-color": "#f8fafc", "text-halo-width": 1.5 },
       },
       {
         id: "sectors-label",
@@ -325,7 +325,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         minzoom: 13.8,
         maxzoom: 15.6,
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 13.5, "text-letter-spacing": 0.04 },
-        paint: { "text-color": "#14532d", "text-halo-color": "#fff", "text-halo-width": 1.8 },
+        paint: { "text-color": "#14532d", "text-halo-color": "#f8fafc", "text-halo-width": 1.8 },
       },
       {
         id: "sections-label",
@@ -335,7 +335,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         minzoom: 11.5,
         maxzoom: 14.2,
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 14, "text-transform": "uppercase", "text-letter-spacing": 0.1 },
-        paint: { "text-color": "#78350f", "text-halo-color": "#fff", "text-halo-width": 2 },
+        paint: { "text-color": "#78350f", "text-halo-color": "#f8fafc", "text-halo-width": 2 },
       },
       {
         id: "districts-label",
@@ -345,7 +345,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         "source-layer": "district_labels",
         maxzoom: 12.5,
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 16, "text-transform": "uppercase", "text-letter-spacing": 0.12 },
-        paint: { "text-color": INK, "text-halo-color": "#fff", "text-halo-width": 2 },
+        paint: { "text-color": INK, "text-halo-color": "#f8fafc", "text-halo-width": 2 },
       },
     ],
   };

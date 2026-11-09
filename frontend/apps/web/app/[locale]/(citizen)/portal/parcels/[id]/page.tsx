@@ -1,6 +1,6 @@
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
-import { Mono, PageHeader } from "@dhulka/ui/misc";
+import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { GeometryPreview } from "@/components/map/geometry-preview";
@@ -21,10 +21,17 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
   const date = (d: string) => format.dateTime(new Date(d), { dateStyle: "medium" });
   const name = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en) : "—");
   const payments = me.payments.filter((x) => x.pun === p.pun);
+  // Only registered land can be paid; partial or demolished land waits for the district office.
+  const payable = !p.partial && !p.demolished;
 
   return (
     <>
       <PageHeader eyebrow={t("myProperties")} title={<Mono>{p.pun ?? "—"}</Mono>} description={`${name(p.district)} · ${name(p.neighbourhood)}`} />
+      {!payable && (
+        <Alert tone="warning" title={t(p.demolished ? "demolishedTitle" : "partialTitle")} className="mb-5">
+          {t(p.demolished ? "demolishedNotice" : "partialNotice", { district: name(p.district) })}
+        </Alert>
+      )}
       <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <CardContent className="pt-5">
@@ -61,7 +68,9 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
                         {usd(i.balance)}
                         {Number(i.balance) < Number(i.total) && <span className="block text-xs text-muted-foreground">{t("ofTotal", { total: usd(i.total) })}</span>}
                       </span>
-                      {Number(i.balance) > 0 && i.token ? (
+                      {Number(i.balance) > 0 && !payable ? (
+                        <span className="text-xs text-muted-foreground">{t("payAfterRegistered")}</span>
+                      ) : Number(i.balance) > 0 && i.token ? (
                         <Button size="sm" asChild>
                           <Link href={`/pay/${i.token}`}>{t("payNow")}</Link>
                         </Button>

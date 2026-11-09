@@ -9,13 +9,13 @@
   --radius: 0.625rem;
 
   /* Surfaces */
-  --background: rgb(255 255 255 / 0.55);
+  --background: rgb(248 250 252 / 0.55);
   --foreground: #0d1b2e;
   --surface: #e8eef8; /* app canvas, under the glass */
-  --card: rgb(255 255 255 / 0.5);
-  --card-solid: #ffffff; /* panels over a map: nothing shows through */
+  --card: rgb(248 250 252 / 0.5);
+  --card-solid: #f8fafc; /* panels over a map: nothing shows through */
   --card-foreground: #0d1b2e;
-  --popover: rgb(255 255 255 / 0.8);
+  --popover: rgb(248 250 252 / 0.8);
   --popover-foreground: #0d1b2e;
   --muted: rgb(13 27 46 / 0.045);
   --muted-foreground: #5d6573;
@@ -27,22 +27,22 @@
   --ink: #0d1b2e; /* structure: sidebar, auth panel, headings */
   --ink-foreground: #f4f1ea;
   --primary: #1e4fa3; /* civic blue: primary actions */
-  --primary-foreground: #ffffff;
+  --primary-foreground: #f8fafc;
   --primary-soft: #e6edf8;
   --flag: #4189dd; /* Somali flag blue: highlights only */
   --accent: #0e8f8e; /* teal: data and secondary emphasis */
-  --accent-foreground: #ffffff;
+  --accent-foreground: #f8fafc;
   --accent-soft: #e2f2f1;
   --secondary: rgb(13 27 46 / 0.05);
   --secondary-foreground: #0d1b2e;
 
   /* Feedback */
   --success: #15803d;
-  --success-foreground: #ffffff;
+  --success-foreground: #f8fafc;
   --warning: #b45309;
-  --warning-foreground: #ffffff;
+  --warning-foreground: #f8fafc;
   --danger: #c62828;
-  --danger-foreground: #ffffff;
+  --danger-foreground: #f8fafc;
   --info: #1d5fc2;
 
   /* Status — used identically everywhere (badges, map, charts) */
@@ -53,7 +53,7 @@
   --status-partial: #1d5fc2;
 
   /* Sidebar (ink) */
-  --sidebar: rgb(255 255 255 / 0.45);
+  --sidebar: rgb(248 250 252 / 0.45);
   --sidebar-foreground: #46526a;
   --sidebar-active: rgb(30 79 163 / 0.1);
   --sidebar-active-foreground: #0d1b2e;
@@ -66,7 +66,7 @@
     radial-gradient(48rem 36rem at 75% 100%, rgb(244 114 182 / 0.32), transparent 70%),
     radial-gradient(40rem 30rem at 0% 95%, rgb(167 139 250 / 0.4), transparent 70%);
   --glass-filter: blur(26px) saturate(180%);
-  --glass-edge: 255 255 255;
+  --glass-edge: 248 250 252;
   --glass-shadow: 205 30% 20%;
 
   /* Charts */
@@ -86,10 +86,10 @@
   --card-foreground: #e8e4da;
   --popover: rgb(14 24 38 / 0.9);
   --popover-foreground: #e8e4da;
-  --muted: rgb(255 255 255 / 0.045);
+  --muted: rgb(248 250 252 / 0.045);
   --muted-foreground: #98a2b2;
-  --border: rgb(255 255 255 / 0.08);
-  --input: rgb(255 255 255 / 0.14);
+  --border: rgb(248 250 252 / 0.08);
+  --input: rgb(248 250 252 / 0.14);
   --ring: #5f9be8;
 
   --ink: #040a12;
@@ -101,7 +101,7 @@
   --accent: #3cc4bf;
   --accent-foreground: #04201f;
   --accent-soft: #0f2e30;
-  --secondary: rgb(255 255 255 / 0.05);
+  --secondary: rgb(248 250 252 / 0.05);
   --secondary-foreground: #e8e4da;
 
   --success: #34c26b;
@@ -117,9 +117,9 @@
 
   --sidebar: rgb(4 10 18 / 0.6);
   --sidebar-foreground: #98a2b2;
-  --sidebar-active: rgb(255 255 255 / 0.08);
-  --sidebar-active-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 0.06);
+  --sidebar-active: rgb(248 250 252 / 0.08);
+  --sidebar-active-foreground: #f8fafc;
+  --sidebar-border: rgb(248 250 252 / 0.06);
 
   --canvas:
     radial-gradient(46rem 34rem at 12% 4%, rgb(37 99 235 / 0.42), transparent 70%),
@@ -137,10 +137,19 @@
   --chart-5: #98a2b2;
 }
 
+/*
+ * No pure white or pure black on screen: "white" is a soft off-white and "black" a soft deep navy everywhere (bg-white,
+ * text-black, borders …). Printed paper keeps true white and black (see the print rule below).
+ */
+@theme {
+  --color-white: #f8fafc;
+  --color-black: #0f172a;
+}
+
 @theme inline {
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
@@ -291,6 +300,10 @@
 
 /* Paper: no glass, no canvas. */
 @media print {
+  :root {
+    --color-white: #fff;
+    --color-black: #000;
+  }
   body {
     background: #fff;
   }
@@ -336,12 +349,12 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgb(248 250 252 / 0.55), transparent);
   filter: blur(10px);
   animation: skeleton-sweep 1.6s ease-in-out infinite;
 }
 .dark .skeleton { background: color-mix(in oklab, var(--foreground) 7%, transparent); }
-.dark .skeleton::after { background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.09), transparent); }
+.dark .skeleton::after { background: linear-gradient(90deg, transparent, rgb(248 250 252 / 0.09), transparent); }
 @media (prefers-reduced-motion: reduce) {
   .skeleton, .skeleton::after { animation: none; }
 }
@@ -401,7 +414,7 @@
 .welcome-shine {
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.8) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgb(248 250 252 / 0.8) 50%, transparent 65%);
   transform: translateX(-120%);
   animation: welcome-shine 900ms 650ms ease-in-out both;
 }
@@ -441,10 +454,10 @@
 .dark .welcome-glow-1 { background: radial-gradient(circle, #1d3a7a, transparent 65%); }
 .dark .welcome-glow-2 { background: radial-gradient(circle, #0f4a3c, transparent 65%); }
 .dark .welcome-rings { background: repeating-radial-gradient(circle at 50% 42%, transparent 0 46px, rgb(147 178 255 / 0.09) 46px 47px); }
-.dark .welcome-dots { background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1.2px); }
+.dark .welcome-dots { background-image: radial-gradient(rgb(248 250 252 / 0.08) 1px, transparent 1.2px); }
 .dark .welcome-greet { color: #f1f5fb; }
 .dark .welcome-rule { background: #6f95ff; }
-.dark .welcome-shine { background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%); }
+.dark .welcome-shine { background: linear-gradient(105deg, transparent 35%, rgb(248 250 252 / 0.45) 50%, transparent 65%); }
 .dark .welcome-emblem img { filter: drop-shadow(0 8px 28px rgb(111 149 255 / 0.25)); }
 @media (prefers-reduced-motion: reduce) {
   .welcome-emblem, .welcome-shine, .welcome-greet, .welcome-rule, .welcome-rings, .welcome-glow { animation: none; }

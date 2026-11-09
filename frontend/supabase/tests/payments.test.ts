@@ -174,6 +174,13 @@ describe("payments and accounting (Phase 7)", () => {
     expect(await scalar<string>(db, `select status::text from public.cashier_shifts where id = $1`, [shift])).toBe("approved");
   });
 
+  it("closing a shift without a count records the cash as exactly what was taken", async () => {
+    const s2 = await asUser(db, cashier, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
+    const out = await asUser(db, cashier, (tx) => scalar<{ expected: number; counted: number; difference: number }>(tx, `select public.shift_close($1, null)`, [s2]));
+    expect(Number(out.counted)).toBe(Number(out.expected));
+    expect(Number(out.difference)).toBe(0);
+  });
+
   it("online: anyone with the QR token starts an intent; a signed webhook records it once", async () => {
     await db.query(`update public.payment_providers set enabled = true where code = 'test'`);
     const token = await scalar<string>(db, `select token from public.invoice_tokens where invoice_id = $1`, [invB]);

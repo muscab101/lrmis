@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
-import { KpiChip } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { BarChart } from "@/components/reports/bar-chart";
@@ -17,69 +16,167 @@ export async function CollectionsDashboardView({ d, cashiers, days }: { d: Colle
   const monthTotal = CHANNELS.reduce((s, c) => s + Number(d.channels[c] ?? 0), 0);
   const ofVerified = (x: { all: number; verified: number }) => t("dash.verifiedPart", { amount: usd(x.verified) });
 
+  const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
+  // One colour per way of paying, used in the share bar and the list.
+  const CH_COLOURS = [
+    "var(--color-chart-1)",
+    "var(--color-chart-2)",
+    "var(--color-chart-3)",
+    "var(--color-chart-4)",
+    "var(--color-status-approved)",
+    "var(--color-status-rejected)",
+    "var(--color-chart-5)",
+  ];
+  const checking = [
+    { key: "reconciled", n: st("reconciled").n, colour: "var(--color-status-approved)" },
+    { key: "verified", n: st("verified").n, colour: "var(--color-chart-2)" },
+    { key: "pending", n: st("pending").n, colour: "var(--color-status-pending)" },
+    { key: "disputed", n: st("disputed").n, colour: "var(--color-status-rejected)" },
+  ] as const;
+  const checkingTotal = checking.reduce((s, c) => s + c.n, 0);
+  /** A thin bar split by share; an empty grey bar when there is nothing yet. */
+  const ShareBar = ({ parts }: { parts: { key: string; value: number; colour: string }[] }) => {
+    const total = parts.reduce((s, p) => s + p.value, 0);
+    return (
+      <div className="bg-muted flex h-2 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden>
+        {total > 0 &&
+          parts
+            .filter((p) => p.value > 0)
+            .map((p) => <span key={p.key} className="h-full first:rounded-s-full last:rounded-e-full" style={{ width: `${(p.value / total) * 100}%`, background: p.colour }} />)}
+      </div>
+    );
+  };
+  const Row = ({ colour, label, value, tone }: { colour?: string; label: string; value: string; tone?: string }) => (
+    <li className="flex items-center justify-between gap-3 py-2.5">
+      <span className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm">
+        {colour && <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: colour }} />}
+        <span className="truncate">{label}</span>
+      </span>
+      <span className={`text-sm font-semibold tabular-nums ${tone ?? ""}`}>{value}</span>
+    </li>
+  );
+
   return (
     <div className="space-y-5">
+      {/* Today, this week, this month: the money, how many payments, and how much of it has been checked. */}
       <div className="grid gap-5 sm:grid-cols-3">
-        {(["today", "week", "month"] as const).map((k) => (
-          <Card key={k}>
-            <CardContent className="pt-5">
-              <KpiChip label={t(`dash.${k}`)} value={usd(d[k].all)} />
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t("dash.payments", { count: Number(d[k].n) })} · {ofVerified(d[k])}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {(["today", "week", "month"] as const).map((k) => {
+          const all = Number(d[k].all);
+          const checked = pct(Number(d[k].verified), all);
+          return (
+            <Card key={k}>
+              <CardContent className="space-y-3 pt-5">
+                <p className="text-muted-foreground text-sm">{t(`dash.${k}`)}</p>
+                <p className="text-3xl font-semibold tracking-tight tabular-nums">{usd(d[k].all)}</p>
+                <div className="space-y-1.5">
+                  <div className="bg-muted h-1.5 overflow-hidden rounded-full" aria-hidden>
+                    <div className="h-full rounded-full bg-[var(--color-status-approved)]" style={{ width: `${checked}%` }} />
+                  </div>
+                  <p className="text-muted-foreground flex justify-between gap-2 text-xs">
+                    <span>{t("dash.payments", { count: Number(d[k].n) })}</span>
+                    <span>{ofVerified(d[k])}</span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
+      {/* This month by way of paying: one bar of shares, then each way with its amount and share. */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
           <CardTitle className="text-base">{t("dash.byChannel")}</CardTitle>
+          <div className="text-end">
+            <p className="text-muted-foreground text-xs">{t("dash.grandTotal")}</p>
+            <p className="text-2xl font-semibold tracking-tight tabular-nums">{usd(monthTotal)}</p>
+          </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-          {CHANNELS.map((c) => (
-            <KpiChip key={c} label={t(`channels.${c}`)} value={<span className="text-lg">{usd(d.channels[c])}</span>} />
-          ))}
-          <KpiChip label={t("dash.grandTotal")} value={<span className="text-lg">{usd(monthTotal)}</span>} tone="success" />
+        <CardContent className="space-y-4">
+          <ShareBar parts={CHANNELS.map((c, i) => ({ key: c, value: Number(d.channels[c] ?? 0), colour: CH_COLOURS[i % CH_COLOURS.length]! }))} />
+          <ul className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+            {CHANNELS.map((c, i) => {
+              const v = Number(d.channels[c] ?? 0);
+              return (
+                <li key={c} className={`flex items-center justify-between gap-3 border-b py-2.5 ${v ? "" : "opacity-60"}`}>
+                  <span className="flex min-w-0 items-center gap-2 text-sm">
+                    <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ background: CH_COLOURS[i % CH_COLOURS.length] }} />
+                    <span className="truncate">{t(`channels.${c}`)}</span>
+                  </span>
+                  <span className="text-end">
+                    <span className="block text-sm font-semibold tabular-nums">{usd(v)}</span>
+                    <span className="text-muted-foreground block text-[11px] tabular-nums">{pct(v, monthTotal)}%</span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </CardContent>
       </Card>
 
       <div className="grid gap-5 lg:grid-cols-2">
+        {/* Checking: where this month's payments stand. */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("dash.checking")}</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <KpiChip label={t("status.verified")} value={`${st("verified").n + st("reconciled").n}`} tone="success" />
-            <KpiChip label={t("status.pending")} value={`${st("pending").n}`} tone={st("pending").n ? "warning" : "default"} />
-            <KpiChip label={t("status.reconciled")} value={`${st("reconciled").n}`} tone="success" />
-            <KpiChip label={t("status.disputed")} value={`${st("disputed").n}`} tone={st("disputed").n ? "danger" : "default"} />
-            <p className="col-span-2 text-xs text-muted-foreground">
+          <CardContent className="space-y-3">
+            <ShareBar parts={checking.map((c) => ({ key: c.key, value: c.n, colour: c.colour }))} />
+            <ul className="divide-y">
+              <Row colour="var(--color-chart-2)" label={t("status.verified")} value={String(st("verified").n + st("reconciled").n)} />
+              <Row colour="var(--color-status-pending)" label={t("status.pending")} value={String(st("pending").n)} tone={st("pending").n ? "text-status-pending" : ""} />
+              <Row colour="var(--color-status-approved)" label={t("status.reconciled")} value={String(st("reconciled").n)} />
+              <Row colour="var(--color-status-rejected)" label={t("status.disputed")} value={String(st("disputed").n)} tone={st("disputed").n ? "text-status-rejected" : ""} />
+            </ul>
+            <p className="text-muted-foreground text-xs">
               {t("dash.checkingLine", { pending: usd(st("pending").amount), disputed: usd(st("disputed").amount) })}{" "}
-              <Link href="/collections?tab=verify" className="text-primary hover:underline">
-                {t("dash.goVerify")}
-              </Link>
+              {checkingTotal > 0 && (
+                <Link href="/collections?tab=verify" className="text-primary font-medium hover:underline">
+                  {t("dash.goVerify")}
+                </Link>
+              )}
             </p>
           </CardContent>
         </Card>
+
+        {/* Reconciliation: money short or over, and what is waiting for a decision. */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("dash.reconciliation")}</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <KpiChip label={t("recon.shortage")} value={usd(d.shortage)} tone={Number(d.shortage) ? "danger" : "default"} />
-            <KpiChip label={t("recon.excess")} value={usd(d.excess)} tone={Number(d.excess) ? "warning" : "default"} />
-            <KpiChip label={t("dash.reconWaiting")} value={`${d.recon_waiting}`} tone={d.recon_waiting ? "warning" : "default"} />
-            <KpiChip label={t("dash.correctionsWaiting")} value={`${d.corrections_waiting}`} tone={d.corrections_waiting ? "warning" : "default"} />
-            <p className="col-span-2 text-xs text-muted-foreground">
-              <Link href="/collections?tab=reconcile" className="text-primary hover:underline">
-                {t("dash.goReconcile")}
-              </Link>
-              {" · "}
-              <Link href="/collections?tab=corrections" className="text-primary hover:underline">
-                {t("dash.goCorrections")}
-              </Link>
-            </p>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/60 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs">{t("recon.shortage")}</p>
+                <p className={`mt-1 text-xl font-semibold tabular-nums ${Number(d.shortage) ? "text-status-rejected" : ""}`}>{usd(d.shortage)}</p>
+              </div>
+              <div className="bg-muted/60 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs">{t("recon.excess")}</p>
+                <p className={`mt-1 text-xl font-semibold tabular-nums ${Number(d.excess) ? "text-status-pending" : ""}`}>{usd(d.excess)}</p>
+              </div>
+            </div>
+            <ul className="divide-y">
+              {(
+                [
+                  { label: t("dash.reconWaiting"), n: d.recon_waiting, href: "/collections?tab=reconcile", go: t("dash.goReconcile") },
+                  { label: t("dash.correctionsWaiting"), n: d.corrections_waiting, href: "/collections?tab=corrections", go: t("dash.goCorrections") },
+                ] as const
+              ).map((r) => (
+                <li key={r.href}>
+                  <Link href={r.href} className="group flex items-center justify-between gap-3 py-2.5">
+                    <span className="min-w-0">
+                      <span className="block text-sm">{r.label}</span>
+                      <span className="text-primary block text-xs group-hover:underline">{r.go}</span>
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-sm font-semibold tabular-nums ${r.n ? "bg-status-pending/15 text-status-pending" : "bg-muted text-muted-foreground"}`}
+                    >
+                      {r.n}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       </div>

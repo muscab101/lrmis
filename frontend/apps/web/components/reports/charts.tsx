@@ -1,4 +1,5 @@
 /** Small dependency-free charts (server-rendered SVG, theme colours via CSS variables). */
+import { LineChart } from "@/components/charts/line-chart";
 
 const SERIES = ["var(--color-primary)", "var(--color-status-rejected)", "var(--color-status-approved)", "var(--color-status-pending)", "var(--color-status-partial)", "var(--color-muted-foreground)"];
 
@@ -15,13 +16,12 @@ export function Legend({ items }: { items: { label: string; color?: string }[] }
   );
 }
 
-/** Two or more series side by side per category (e.g. money in vs money out per month). */
+/** Two or more series per category (e.g. money in vs money out per month), in the system's one chart look. */
 export function GroupedBars({
   categories,
   series,
   format,
   label,
-  height = 180,
 }: {
   categories: string[];
   series: { label: string; values: number[]; color?: string }[];
@@ -29,42 +29,19 @@ export function GroupedBars({
   label: string;
   height?: number;
 }) {
-  const max = Math.max(1, ...series.flatMap((s) => s.values.map((v) => Math.abs(v))));
-  const H = 60;
-  const cw = 100 / Math.max(1, categories.length);
-  const bw = (cw * 0.72) / Math.max(1, series.length);
   return (
-    <figure aria-label={label} className="space-y-2">
-      <svg viewBox={`0 0 100 ${H}`} preserveAspectRatio="none" className="w-full" style={{ height }} role="img">
-        <title>{label}</title>
-        {[0.25, 0.5, 0.75].map((g) => (
-          <line key={g} x1={0} x2={100} y1={H - H * g} y2={H - H * g} className="stroke-border" strokeWidth={0.15} />
-        ))}
-        {categories.map((c, ci) =>
-          series.map((s, si) => {
-            const v = Math.max(0, s.values[ci] ?? 0);
-            const h = (v / max) * (H - 2);
-            return (
-              <rect key={`${c}-${s.label}`} x={ci * cw + cw * 0.14 + si * bw} width={bw * 0.9} y={H - h} height={Math.max(h, 0.3)} rx={0.5} style={{ fill: s.color ?? SERIES[si % SERIES.length] }}>
-                <title>{`${c} · ${s.label}: ${format(s.values[ci] ?? 0)}`}</title>
-              </rect>
-            );
-          }),
-        )}
-      </svg>
-      <div className="grid text-center text-[11px] text-muted-foreground" style={{ gridTemplateColumns: `repeat(${Math.max(1, categories.length)}, minmax(0, 1fr))` }}>
-        {categories.map((c) => (
-          <span key={c} className="truncate">
-            {c}
-          </span>
-        ))}
-      </div>
-      <Legend items={series.map((s, i) => ({ label: s.label, color: s.color ?? SERIES[i % SERIES.length] }))} />
-    </figure>
+    <LineChart
+      label={label}
+      series={series.map((s) => ({ label: s.label }))}
+      points={categories.map((c, i) => ({
+        label: c,
+        values: series.map((s) => s.values[i] ?? 0),
+        shown: series.map((s) => format(s.values[i] ?? 0)),
+      }))}
+    />
   );
 }
 
-/** Horizontal bars for ranked categories (districts, fee types, statuses). */
 export function HBars({ data, format, label, empty }: { data: { label: string; value: number; href?: string }[]; format: (n: number) => string; label: string; empty?: string }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   if (data.length === 0) return <p className="text-sm text-muted-foreground">{empty ?? "—"}</p>;

@@ -714,7 +714,12 @@
       "id_card": "Property ID card"
     },
     "issuedOn": "issued {date}",
-    "verifyLink": "Verify"
+    "verifyLink": "Verify",
+    "partialTitle": "Not fully registered yet",
+    "partialNotice": "This land or your details are not fully registered yet. Please visit the {district} district office to update your details and your parcel. You can pay its bills once it is registered.",
+    "demolishedTitle": "Demolished land",
+    "demolishedNotice": "This land is recorded as demolished. Please visit the {district} district office.",
+    "payAfterRegistered": "Pay after registration"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -3249,7 +3254,7 @@
     "totalPaid": "Total paid",
     "receiptThanks": "Thank you. Keep this receipt. Check it at the land office with the receipt number.",
     "cashierTitle": "Cashier",
-    "cashierSubtitle": "Open your shift, take payments by PUN, invoice or application number, and close with a cash count.",
+    "cashierSubtitle": "Open your shift, take payments by PUN, invoice or application number, and close it when you finish.",
     "noPointsOfSale": "No point of sale for your district",
     "noPointsOfSaleBody": "An administrator must set up a cashier desk (point of sale) before shifts can open.",
     "openShift": "Open shift",
@@ -3258,11 +3263,11 @@
     "shiftOpened": "Shift opened.",
     "shiftLine": "Shift {number} at {pos}, open since {since}",
     "closeShift": "Close shift",
-    "closeShiftBody": "Count the cash in the drawer. Expected cash is the float plus cash taken in this shift.",
+    "closeShiftBody": "Close this shift? You can open a new one any time.",
     "countedCash": "Counted cash (USD)",
     "closeNote": "Note",
     "closeNoteHint": "Required if the count differs by more than a few dollars.",
-    "shiftClosed": "Shift closed. Expected {expected}, difference {difference}.",
+    "shiftClosed": "Shift closed.",
     "findByPun": "PUN, invoice or application number",
     "find": "Find",
     "oldUnitBills": "The flats or houses that stood here still owe these old bills. Open one to take its payment, or use the form below for the land's own bills.",

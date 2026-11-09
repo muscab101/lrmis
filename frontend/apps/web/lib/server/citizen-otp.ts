@@ -52,8 +52,11 @@ export async function checkCode(phone: string, code: string) {
 export async function citizenLoginToken(phone: string): Promise<{ tokenHash: string } | { error: "staff_account" | "failed" }> {
   const admin = await createAdminClient();
   const email = placeholderEmail(phone);
-  const { data: profile } = await admin.from("profiles").select("user_id, kind, email").eq("phone", phone).maybeSingle();
-  if (profile?.kind === "staff") return { error: "staff_account" };
+  // A phone can be on more than one account (e.g. a staff member who also owns land): sign in to the citizen one.
+  // Only when the phone belongs to staff alone is it refused (staff sign in with email).
+  const { data: rows } = await admin.from("profiles").select("user_id, kind, email").eq("phone", phone);
+  const profile = (rows ?? []).find((r) => r.kind === "citizen");
+  if (!profile && (rows ?? []).some((r) => r.kind === "staff")) return { error: "staff_account" };
   let userId = profile?.user_id as string | undefined;
   if (!userId) {
     const { data, error } = await admin.auth.admin.createUser({ phone, phone_confirm: true, email, email_confirm: true, user_metadata: { full_name: "" } });

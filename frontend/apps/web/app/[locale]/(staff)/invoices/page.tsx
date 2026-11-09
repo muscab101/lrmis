@@ -4,7 +4,6 @@ import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import {
-  Archive,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -12,8 +11,6 @@ import {
   ChevronDown,
   Eye,
   Filter,
-  HandCoins,
-  Hourglass,
   Printer,
   Receipt,
 } from "lucide-react";
@@ -28,7 +25,6 @@ import { requirePermission } from "@/lib/server/auth";
 import {
   billingCounts,
   INVOICE_LANDS,
-  invoicesByLand,
   type InvoiceLand,
   INVOICE_SORTS,
   listInvoiceTable,
@@ -40,12 +36,6 @@ export async function generateMetadata() {
   const t = await getTranslations("billing");
   return { title: t("invoicesTitle") };
 }
-
-const LAND_CARDS = [
-  { land: "registered", icon: HandCoins, tone: "text-foreground", chip: "text-status-approved" },
-  { land: "partial", icon: Hourglass, tone: "text-foreground", chip: "text-status-pending" },
-  { land: "demolished", icon: Archive, tone: "text-muted-foreground", chip: "text-muted-foreground" },
-] as const;
 
 const FILTERS: InvoiceFilter[] = ["open", "overdue", "paid", "cancelled", "any"];
 
@@ -67,10 +57,8 @@ export default async function InvoicesPage({
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
-  const byLand = await invoicesByLand();
   // One list; the filter can narrow it to registered land or land in partial registration.
   const land = (INVOICE_LANDS as readonly string[]).includes(sp.land ?? "") ? (sp.land as InvoiceLand) : undefined;
-  const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   let body: React.ReactNode;
   {
     const size = (PAGE_SIZES as readonly number[]).includes(Number(sp.size)) ? Number(sp.size) : 10;
@@ -120,7 +108,6 @@ export default async function InvoicesPage({
     const when = (d: string) => format.dateTime(new Date(d), { timeStyle: "short" });
     const money = (n: number) =>
       format.number(Number(n), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const filtered = filter !== "open" || from || to || fee || land;
     const Sort = ({
       by,
       children,
@@ -157,9 +144,6 @@ export default async function InvoicesPage({
             <summary className="bg-primary text-primary-foreground inline-flex h-9 cursor-pointer select-none list-none items-center gap-1.5 rounded-md px-4 text-sm font-medium">
               <Filter className="size-4" aria-hidden />
               {t("table.filter")}
-              {filtered && (
-                <span className="bg-primary-foreground/25 rounded px-1.5 text-xs">●</span>
-              )}
               <ChevronDown className="size-4" aria-hidden />
             </summary>
             <form className="bg-popover absolute start-0 z-20 mt-2 grid w-80 gap-3 rounded-lg border p-4 shadow-sm">
@@ -388,24 +372,6 @@ export default async function InvoicesPage({
   return (
     <>
       <PageHeader title={t("invoicesTitle")} description={t("invoicesSubtitle")} />
-      {/* What is owed on each kind of land; a card opens its bills, and pressing it again shows them all. */}
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
-        {LAND_CARDS.map(({ land: k, icon: Icon, tone, chip }) => (
-          <Link
-            key={k}
-            href={`/invoices?${new URLSearchParams(land === k ? {} : { land: k })}`}
-            aria-current={land === k ? "true" : undefined}
-            className={`bg-card hover:border-primary/40 rounded-xl border p-4 shadow-xs transition-colors ${land === k ? "border-primary ring-primary/30 ring-1" : ""}`}
-          >
-            <span className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground text-sm">{t(`land_${k}`)}</span>
-              <Icon className={`size-5 shrink-0 ${chip}`} aria-hidden />
-            </span>
-            <span className={`mt-1 block text-2xl font-semibold tabular-nums ${tone}`}>{usd(byLand[k].owed)}</span>
-            <span className="text-muted-foreground mt-1 block text-xs">{t(`landCard_${k}`)}</span>
-          </Link>
-        ))}
-      </div>
       <Card className="overflow-hidden">{body}</Card>
     </>
   );

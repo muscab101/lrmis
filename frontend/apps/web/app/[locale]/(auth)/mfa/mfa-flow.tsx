@@ -4,7 +4,7 @@ import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { Input } from "@dhulka/ui/input";
-import { Mono, Skeleton } from "@dhulka/ui/misc";
+import { Mono } from "@dhulka/ui/misc";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { FormError } from "@/components/forms/form-error";
@@ -42,7 +42,7 @@ export function MfaFlow() {
     window.location.assign(`/${locale}/dashboard`);
   }
 
-  if (!start) return error ? <FormError error={error} /> : <Skeleton className="h-64 w-full" />;
+  if (!start) return error ? <FormError error={error} /> : null;
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Hourglass, MapPinOff, Users } from "lucide-react";
+import { MapPinOff } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
 import { StageCards } from "@/components/shell/stage-cards";
@@ -108,7 +108,6 @@ export default async function YetToRegisterPage({
           label: t(`tab_${k}`),
           count: n(counts[k]),
           line: t(`body_${k}`),
-          icon: k === "zones" ? Users : k === "waiting" ? Hourglass : MapPinOff,
           tone:
             k === "zones"
               ? ("primary" as const)

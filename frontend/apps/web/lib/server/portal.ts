@@ -8,6 +8,9 @@ export interface CitizenParcel {
   id: string;
   pun: string | null;
   status: string;
+  /** The parcel is still in partial registration, or the owner is still a draft: no paying, visit the district. */
+  partial: boolean;
+  demolished: boolean;
   land_use: string;
   area_m2: number | null;
   district: Named;

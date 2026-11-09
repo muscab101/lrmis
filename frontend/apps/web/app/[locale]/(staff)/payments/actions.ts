@@ -31,12 +31,12 @@ export const openShiftAction = defineAction(
   "cashier.open",
   z.object({
     posId: z.uuid("validation.required"),
-    float: z.coerce.number().min(0).max(1_000_000),
   }),
+  // No starting cash: a shift starts empty.
   async (v, ctx) =>
     done(
       unwrap(
-        await ctx.supabase.rpc("shift_open", { p_pos: v.posId, p_float: v.float }),
+        await ctx.supabase.rpc("shift_open", { p_pos: v.posId, p_float: 0 }),
         "open shift",
       ) as string,
     ),
@@ -113,25 +113,15 @@ export const closeShiftAction = defineAction(
   "cashier.close",
   z.object({
     id: z.uuid(),
-    counted: z.coerce.number().min(0, "validation.amount"),
-    note: z.string().max(500).default(""),
   }),
-  async (v, ctx) => {
-    try {
-      return done(
-        unwrap(
-          await ctx.supabase.rpc("shift_close", {
-            p_id: v.id,
-            p_counted: v.counted,
-            p_note: v.note,
-          }),
-          "close shift",
-        ) as { expected: number; difference: number },
-      );
-    } catch (err) {
-      field(err, { note_required: "note" });
-    }
-  },
+  // No counting: the database records the cash as exactly what was taken.
+  async (v, ctx) =>
+    done(
+      unwrap(
+        await ctx.supabase.rpc("shift_close", { p_id: v.id, p_counted: null as unknown as number, p_note: "" }),
+        "close shift",
+      ) as { expected: number; difference: number },
+    ),
 );
 
 export const approveShiftAction = defineAction(
