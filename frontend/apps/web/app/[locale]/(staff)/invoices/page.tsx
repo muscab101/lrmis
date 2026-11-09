@@ -162,7 +162,7 @@ export default async function InvoicesPage({
               )}
               <ChevronDown className="size-4" aria-hidden />
             </summary>
-            <form className="bg-popover absolute start-0 z-20 mt-2 grid w-80 gap-3 rounded-lg border p-4 shadow-lg">
+            <form className="bg-popover absolute start-0 z-20 mt-2 grid w-80 gap-3 rounded-lg border p-4 shadow-sm">
               <input type="hidden" name="size" value={size} />
               {q && <input type="hidden" name="q" value={q} />}
               <label className="grid gap-1 text-sm">

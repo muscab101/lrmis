@@ -93,10 +93,10 @@ export function WarningComposer({
         {text.trim().length > 0 && (
           <div>
             <p className="text-muted-foreground mb-1.5 text-xs">{t("preview")}</p>
-            <div className="dark:bg-card/90 flex max-w-xl items-start gap-4 rounded-sm border border-white/70 bg-white/90 p-6 font-sans shadow-lg backdrop-blur-xl dark:border-white/10">
+            <div className="dark:bg-card/90 flex max-w-xl items-start gap-4 rounded-sm border border-white/70 bg-white/90 p-6 font-sans shadow-sm backdrop-blur-xl dark:border-white/10">
               <TriangleAlert className="text-danger mt-1 size-9 shrink-0" aria-hidden />
               <div className="min-w-0">
-                <p className="text-danger text-xs font-bold uppercase tracking-wider">
+                <p className="text-danger text-xs font-bold">
                   {tw("title")} · {districtName ?? tw("everyone")}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap text-2xl font-semibold leading-snug">{text.trim()}</p>

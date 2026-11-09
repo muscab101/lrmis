@@ -89,7 +89,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
       {/* Header: greeting, period switch and quick actions. */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-flag text-xs font-semibold tracking-wide uppercase">
+          <p className="text-flag text-xs font-semibold">
             {new Intl.DateTimeFormat(locale === "so" ? "so-SO" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date())}
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{t("greeting", { name: firstName })}</h1>
@@ -209,7 +209,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 <TrendChart series={period.series.map((p) => ({ day: p.day, collected: Number(p.collected), billed: Number(p.billed) }))} labels={{ collected: t("collected"), billed: t("billed") }} />
               </div>
               <div className="mt-5 border-t pt-4">
-                <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">{t("byFeeTitle")}</p>
+                <p className="text-muted-foreground mb-3 text-xs font-medium">{t("byFeeTitle")}</p>
                 {fees.length ? <SplitBars items={fees} /> : <p className="text-muted-foreground text-sm">{t("noPayments")}</p>}
               </div>
             </Panel>
@@ -230,7 +230,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 <div className="-mx-4 overflow-x-auto sm:-mx-5">
                   <table className="w-full min-w-[34rem] text-sm">
                     <thead>
-                      <tr className="text-muted-foreground border-b text-start text-[11px] font-semibold tracking-wide uppercase">
+                      <tr className="text-muted-foreground border-b text-start text-[11px] font-semibold">
                         <th className="px-4 py-2 text-start sm:px-5">{t("colNumber")}</th>
                         <th className="px-2 py-2 text-start">{t("colOwner")}</th>
                         <th className="px-2 py-2 text-start">{t("colDistrict")}</th>
@@ -273,7 +273,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
               <Gauge pct={rate} label={t("collectionRate")} caption={t("collectionRateCaption")} />
               {period.districts && period.districts.length > 0 && (
                 <ul className="mt-5 space-y-2 border-t pt-4 text-sm">
-                  <li className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{t("topDistricts")}</li>
+                  <li className="text-muted-foreground text-xs font-medium">{t("topDistricts")}</li>
                   {period.districts.map((d, i) => (
                     <li key={d.name_en} className="flex items-center justify-between gap-2">
                       <span className="flex min-w-0 items-center gap-2">

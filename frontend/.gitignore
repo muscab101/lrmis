@@ -15,4 +15,5 @@ supabase/.temp
 .DS_Store
 supabase/backups
 .next-build
+.next-prod
 *.report-*.csv

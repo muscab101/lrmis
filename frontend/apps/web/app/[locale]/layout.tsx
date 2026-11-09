@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Poppins } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -14,7 +14,6 @@ const poppins = Poppins({
   variable: "--font-poppins",
   display: "swap",
 });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -49,7 +48,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} suppressHydrationWarning className={`${poppins.variable} ${mono.variable}`}>
+    <html lang={locale} suppressHydrationWarning className={poppins.variable}>
       <body className="min-h-dvh font-sans antialiased">
         <NextIntlClientProvider>
           <Providers>{children}</Providers>

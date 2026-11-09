@@ -42,41 +42,12 @@ export interface ZonePlace {
 export async function zonePlaces(districtIds: string[]) {
   const supabase = await createClient();
   if (districtIds.length === 0) return { sections: [], sectors: [], neighbourhoods: [] };
-  type S = { id: string; district_id: string; code: string; name_so: string; name_en: string };
-  type K = { id: string; section_id: string; code: string; name_so: string; name_en: string };
-  type N = { id: string; sector_id: string; code: string; name_so: string; name_en: string; capacity: number | null };
-  // Banaadir has ~5,300 neighbourhoods and the API returns at most 1,000 rows per request: read in pages.
-  async function allNeighbourhoods() {
-    const rows: N[] = [];
-    for (let from = 0; ; from += 1000) {
-      const res = await supabase
-        .from("neighbourhoods")
-        .select("id, sector_id, code, name_so, name_en, capacity")
-        .in("district_id", districtIds)
-        .is("deleted_at", null)
-        .order("code")
-        .order("id")
-        .range(from, from + 999);
-      const page = (unwrap(res, "neighbourhoods") ?? []) as N[];
-      rows.push(...page);
-      if (page.length < 1000) return rows;
-    }
-  }
-  const [sections, sectors, neighbourhoods] = await Promise.all([
-    supabase.from("sections").select("id, district_id, code, name_so, name_en").in("district_id", districtIds).is("deleted_at", null).order("code"),
-    supabase.from("sectors").select("id, section_id, code, name_so, name_en").in("district_id", districtIds).is("deleted_at", null).order("code"),
-    allNeighbourhoods(),
-  ]);
-  return {
-    sections: ((unwrap(sections, "sections") ?? []) as S[]).map((s) => ({ id: s.id, parent: s.district_id, code: s.code, name_so: s.name_so, name_en: s.name_en })),
-    sectors: ((unwrap(sectors, "sectors") ?? []) as K[]).map((s) => ({ id: s.id, parent: s.section_id, code: s.code, name_so: s.name_so, name_en: s.name_en })),
-    neighbourhoods: neighbourhoods.map((n) => ({
-      id: n.id,
-      parent: n.sector_id,
-      code: n.code,
-      name_so: n.name_so,
-      name_en: n.name_en,
-      capacity: n.capacity,
-    })),
+  type Place = { id: string; parent: string; code: string; name_so: string; name_en: string };
+  // All ~5,300 neighbourhoods in one answer (the plain list stops at 1,000 rows a request).
+  const data = unwrap(await supabase.rpc("zone_places_all", { p_districts: districtIds }), "places") as {
+    sections: Place[];
+    sectors: Place[];
+    neighbourhoods: (Place & { capacity: number | null })[];
   };
+  return data;
 }

@@ -15,16 +15,18 @@ const MAP_HOSTS = [
   "https://api.maptiler.com",
   "https://demotiles.maplibre.org",
 ].join(" ");
+// Google's satellite map under ours (Maps JavaScript API, with a key limited to our website addresses).
+const GOOGLE_MAPS = "https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://*.gstatic.com";
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabaseUrl} ${MAP_HOSTS}`,
-  "font-src 'self' data:",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${GOOGLE_MAPS}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  `img-src 'self' data: blob: ${supabaseUrl} ${MAP_HOSTS} ${GOOGLE_MAPS}`,
+  "font-src 'self' data: https://fonts.gstatic.com",
   // Videos in staff chat play from private storage.
   `media-src 'self' blob: ${supabaseUrl}`,
-  `connect-src 'self' ${supabaseUrl} ${supabaseUrl.replace(/^http/, "ws")} ${MAP_HOSTS}`,
+  `connect-src 'self' ${supabaseUrl} ${supabaseUrl.replace(/^http/, "ws")} ${MAP_HOSTS} ${GOOGLE_MAPS}`,
   // MapLibre renders in a web worker created from a blob.
   "worker-src 'self' blob:",
   "child-src 'self' blob:",

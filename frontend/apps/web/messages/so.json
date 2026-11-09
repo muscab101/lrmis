@@ -316,7 +316,9 @@
       "test_login_super_admin": "Kuma geli kartid maamule sare ama adiga naftaada.",
       "chat_edit_expired": "Fariinta waxaa wax laga beddeli karaa 5 daqiiqo oo keliya ka dib markii la diro.",
       "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day.",
-      "warning_too_soon": "Digniin hadda ayaa la diray. Dhowr ilbiriqsi sug ka hor intaadan mid kale dirin."
+      "warning_too_soon": "Digniin hadda ayaa la diray. Dhowr ilbiriqsi sug ka hor intaadan mid kale dirin.",
+      "printer_wrong_district": "Printer-kan wuxuu ka tirsan yahay degmo kale. Dukumentigu wuxuu ku daabacmaa oo keliya printer-ka degmadiisa.",
+      "no_district_printer": "Degmadan weli ma laha printer. Ku dar bogga Printers (furahiisa barnaamijka daabacaadda la socda)."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -3850,7 +3852,7 @@
     "printAlreadyDone": "Horey ayaa loo daabacay. Daabacaad kale waxay u baahan tahay dib-u-daabacaad la ansixiyay.",
     "printCancelled": "Dukumentigan waa la joojiyay lamana daabici karo.",
     "printNoPermission": "Saraakiisha daabacaadda kaliya ayaa daabici kara nuqulka rasmiga ah.",
-    "previewWatermark": "HORUDHAC · MA ANSAXA",
+    "previewWatermark": "Horudhac · ma ansaxa",
     "republic": "Jamhuuriyadda Federaalka Soomaaliya",
     "certificateTitleSo": "Shahaadada Canshuurta Sanadlaha",
     "certificateTitleEn": "Annual Tax Certificate",
@@ -3994,7 +3996,22 @@
     "perM2": "{amount} m² kiiba",
     "yearlyTax": "Canshuurta sanadka",
     "yearNote": "Shahaadadan waxay ansax tahay hal sano oo canshuur oo keliya. Mid cusub ayaa la bixiyaa sanad walba marka biilasha sanadkaas la bixiyo.",
-    "yourDesk": "miiskaaga"
+    "yourDesk": "miiskaaga",
+    "shield": {
+      "title": "Sawir-qaadista shaashadda lama oggola",
+      "body": "Shahaadadan waa la daboolaa marka sawir shaashad la qaadi karo. Dib ugu dhufo bogga si aad mar kale u aragto."
+    },
+    "desktop": {
+      "title": "Shahaadadan ku fur barnaamijka LRMIS",
+      "body": "Si looga hortago sawir-qaadista iyo wadaagista shaashadda, {serial} waxaa lagu muujiyaa oo keliya barnaamijka LRMIS ee kombiyuutarka. Daaqaddiisu waxay ku soo baxdaa madow sawirrada iyo wadaagista shaashadda.",
+      "how": "Ka fur LRMIS barnaamijka kombiyuutarka kuna raadi shahaadadan halkaas.",
+      "bodyAll": "Si looga hortago sawir-qaadista iyo wadaagista shaashadda, shahaadooyinka waxaa lagu muujiyaa oo keliya barnaamijka LRMIS ee kombiyuutarka. Daaqaddiisu waxay ku soo baxdaa madow sawirrada iyo wadaagista shaashadda."
+    },
+    "printNow": "Hadda daabac",
+    "printNowSending": "Waa la dirayaa…",
+    "printNowSent": "Waxaa loo diray {printer}. Hadda ayuu daabacayaa.",
+    "printNowQueued": "Waxaa loo diray {printer}. Wuu daabacayaa marka barnaamijka daabacaadda ee printer-kaas la shido.",
+    "printNowFailed": "Lama gaarsiin karin printer-ka."
   },
   "verify": {
     "title": "Hubi shahaado",
@@ -5527,7 +5544,19 @@
     "joined": "LRMIS ku jira tan iyo",
     "sendMessage": "Fariin u dir",
     "viewProfile": "Eeg astaanta {name}",
-    "viewProfileHint": "Riix si aad u aragto astaanta"
+    "viewProfileHint": "Riix si aad u aragto astaanta",
+    "camera": {
+      "open": "Sawir qaado",
+      "title": "Sawir qaado",
+      "preview": "Sawirka aad qaadday",
+      "take": "Qaado sawirka",
+      "again": "Mar kale qaado",
+      "use": "Isticmaal sawirkan",
+      "switch": "Beddel kaamerada",
+      "retry": "Isku day mar kale",
+      "denied": "Kaamerada waa la xiray. U oggolow kaamerada boggan browser-ka (calaamadda kaamerada ee bar-ka cinwaanka), kadib isku day mar kale.",
+      "noCamera": "Qalabkan kaamero laguma helin."
+    }
   },
   "testLogin": {
     "button": "U gal sida isticmaalahan",

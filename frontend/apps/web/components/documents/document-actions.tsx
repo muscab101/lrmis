@@ -8,7 +8,7 @@ import { Alert, EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { toast } from "@dhulka/ui/toaster";
 import { BadgeCheck, Inbox, Printer, RefreshCw, Zap } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   type BulkIssueResult,
@@ -16,12 +16,14 @@ import {
   decideReprintAction,
   issueBulkAction,
   issueCertificateAction,
+  printNowAction,
   reprintDirectAction,
   requestReissueAction,
   requestReprintAction,
 } from "@/app/[locale]/(staff)/documents/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
+import { useErrorMessage } from "@/lib/client/errors";
 import type { DocumentChange, DocumentRow, ReprintRow } from "@/lib/server/certificates";
 
 export function IssueCertificateButton({ parcelId, pun, size = "sm" }: { parcelId: string; pun: string; size?: "sm" | "default" }) {
@@ -54,17 +56,23 @@ export function DocumentActions({
   can,
   changes = [],
   pendingReason = null,
+  printed = false,
 }: {
   id: string;
   status: string;
-  can: { reprint: boolean; cancel: boolean; direct?: boolean };
+  can: { reprint: boolean; cancel: boolean; direct?: boolean; print?: boolean };
+  /** Printed already: a new copy goes through a reprint. */
+  printed?: boolean;
   /** What a correction would change (document vs today's register). */
   changes?: DocumentChange[];
   /** Reason of a pending request, reused by a one-step reprint. */
   pendingReason?: string | null;
 }) {
   const t = useTranslations("documents");
+  const errorMessage = useErrorMessage();
+  const locale = useLocale();
   const router = useRouter();
+  const [printing, setPrinting] = useState(false);
   const [dialog, setDialog] = useState<null | DocDialog>(null);
   const [reason, setReason] = useState("");
   const pending = pendingReason !== null;
@@ -82,12 +90,27 @@ export function DocumentActions({
   };
   return (
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="outline" asChild>
-        <Link href={`/documents/${id}/print`} target="_blank">
+      {status === "valid" && can.print && !printed && (
+        <Button
+          size="sm"
+          disabled={printing}
+          onClick={async () => {
+            setPrinting(true);
+            const res = await printNowAction({ id, locale: locale === "en" ? "en" : "so" });
+            setPrinting(false);
+            if (!res.ok) return void toast.error(errorMessage(res.error));
+            toast.success(
+              res.data.online
+                ? t("printNowSent", { printer: res.data.printer })
+                : t("printNowQueued", { printer: res.data.printer }),
+            );
+            router.refresh();
+          }}
+        >
           <Printer aria-hidden />
-          {t("openPrint")}
-        </Link>
-      </Button>
+          {printing ? t("printNowSending") : t("printNow")}
+        </Button>
+      )}
       {status === "valid" && can.reprint && !pending && (
         <>
           <Button size="sm" variant="outline" onClick={() => setDialog("reprint")}>

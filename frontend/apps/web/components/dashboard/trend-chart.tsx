@@ -79,7 +79,7 @@ export function TrendChart({ series, labels }: { series: Point[]; labels: { coll
       </svg>
       {hover !== null && p && (
         <div
-          className="bg-popover pointer-events-none absolute top-1 z-10 min-w-40 -translate-x-1/2 rounded-lg border px-3 py-2 text-xs shadow-md"
+          className="bg-popover pointer-events-none absolute top-1 z-10 min-w-40 -translate-x-1/2 rounded-lg border px-3 py-2 text-xs shadow-sm"
           style={{ left: `${(x(hover) / W) * 100}%` }}
         >
           <p className="mb-1 font-medium">{day(p.day, true)}</p>

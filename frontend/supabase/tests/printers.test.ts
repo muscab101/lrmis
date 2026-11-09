@@ -25,6 +25,8 @@ const details = (extra: Record<string, unknown> = {}) => ({
   connection_type: "ethernet",
   system_name: "HP_M404",
   location: "Registry office",
+  // Each district prints on its own printer: the test certificates are in Hodan.
+  district_id: hodan,
   ...extra,
 });
 const agent = <T>(sql: string, params: unknown[]) => as(db, "anon", {}, (tx) => scalar<T>(tx, sql, params));
@@ -111,6 +113,20 @@ describe("certificates print only on added printers", () => {
     await asUser(db, admin, (tx) => tx.query(`select public.printer_set_active($1, true)`, [printer]));
     const choices = await asUser(db, officer, (tx) => tx.query<{ id: string }>(`select * from public.printer_choices()`));
     expect(choices.rows.map((r) => r.id)).toEqual([printer]);
+  });
+
+  it("a certificate prints only on its own district's printer, and only that printer is offered", async () => {
+    const other = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) select region_id, 'OTH', 'Other', 'Other' from public.districts where id = $1 returning id`, [hodan]);
+    const away = await asUser(db, admin, (tx) =>
+      scalar<string>(tx, `select public.printer_save($1)`, [JSON.stringify(details({ serial_no: "AWAY-1", mac_address: "", ip_address: "", connection_type: "usb", district_id: other }))]),
+    );
+    await db.query(`insert into public.printer_keys (printer_id, key_hash) values ($1, 'away-key-hash')`, [away]);
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.document_send_to_printer($1, $2)`, [cert, away])), "CONFLICT: printer_wrong_district");
+    const hodanOnly = await asUser(db, admin, (tx) => tx.query<{ id: string }>(`select * from public.printer_choices($1)`, [hodan]));
+    expect(hodanOnly.rows.map((r) => r.id)).toEqual([printer]);
+    await db.query(`delete from public.printer_keys where printer_id = $1`, [away]);
+    await db.query(`delete from public.printers where id = $1`, [away]);
+    await db.query(`delete from public.districts where id = $1`, [other]);
   });
 
   it("a wrong key gets nothing and raises one alert per address", async () => {

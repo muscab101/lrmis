@@ -180,7 +180,7 @@ export async function CertificateSheet({
           {Array.from({ length: 44 }, (_, i) => (
             <p
               key={i}
-              className={`whitespace-pre text-[12px] font-semibold uppercase leading-none tracking-[0.08em] text-[#1f45b8]/[0.11] ${i % 2 ? "-ms-[40mm]" : ""}`}
+              className={`whitespace-pre text-[12px] font-semibold leading-none text-[#1f45b8]/[0.11] ${i % 2 ? "-ms-[40mm]" : ""}`}
             >
               {Array.from({ length: 5 }, () => mark).join("     ✦     ")}
             </p>
@@ -191,7 +191,7 @@ export async function CertificateSheet({
         {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
         <img src="/brand/banadir-emblem-256.png" alt="" className="size-20 object-contain" />
         <div className="text-center">
-          <p className="text-[13px] font-semibold uppercase tracking-wide">{t("republic")}</p>
+          <p className="text-[13px] font-semibold">{t("republic")}</p>
           <p className="text-[12px]">{tc("orgName")}</p>
           <h1 className="mt-2 text-[24px] font-semibold leading-tight tracking-tight">
             {t("certificateTitleSo")}
@@ -207,7 +207,7 @@ export async function CertificateSheet({
       {/* Which tax year this certificate covers, and where it sits in the land's line of certificates. */}
       <section className="relative mt-4 flex items-center justify-between gap-4 rounded-md border border-[#1f45b8]/30 bg-[#1f45b8]/[0.04] px-4 py-2.5">
         <div className="flex items-baseline gap-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1f45b8]">
+          <p className="text-[10px] font-semibold text-[#1f45b8]">
             {t("taxYear")}
           </p>
           <p className="text-[26px] font-bold tabular-nums leading-none tracking-tight">{year}</p>
@@ -239,7 +239,7 @@ export async function CertificateSheet({
       <p className="relative mt-4 text-center text-[11px] text-neutral-700">{t("certifies")}</p>
 
       <section className="relative mt-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+        <p className="text-[10px] font-semibold text-neutral-500">
           {t("owners")}
         </p>
         <table className="mt-1 w-full border-collapse">
@@ -297,7 +297,7 @@ export async function CertificateSheet({
 
       <section className="relative mt-4 grid grid-cols-2 gap-6">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-[10px] font-semibold text-neutral-500">
             {t("boundaries")}
           </p>
           <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
@@ -310,7 +310,7 @@ export async function CertificateSheet({
           </dl>
         </div>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-[10px] font-semibold text-neutral-500">
             {t("corners")}
           </p>
           <ol className="mt-1 grid grid-cols-2 gap-x-3 font-mono text-[9px]">
@@ -325,7 +325,7 @@ export async function CertificateSheet({
 
       <section className="relative mt-4 grid grid-cols-[1.25fr_1fr] gap-4">
         <div className="relative rounded-md border border-neutral-300 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-[10px] font-semibold text-neutral-500">
             {t("taxPaid", { year })}
           </p>
           {bills.length === 0 ? (
@@ -370,18 +370,18 @@ export async function CertificateSheet({
           )}
           {bills.length > 0 && (
             <p
-              className={`absolute -top-2.5 end-3 rotate-[-4deg] rounded border-2 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                s.paid_in_full
-                  ? "border-[#15803d] text-[#15803d]"
-                  : "border-[#b91c1c] text-[#b91c1c]"
-              }`}
+              className={`absolute -top-2.5 end-3 rotate-[-4deg] rounded border-2 bg-white px-2 py-0.5 text-[10px] font-bold ${
+ s.paid_in_full
+ ? "border-[#15803d] text-[#15803d]"
+ :"border-[#b91c1c] text-[#b91c1c]"
+ }`}
             >
               {s.paid_in_full ? t("paidInFull") : t("balanceDue")}
             </p>
           )}
         </div>
         <div className="rounded-md border border-neutral-300 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-[10px] font-semibold text-neutral-500">
             {t("valuation")}
           </p>
           {val ? (

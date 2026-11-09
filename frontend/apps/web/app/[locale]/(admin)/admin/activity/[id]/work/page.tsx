@@ -205,7 +205,7 @@ export default async function StaffWorkPage({
               </div>
 
               <div className="space-y-2 border-t pt-4">
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                <p className="text-muted-foreground text-xs font-medium">
                   {t("workOn")}
                 </p>
                 <ul className="space-y-2 text-sm">

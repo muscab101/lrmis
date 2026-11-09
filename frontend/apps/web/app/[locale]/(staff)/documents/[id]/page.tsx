@@ -5,6 +5,9 @@ import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { DocumentActions } from "@/components/documents/document-actions";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
+import { OpenInApp } from "@/components/documents/open-in-app";
+import { ScreenshotShield } from "@/components/documents/screenshot-shield";
+import { certificateHidden, inDesktopApp } from "@/lib/server/desktop";
 import { PartyPhoto } from "@/components/owners/party-photo";
 import { partyPhotoUrl } from "@/lib/server/party-photo";
 import { Link } from "@/i18n/navigation";
@@ -32,6 +35,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
   const holder = d.type === "id_card" ? (d.snapshot.holder ?? null) : null;
   const photo = holder ? await partyPhotoUrl(holder.party_id) : null;
   const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${lang}/verify/${d.verify_code}`;
+  // Shown only inside the protected desktop app (when that is switched on).
+  const hidden = await certificateHidden();
+  const inApp = await inDesktopApp();
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader
@@ -42,7 +48,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
           <DocumentActions
             id={d.id}
             status={d.status}
-            can={{ reprint: viewer.can("certificates.reprint"), cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id, direct: viewer.isSuperAdmin }}
+            can={{ reprint: viewer.can("certificates.reprint"), cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id, direct: viewer.isSuperAdmin, print: viewer.can("certificates.print") }}
+            printed={d.print_count > 0}
             changes={changes}
             pendingReason={pending?.reason ?? null}
           />
@@ -68,6 +75,10 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
       )}
       {/* The document as it prints (screen copy marked PREVIEW; the official copy is printed from Print). */}
       <div className="mb-5 overflow-x-auto rounded-lg border bg-neutral-100 p-4 dark:bg-neutral-900">
+        {hidden ? (
+          <OpenInApp serial={d.serial} />
+        ) : (
+        <ScreenshotShield off={inApp}>
         <div className="relative mx-auto w-fit">
           {d.type === "certificate" ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}
           <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden">
@@ -76,6 +87,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
             </span>
           </div>
         </div>
+        </ScreenshotShield>
+        )}
       </div>
       {holder && (
         <Card className="mb-5">

@@ -31,14 +31,13 @@ export function mapboxTileUrl(style: MapboxStyle, z: number, x: number, y: numbe
   return `https://api.mapbox.com/styles/v1/${MAPBOX_STYLES[style]}/tiles/256/${z}/${x}/${y}@2x?access_token=${encodeURIComponent(token)}`;
 }
 
-/** The free pictures the map used before Mapbox (MapTiler when there is a key, else OpenStreetMap / Esri). */
+/** The free pictures: streets from MapTiler when there is a key (else OpenStreetMap), satellite from Esri. */
 export function fallbackTileUrl(style: MapboxStyle, z: number, x: number, y: number) {
   const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
   if (style === "streets")
     return key
       ? `https://api.maptiler.com/maps/streets-v2/256/${z}/${x}/${y}.png?key=${key}`
       : `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-  return key
-    ? `https://api.maptiler.com/tiles/satellite-v2/${z}/${x}/${y}.jpg?key=${key}`
-    : `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+  // Esri's satellite pictures are much sharper over Mogadishu than MapTiler's.
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
 }

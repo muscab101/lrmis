@@ -27,6 +27,20 @@ export const sendToPrinterAction = defineAction(
   async (v, ctx) => done(unwrap(await ctx.supabase.rpc("document_send_to_printer", { p_id: v.id, p_printer: v.printerId, p_locale: v.locale }), "send to printer") as string),
 );
 
+/** Print now: straight to the document's own district's printer (no choosing). */
+export const printNowAction = defineAction(
+  "certificates.print_now",
+  z.object({ id: z.uuid(), locale: z.enum(["so", "en"]) }),
+  async (v, ctx) =>
+    done(
+      unwrap(await ctx.supabase.rpc("document_print_now", { p_id: v.id, p_locale: v.locale }), "print now") as {
+        job: string;
+        printer: string;
+        online: boolean;
+      },
+    ),
+);
+
 /** Where documents are in the print queue. */
 export const printStatusAction = defineAction("certificates.print_status", z.object({ ids: z.array(z.uuid()).min(1).max(100) }), async ({ ids }, ctx) =>
   unwrap(await ctx.supabase.rpc("document_print_status", { p_ids: ids }), "print status") as { document_id: string; status: "queued" | "printing" | "printed" | "failed"; error: string | null; printer_name: string }[],

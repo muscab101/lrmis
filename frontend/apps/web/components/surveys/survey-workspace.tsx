@@ -469,7 +469,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
             </Button>
           </div>
           {walk && (
-            <div className="absolute inset-x-3 bottom-10 rounded-md border bg-card-solid p-3 text-sm shadow-lg sm:inset-x-auto sm:start-3 sm:w-80">
+            <div className="absolute inset-x-3 bottom-10 rounded-md border bg-card-solid p-3 text-sm shadow-sm sm:inset-x-auto sm:start-3 sm:w-80">
               <p className="font-medium">{t("walkTitle", { count: walk.points.length })}</p>
               <p className="text-muted-foreground">{t("walkHelp")}</p>
               {walk.points.length > 0 && <p className="mt-1 text-xs text-muted-foreground">{t("walkAccuracy", { m: walk.worst })}</p>}

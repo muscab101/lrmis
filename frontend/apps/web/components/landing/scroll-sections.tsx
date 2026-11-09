@@ -105,7 +105,7 @@ export function ScrollWords({ items }: { items: { key: string; label: string; te
             blocks.current[i] = el;
           }}
         >
-          <p className="mb-3 text-sm font-semibold tracking-wide text-[#2a55d6] uppercase">{it.label}</p>
+          <p className="mb-3 text-sm font-semibold text-[#2a55d6]">{it.label}</p>
           <p className="max-w-4xl text-3xl leading-tight font-semibold tracking-tight sm:text-5xl">
             {it.text.split(" ").map((word, k) => (
               <span key={k} data-word className={cn("transition-opacity duration-300", still ? "opacity-100" : "opacity-20")}>

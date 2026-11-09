@@ -3,7 +3,9 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { BatchPrintControls } from "@/components/documents/print-controls";
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
+import { OpenInApp } from "@/components/documents/open-in-app";
 import { requirePermission } from "@/lib/server/auth";
+import { certificateHidden } from "@/lib/server/desktop";
 import { awaitingCardPayment, cardPrintPayments, type DocumentDetail, getDocument } from "@/lib/server/certificates";
 import { printerChoices } from "@/lib/server/printers";
 
@@ -17,6 +19,13 @@ export default async function BatchPrintPage({ params, searchParams }: { params:
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "certificates.view");
+  // Shown only inside the protected desktop app (when that is switched on).
+  if (await certificateHidden())
+    return (
+      <div className="min-h-dvh bg-neutral-100 px-4 py-16">
+        <OpenInApp />
+      </div>
+    );
   const t = await getTranslations("documents");
   const lang = await getLocale();
   const ids = [...new Set((await searchParams).ids?.split(",") ?? [])].filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 100);

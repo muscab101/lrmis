@@ -48,11 +48,12 @@ export interface DocumentRow {
   issued_at: string;
   expires_at: string | null;
   print_count: number;
+  district_id: string | null;
   parcel: { id: string; pun: string | null } | null;
   party: { full_name: string } | null;
 }
 
-const COLS = "id, type, serial, status, issued_at, issued_by, expires_at, print_count, parcel:parcels(id, pun), party:parties(full_name)";
+const COLS = "id, type, serial, status, issued_at, issued_by, expires_at, print_count, district_id, parcel:parcels(id, pun), party:parties(full_name)";
 
 export async function listDocuments(opts: { q: string; status: "valid" | "any"; unprinted?: boolean; type?: "certificate" | "id_card" }) {
   const supabase = await createClient();

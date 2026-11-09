@@ -316,7 +316,9 @@
       "test_login_super_admin": "You can't sign in as a super admin, or as yourself.",
       "chat_edit_expired": "A message can only be edited for 5 minutes after sending it.",
       "chat_upload_failed": "The file could not be uploaded. Try again.",
-      "warning_too_soon": "A warning was just sent. Wait a few seconds before sending another."
+      "warning_too_soon": "A warning was just sent. Wait a few seconds before sending another.",
+      "printer_wrong_district": "This printer belongs to another district. A document prints only on its own district's printer.",
+      "no_district_printer": "This district has no printer yet. Add one on the Printers page (with its print program key)."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -3850,7 +3852,7 @@
     "printAlreadyDone": "Already printed. Another print needs an approved reprint.",
     "printCancelled": "This document is cancelled and can't be printed.",
     "printNoPermission": "Only print officers can print the official copy.",
-    "previewWatermark": "PREVIEW · NOT VALID",
+    "previewWatermark": "Preview · not valid",
     "republic": "Jamhuuriyadda Federaalka Soomaaliya",
     "certificateTitleSo": "Shahaadada Canshuurta Sanadlaha",
     "certificateTitleEn": "Annual Tax Certificate",
@@ -3994,7 +3996,22 @@
     "perM2": "{amount} per m²",
     "yearlyTax": "Yearly tax",
     "yearNote": "This certificate is valid for one tax year only. A new one is issued each year once that year's bills are paid.",
-    "yourDesk": "your desk"
+    "yourDesk": "your desk",
+    "shield": {
+      "title": "Screenshots are not allowed",
+      "body": "This certificate is covered while a screenshot may be taken. Click back on the page to see it again."
+    },
+    "desktop": {
+      "title": "Open this certificate in the LRMIS app",
+      "body": "To stop screenshots and screen sharing, {serial} is shown only in the LRMIS desktop app. Its window comes out black in screenshots and screen shares.",
+      "how": "Open LRMIS from the desktop app on this computer and find this certificate there.",
+      "bodyAll": "To stop screenshots and screen sharing, certificates are shown only in the LRMIS desktop app. Its window comes out black in screenshots and screen shares."
+    },
+    "printNow": "Print now",
+    "printNowSending": "Sending…",
+    "printNowSent": "Sent to {printer}. It is printing now.",
+    "printNowQueued": "Sent to {printer}. It prints as soon as that printer's print program is on.",
+    "printNowFailed": "Could not send it to the printer."
   },
   "verify": {
     "title": "Verify a certificate",
@@ -5527,7 +5544,19 @@
     "joined": "On LRMIS since",
     "sendMessage": "Send a message",
     "viewProfile": "See {name}'s profile",
-    "viewProfileHint": "Press to see the profile"
+    "viewProfileHint": "Press to see the profile",
+    "camera": {
+      "open": "Take a picture",
+      "title": "Take a picture",
+      "preview": "The picture you took",
+      "take": "Take picture",
+      "again": "Take again",
+      "use": "Use this picture",
+      "switch": "Switch camera",
+      "retry": "Try again",
+      "denied": "The camera is blocked. Allow the camera for this site in the browser (the camera icon in the address bar), then try again.",
+      "noCamera": "No camera was found on this device."
+    }
   },
   "testLogin": {
     "button": "Sign in as this user",

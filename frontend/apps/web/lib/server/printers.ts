@@ -68,10 +68,13 @@ export interface PrinterChoice {
   mine: boolean;
 }
 
-/** The printers this person may send documents to. */
-export async function printerChoices() {
+/** The printers this person may send documents to; for one document, only its own district's printers. */
+export async function printerChoices(district?: string | null) {
   const supabase = await createClient();
-  return unwrap(await supabase.rpc("printer_choices"), "printer choices") as PrinterChoice[];
+  return unwrap(
+    await supabase.rpc("printer_choices", district ? { p_district: district } : {}),
+    "printer choices",
+  ) as PrinterChoice[];
 }
 
 /** Points of sale a printer can be assigned to (offices and cash desks, not online payments). */

@@ -120,7 +120,7 @@ export function SystemWarning() {
           <TriangleAlert className="text-danger size-16 animate-pulse" aria-hidden />
           <p
             id="system-warning-title"
-            className="text-danger mt-4 text-sm font-bold uppercase tracking-[0.2em]"
+            className="text-danger mt-4 text-sm font-bold tracking-[0.2em]"
           >
             {t("title")} · {current.place ?? t("everyone")}
           </p>

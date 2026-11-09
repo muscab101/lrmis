@@ -50,6 +50,7 @@ import {
 import { FormDialog } from "@/components/forms/form-dialog";
 import { FormError } from "@/components/forms/form-error";
 import { createClient } from "@/lib/supabase/client";
+import { CameraCapture } from "./camera-capture";
 
 /** A person's photo, or the first letter of their name when they have none. */
 function PersonAvatar({
@@ -829,6 +830,7 @@ export function ChatApp({ me, initial }: { me: string; initial: string | null })
                 >
                   <Paperclip aria-hidden />
                 </Button>
+                <CameraCapture onPicture={(f) => setFile(f)} />
                 <Textarea
                   rows={1}
                   value={text}

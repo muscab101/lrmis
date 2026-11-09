@@ -3,7 +3,8 @@
 import maplibregl, { type Map as MlMap, type MapGeoJSONFeature } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useLocale } from "next-intl";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { createGoogleBase, GOOGLE_MAPS_KEY, type GoogleMapLike, googleRefused, onGoogleRefused } from "./google-base";
 import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, DEMOLISHED_COLOUR, LAYER_IDS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "./style";
 
 export interface MapView {
@@ -71,6 +72,11 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MlMap | null>(null);
   const loaded = useRef(false);
+  const googleEl = useRef<HTMLDivElement>(null);
+  const googleMap = useRef<GoogleMapLike | null>(null);
+  const [googleOn, setGoogleOn] = useState(false);
+  // Satellite comes from Google when the site has a Google key (and Google accepts it).
+  const showGoogle = googleOn && base === "satellite";
   const callbacks = useRef({ onFeatureClick, onViewChange });
   callbacks.current = { onFeatureClick, onViewChange };
 
@@ -172,13 +178,48 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale, parcels]);
 
+  // Google's satellite map under ours: it follows every move of our map (Google zoom is ours + 1). Its pictures can't
+  // turn, so turning the map is off while it shows.
+  useEffect(() => {
+    const m = map.current;
+    const el = googleEl.current;
+    if (!m || !el || base !== "satellite" || !GOOGLE_MAPS_KEY || googleRefused()) return;
+    let stopped = false;
+    const sync = () => {
+      const c = m.getCenter();
+      googleMap.current?.moveCamera({ center: { lat: c.lat, lng: c.lng }, zoom: m.getZoom() + 1 });
+    };
+    const off = onGoogleRefused(() => setGoogleOn(false));
+    void (async () => {
+      if (!googleMap.current) {
+        const c = m.getCenter();
+        googleMap.current = await createGoogleBase(el, { lat: c.lat, lng: c.lng }, m.getZoom() + 1);
+      }
+      if (stopped || !googleMap.current || googleRefused()) return;
+      m.setBearing(0);
+      m.setPitch(0);
+      m.dragRotate.disable();
+      m.touchZoomRotate.disableRotation();
+      sync();
+      m.on("move", sync);
+      setGoogleOn(true);
+    })();
+    return () => {
+      stopped = true;
+      off();
+      m.off("move", sync);
+      m.dragRotate.enable();
+      m.touchZoomRotate.enableRotation();
+    };
+  }, [base, locale, parcels]);
+
   // Base map + layer visibility (applied once the style is ready).
   useEffect(() => {
     const m = map.current;
     if (!m) return;
     const apply = () => {
       m.setLayoutProperty("base-streets", "visibility", base === "streets" ? "visible" : "none");
-      m.setLayoutProperty("base-satellite", "visibility", base === "satellite" ? "visible" : "none");
+      m.setLayoutProperty("base-satellite", "visibility", base === "satellite" && !showGoogle ? "visible" : "none");
       for (const layer of BOUNDARY_LAYERS) {
         const on = visible?.[layer] ?? true;
         for (const id of LAYER_IDS[layer]) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
@@ -186,14 +227,18 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     };
     if (loaded.current) apply();
     else m.once("load", apply);
-  }, [base, visible]);
+  }, [base, visible, showGoogle]);
 
 
   // MapLibre's CSS sets `.maplibregl-map { position: relative }`, so it gets its own inner
   // element; the wrapper keeps whatever positioning the caller gives it.
   return (
     <div className={className}>
-      <div ref={container} className="h-full w-full" />
+      <div className="relative h-full w-full">
+        {/* Google's pictures under our map; Google's own logo and terms stay visible bottom left. */}
+        <div ref={googleEl} aria-hidden className={`pointer-events-none absolute inset-0 ${showGoogle ? "" : "invisible"}`} />
+        <div ref={container} className={`h-full w-full ${showGoogle ? "[&_.maplibregl-ctrl-bottom-left]:bottom-6" : ""}`} />
+      </div>
     </div>
   );
 });

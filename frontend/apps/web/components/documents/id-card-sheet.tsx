@@ -54,7 +54,7 @@ export async function IdCardSheet({
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden select-none">
           <div className="absolute top-1/2 left-1/2 flex w-[260%] -translate-x-1/2 -translate-y-1/2 -rotate-30 flex-col gap-[2.2mm]">
             {Array.from({ length: 22 }, (_, i) => (
-              <p key={i} className={`text-[4.2pt] leading-none font-semibold tracking-[0.06em] whitespace-pre text-[#1f45b8]/[0.14] uppercase ${i % 2 ? "-ms-[18mm]" : ""}`}>
+              <p key={i} className={`text-[4.2pt] leading-none font-semibold whitespace-pre text-[#1f45b8]/[0.14] ${i % 2 ? "-ms-[18mm]" : ""}`}>
                 {Array.from({ length: 4 }, () => mark).join("   ✦   ")}
               </p>
             ))}
@@ -64,10 +64,10 @@ export async function IdCardSheet({
           {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
           <img src="/brand/banadir-emblem-256.png" alt="" className="size-[8.5mm] object-contain" />
           <div className="min-w-0 flex-1 leading-[1.15]">
-            <p className="text-[6.4pt] font-bold tracking-[0.02em] uppercase">{en("orgName")}</p>
-            <p className="text-[5.6pt] font-semibold uppercase opacity-80">{so("orgName")}</p>
+            <p className="text-[6.4pt] font-bold">{en("orgName")}</p>
+            <p className="text-[5.6pt] font-semibold opacity-80">{so("orgName")}</p>
           </div>
-          <p className="text-end text-[5pt] leading-tight font-semibold text-[#1f45b8] uppercase">{t("cardKind")}</p>
+          <p className="text-end text-[5pt] leading-tight font-semibold text-[#1f45b8]">{t("cardKind")}</p>
         </header>
         <div className="relative flex flex-1 gap-[2.5mm] px-[3mm] pt-[2mm]">
           <div className="grid h-[21mm] w-[17mm] shrink-0 place-items-center overflow-hidden rounded-[1.2mm] border border-[#1f45b8]/30 bg-white/60 text-[13pt] font-semibold text-[#1f45b8]">
@@ -112,7 +112,7 @@ export async function IdCardSheet({
       {/* Back */}
       <section className="relative flex h-[54mm] w-[85.6mm] gap-[2.5mm] overflow-hidden rounded-[3mm] border border-neutral-300 bg-white p-[3mm] text-[#0b1a3a] shadow-md print:shadow-none">
         <div className="flex min-w-0 flex-1 flex-col">
-          <p className="text-[6pt] font-bold uppercase">{t("cardMapTitle")}</p>
+          <p className="text-[6pt] font-bold">{t("cardMapTitle")}</p>
           <div className="flex flex-1 items-center">
             <BanadirMapSvg districts={outlines} highlight={s.district.code} point={s.centroid} className="h-auto max-h-[36mm] w-full" />
           </div>

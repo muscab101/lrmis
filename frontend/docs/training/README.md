@@ -11,5 +11,6 @@ One page per role, for a one-hour hands-on session on staging. Each guide ends w
 | Finance / accountant | [finance.md](finance.md) |
 | Legal officer | [legal.md](legal.md) |
 | Admin | [admin.md](admin.md) |
+| Everyone who views or prints certificates | [desktop-app.md](desktop-app.md) |
 
 Everyone: the app works in Somali and English (switch at the top right). You must turn on 2FA at your first sign-in. Never share your account. Anything you approve is recorded under your name, and you can't approve your own work.

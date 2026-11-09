@@ -53,7 +53,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ l
 
         <section className="mt-6 grid grid-cols-2 gap-8">
           <div>
-            <p className="text-[11px] font-semibold tracking-wide text-neutral-500 uppercase">{t("billedTo")}</p>
+            <p className="text-[11px] font-semibold text-neutral-500">{t("billedTo")}</p>
             <ul className="mt-1 space-y-0.5">
               {owners.map((o, i) => (
                 <li key={i} className="font-medium">
@@ -88,7 +88,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ l
 
         <table className="mt-8 w-full border-collapse">
           <thead>
-            <tr className="border-b border-neutral-300 text-start text-[11px] tracking-wide text-neutral-500 uppercase">
+            <tr className="border-b border-neutral-300 text-start text-[11px] text-neutral-500">
               <th className="py-2 text-start font-semibold">{t("description")}</th>
               <th className="py-2 text-end font-semibold">{t("amount")}</th>
             </tr>

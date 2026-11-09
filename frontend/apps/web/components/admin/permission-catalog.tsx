@@ -51,7 +51,7 @@ export function PermissionCatalog({ groups, total }: { groups: CatalogGroup[]; t
       </div>
       {shown.map((g) => (
         <section key={g.label}>
-          <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">{g.label}</h2>
+          <h2 className="text-muted-foreground mb-3 text-xs font-semibold">{g.label}</h2>
           <div className="space-y-4">
             {g.modules.map((m) => (
               <Card key={m.label} className="overflow-hidden">

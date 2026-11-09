@@ -74,9 +74,13 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
   const rows = (unwrap(res, "parcels") as ParcelListRow[]).sort((a, b) => b.created_at.localeCompare(a.created_at) || (a.pun ?? "").localeCompare(b.pun ?? "", undefined, { numeric: true }));
   // The account number isn't in search_parcels: one lookup for the rows shown.
   if (rows.length) {
-    const { data } = await supabase.from("parcels").select("id, account_no").in("id", rows.map((r) => r.id));
+    // Both lookups at once (not one after the other).
+    const ids = rows.map((r) => r.id);
+    const [{ data }, money] = await Promise.all([
+      supabase.from("parcels").select("id, account_no").in("id", ids),
+      parcelsWithMoney(ids),
+    ]);
     const acct = new Map(((data ?? []) as { id: string; account_no: string | null }[]).map((a) => [a.id, a.account_no]));
-    const money = await parcelsWithMoney(rows.map((r) => r.id));
     for (const r of rows) {
       r.account_no = acct.get(r.id) ?? null;
       r.has_money = money.has(r.id);
@@ -303,14 +307,11 @@ export interface NeighbourhoodStatusRow {
 /** Per neighbourhood: land waiting (partial parcels, open applications) and land registered. */
 export async function neighbourhoodStatus(districtId: string | null) {
   const supabase = await createClient();
-  // Banaadir has ~5,300 neighbourhoods and the API returns at most 1,000 rows per request: read in pages.
-  const rows: NeighbourhoodStatusRow[] = [];
-  for (let from = 0; ; from += 1000) {
-    const res = await supabase.rpc("neighbourhood_registration_status", { p_district: districtId }).range(from, from + 999);
-    const page = unwrap(res, "neighbourhoods") as NeighbourhoodStatusRow[];
-    rows.push(...page);
-    if (page.length < 1000) break;
-  }
+  // All ~5,300 neighbourhoods in one answer (the plain list stops at 1,000 rows a request).
+  const rows = (unwrap(
+    await supabase.rpc("neighbourhood_registration_status_all", { p_district: districtId }),
+    "neighbourhoods",
+  ) ?? []) as NeighbourhoodStatusRow[];
   return rows.map((r) => ({
     ...r,
     partial: Number(r.partial),
