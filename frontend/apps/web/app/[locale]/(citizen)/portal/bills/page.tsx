@@ -10,15 +10,17 @@ export default async function BillsPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("portalBills");
+  const tp = await getTranslations("portal");
   const format = await getFormatter();
   const lang = await getLocale();
   const me = await citizenOverview();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const today = new Date().toISOString().slice(0, 10);
   const bills = me.parcels
-    .flatMap((p) => p.invoices.map((i) => ({ ...i, pun: p.pun, parcelId: p.id })))
+    // Only registered land's bills can be paid; partial or demolished land waits for the district office.
+    .flatMap((p) => p.invoices.map((i) => ({ ...i, pun: p.pun, parcelId: p.id, payable: !p.partial && !p.demolished, demolished: p.demolished, district: p.district })))
     .sort((a, b) => (Number(b.balance) > 0 ? 1 : 0) - (Number(a.balance) > 0 ? 1 : 0) || a.due_date.localeCompare(b.due_date));
-  const open = bills.filter((b) => Number(b.balance) > 0);
+  const open = bills.filter((b) => Number(b.balance) > 0 && b.payable);
   const owed = open.reduce((s, b) => s + Number(b.balance), 0);
   const overdue = open.filter((b) => b.due_date < today).reduce((s, b) => s + Number(b.balance), 0);
 
@@ -62,12 +64,17 @@ export default async function BillsPage({ params }: { params: Promise<{ locale: 
                         <p className="text-xl font-semibold tabular-nums">{usd(b.balance)}</p>
                         {Number(b.balance) < Number(b.total) && <p className="text-xs text-muted-foreground">{t("ofTotal", { total: usd(b.total) })}</p>}
                       </div>
-                      {Number(b.balance) > 0 && b.token && (
+                      {Number(b.balance) > 0 && b.token && b.payable && (
                         <Button asChild>
                           <Link href={`/portal/pay/${b.token}`}>{t("pay")}</Link>
                         </Button>
                       )}
                     </div>
+                    {Number(b.balance) > 0 && !b.payable && (
+                      <p className="bg-status-pending/10 text-status-pending w-full rounded-md px-3 py-2 text-xs">
+                        {tp(b.demolished ? "demolishedNotice" : "partialNotice", { district: b.district ? (lang === "so" ? b.district.name_so : b.district.name_en) : "" })}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </li>

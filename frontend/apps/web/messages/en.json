@@ -719,7 +719,8 @@
     "partialNotice": "This land or your details are not fully registered yet. Please visit the {district} district office to update your details and your parcel. You can pay its bills once it is registered.",
     "demolishedTitle": "Demolished land",
     "demolishedNotice": "This land is recorded as demolished. Please visit the {district} district office.",
-    "payAfterRegistered": "Pay after registration"
+    "payAfterRegistered": "Pay after registration",
+    "demolishedBadge": "Demolished"
   },
   "dashboard": {
     "title": "Dashboard",

@@ -719,7 +719,8 @@
     "partialNotice": "Dhulkan ama xogtaadu weli si buuxda looma diiwaangelin. Fadlan booqo xafiiska degmada {district} si aad u cusboonaysiiso xogtaada iyo dhulkaaga. Biilashiisa waad bixin kartaa marka la diiwaangeliyo.",
     "demolishedTitle": "Dhul la dumiyay",
     "demolishedNotice": "Dhulkan waxaa loo diiwaangeliyay inuu dumay. Fadlan booqo xafiiska degmada {district}.",
-    "payAfterRegistered": "Bixi kadib diiwaangelinta"
+    "payAfterRegistered": "Bixi kadib diiwaangelinta",
+    "demolishedBadge": "La dumiyay"
   },
   "dashboard": {
     "title": "Shaashadda guud",

@@ -17,6 +17,8 @@ interface Pub {
   total: number;
   paid: number;
   balance: number;
+  partial?: boolean;
+  demolished?: boolean;
 }
 
 /** Paying a bill without leaving the portal (same flow as the public pay page). */
@@ -33,7 +35,8 @@ export default async function PortalPayPage({ params, searchParams }: { params: 
   const supabase = await createClient();
   const { data } = /^[0-9a-f]{64}$/.test(token) ? await supabase.rpc("invoice_by_token", { p_token: token }) : { data: null };
   const inv = data as Pub | null;
-  const providers = inv && Number(inv.balance) > 0 ? await availableOnlineProviders() : [];
+  // Only registered land's bills can be paid (the database refuses the rest too).
+  const providers = inv && Number(inv.balance) > 0 && !inv.partial && !inv.demolished ? await availableOnlineProviders() : [];
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   return (
     <div className="mx-auto max-w-xl">
@@ -63,6 +66,14 @@ export default async function PortalPayPage({ params, searchParams }: { params: 
             </div>
             {Number(inv.balance) <= 0 ? (
               <Alert tone="success" title={t("paidInFull")} />
+            ) : inv.demolished ? (
+              <Alert tone="warning" title={t("demolishedTitle")}>
+                {t("demolishedBody")}
+              </Alert>
+            ) : inv.partial ? (
+              <Alert tone="warning" title={t("notRegisteredTitle")}>
+                {t("notRegisteredBody")}
+              </Alert>
             ) : (
               <PayForm token={token} providers={providers} initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null} />
             )}
