@@ -1,5 +1,6 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
+import { fullHouseNo } from "@/lib/house-no";
 import type {
   ArrearsRow,
   BillingRow,
@@ -516,7 +517,7 @@ export async function reportTable(
         r.pun ?? t("noPun"),
         pick(r as never, "district"),
         pick(r as never, "neighbourhood"),
-        r.house_no,
+        fullHouseNo(r.neighbourhood_so, r.house_no),
         num(r.area_m2),
         label("stage.landUses", r.land_use),
         pick(r as never, "grade"),
@@ -697,7 +698,7 @@ export async function reportTable(
       rows = r.map((x) => [
         x.number,
         x.pun,
-        x.house_no,
+        fullHouseNo(x.neighbourhood_so, x.house_no),
         x.owners,
         pick(x as never, "district"),
         pick(x as never, "neighbourhood"),

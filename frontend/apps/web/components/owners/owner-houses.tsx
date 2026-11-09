@@ -5,6 +5,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import type { OwnerHouse } from "@/components/owners/owner-statement";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
+import { fullHouseNo } from "@/lib/house-no";
 
 /** Every house this owner has (one owner, many houses: no double records). */
 export async function OwnerHouses({ houses }: { houses: OwnerHouse[] }) {
@@ -38,7 +39,7 @@ export async function OwnerHouses({ houses }: { houses: OwnerHouse[] }) {
                   <Mono className="font-medium">{h.pun ?? "—"}</Mono>
                   {h.house_no && (
                     <span className="text-muted-foreground ms-2">
-                      {t("houseNo", { no: h.house_no })}
+                      {t("houseNo", { no: fullHouseNo(h.neighbourhood_so, h.house_no)! })}
                     </span>
                   )}
                   <span className="text-muted-foreground block text-xs">

@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getRun, runBatchBills, runBatches, runPlaceNames } from "@/lib/server/billing";
 import { listDistricts } from "@/lib/server/users";
+import { fullHouseNo } from "@/lib/house-no";
 
 export default async function RunPage({
   params,
@@ -37,6 +38,8 @@ export default async function RunPage({
     batchId !== undefined && run.status !== "cancelled" ? runBatchBills(run.id, batchId) : null,
   ]);
   const nm = (so: string | null, en: string | null) => (lang === "so" ? so : en) ?? so ?? en ?? "—";
+  // The open batch's neighbourhood code, for the full house numbers.
+  const batchCode = allBatches.find((b) => b.neighbourhood_id === batchId)?.neighbourhood_code ?? null;
   // Filter the batches by place: district, then section, sector, neighbourhood (options come from the run's own land).
   const label = (code: string | null, so: string | null, en: string | null) =>
     [code, lang === "so" ? so : en].filter((x, i, all) => x && all.indexOf(x) === i).join(" · ") || "—";
@@ -212,7 +215,7 @@ export default async function RunPage({
                       <Mono>{r.pun ?? "—"}</Mono>
                     </Link>
                   </TableCell>
-                  <TableCell className="hidden text-sm sm:table-cell">{r.house_no ?? "—"}</TableCell>
+                  <TableCell className="hidden text-sm sm:table-cell">{fullHouseNo(batchCode, r.house_no) ?? "—"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{r.owner ?? "—"}</TableCell>
                   <TableCell className="text-end text-sm tabular-nums">{r.amount != null && !r.exception ? usd(r.amount) : "—"}</TableCell>
                   <TableCell className="text-sm">

@@ -11,6 +11,7 @@ import { GeometryPreview } from "@/components/map/geometry-preview";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getDemolition } from "@/lib/server/demolitions";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -56,7 +57,7 @@ export default async function DemolitionPage({
     [t("place_s"), s.section ? `${s.section.code} · ${name(s.section)}` : "—"],
     [t("place_k"), s.sector ? `${s.sector.code} · ${name(s.sector)}` : "—"],
     [t("place_n"), s.neighbourhood?.code ?? "—"],
-    [t("colHouse"), s.house_no ?? "—"],
+    [t("colHouse"), fullHouseNo(s.neighbourhood?.code, s.house_no) ?? "—"],
     [t("account"), <Mono key="a">{s.account_no ?? "—"}</Mono>],
     [t("area"), m2(s.area_m2)],
     [t("grade"), (lang === "so" ? s.grade_so : s.grade_en) ?? "—"],
@@ -138,7 +139,7 @@ export default async function DemolitionPage({
         >
           {[
             t("rebuiltOn", { date: day(d.rebuilt_at), by: h.names.rebuilt_by ?? "—" }),
-            d.new_house_no && t("nowHouse", { no: d.new_house_no }),
+            d.new_house_no && t("nowHouse", { no: fullHouseNo(s.neighbourhood?.code, d.new_house_no)! }),
             d.new_owner_names && `${t("owner")}: ${d.new_owner_names}`,
             d.rebuild_note,
           ]
@@ -294,7 +295,7 @@ export default async function DemolitionPage({
                       <Mono>{o.number}</Mono>
                     </Link>
                     <span className="text-muted-foreground">
-                      {day(o.demolition_date)} · {t("colHouse")} {o.house_no ?? "—"}
+                      {day(o.demolition_date)} · {t("colHouse")} {fullHouseNo(s.neighbourhood?.code, o.house_no) ?? "—"}
                       {o.building_no && ` · ${o.building_no}`}
                     </span>
                   </li>

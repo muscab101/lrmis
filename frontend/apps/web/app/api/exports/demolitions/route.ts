@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { fullHouseNo } from "@/lib/house-no";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { getViewer } from "@/lib/server/auth";
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
   const body = rows.map((r) => [
     r.number,
     r.pun,
-    r.house_no,
+    fullHouseNo(r.snapshot.neighbourhood?.code, r.house_no),
     name(r.snapshot.district),
     r.snapshot.section?.code ?? "",
     r.snapshot.sector?.code ?? "",

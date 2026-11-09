@@ -14,6 +14,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { placeChoices } from "@/lib/server/billing";
 import { demolitionStats, listDemolitions } from "@/lib/server/demolitions";
 import { createClient } from "@/lib/supabase/server";
+import { fullHouseNo } from "@/lib/house-no";
 
 type Search = {
   tab?: string;
@@ -233,10 +234,10 @@ export default async function DemolishedPage({
                     <p className="text-muted-foreground text-xs">{r.number}</p>
                   </TableCell>
                   <TableCell className="text-sm">
-                    {r.house_no ?? "—"}
+                    {fullHouseNo(r.snapshot?.neighbourhood?.code, r.house_no) ?? "—"}
                     {r.new_house_no && r.new_house_no !== r.house_no && (
                       <p className="text-muted-foreground text-xs">
-                        {t("nowHouse", { no: r.new_house_no })}
+                        {t("nowHouse", { no: fullHouseNo(r.snapshot?.neighbourhood?.code, r.new_house_no)! })}
                       </p>
                     )}
                   </TableCell>
@@ -264,7 +265,10 @@ export default async function DemolishedPage({
                     {usd(r.outstanding)}
                   </TableCell>
                   <TableCell>
-                    <span className="flex flex-col items-start gap-1">
+                    {/* One badge per row. Land registered again shows that, unless it has been demolished again since. */}
+                    {r.rebuilt_at && !r.current_id ? (
+                      <StatusBadge tone="approved">{t("rebuilt")}</StatusBadge>
+                    ) : (
                       <StatusBadge
                         tone={
                           r.status === "approved"
@@ -276,16 +280,16 @@ export default async function DemolishedPage({
                       >
                         {t(`status_${r.status}`)}
                       </StatusBadge>
-                      {r.rebuilt_at && <StatusBadge tone="approved">{t("rebuilt")}</StatusBadge>}
-                    </span>
+                    )}
                   </TableCell>
                   {actions && (
                     <TableCell className="text-end">
                       {tab === "pending" ? (
                         <DecideDemolition ids={[r.id]} />
-                      ) : r.status === "approved" && !r.rebuilt_at ? (
+                      ) : r.status === "approved" && (!r.rebuilt_at || r.current_id) ? (
                         <Button asChild size="sm" variant="outline">
-                          <Link href={`/demolished/${r.id}/register`}>
+                          {/* An old record whose land was demolished again registers from the land's current demolition. */}
+                          <Link href={`/demolished/${r.current_id ?? r.id}/register`}>
                             <Home aria-hidden />
                             {t("registerNow")}
                           </Link>

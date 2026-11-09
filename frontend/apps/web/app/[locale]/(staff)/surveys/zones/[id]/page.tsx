@@ -12,6 +12,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { searchParcels } from "@/lib/server/parcels";
 import { createClient } from "@/lib/supabase/server";
 import { listZones } from "@/lib/server/zones";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata() {
   const t = await getTranslations("yetToRegister.zone");
@@ -150,7 +151,7 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
             <TableBody>
               {houses.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="text-sm font-medium">{p.house_no ?? "—"}</TableCell>
+                  <TableCell className="text-sm font-medium">{fullHouseNo(zone.code, p.house_no) ?? "—"}</TableCell>
                   <TableCell>
                     {viewer.can("parcels.view") ? (
                       <Link href={`/parcels/${p.id}`} className="hover:text-primary">

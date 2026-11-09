@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
 import type { SurveyFile } from "@/lib/server/surveys";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
+import { fullHouseNo } from "@/lib/house-no";
 
 /**
  * The surveyor's case file: what the registration staff entered (the application and its
@@ -47,7 +48,7 @@ export async function SurveyFileCards({
     [ts("landUse"), file.land_use && ts(`landUses.${file.land_use}`)],
     [t("declaredSize"), declared],
     [ta("plotNo"), file.plot_no],
-    [ta("houseNo"), file.house_no && [nm(file.neighbourhood), file.house_no].filter(Boolean).join(" · ")],
+    [ta("houseNo"), fullHouseNo(nm(file.neighbourhood), file.house_no)],
     [ta("flatNo"), file.flat_no],
     [ta("oldDeedNo"), file.old_deed_no],
     [ta("govtFileNo"), file.govt_file_no],

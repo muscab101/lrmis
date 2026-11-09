@@ -1,4 +1,5 @@
 import "server-only";
+import { fullHouseNo } from "@/lib/house-no";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
@@ -187,7 +188,7 @@ export async function watermarkLine(doc: DocumentDetail, lang: string, given?: W
     doc.issued_at.slice(0, 10),
     s.owners.map((o) => o.full_name).join(" / "),
     s.owners.map((o) => o.phone ?? facts.phones[o.party_id]).filter(Boolean).join(" / "),
-    facts.house_no,
+    fullHouseNo(s.neighbourhood?.code, facts.house_no),
     facts.invoice_no,
     name(s.neighbourhood),
     name(s.district),

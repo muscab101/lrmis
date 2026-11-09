@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import { banadirOutlines, type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
 import { partyPhotoUrl } from "@/lib/server/party-photo";
 import { BanadirMapSvg } from "./banadir-map-svg";
+import { fullHouseNo } from "@/lib/house-no";
 
 /**
  * CR80 property ID card (85.6 × 54 mm), print-ready for card printers.
@@ -41,8 +42,8 @@ export async function IdCardSheet({
     .join("");
   const date = (v: string | null | undefined) => (v ? format.dateTime(new Date(v), { day: "2-digit", month: "short", year: "numeric" }) : "—");
   const id = h?.id_number ? `${h.id_type ? `${to(`id_${h.id_type}`)} ` : ""}${h.id_number}` : null;
-  // Place: the neighbourhood and the house number.
-  const place = [name(s.neighbourhood), s.house_no && t("cardHouse", { no: s.house_no })].filter(Boolean).join(" · ");
+  // Place: the full house number (neighbourhood code + house number), or the neighbourhood when there is none.
+  const place = s.house_no ? t("cardHouse", { no: fullHouseNo(s.neighbourhood?.code, s.house_no)! }) : name(s.neighbourhood);
 
   return (
     <div className="flex flex-col items-center gap-6 print:gap-[6mm]">

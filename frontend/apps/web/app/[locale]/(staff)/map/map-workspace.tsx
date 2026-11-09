@@ -14,6 +14,7 @@ import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING,
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
 import { parcelSummaryAction } from "../parcels/actions";
+import { fullHouseNo } from "@/lib/house-no";
 
 const PREFS_KEY = "dhulka.map.prefs";
 
@@ -340,7 +341,7 @@ export function MapWorkspace({
               ) : summary ? (
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
                   <dt className="text-muted-foreground">{t("houseNo")}</dt>
-                  <dd>{[summary.house_no, summary.flat_no].filter(Boolean).join(" / ") || "—"}</dd>
+                  <dd>{[fullHouseNo(summary.neighbourhood?.name_so, summary.house_no), summary.flat_no].filter(Boolean).join(" / ") || "—"}</dd>
                   {summary.building_state === "demolished" && (
                     <>
                       <dt className="text-muted-foreground">{t("buildingLabel")}</dt>

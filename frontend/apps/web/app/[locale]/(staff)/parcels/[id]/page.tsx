@@ -19,6 +19,7 @@ import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
 import { TransferHistory } from "@/components/legal/transfer-history";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!p) return { title: "404" };
   // Partial land has no PUN yet: name it by its house number.
   const t = await getTranslations("parcels");
-  return { title: p.pun ?? (p.house_no ? `${t("houseNoShort")} ${p.house_no}` : t("noPun")) };
+  return { title: p.pun ?? (p.house_no ? `${t("houseNoShort")} ${fullHouseNo(p.neighbourhood?.code, p.house_no)}` : t("noPun")) };
 }
 
 export default async function ParcelPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -99,7 +100,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     [ts("landUse"), ts(`landUses.${p.land_use}`)],
     [t("place"), [p.district && (lang === "so" ? p.district.name_so : p.district.name_en), p.neighbourhood && (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en)].filter(Boolean).join(" · ")],
     [ta("plotNo"), p.plot_no ?? "—"],
-    [t("houseNo"), p.house_no ?? "—"],
+    [t("houseNo"), fullHouseNo(p.neighbourhood?.code, p.house_no) ?? "—"],
     ...(p.flat_no && parent?.layout !== "compound" ? [[t("flatNo"), p.flat_no] as [string, string]] : []),
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],

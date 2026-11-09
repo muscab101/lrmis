@@ -12,6 +12,7 @@ import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { SiteCheckActions } from "@/components/applications/site-check";
 import { ZoneTable } from "@/components/parcels/zone-table";
 import { listZones } from "@/lib/server/zones";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata() {
   const t = await getTranslations("surveys");
@@ -99,7 +100,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
                         <span className="text-status-pending font-bold" aria-hidden>
                           ?
                         </span>
-                        <Mono>{c.pun ?? (c.house_no ? `${tp("houseNoShort")} ${c.house_no}` : tp("noPun"))}</Mono>
+                        <Mono>{c.pun ?? (c.house_no ? `${tp("houseNoShort")} ${fullHouseNo(c.neighbourhood?.name_so, c.house_no)}` : tp("noPun"))}</Mono>
                       </span>
                     </TableCell>
                     <TableCell className="hidden text-sm whitespace-nowrap lg:table-cell">{format.dateTime(new Date(c.site_check_requested_at), { dateStyle: "medium" })}</TableCell>

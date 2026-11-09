@@ -13,6 +13,7 @@ import { TransferHistory } from "@/components/legal/transfer-history";
 import { getTransfer } from "@/lib/server/legal";
 import { getParcel } from "@/lib/server/parcels";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -44,7 +45,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
         [ts("landUse"), ts(`landUses.${land.land_use}`)],
         [tp("place"), [land.district && (lang === "so" ? land.district.name_so : land.district.name_en), land.neighbourhood && (lang === "so" ? land.neighbourhood.name_so : land.neighbourhood.name_en)].filter(Boolean).join(" · ") || "—"],
         [ta("plotNo"), land.plot_no ?? "—"],
-        [tp("houseNo"), land.house_no ?? "—"],
+        [tp("houseNo"), fullHouseNo(land.neighbourhood?.name_so, land.house_no) ?? "—"],
         ...(land.flat_no ? [[ta("flatNo"), land.flat_no] as [string, string]] : []),
         [tp("registeredOn"), land.registered_at ? format.dateTime(new Date(land.registered_at), { dateStyle: "medium" }) : "—"],
       ]

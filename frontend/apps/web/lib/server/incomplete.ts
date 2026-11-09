@@ -2,6 +2,7 @@ import "server-only";
 import type { Viewer } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { listZones } from "./zones";
+import { fullHouseNo } from "@/lib/house-no";
 
 /** One unfinished item: what it is, a short detail, when, and where to finish it. */
 export interface IncompleteRow {
@@ -92,7 +93,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           href: "/parcels/yet-to-register",
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
-            title: (r.pun as string | null) ?? [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ?? "—",
+            title: (r.pun as string | null) ?? fullHouseNo(name(r.neighbourhood, lang), r.house_no as string | null) ?? "—",
             detail: name(r.neighbourhood, lang),
             status: r.status as string,
             at: r.created_at as string,
@@ -152,7 +153,7 @@ export async function incompleteWork(viewer: Viewer, lang: string): Promise<Inco
           href: "/surveys",
           rows: ((data ?? []) as Rec[]).map((r) => ({
             id: r.id as string,
-            title: (r.pun as string | null) ?? [name(r.neighbourhood, lang), r.house_no].filter(Boolean).join(" · ") ?? "—",
+            title: (r.pun as string | null) ?? fullHouseNo(name(r.neighbourhood, lang), r.house_no as string | null) ?? "—",
             detail: name(r.neighbourhood, lang),
             status: null,
             at: r.site_check_requested_at as string | null,

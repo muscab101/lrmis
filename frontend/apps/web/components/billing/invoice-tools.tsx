@@ -7,6 +7,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { checkDuplicatesAction, checkMissingAction, createMissingAction, fixDuplicatesAction, type DuplicateCopy, type MissingBill } from "@/app/[locale]/(staff)/billing/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { fullHouseNo } from "@/lib/house-no";
 
 /** Check for bills raised twice (one stays, the others are cancelled), and for bills a parcel should have and doesn't. */
 export function InvoiceTools({ canFixDuplicates, canCreateMissing }: { canFixDuplicates: boolean; canCreateMissing: boolean }) {
@@ -118,7 +119,7 @@ export function InvoiceTools({ canFixDuplicates, canCreateMissing }: { canFixDup
                 {missing.map((m) => (
                   <li key={`${m.parcel_id}-${m.code}`} className="flex items-center justify-between gap-3 px-3 py-2">
                     <span className="min-w-0">
-                      <span className="block font-mono text-xs">{m.pun ?? m.house_no ?? "—"}</span>
+                      <span className="block font-mono text-xs">{m.pun ?? fullHouseNo(m.neighbourhood_code, m.house_no) ?? "—"}</span>
                       <span className="text-muted-foreground block truncate text-xs">
                         {[fee(m), m.owners].filter(Boolean).join(" · ")}
                       </span>

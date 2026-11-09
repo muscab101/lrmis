@@ -81,6 +81,7 @@ export interface MissingBill {
   parcel_id: string;
   pun: string | null;
   house_no: string | null;
+  neighbourhood_code?: string | null;
   owners: string | null;
   code: string;
   fee_so: string;

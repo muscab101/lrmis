@@ -22,6 +22,8 @@ export interface DemolitionRow {
   new_house_no: string | null;
   snapshot: Snapshot;
   outstanding: number;
+  /** For a demolition whose land was registered again and then demolished again: the land's current demolition. */
+  current_id?: string | null;
 }
 
 type Named = { id: string; code: string; name_so: string; name_en: string };
@@ -131,7 +133,23 @@ export async function listDemolitions(f: DemolitionFilters, limit = 300) {
       owed.set(land, (owed.get(land) ?? 0) + Number(b.balance));
     }
   }
-  return rows.map((r) => ({ ...r, outstanding: owed.get(r.parcel_id) ?? 0 }));
+  // Land registered again and then demolished again: its current demolition (the one to register from).
+  const again = [...new Set(rows.filter((r) => r.rebuilt_at).map((r) => r.parcel_id))];
+  const current = new Map<string, string>();
+  if (again.length) {
+    const { data: open } = await supabase
+      .from("demolitions")
+      .select("id, parcel_id")
+      .in("parcel_id", again)
+      .eq("status", "approved")
+      .is("rebuilt_at", null);
+    for (const o of (open ?? []) as { id: string; parcel_id: string }[]) current.set(o.parcel_id, o.id);
+  }
+  return rows.map((r) => ({
+    ...r,
+    outstanding: owed.get(r.parcel_id) ?? 0,
+    current_id: r.rebuilt_at ? (current.get(r.parcel_id) ?? null) : null,
+  }));
 }
 
 export interface DemolitionStats {

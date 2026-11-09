@@ -6,6 +6,7 @@ import { Banknote, CreditCard, HandCoins } from "lucide-react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { CollectHouse } from "@/lib/server/collect";
+import { fullHouseNo } from "@/lib/house-no";
 
 /**
  * Cashier → To collect: a table of the registered houses in the desk's district that still owe, one line per unpaid bill.
@@ -54,7 +55,8 @@ export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: Co
                         {h.bills.length > 1 && <div className="text-muted-foreground text-xs tabular-nums">{t("houseTotal", { amount: usd(h.due) })}</div>}
                       </TableCell>
                       <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm md:table-cell">
-                        {[h.house_no && t("house", { no: h.house_no }), lang === "so" ? h.neighbourhood_so : h.neighbourhood_en].filter(Boolean).join(" · ")}
+                        {/* The full house number already starts with the neighbourhood (its name is its code). */}
+                        {h.house_no ? t("house", { no: fullHouseNo(h.neighbourhood_so, h.house_no)! }) : lang === "so" ? h.neighbourhood_so : h.neighbourhood_en}
                         <div className="text-muted-foreground text-xs">{lang === "so" ? h.district_so : h.district_en}</div>
                       </TableCell>
                       <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm sm:table-cell">

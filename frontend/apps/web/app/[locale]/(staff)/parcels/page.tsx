@@ -10,6 +10,7 @@ import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_TABS, parcelStageCounts, REGISTERED_SPLITS, searchParcels } from "@/lib/server/parcels";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -117,8 +118,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               {rows.map((p) => {
                 const nbhd = lang === "so" ? p.neighbourhood : (p.neighbourhood_en ?? p.neighbourhood);
                 const district = lang === "so" ? p.district : p.district_en;
-                // The neighbourhood with the house or flat number, unless the number already starts with it.
-                const houseNo = p.house_no && (nbhd && !p.house_no.startsWith(nbhd) ? `${nbhd} ${p.house_no}` : p.house_no);
+                // The neighbourhood with the house or flat number (its name is its code), unless the number already starts with it.
+                const houseNo = fullHouseNo(p.neighbourhood, p.house_no);
                 return (
                 <TableRow key={p.id}>
                   <TableCell className="hidden text-sm whitespace-nowrap tabular-nums md:table-cell">
