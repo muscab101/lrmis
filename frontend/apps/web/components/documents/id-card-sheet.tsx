@@ -42,8 +42,12 @@ export async function IdCardSheet({
     .join("");
   const date = (v: string | null | undefined) => (v ? format.dateTime(new Date(v), { day: "2-digit", month: "short", year: "numeric" }) : "—");
   const id = h?.id_number ? `${h.id_type ? `${to(`id_${h.id_type}`)} ` : ""}${h.id_number}` : null;
-  // Place: the full house number (neighbourhood code + house number), or the neighbourhood when there is none.
-  const place = s.house_no ? t("cardHouse", { no: fullHouseNo(s.neighbourhood?.code, s.house_no)! }) : name(s.neighbourhood);
+  // Place: "House KRWJXL01 07" (the full number carries the neighbourhood); with no house number, the neighbourhood.
+  const houseNo = fullHouseNo(s.neighbourhood?.code, s.house_no);
+  const place =
+    houseNo && houseNo !== s.house_no?.trim()
+      ? t("cardHouse", { no: houseNo })
+      : [name(s.neighbourhood), houseNo && t("cardHouse", { no: houseNo })].filter(Boolean).join(" · ");
 
   return (
     <div className="flex flex-col items-center gap-6 print:gap-[6mm]">

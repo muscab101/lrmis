@@ -716,7 +716,7 @@ const RULE_TONE: Record<string, StatusTone> = {
 };
 const PAYOUT_TONE: Record<string, StatusTone> = {
   pending: "pending",
-  paid: "approved",
+  paid: "paid",
   rejected: "rejected",
 };
 

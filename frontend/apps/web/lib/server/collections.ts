@@ -76,38 +76,6 @@ export async function listDuplicates(from: string, to: string) {
 export type VerifyStatus = "pending" | "verified" | "reconciled" | "disputed";
 export const VERIFY_STATUSES: readonly VerifyStatus[] = ["pending", "verified", "reconciled", "disputed"];
 
-export interface QueueRow {
-  payment_id: string;
-  receipt_no: string;
-  received_at: string;
-  method: string;
-  wallet: string | null;
-  channel: Channel;
-  reference: string | null;
-  amount: number;
-  expected_amount: number | null;
-  pun: string | null;
-  payer: string | null;
-  cashier_id: string | null;
-  cashier: string | null;
-  district_so: string | null;
-  district_en: string | null;
-  verify_status: VerifyStatus;
-  dispute_reason: string | null;
-  verified_by: string | null;
-  evidence: number;
-  correction_pending: boolean;
-}
-
-export async function listQueue(opts: { status: VerifyStatus | null; from: string; to: string; cashier?: string | null }) {
-  const supabase = await createClient();
-  const rows = unwrap(
-    await supabase.rpc("collections_queue", { p_status: opts.status, p_from: opts.from, p_to: opts.to, p_cashier: opts.cashier ?? null }),
-    "collections queue",
-  ) as QueueRow[];
-  return rows.map((r) => ({ ...r, amount: Number(r.amount), expected_amount: r.expected_amount === null ? null : Number(r.expected_amount), evidence: Number(r.evidence) }));
-}
-
 /** A payment's verification state, for its own page. */
 export async function paymentVerification(id: string) {
   const supabase = await createClient();
@@ -157,6 +125,8 @@ export interface CashierDay {
   cashier: string | null;
   business_date: string;
   district_id: string | null;
+  /** The point(s) of sale the cashier took the day's money at, e.g. "11 Karaan office". */
+  pos_names: string | null;
   payments: number;
   recorded: number;
   pending: number;
@@ -169,9 +139,9 @@ export interface CashierDay {
   difference: number | null;
 }
 
-export async function listCashierDays(from: string, to: string) {
+export async function listCashierDays(from: string, to: string, pos: string | null = null) {
   const supabase = await createClient();
-  const rows = unwrap(await supabase.rpc("cashier_days", { p_from: from, p_to: to }), "cashier days") as CashierDay[];
+  const rows = unwrap(await supabase.rpc("cashier_days", { p_from: from, p_to: to, p_pos: pos }), "cashier days") as CashierDay[];
   const n = (v: unknown) => (v === null || v === undefined ? null : Number(v));
   return rows.map((r) => ({ ...r, payments: Number(r.payments), recorded: Number(r.recorded), pending: Number(r.pending), verified: Number(r.verified), disputed: Number(r.disputed), actual: n(r.actual), difference: n(r.difference) }));
 }
@@ -259,4 +229,84 @@ export interface CollectionsDashboard {
 export async function collectionsDashboard() {
   const supabase = await createClient();
   return unwrap(await supabase.rpc("collections_dashboard", {}), "collections dashboard") as CollectionsDashboard;
+}
+
+/** One point of sale's account for a period: the money its cashiers took, what is approved and what waits. */
+export interface PosCollections {
+  id: string;
+  code: string;
+  name: string;
+  district_id: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  payments: number;
+  total: number;
+  approved: number;
+  waiting: number;
+  disputed: number;
+  /** Money by way of paying: cash, evc_plus, edahab, zaad, bank_transfer, card, other. */
+  channels: Record<string, number>;
+  cashiers: {
+    cashier_id: string | null;
+    cashier: string | null;
+    /** Online payments for land in this office's district (paid through the portal, pay link, USSD or WhatsApp). */
+    online: boolean;
+    /** The point of sale the payments were taken at (the Online one for online rows). */
+    pos_id: string;
+    payments: number;
+    total: number;
+    approved: number;
+    waiting: number;
+    waiting_count: number;
+    disputed: number;
+    channels: Record<string, number>;
+  }[];
+}
+
+/** Points of sale with money in the period, or only the chosen one (shown even when it took nothing). */
+export async function collectionsByPos(from: string, to: string, pos: string | null) {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc("collections_by_pos", { p_from: from, p_to: to, p_pos: pos }), "collections by pos") as PosCollections[];
+}
+
+/** The points of sale to choose from: those in your districts, and Online payments. */
+export async function collectionsPosChoices() {
+  const supabase = await createClient();
+  return unwrap(await supabase.rpc("collections_pos_choices"), "pos choices") as {
+    id: string;
+    code: string;
+    name: string;
+    district_so: string | null;
+    district_en: string | null;
+  }[];
+}
+
+/** One payment behind a cashier's row of a point of sale's account (the cashier's info on the Point of sale page). */
+export interface PosPaymentRow {
+  payment_id: string;
+  receipt_no: string;
+  received_at: string;
+  channel: string;
+  reference: string | null;
+  amount: number;
+  pun: string | null;
+  house_no: string | null;
+  neighbourhood: string | null;
+  /** The land's current owners. */
+  owners: string | null;
+  payer: string | null;
+  payer_phone: string | null;
+  verify_status: VerifyStatus;
+  verified_by: string | null;
+  verified_at: string | null;
+}
+
+/** The payments behind one cashier's row: at one point of sale, in the period; for a district's online row, only that district's. */
+export async function posCashierPayments(pos: string, cashier: string | null, from: string, to: string, district: string | null) {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase.rpc("pos_cashier_payments", { p_pos: pos, p_cashier: cashier, p_from: from, p_to: to, p_district: district }),
+    "point of sale payments",
+  ) as PosPaymentRow[];
+  return rows.map((r) => ({ ...r, amount: Number(r.amount) }));
 }

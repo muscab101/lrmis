@@ -39,7 +39,6 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
   const canDelete = (status: string) => (partial(status) ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"));
   const showInvoices = viewer.can("invoices.view");
-  const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
     <>
@@ -106,6 +105,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               <TableRow>
                 <TableHead className="hidden md:table-cell">{t("dateCreated")}</TableHead>
                 <TableHead>{t("pun")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("accountNo")}</TableHead>
                 {showInvoices && <TableHead className="hidden md:table-cell">{t("invoice")}</TableHead>}
                 <TableHead className="hidden md:table-cell">{t("district")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("houseNo")}</TableHead>
@@ -131,11 +131,13 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                       {p.locked_at && <Lock className="text-danger size-3.5 shrink-0" aria-label={t("lockedLabel")} />}
                       <Mono>{p.pun ?? t("noPun")}</Mono>
                     </Link>
-                    {p.account_no && <Mono className="text-muted-foreground block text-xs">{p.account_no}</Mono>}
                     {/* Narrow screens: the hidden columns, in one line. */}
                     <div className="text-muted-foreground text-xs md:hidden">
                       {[houseNo ?? nbhd, p.building_state === "demolished" && t("demolishedLabel")].filter(Boolean).join(" · ")}
                     </div>
+                  </TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">
+                    {p.account_no ? <Mono className="whitespace-nowrap">{p.account_no}</Mono> : "—"}
                   </TableCell>
                   {showInvoices && (
                     <TableCell className="hidden text-sm md:table-cell">
@@ -152,11 +154,12 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                         <StatusBadge tone="draft">{t("demolishedLabel")}</StatusBadge>
                       </div>
                     )}
-                    {/* Registered land: paid in full (approved, certificate issued) or what it still owes. */}
-                    {!partial(p.status) && (p.invoice || Number(p.balance) > 0) && (
+                    {/* Registered land: paid in full (approved, certificate issued) or what it still owes. Demolished land
+                        shows neither: the house is no longer there. */}
+                    {!partial(p.status) && p.building_state !== "demolished" && (p.invoice || Number(p.balance) > 0) && (
                       <div className="mt-1">
-                        <StatusBadge tone={Number(p.balance) > 0 ? "pending" : "approved"}>
-                          {Number(p.balance) > 0 ? t("owing", { amount: usd(p.balance) }) : t("paidLabel")}
+                        <StatusBadge tone={Number(p.balance) > 0 ? "pending" : "paid"}>
+                          {Number(p.balance) > 0 ? t("notPaidLabel") : t("paidLabel")}
                         </StatusBadge>
                       </div>
                     )}

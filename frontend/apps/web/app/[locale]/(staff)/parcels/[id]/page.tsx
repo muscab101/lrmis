@@ -114,9 +114,10 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           <span className="flex flex-wrap items-center gap-3">
             <Mono>{p.pun ?? t("noPun")}</Mono>
             <ParcelStatusBadge status={p.status} />
-            {owed !== null && (
-              <StatusBadge tone={owed > 0 ? "pending" : "approved"}>
-                {owed > 0 ? t("owing", { amount: format.number(owed, { style: "currency", currency: "USD" }) }) : t("paidLabel")}
+            {/* Paid or owing; not on demolished land, where the house is no longer there. */}
+            {owed !== null && p.building_state !== "demolished" && (
+              <StatusBadge tone={owed > 0 ? "pending" : "paid"}>
+                {owed > 0 ? t("notPaidLabel") : t("paidLabel")}
               </StatusBadge>
             )}
           </span>
@@ -198,7 +199,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </dl>
           </CardContent>
         </Card>
-        <GeometryPreview geometry={p.geom} className="h-72 md:h-full" />
+        <GeometryPreview geometry={p.geom} className="h-72 md:h-full" pin />
         {land && (
           <Card className="md:col-span-2">
             <CardHeader>

@@ -55,8 +55,10 @@ export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: Co
                         {h.bills.length > 1 && <div className="text-muted-foreground text-xs tabular-nums">{t("houseTotal", { amount: usd(h.due) })}</div>}
                       </TableCell>
                       <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm md:table-cell">
-                        {/* The full house number already starts with the neighbourhood (its name is its code). */}
-                        {h.house_no ? t("house", { no: fullHouseNo(h.neighbourhood_so, h.house_no)! }) : lang === "so" ? h.neighbourhood_so : h.neighbourhood_en}
+                        {/* "House KRWJXL01 07"; with no house number, the neighbourhood. */}
+                        {fullHouseNo(h.neighbourhood_so, h.house_no) !== h.house_no?.trim()
+                          ? t("house", { no: fullHouseNo(h.neighbourhood_so, h.house_no)! })
+                          : [h.house_no && t("house", { no: h.house_no }), lang === "so" ? h.neighbourhood_so : h.neighbourhood_en].filter(Boolean).join(" · ")}
                         <div className="text-muted-foreground text-xs">{lang === "so" ? h.district_so : h.district_en}</div>
                       </TableCell>
                       <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm sm:table-cell">

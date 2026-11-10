@@ -172,7 +172,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
                 </dl>
               </CardContent>
             </Card>
-            <GeometryPreview geometry={land.geom} className="h-72 md:h-full" />
+            <GeometryPreview geometry={land.geom} className="h-72 md:h-full" pin />
             <div className="md:col-span-2">
               <TransferHistory parcelId={land.id} currentId={tr.id} />
             </div>

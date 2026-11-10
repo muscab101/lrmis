@@ -45,12 +45,17 @@ export function AsyncCombobox({
   const [options, setOptions] = React.useState<ComboOption[]>([]);
   const [loading, setLoading] = React.useState(false);
 
+  // The latest search function, so a page that passes a new one on every render doesn't restart the search in a loop:
+  // it runs only when the box opens or the text changes.
+  const searchRef = React.useRef(search);
+  searchRef.current = search;
+
   React.useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoading(true);
     const handle = setTimeout(() => {
-      search(query)
+      searchRef.current(query)
         .then((res) => !cancelled && setOptions(res))
         .catch(() => !cancelled && setOptions([]))
         .finally(() => !cancelled && setLoading(false));
@@ -59,7 +64,7 @@ export function AsyncCombobox({
       cancelled = true;
       clearTimeout(handle);
     };
-  }, [open, query, search]);
+  }, [open, query]);
 
   const selected = new Set(value.map((v) => v.value));
 

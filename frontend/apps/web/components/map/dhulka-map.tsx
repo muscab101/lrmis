@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useLocale } from "next-intl";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { createGoogleBase, GOOGLE_MAPS_KEY, type GoogleMapLike, googleRefused, onGoogleRefused } from "./google-base";
-import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, DEMOLISHED_COLOUR, LAYER_IDS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "./style";
+import { BOUNDARY_LAYERS, buildStyle, DEFAULT_VIEW, DEMOLISHED_COLOUR, LAYER_IDS, PIN_OWING, PIN_PAID, PIN_PARTIAL, type BaseMap, type BoundaryLayer } from "./style";
 
 export interface MapView {
   center: [number, number];
@@ -33,6 +33,8 @@ interface Props {
   interactive?: boolean;
   /** Staff maps also show parcels (tiles honour the user's districts). */
   parcels?: boolean;
+  /** Parcels as pins only, without their shapes (the main map). */
+  pinsOnly?: boolean;
 }
 
 const CLICKABLE = ["parcel-pins", "facilities-circle", "parcels-fill", "neighbourhoods-fill"];
@@ -65,7 +67,7 @@ function housePin(colour: string): { width: number; height: number; data: Uint8A
 
 /** MapLibre map with Dhulka base maps and PostGIS boundary tiles. */
 export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
-  { className, initialView, initialBounds, base = "streets", visible, onFeatureClick, onViewChange, interactive = true, parcels = false },
+  { className, initialView, initialBounds, base = "streets", visible, onFeatureClick, onViewChange, interactive = true, parcels = false, pinsOnly = false },
   ref,
 ) {
   const locale = useLocale() as "so" | "en";
@@ -107,7 +109,7 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     if (!container.current) return;
     const m = new maplibregl.Map({
       container: container.current,
-      style: buildStyle(window.location.origin, locale, { parcels }),
+      style: buildStyle(window.location.origin, locale, { parcels, pinsOnly }),
       center: initialView?.center ?? DEFAULT_VIEW.center,
       zoom: initialView?.zoom ?? DEFAULT_VIEW.zoom,
       interactive,
@@ -138,7 +140,16 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     });
 
     m.on("styleimagemissing", (e) => {
-      const colour = e.id === "house-pin-paid" ? PIN_PAID : e.id === "house-pin-owing" ? PIN_OWING : e.id === "house-pin-demolished" ? DEMOLISHED_COLOUR : null;
+      const colour =
+        e.id === "house-pin-paid"
+          ? PIN_PAID
+          : e.id === "house-pin-owing"
+            ? PIN_OWING
+            : e.id === "house-pin-partial"
+              ? PIN_PARTIAL
+              : e.id === "house-pin-demolished"
+                ? DEMOLISHED_COLOUR
+                : null;
       if (!colour || m.hasImage(e.id)) return;
       const img = housePin(colour);
       if (img) m.addImage(e.id, img, { pixelRatio: 2 });
@@ -176,7 +187,7 @@ export const DhulkaMap = forwardRef<DhulkaMapHandle, Props>(function DhulkaMap(
     };
     // Style depends on locale (and the parcels option); the map is recreated when they change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale, parcels]);
+  }, [locale, parcels, pinsOnly]);
 
   // Google's satellite map under ours: it follows every move of our map (Google zoom is ours + 1). Its pictures can't
   // turn, so turning the map is off while it shows.

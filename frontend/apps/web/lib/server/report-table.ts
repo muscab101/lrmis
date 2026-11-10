@@ -393,7 +393,7 @@ export async function reportTable(
       ]);
       links = drill
         ? (data as CollectionsCashierRow[]).map((r) => [
-            r.cashier_id ? `/collections?tab=verify&status=all&cashier=${r.cashier_id}` : null,
+            r.cashier_id ? `/collections?tab=pos` : null,
           ])
         : [];
       break;

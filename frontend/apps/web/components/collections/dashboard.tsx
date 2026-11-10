@@ -131,7 +131,7 @@ export async function CollectionsDashboardView({ d, cashiers, days }: { d: Colle
             <p className="text-muted-foreground text-xs">
               {t("dash.checkingLine", { pending: usd(st("pending").amount), disputed: usd(st("disputed").amount) })}{" "}
               {checkingTotal > 0 && (
-                <Link href="/collections?tab=verify" className="text-primary font-medium hover:underline">
+                <Link href="/collections?tab=pos" className="text-primary font-medium hover:underline">
                   {t("dash.goVerify")}
                 </Link>
               )}
@@ -229,7 +229,7 @@ export async function CollectionsDashboardView({ d, cashiers, days }: { d: Colle
               <TableRow key={r.cashier_id ?? "online"}>
                 <TableCell className="text-sm">
                   {r.cashier_id ? (
-                    <Link href={`/collections?tab=verify&status=all&cashier=${r.cashier_id}&from=${d.month_from}`} className="text-primary hover:underline">
+                    <Link href={`/collections?tab=pos&from=${d.month_from}`} className="text-primary hover:underline">
                       {r.cashier}
                     </Link>
                   ) : (

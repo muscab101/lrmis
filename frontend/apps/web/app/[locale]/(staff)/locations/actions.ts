@@ -97,6 +97,14 @@ export const getGeometryAction = defineAction(
     } | null,
 );
 
+/** The box around the land recorded in a neighbourhood (for one with no boundary drawn yet), or null. */
+export const neighbourhoodLandBboxAction = defineAction(
+  "locations.neighbourhood_land_bbox",
+  z.object({ id: z.uuid() }),
+  async ({ id }, ctx) =>
+    unwrap(await ctx.supabase.rpc("neighbourhood_land_bbox", { p_id: id }), "land bbox") as [number, number, number, number] | null,
+);
+
 /** Children for cascading pickers (district → sections → sectors). Small lists. */
 export const listChildrenAction = defineAction(
   "locations.children",

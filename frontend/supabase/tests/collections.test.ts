@@ -173,6 +173,12 @@ describe("collections, stage 3: reconcile a cashier's day", () => {
   it("shows recorded money per way of paying, with a suggested actual", async () => {
     const days = await asUser(db, officer, (tx) => tx.query<{ cashier_id: string; recorded: string; status: string | null }>(`select * from public.cashier_days(current_date, current_date)`));
     expect(days.rows.map((d) => d.cashier_id).sort()).toEqual([cashier, cashier2].sort());
+    // Each day names the point of sale; narrowing to a point of sale with no payments leaves nothing.
+    const named = await asUser(db, officer, (tx) => tx.query<{ pos_names: string }>(`select pos_names from public.cashier_days(current_date, current_date)`));
+    expect(named.rows.every((d) => d.pos_names === "HDN1 Hodan office")).toBe(true);
+    const other = await scalar<string>(db, `select id from public.points_of_sale where district_id is null limit 1`);
+    const none = await asUser(db, officer, (tx) => tx.query(`select * from public.cashier_days(current_date, current_date, $1)`, [other]));
+    expect(none.rows).toHaveLength(0);
     const s = await asUser(db, officer, (tx) => tx.query<{ channel: string; payments: string; recorded: string }>(`select * from public.cashier_day_summary($1, current_date)`, [cashier]));
     const by = Object.fromEntries(s.rows.map((r) => [r.channel, Number(r.recorded)]));
     // cashier: EVC 40, then cash 30 (later corrected to bank transfer) and cash 30.

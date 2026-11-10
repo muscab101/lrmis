@@ -51,6 +51,7 @@
   --status-approved: #15803d;
   --status-rejected: #c62828;
   --status-partial: #1d5fc2;
+  --status-paid: #1d4ed8; /* paid in full: the blue of the "house paid" map pins */
 
   /* Sidebar (ink) */
   --sidebar: rgb(248 250 252 / 0.45);
@@ -114,6 +115,7 @@
   --status-approved: #34c26b;
   --status-rejected: #f2615a;
   --status-partial: #6aa6ec;
+  --status-paid: #7aa7f0;
 
   --sidebar: rgb(4 10 18 / 0.6);
   --sidebar-foreground: #98a2b2;
@@ -193,6 +195,7 @@
   --color-status-approved: var(--status-approved);
   --color-status-rejected: var(--status-rejected);
   --color-status-partial: var(--status-partial);
+  --color-status-paid: var(--status-paid);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-active: var(--sidebar-active);

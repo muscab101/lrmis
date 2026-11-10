@@ -318,7 +318,8 @@
       "chat_upload_failed": "The file could not be uploaded. Try again.",
       "warning_too_soon": "A warning was just sent. Wait a few seconds before sending another.",
       "printer_wrong_district": "This printer belongs to another district. A document prints only on its own district's printer.",
-      "no_district_printer": "This district has no printer yet. Add one on the Printers page (with its print program key)."
+      "no_district_printer": "This district has no printer yet. Add one on the Printers page (with its print program key).",
+      "nothing_to_approve": "There is nothing waiting to approve."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -1606,7 +1607,8 @@
     "pinOwing": "House owes a bill",
     "bills": "Bills",
     "billsPaid": "Paid",
-    "billsOwing": "Owes {amount}"
+    "billsOwing": "Owes {amount}",
+    "pinPartial": "Not registered yet"
   },
   "locations": {
     "title": "Locations",
@@ -2604,7 +2606,8 @@
     "accountNo": "Account no.",
     "units": "Number of units",
     "unitsHint": "Flats or shops on this land.",
-    "editLand": "Land"
+    "editLand": "Land",
+    "notPaidLabel": "Not paid"
   },
   "notices": {
     "eyebrow": "Public notice",
@@ -5020,7 +5023,8 @@
       "dashboard": "Dashboard",
       "channels": "By way of paying",
       "statements": "Statements",
-      "handovers": "Cash handovers"
+      "handovers": "Cash handovers",
+      "pos": "Point of sale"
     },
     "duplicates": {
       "none": "No likely duplicates",
@@ -5317,6 +5321,37 @@
       "number": "Number",
       "from": "Cashier",
       "shift": "Shift {number}"
+    },
+    "pos": {
+      "search": "Point of sale",
+      "none": "No money at any point of sale",
+      "noneBody": "No payments were taken at a point of sale in these dates. Search a point of sale or change the dates.",
+      "paymentsCount": "{count, plural, =1 {1 payment} other {# payments}}",
+      "total": "Taken",
+      "approvedSum": "Approved",
+      "waitingSum": "Waiting",
+      "approve": "Approve",
+      "approveTitle": "Approve {name}'s payments?",
+      "approveBody": "{count, plural, =1 {1 payment} other {# payments}} waiting, {amount} in all. They are marked as checked and approved.",
+      "approved": "{name}'s payments approved.",
+      "allApproved": "Approved",
+      "all": "All points of sale",
+      "onlineRow": "Online payments",
+      "recordedBy": "recorded by {name}",
+      "byWay": "By way of paying",
+      "receipt": "Receipt",
+      "land": "Land",
+      "way": "Way of paying",
+      "amount": "Amount",
+      "by": "by {name}",
+      "info": "Cashier info",
+      "backToCashiers": "All cashiers of {place}",
+      "byWayTap": "By way of paying — tap one to see who paid",
+      "wayPayments": "{way}: {count, plural, =1 {1 payment} other {# payments}}",
+      "allPayments": "All payments: {count}",
+      "noPayments": "No payments.",
+      "owner": "Owner",
+      "paidBy": "paid by {name}"
     }
   },
   "adminAssistant": {

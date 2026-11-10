@@ -28,17 +28,18 @@ export function Badge({
 /**
  * Status colours are identical across the product:
  * draft = slate, pending = amber, approved/registered/paid/active = green,
- * rejected/overdue/suspended = red, partial/invited = blue.
- * A dot + text means colour is never the only signal.
+ * rejected/overdue/suspended = red, partial/invited = blue, paid = deep blue.
+ * Shown as plain coloured words (no box, no icon); the word itself says the status, so colour is never the only signal.
  */
-export type StatusTone = "draft" | "pending" | "approved" | "rejected" | "partial";
+export type StatusTone = "draft" | "pending" | "approved" | "rejected" | "partial" | "paid";
 
 const TONE_CLASSES: Record<StatusTone, string> = {
-  draft: "bg-card text-status-draft border-status-draft/30",
-  pending: "bg-card text-status-pending border-status-pending/35",
-  approved: "bg-card text-status-approved border-status-approved/35",
-  rejected: "bg-card text-status-rejected border-status-rejected/35",
-  partial: "bg-card text-status-partial border-status-partial/35",
+  draft: "text-status-draft",
+  pending: "text-status-pending",
+  approved: "text-status-approved",
+  rejected: "text-status-rejected",
+  partial: "text-status-partial",
+  paid: "text-status-paid",
 };
 
 export function StatusBadge({
@@ -51,8 +52,7 @@ export function StatusBadge({
   className?: string;
 }) {
   return (
-    <span className={cn(badgeVariants(), TONE_CLASSES[tone], className)}>
-      <span className="size-1.5 rotate-45 bg-current" aria-hidden />
+    <span data-slot="status" className={cn("inline-flex items-center text-xs font-medium whitespace-nowrap", TONE_CLASSES[tone], className)}>
       {children}
     </span>
   );

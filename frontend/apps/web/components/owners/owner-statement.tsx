@@ -55,7 +55,7 @@ export async function OwnerStatement({ s }: { s: Statement }) {
       : Number(y.paid) > 0
         ? ("part" as const)
         : ("unpaid" as const);
-  const TONE = { paid: "approved", part: "partial", unpaid: "rejected" } as const;
+  const TONE = { paid: "paid", part: "partial", unpaid: "rejected" } as const;
 
   return (
     <Card className="overflow-hidden">

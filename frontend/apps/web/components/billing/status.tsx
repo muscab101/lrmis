@@ -16,6 +16,6 @@ export function InvoiceStatusBadge({ status, dueDate }: { status: InvoiceStatus;
   const ti = useTranslations("billing.invoiceStatus");
   const overdue = (status === "issued" || status === "partially_paid") && dueDate < new Date().toISOString().slice(0, 10);
   if (overdue) return <StatusBadge tone="rejected">{ti("overdue")}</StatusBadge>;
-  const tone: Record<InvoiceStatus, StatusTone> = { issued: "pending", partially_paid: "partial", paid: "approved", cancelled: "draft" };
+  const tone: Record<InvoiceStatus, StatusTone> = { issued: "pending", partially_paid: "partial", paid: "paid", cancelled: "draft" };
   return <StatusBadge tone={tone[status]}>{ti(status)}</StatusBadge>;
 }

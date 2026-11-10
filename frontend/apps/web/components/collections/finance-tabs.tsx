@@ -2,9 +2,8 @@ import { StatusBadge, type StatusTone } from "@dhulka/ui/badge";
 import { cn } from "@dhulka/ui/lib/cn";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { FileSpreadsheet, HandCoins } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { HandoverCancel, HandoverReceive } from "@/components/collections/handovers";
 import {
   BatchActions,
   LineActions,
@@ -14,7 +13,6 @@ import { Link } from "@/i18n/navigation";
 import type { Viewer } from "@/lib/server/auth";
 import {
   collectionsChannels,
-  listHandovers,
   listStatementBatches,
   statementLines,
   type BatchStatus,
@@ -32,12 +30,6 @@ const LINE_TONE: Record<string, StatusTone> = {
   amount_mismatch: "partial",
   missing_in_system: "rejected",
   missing_in_provider: "pending",
-};
-const HANDOVER_TONE: Record<string, StatusTone> = {
-  pending: "pending",
-  received: "approved",
-  disputed: "rejected",
-  cancelled: "draft",
 };
 
 async function tools() {
@@ -411,106 +403,6 @@ export async function StatementsTab({
             </Table>
           </div>
         </div>
-      )}
-    </>
-  );
-}
-
-/** Cash handed from cashiers to receivers: confirm what you received, or take back one nobody confirmed. */
-export async function HandoversTab({ viewer, status }: { viewer: Viewer; status: string | null }) {
-  const { t, usd, when } = await tools();
-  const { rows, names } = await listHandovers({ status });
-  const me = viewer.user.id;
-  return (
-    <>
-      <div className="flex flex-wrap items-center gap-2 border-b p-3 text-sm">
-        {[null, "pending", "received", "disputed", "cancelled"].map((s) => (
-          <Link
-            key={s ?? "all"}
-            href={`/collections?tab=handovers${s ? `&status=${s}` : ""}`}
-            className={cn(
-              "rounded-full border px-3 py-1",
-              status === s ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted",
-            )}
-          >
-            {s ? t(`handovers.status.${s}`) : t("status.all")}
-          </Link>
-        ))}
-        <span className="text-muted-foreground ms-auto">{t("handovers.help")}</span>
-      </div>
-      {rows.length === 0 ? (
-        <EmptyState
-          icon={<HandCoins />}
-          title={t("handovers.none")}
-          description={t("handovers.noneBody")}
-        />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("handovers.number")}</TableHead>
-              <TableHead>{t("handovers.from")}</TableHead>
-              <TableHead>{t("handovers.receiver")}</TableHead>
-              <TableHead className="text-end">{t("handovers.counted")}</TableHead>
-              <TableHead className="text-end">{t("handovers.amount")}</TableHead>
-              <TableHead className="text-end">{t("handovers.receivedCol")}</TableHead>
-              <TableHead>{t("statusLabel")}</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((h) => (
-              <TableRow
-                key={h.id}
-                className={h.status === "cancelled" ? "text-muted-foreground" : ""}
-              >
-                <TableCell className="text-sm">
-                  <Mono>{h.number}</Mono>
-                  <span className="text-muted-foreground block text-xs">
-                    {t("handovers.shift", { number: h.shift?.number ?? "—" })} ·{" "}
-                    {when(h.created_at)}
-                  </span>
-                </TableCell>
-                <TableCell className="text-sm">{names[h.from_user] ?? "—"}</TableCell>
-                <TableCell className="text-sm">{names[h.to_user] ?? "—"}</TableCell>
-                <TableCell className="text-end text-sm tabular-nums">
-                  {usd(h.shift?.counted_cash ?? null)}
-                </TableCell>
-                <TableCell className="text-end text-sm font-medium tabular-nums">
-                  {usd(h.amount)}
-                </TableCell>
-                <TableCell
-                  className={cn(
-                    "text-end text-sm tabular-nums",
-                    (h.difference ?? 0) < 0 && "text-danger",
-                    (h.difference ?? 0) > 0 && "text-warning",
-                  )}
-                >
-                  {usd(h.received_amount)}
-                  {h.difference ? <span className="block text-xs">{usd(h.difference)}</span> : null}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge tone={HANDOVER_TONE[h.status] ?? "draft"}>
-                    {t(`handovers.status.${h.status}`)}
-                  </StatusBadge>
-                  {(h.receive_note || h.note) && (
-                    <span className="text-muted-foreground mt-1 block max-w-56 truncate text-xs">
-                      {h.receive_note ?? h.note}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-end">
-                  {h.status === "pending" && h.to_user === me && (
-                    <HandoverReceive id={h.id} number={h.number} amount={h.amount} />
-                  )}
-                  {h.status === "pending" && h.from_user === me && (
-                    <HandoverCancel id={h.id} number={h.number} />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       )}
     </>
   );

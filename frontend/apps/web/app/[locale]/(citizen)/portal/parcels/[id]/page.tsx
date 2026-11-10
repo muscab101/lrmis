@@ -47,7 +47,7 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
             </dl>
           </CardContent>
         </Card>
-        {p.geom && <GeometryPreview geometry={p.geom} className="h-64" />}
+        {p.geom && <GeometryPreview geometry={p.geom} className="h-64" pin />}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">{t("bills")}</CardTitle>
@@ -75,7 +75,7 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
                           <Link href={`/pay/${i.token}`}>{t("payNow")}</Link>
                         </Button>
                       ) : (
-                        <span className="text-xs text-status-approved">{t("paid")}</span>
+                        <span className="text-xs font-medium text-status-paid">{t("paid")}</span>
                       )}
                     </span>
                   </li>

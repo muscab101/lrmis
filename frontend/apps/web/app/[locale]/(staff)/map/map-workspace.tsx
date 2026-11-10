@@ -6,17 +6,18 @@ import { Checkbox, NativeSelect } from "@dhulka/ui/form-controls";
 import { cn } from "@dhulka/ui/lib/cn";
 import { Mono } from "@dhulka/ui/misc";
 import type { FilterSpecification, MapGeoJSONFeature } from "maplibre-gl";
-import { Layers, MapPinned, X } from "lucide-react";
+import { Layers, MapPin, MapPinned, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/dhulka-map";
-import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
+import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PARTIAL, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
-import { getGeometryAction, searchNeighbourhoodsAction } from "../locations/actions";
+import { getGeometryAction, neighbourhoodLandBboxAction, searchNeighbourhoodsAction } from "../locations/actions";
 import { parcelSummaryAction } from "../parcels/actions";
 import { fullHouseNo } from "@/lib/house-no";
 
-const PREFS_KEY = "dhulka.map.prefs";
+// v2: new defaults (satellite, districts and parcels only) apply once to everyone, then each choice is remembered.
+const PREFS_KEY = "dhulka.map.prefs.v2";
 
 interface Prefs {
   base: BaseMap;
@@ -24,8 +25,8 @@ interface Prefs {
 }
 
 const DEFAULT_PREFS: Prefs = {
-  base: "streets",
-  visible: { districts: true, sections: true, sectors: true, neighbourhoods: true, streets: true, facilities: true },
+  base: "satellite",
+  visible: { districts: true, sections: false, sectors: false, neighbourhoods: false, streets: false, facilities: false },
 };
 
 export function MapWorkspace({
@@ -115,10 +116,13 @@ export function MapWorkspace({
     [],
   );
 
+  // Each search result's district, to fall back to when the neighbourhood has no boundary and no land yet.
+  const searchDistricts = useRef(new Map<string, string>());
   const searchNeighbourhoods = useCallback(
     async (q: string): Promise<ComboOption[]> => {
       const res = await searchNeighbourhoodsAction({ q, districtId: null });
       if (!res.ok) return [];
+      for (const n of res.data) searchDistricts.current.set(n.id, n.district_id);
       return res.data.map((n) => ({
         value: n.id,
         label: `${locale === "so" ? n.name_so : n.name_en} · ${n.district_name_so}`,
@@ -133,7 +137,15 @@ export function MapWorkspace({
     if (res.ok && res.data) {
       mapRef.current?.setHighlight(res.data.geometry, colour);
       mapRef.current?.fitBounds(res.data.bbox);
+      return;
     }
+    if (level !== "neighbourhoods") return;
+    // No boundary drawn yet: go to the land recorded in the neighbourhood, else to its district.
+    mapRef.current?.setHighlight(null);
+    const land = await neighbourhoodLandBboxAction({ id });
+    if (land.ok && land.data) return mapRef.current?.fitBounds(land.data, 18);
+    const district = searchDistricts.current.get(id);
+    if (district) await zoomTo("districts", district);
   }
 
   // The details of a clicked house (pin or shape), loaded when it is picked.
@@ -164,6 +176,7 @@ export function MapWorkspace({
         onFeatureClick={onFeatureClick}
         onViewChange={onViewChange}
         parcels={canViewParcels}
+        pinsOnly
       />
 
       {/* Search */}
@@ -221,7 +234,8 @@ export function MapWorkspace({
                 <li>
                   <label className="flex items-center gap-2.5 text-sm">
                     <Checkbox checked={showParcels} onCheckedChange={(v) => setShowParcels(v === true)} />
-                    <Swatch colour="#15803d" kind="fill" />
+                    {/* Houses show as pins on the map, so the legend shows a pin. */}
+                    <MapPin className="size-4 shrink-0 text-[#1d4ed8]" aria-hidden />
                     <span className="flex-1">{t("layer_parcels")}</span>
                     {zoom < 13 && <span className="text-[10px] text-muted-foreground">{t("zoomIn")}</span>}
                   </label>
@@ -245,6 +259,10 @@ export function MapWorkspace({
                     <li className="flex items-center gap-2">
                       <Swatch colour={PIN_OWING} kind="dot" />
                       {t("pinOwing")}
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Swatch colour={PIN_PARTIAL} kind="dot" />
+                      {t("pinPartial")}
                     </li>
                   </ul>
                 </li>

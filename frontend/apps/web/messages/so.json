@@ -318,7 +318,8 @@
       "chat_upload_failed": "Faylka lama soo gelin karin. Mar kale isku day.",
       "warning_too_soon": "Digniin hadda ayaa la diray. Dhowr ilbiriqsi sug ka hor intaadan mid kale dirin.",
       "printer_wrong_district": "Printer-kan wuxuu ka tirsan yahay degmo kale. Dukumentigu wuxuu ku daabacmaa oo keliya printer-ka degmadiisa.",
-      "no_district_printer": "Degmadan weli ma laha printer. Ku dar bogga Printers (furahiisa barnaamijka daabacaadda la socda)."
+      "no_district_printer": "Degmadan weli ma laha printer. Ku dar bogga Printers (furahiisa barnaamijka daabacaadda la socda).",
+      "nothing_to_approve": "Wax sugaya oo la ansixiyo ma jiraan."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -1606,7 +1607,8 @@
     "pinOwing": "Guriga biil baa lagu leeyahay",
     "bills": "Biilasha",
     "billsPaid": "La bixiyay",
-    "billsOwing": "Waxaa lagu leeyahay {amount}"
+    "billsOwing": "Waxaa lagu leeyahay {amount}",
+    "pinPartial": "Weli lama diiwaangelin"
   },
   "locations": {
     "title": "Goobaha",
@@ -2604,7 +2606,8 @@
     "accountNo": "Lambarka xisaabta",
     "units": "Tirada qaybaha",
     "unitsHint": "Guryaha ama dukaamada dhulkan ku yaal.",
-    "editLand": "Dhulka"
+    "editLand": "Dhulka",
+    "notPaidLabel": "Lama bixin"
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
@@ -5020,7 +5023,8 @@
       "dashboard": "Guudmar",
       "channels": "Habka lacag-bixinta",
       "statements": "Bayaannada",
-      "handovers": "Wareejinta lacagta"
+      "handovers": "Wareejinta lacagta",
+      "pos": "Goobta lacag-qabashada"
     },
     "duplicates": {
       "none": "Ma jiraan wax u eg labanlaab",
@@ -5317,6 +5321,37 @@
       "number": "Lambarka",
       "from": "Lacag-haye",
       "shift": "Shaqada {number}"
+    },
+    "pos": {
+      "search": "Goobta lacag-qabashada",
+      "none": "Lacag kuma jirto goob kasta",
+      "noneBody": "Taariikhahan lacag lagama qaadin goob lacag-qabasho. Raadi goob ama beddel taariikhaha.",
+      "paymentsCount": "{count, plural, =1 {1 lacag-bixin} other {# lacag-bixin}}",
+      "total": "La qaaday",
+      "approvedSum": "La ansixiyay",
+      "waitingSum": "Sugaya",
+      "approve": "Ansixi",
+      "approveTitle": "Ma ansixinaysaa lacagaha {name}?",
+      "approveBody": "{count, plural, =1 {1 lacag-bixin} other {# lacag-bixin}} ayaa sugaya, wadar ahaan {amount}. Waxaa loo calaamadeeyaa in la hubiyay oo la ansixiyay.",
+      "approved": "Lacagaha {name} waa la ansixiyay.",
+      "allApproved": "La ansixiyay",
+      "all": "Dhammaan goobaha",
+      "onlineRow": "Lacag-bixinta online",
+      "recordedBy": "waxaa diiwaangeliyay {name}",
+      "byWay": "Habka lacag-bixinta",
+      "receipt": "Rasiid",
+      "land": "Dhulka",
+      "way": "Habka bixinta",
+      "amount": "Lacagta",
+      "by": "waxaa sameeyay {name}",
+      "info": "Xogta khasnajiga",
+      "backToCashiers": "Dhammaan khasnajiyada {place}",
+      "byWayTap": "Habka lacag-bixinta — taabo mid si aad u aragto cidda bixisay",
+      "wayPayments": "{way}: {count, plural, =1 {1 lacag-bixin} other {# lacag-bixin}}",
+      "allPayments": "Dhammaan lacag-bixinta: {count}",
+      "noPayments": "Lacag-bixin ma jirto.",
+      "owner": "Milkiilaha",
+      "paidBy": "waxaa bixiyay {name}"
     }
   },
   "adminAssistant": {

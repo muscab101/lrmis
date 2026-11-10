@@ -10,17 +10,16 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { CorrectionsList } from "@/components/collections/corrections-list";
-import { ChannelsTab, HandoversTab, StatementsTab } from "@/components/collections/finance-tabs";
+import { ChannelsTab, StatementsTab } from "@/components/collections/finance-tabs";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 import { CollectionsDashboardView } from "@/components/collections/dashboard";
-import { VerifyTable } from "@/components/collections/verify-table";
+import { PointOfSaleTab } from "@/components/collections/point-of-sale";
 import {
   collectionsDashboard,
+  collectionsPosChoices,
   listCashierDays,
   listCorrections,
   listDuplicates,
-  listQueue,
-  VERIFY_STATUSES,
-  type VerifyStatus,
 } from "@/lib/server/collections";
 import { type CollectionsCashierRow, type CollectionsRow, runReport } from "@/lib/server/reports";
 
@@ -31,11 +30,10 @@ export async function generateMetadata() {
 
 const TABS = [
   "dashboard",
+  "pos",
   "channels",
-  "verify",
   "statements",
   "reconcile",
-  "handovers",
   "corrections",
   "duplicates",
 ] as const;
@@ -65,7 +63,9 @@ export default async function CollectionsPage({
   const tp = await getTranslations("payments");
   const format = await getFormatter();
   const sp = await searchParams;
-  const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : TABS[0];
+  // The old Verify tab is now part of Point of sale.
+  const asked = sp.tab === "verify" ? "pos" : sp.tab;
+  const tab: Tab = (TABS as readonly string[]).includes(asked ?? "") ? (asked as Tab) : TABS[0];
   const { from, to } = range(sp);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const dt = (s: string) =>
@@ -111,6 +111,9 @@ export default async function CollectionsPage({
         days={days as CollectionsRow[]}
       />
     );
+  } else if (tab === "pos") {
+    // Point of sale: choose one, see every cashier, open a cashier's info (money by way of paying, every owner who paid).
+    body = <PointOfSaleTab sp={sp} from={from} to={to} me={viewer.user.id} canApprove={viewer.can("reconciliation.update")} superAdmin={viewer.isSuperAdmin} />;
   } else if (tab === "channels") {
     body = (
       <>
@@ -126,49 +129,24 @@ export default async function CollectionsPage({
       ? (sp.status as "open")
       : null;
     body = <StatementsTab batchId={batch} status={status} viewer={viewer} />;
-  } else if (tab === "handovers") {
-    const status = ["pending", "received", "disputed", "cancelled"].includes(sp.status ?? "")
-      ? sp.status!
-      : null;
-    body = <HandoversTab viewer={viewer} status={status} />;
-  } else if (tab === "verify") {
-    // Status: pending by default; "all" shows every state.
-    const status: VerifyStatus | null =
-      sp.status === "all"
-        ? null
-        : VERIFY_STATUSES.includes(sp.status as VerifyStatus)
-          ? (sp.status as VerifyStatus)
-          : "pending";
-    const all = await listQueue({ status, from, to });
-    const cashiers = [
-      ...new Map(
-        all.filter((r) => r.cashier_id).map((r) => [r.cashier_id!, r.cashier ?? "—"]),
-      ).entries(),
-    ];
-    const cashier = cashiers.some(([id]) => id === sp.cashier) ? sp.cashier! : "";
-    const rows = cashier ? all.filter((r) => r.cashier_id === cashier) : all;
+  } else if (tab === "reconcile") {
+    // One point of sale, or all: the same choice as on Point of sale, applied as soon as it changes.
+    const choices = await collectionsPosChoices();
+    const posId = choices.some((c) => c.id === sp.pos) ? sp.pos! : null;
+    const days = await listCashierDays(from, to, posId);
+    const place = (c: { district_so: string | null; district_en: string | null }) => (locale === "so" ? c.district_so : c.district_en) ?? "";
+    const pendingApproval = days.filter((d) => d.status === "submitted").length;
     body = (
       <>
-        <form className="flex flex-wrap items-end gap-3 p-3 text-sm">
-          <input type="hidden" name="tab" value="verify" />
+        <AutoSubmitForm key={`${posId ?? "all"}-${from}-${to}`} className="flex flex-wrap items-end gap-3 p-3 text-sm">
+          <input type="hidden" name="tab" value="reconcile" />
           <label className="grid gap-1">
-            <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
-            <NativeSelect name="status" defaultValue={status ?? "all"} className="w-auto min-w-36">
-              {VERIFY_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t(`status.${s}`)}
-                </option>
-              ))}
-              <option value="all">{t("status.all")}</option>
-            </NativeSelect>
-          </label>
-          <label className="grid gap-1">
-            <span className="text-muted-foreground text-xs">{t("cashier")}</span>
-            <NativeSelect name="cashier" defaultValue={cashier} className="w-auto min-w-40">
-              <option value="">{t("allCashiers")}</option>
-              {cashiers.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
+            <span className="text-muted-foreground text-xs">{t("pos.search")}</span>
+            <NativeSelect name="pos" defaultValue={posId ?? ""} className="w-auto min-w-64">
+              <option value="">{t("pos.all")}</option>
+              {choices.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {[`${c.code} · ${c.name}`, place(c)].filter(Boolean).join(" — ")}
                 </option>
               ))}
             </NativeSelect>
@@ -181,31 +159,7 @@ export default async function CollectionsPage({
             <span className="text-muted-foreground text-xs">{t("to")}</span>
             <Input type="date" name="to" defaultValue={to} className="w-40" />
           </label>
-          <Button type="submit" size="sm" variant="outline">
-            {t("apply")}
-          </Button>
-        </form>
-        {rows.length === 0 ? (
-          <EmptyState
-            icon={<CopyCheck />}
-            title={t("verify.none")}
-            description={t("verify.noneBody")}
-          />
-        ) : (
-          <VerifyTable
-            rows={rows}
-            canVerify={viewer.can("reconciliation.update")}
-            me={viewer.user.id}
-          />
-        )}
-      </>
-    );
-  } else if (tab === "reconcile") {
-    const days = await listCashierDays(from, to);
-    const pendingApproval = days.filter((d) => d.status === "submitted").length;
-    body = (
-      <>
-        {periodForm}
+        </AutoSubmitForm>
         {pendingApproval > 0 && (
           <p className="text-status-pending border-t px-4 py-2 text-sm">
             {t("recon.waiting", { count: pendingApproval })}
@@ -223,6 +177,7 @@ export default async function CollectionsPage({
               <TableRow>
                 <TableHead>{t("recon.date")}</TableHead>
                 <TableHead>{t("cashier")}</TableHead>
+                <TableHead>{t("pos.search")}</TableHead>
                 <TableHead className="text-end">{t("recon.payments")}</TableHead>
                 <TableHead className="text-end">{t("recon.recorded")}</TableHead>
                 <TableHead>{t("recon.checked")}</TableHead>
@@ -243,6 +198,7 @@ export default async function CollectionsPage({
                       })}
                     </TableCell>
                     <TableCell className="text-sm">{d.cashier ?? "—"}</TableCell>
+                    <TableCell className="text-sm">{d.pos_names ?? "—"}</TableCell>
                     <TableCell className="text-end text-sm tabular-nums">{d.payments}</TableCell>
                     <TableCell className="text-end text-sm tabular-nums">
                       {usd(d.recorded)}

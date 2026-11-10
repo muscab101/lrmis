@@ -377,64 +377,16 @@ export const deleteBatchAction = defineAction(
   },
 );
 
-// ---- Cash handovers ----
-export const createHandoverAction = defineAction(
-  "cashier.handover",
-  z.object({
-    shiftId: z.uuid(),
-    to: z.uuid("validation.required"),
-    amount: z.coerce.number().min(0, "validation.amount").max(10_000_000, "validation.amount"),
-    note: z.string().trim().max(500).default(""),
-  }),
-  async (v, ctx) => {
-    try {
+/** Approve every waiting payment one cashier took at one point of sale in the period (never your own takings). */
+export const approvePosCashierAction = defineAction(
+  "collections.pos_approve",
+  z.object({ pos: z.uuid(), cashier: z.uuid(), from: z.iso.date(), to: z.iso.date(), district: z.uuid().nullable().default(null) }),
+  // For online payments shown under a district office, only that district's (district).
+  async (v, ctx) =>
+    done(
       unwrap(
-        await ctx.supabase.rpc("handover_create", {
-          p_shift: v.shiftId,
-          p_to: v.to,
-          p_amount: v.amount,
-          p_note: v.note || null,
-        }),
-        "handover",
-      );
-      revalidatePath("/[locale]/cashier", "page");
-      return done(null);
-    } catch (err) {
-      field(err, { note_required: "note", receiver: "to", amount: "amount" });
-    }
-  },
-);
-
-export const receiveHandoverAction = defineAction(
-  "collections.handover_receive",
-  z.object({
-    id: z.uuid(),
-    amount: z.coerce.number().min(0, "validation.amount").max(10_000_000, "validation.amount"),
-    note: z.string().trim().max(500).default(""),
-  }),
-  async (v, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("handover_receive", {
-          p_id: v.id,
-          p_amount: v.amount,
-          p_note: v.note || null,
-        }),
-        "handover receive",
-      );
-      return done(null);
-    } catch (err) {
-      field(err, { note_required: "note", amount: "amount" });
-    }
-  },
-);
-
-export const cancelHandoverAction = defineAction(
-  "cashier.handover_cancel",
-  z.object({ id: z.uuid() }),
-  async (v, ctx) => {
-    unwrap(await ctx.supabase.rpc("handover_cancel", { p_id: v.id }), "handover cancel");
-    revalidatePath("/[locale]/cashier", "page");
-    return done(null);
-  },
+        await ctx.supabase.rpc("pos_cashier_approve", { p_pos: v.pos, p_cashier: v.cashier, p_from: v.from, p_to: v.to, p_district: v.district }),
+        "approve point of sale",
+      ) as number,
+    ),
 );

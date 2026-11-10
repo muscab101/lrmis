@@ -155,7 +155,7 @@ export default async function DemolitionPage({
           <CardContent>{dl(place)}</CardContent>
         </Card>
         <div className="space-y-2">
-          <GeometryPreview geometry={s.geom} className="h-72 md:h-[calc(100%-1.75rem)]" />
+          <GeometryPreview geometry={s.geom} className="h-72 md:h-[calc(100%-1.75rem)]" pin />
           <Link
             href={`/map`}
             className="text-muted-foreground hover:text-primary flex items-center gap-1.5 text-xs"
