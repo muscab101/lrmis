@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_TABS, parcelStageCounts, REGISTERED_SPLITS, searchParcels } from "@/lib/server/parcels";
 import { fullHouseNo } from "@/lib/house-no";
+import { segClass, segGroupClass, TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -49,23 +50,23 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
               key={k}
               href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
               aria-current={stage === k ? "page" : undefined}
-              className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${stage === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+              className={tabClass(stage === k)}
             >
-              {t(`stage_${k}`)} <span className="text-muted-foreground tabular-nums">{counts[k]}</span>
+              {t(`stage_${k}`)} <TabCount n={counts[k]} />
             </Link>
           ))}
         </nav>
       </PageHeader>
       {stage === "registered" && (
-        <div className="bg-muted mb-3 flex w-fit gap-0.5 rounded-md p-0.5 text-sm" role="group" aria-label={t("paySplit")}>
+        <div className={`${segGroupClass} mb-3`} role="group" aria-label={t("paySplit")}>
           {REGISTERED_SPLITS.map((k) => (
             <Link
               key={k}
               href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
               aria-current={split === k ? "page" : undefined}
-              className={`rounded px-2.5 py-1 whitespace-nowrap ${split === k ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={segClass(split === k)}
             >
-              {t(`split_${k}`)} <span className="text-muted-foreground tabular-nums">{k === "all" ? counts.registered : counts[k]}</span>
+              {t(`split_${k}`)} <TabCount n={k === "all" ? counts.registered : counts[k]} />
             </Link>
           ))}
         </div>

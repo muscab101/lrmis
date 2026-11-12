@@ -1,7 +1,6 @@
-import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
-import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
+import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { MapPinOff } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -15,6 +14,7 @@ import { neighbourhoodStatus } from "@/lib/server/parcels";
 import { listZones, zonePlaces } from "@/lib/server/zones";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 export async function generateMetadata() {
   const t = await getTranslations("yetToRegister");
@@ -136,17 +136,9 @@ export default async function YetToRegisterPage({
           </CardContent>
         </Card>
       )}
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
-        <KpiChip label={t("kpiPartial")} value={n(status.reduce((s, r) => s + r.partial, 0))} />
-        <KpiChip
-          label={t("kpiApplications")}
-          value={n(status.reduce((s, r) => s + r.open_applications, 0))}
-        />
-        <KpiChip label={t("kpiNotStarted")} value={n(notStarted.length)} />
-      </div>
       <Card className="overflow-hidden">
         {districts.length > 1 && (
-          <form className="flex flex-wrap items-center gap-3 border-b p-3">
+          <AutoSubmitForm className="flex flex-wrap items-center gap-3 border-b p-3">
             <input type="hidden" name="tab" value={tab} />
             <NativeSelect
               name="district"
@@ -161,10 +153,7 @@ export default async function YetToRegisterPage({
                 </option>
               ))}
             </NativeSelect>
-            <Button type="submit" size="sm" variant="outline">
-              {t("apply")}
-            </Button>
-          </form>
+          </AutoSubmitForm>
         )}
         {tab === "zones" && (
           <div className="border-b px-3 py-2 text-xs">

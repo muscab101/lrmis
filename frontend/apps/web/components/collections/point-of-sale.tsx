@@ -11,7 +11,7 @@ import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 import { Link } from "@/i18n/navigation";
 import { CHANNEL_ORDER } from "@/lib/collection-channels";
 import { fullHouseNo } from "@/lib/house-no";
-import { collectionsByPos, collectionsPosChoices, type PosCollections, posCashierPayments } from "@/lib/server/collections";
+import { type BillTypeTotal, collectionsByPos, collectionsPosChoices, type PosCollections, posCashierPayments } from "@/lib/server/collections";
 
 const STATUS_TONE = { pending: "pending", verified: "approved", reconciled: "approved", disputed: "rejected" } as const;
 const ID = /^[0-9a-f-]{36}$/i;
@@ -47,6 +47,7 @@ export async function PointOfSaleTab({
       .map((c) => `${t(`channels.${c}`)} ${usd(Number(ch[c]))}`)
       .join(" · ");
 
+  const typeName = (b: { code: string; name_so: string; name_en: string }) => (locale === "so" ? b.name_so : b.name_en);
   const choices = await collectionsPosChoices();
   const posId = choices.some((c) => c.id === sp.pos) ? sp.pos! : null;
   const places = await collectionsByPos(from, to, posId);
@@ -89,7 +90,7 @@ export async function PointOfSaleTab({
       <input type="hidden" name="tab" value="pos" />
       <label className="grid gap-1">
         <span className="text-muted-foreground text-xs">{t("pos.search")}</span>
-        <NativeSelect name="pos" defaultValue={posId ?? ""} className="w-auto min-w-64">
+        <NativeSelect name="pos" defaultValue={posId ?? ""} className="w-full sm:w-auto sm:min-w-64">
           <option value="">{t("pos.all")}</option>
           {choices.map((c) => (
             <option key={c.id} value={c.id}>
@@ -114,8 +115,23 @@ export async function PointOfSaleTab({
     const { place, row } = open;
     const payments = await posCashierPayments(row.pos_id, row.cashier_id, from, to, row.online ? place.district_id : null);
     const way = (CHANNEL_ORDER as readonly string[]).includes(sp.way ?? "") ? sp.way! : null;
-    const shown = way ? payments.filter((p) => p.channel === way) : payments;
+    // Money by bill type for this cashier: each payment's share on each bill.
+    const byType = new Map<string, BillTypeTotal & { count: number }>();
+    for (const p of payments) {
+      for (const b of p.bills.map((x) => ({ ...x, amount: Number(x.amount) }))) {
+        const cur = byType.get(b.code) ?? { code: b.code, name_so: b.name_so, name_en: b.name_en, total: 0, count: 0 };
+        cur.total += b.amount;
+        cur.count += 1;
+        byType.set(b.code, cur);
+      }
+    }
+    const types = [...byType.values()].sort((a, b) => b.total - a.total);
+    const type = sp.type && byType.has(sp.type) ? sp.type : null;
+    const hasType = (p: (typeof payments)[number], code: string) => p.bills.some((b) => b.code === code);
+    const shown = payments.filter((p) => (!way || p.channel === way) && (!type || hasType(p, type)));
     const here = { via: row.pos_id, cashier: row.cashier_id ?? "system", ...(row.online ? { online: "1" } : {}) };
+    const withType: Record<string, string> = type ? { type } : {};
+    const withWay: Record<string, string> = way ? { way } : {};
     return (
       <>
         {filters}
@@ -173,7 +189,7 @@ export async function PointOfSaleTab({
                       <div className="bg-muted/40 rounded-lg border px-3 py-2 opacity-60">{body}</div>
                     ) : (
                       <Link
-                        href={href({ ...here, ...(active ? {} : { way: c }) })}
+                        href={href({ ...here, ...withType, ...(active ? {} : { way: c }) })}
                         aria-current={active ? "true" : undefined}
                         className={`bg-card hover:border-primary/50 block rounded-lg border px-3 py-2 transition-colors ${active ? "border-primary ring-primary/30 ring-2" : ""}`}
                       >
@@ -186,10 +202,37 @@ export async function PointOfSaleTab({
             </ul>
           </div>
 
-          {/* Every payment of the chosen way (or all), with the owners of the land. */}
+          {/* By bill type: tap one to see only the payments for it; tap it again to see all. */}
+          {types.length > 0 && (
+            <div>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">{t("pos.byTypeTap")}</p>
+              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                {types.map((b) => {
+                  const active = type === b.code;
+                  return (
+                    <li key={b.code}>
+                      <Link
+                        href={href({ ...here, ...withWay, ...(active ? {} : { type: b.code }) })}
+                        aria-current={active ? "true" : undefined}
+                        className={`bg-card hover:border-primary/50 block rounded-lg border px-3 py-2 transition-colors ${active ? "border-primary ring-primary/30 ring-2" : ""}`}
+                      >
+                        <p className="text-muted-foreground truncate text-xs">{typeName(b)}</p>
+                        <p className="font-semibold tabular-nums">{usd(b.total)}</p>
+                        <p className="text-muted-foreground text-[11px]">{t("pos.paymentsCount", { count: b.count })}</p>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* Every payment of the chosen way and type (or all), with the owners of the land. */}
           <div>
             <p className="mb-2 text-sm font-medium">
-              {way ? t("pos.wayPayments", { way: t(`channels.${way}`), count: shown.length }) : t("pos.allPayments", { count: shown.length })}
+              {way || type
+                ? t("pos.wayPayments", { way: [way ? t(`channels.${way}`) : null, type ? typeName(byType.get(type)!) : null].filter(Boolean).join(" · "), count: shown.length })
+                : t("pos.allPayments", { count: shown.length })}
             </p>
             {shown.length === 0 ? (
               <p className="text-muted-foreground text-sm">{t("pos.noPayments")}</p>
@@ -201,6 +244,7 @@ export async function PointOfSaleTab({
                     <TableHead>{t("pos.land")}</TableHead>
                     <TableHead>{t("pos.receipt")}</TableHead>
                     <TableHead>{t("pos.way")}</TableHead>
+                    <TableHead>{t("pos.paidFor")}</TableHead>
                     <TableHead className="text-end">{t("pos.amount")}</TableHead>
                     <TableHead>{t("statusLabel")}</TableHead>
                   </TableRow>
@@ -228,6 +272,14 @@ export async function PointOfSaleTab({
                       <TableCell className="text-sm">
                         {t(`channels.${p.channel}`)}
                         {p.reference && <span className="text-muted-foreground block font-mono text-xs">{p.reference}</span>}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {p.bills.length === 0 && "—"}
+                        {p.bills.map((b) => (
+                          <span key={`${b.number}-${b.code}`} className="block">
+                            {typeName(b)} <span className="text-muted-foreground text-xs tabular-nums">{usd(Number(b.amount))}</span>
+                          </span>
+                        ))}
                       </TableCell>
                       <TableCell className="text-end text-sm font-medium tabular-nums">{usd(p.amount)}</TableCell>
                       <TableCell>
@@ -300,6 +352,11 @@ export async function PointOfSaleTab({
                     <TableRow>
                       <TableHead>{t("cashier")}</TableHead>
                       <TableHead className="text-end">{t("recon.payments")}</TableHead>
+                      {p.bill_types.map((b) => (
+                        <TableHead key={b.code} className="text-end">
+                          {typeName(b)}
+                        </TableHead>
+                      ))}
                       <TableHead className="text-end">{t("pos.total")}</TableHead>
                       <TableHead className="text-end">{t("pos.approvedSum")}</TableHead>
                       <TableHead className="text-end">{t("pos.waitingSum")}</TableHead>
@@ -317,7 +374,15 @@ export async function PointOfSaleTab({
                           {ways(c.channels) && <span className="text-muted-foreground block text-xs">{ways(c.channels)}</span>}
                         </TableCell>
                         <TableCell className="text-end text-sm tabular-nums">{c.payments}</TableCell>
-                        <TableCell className="text-end text-sm font-medium tabular-nums">{usd(c.total)}</TableCell>
+                        {p.bill_types.map((b) => {
+                          const v = Number(c.bill_types[b.code] ?? 0);
+                          return (
+                            <TableCell key={b.code} className={`text-end text-sm tabular-nums ${v > 0 ? "" : "text-muted-foreground"}`}>
+                              {v > 0 ? usd(v) : "—"}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-end text-sm font-semibold tabular-nums">{usd(c.total)}</TableCell>
                         <TableCell className="text-status-approved text-end text-sm tabular-nums">{usd(c.approved)}</TableCell>
                         <TableCell className={`text-end text-sm tabular-nums ${c.waiting > 0 ? "text-status-pending font-medium" : ""}`}>{usd(c.waiting)}</TableCell>
                         <TableCell className="text-end">

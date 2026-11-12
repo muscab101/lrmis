@@ -15,6 +15,8 @@ import { placeChoices } from "@/lib/server/billing";
 import { demolitionStats, listDemolitions } from "@/lib/server/demolitions";
 import { createClient } from "@/lib/supabase/server";
 import { fullHouseNo } from "@/lib/house-no";
+import { TabCount, tabClass } from "@/components/shell/tabs";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 type Search = {
   tab?: string;
@@ -142,11 +144,11 @@ export default async function DemolishedPage({
             key={k}
             href={`/demolished?${query({ tab: k })}`}
             aria-current={tab === k ? "page" : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+            className={tabClass(tab === k)}
           >
             {t(`tab_${k}`)}
             {k === "pending" && stats.waiting > 0 && (
-              <span className="text-muted-foreground ms-1 tabular-nums">{stats.waiting}</span>
+              <TabCount n={stats.waiting} />
             )}
           </Link>
         ))}
@@ -162,7 +164,7 @@ export default async function DemolishedPage({
           ]}
           query={{ d: sp.d, s: sp.s, k: sp.k, n: sp.n }}
         />
-        <form method="get" className="flex flex-wrap items-end gap-2">
+        <AutoSubmitForm className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="tab" value={tab} />
           {(["d", "s", "k", "n"] as const).map(
             (k) => sp[k] && <input key={k} type="hidden" name={k} value={sp[k]} />,
@@ -184,10 +186,7 @@ export default async function DemolishedPage({
             {t("to")}
             <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9 w-40" />
           </label>
-          <Button type="submit" variant="outline" size="sm">
-            {t("show")}
-          </Button>
-        </form>
+        </AutoSubmitForm>
       </div>
 
       {tab === "pending" && canApprove && rows.length > 1 && (

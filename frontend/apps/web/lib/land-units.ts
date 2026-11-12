@@ -13,3 +13,14 @@ export function splitSharedM2(own: number[], shared: number, split: "equal" | "b
     return part;
   });
 }
+
+/**
+ * A flats building's floors that have no flat yet: floors 1 up to the number of floors entered (the ground floor, 0,
+ * may hold shops or parking, so it is never "missing"). E.g. 5 floors with flats on 1, 2, 3 and 5 → [4].
+ */
+export function missingFloors(floors: number | null | undefined, unitFloors: (number | string | null | undefined)[]): number[] {
+  const n = Number(floors);
+  if (!Number.isInteger(n) || n < 1 || n > 100) return [];
+  const used = new Set(unitFloors.map((f) => Number(f)).filter((f) => Number.isInteger(f)));
+  return Array.from({ length: n }, (_, i) => i + 1).filter((f) => !used.has(f));
+}

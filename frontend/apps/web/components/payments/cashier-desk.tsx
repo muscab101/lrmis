@@ -12,6 +12,7 @@ import { Printer, Search } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { closeShiftAction, findParcelAction, openShiftAction, takePaymentAction } from "@/app/[locale]/(staff)/payments/actions";
+import { PushPayment } from "@/components/payments/push-payment";
 import { FormError } from "@/components/forms/form-error";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -66,7 +67,16 @@ export function OpenShift({ points }: { points: { id: string; code: string; name
 }
 
 /** `initialFind`: a PUN, invoice or application number to look up straight away (?find=). */
-export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; initialFind?: string }) {
+export function TakePayment({
+  shift,
+  initialFind = "",
+  pushProviders = [],
+}: {
+  shift: ShiftRow;
+  initialFind?: string;
+  /** The mobile money providers that can push a payment request to a phone (none until WaafiPay is set up). */
+  pushProviders?: { code: string; name: string }[];
+}) {
   const t = useTranslations("payments");
   const format = useFormatter();
   const vm = useValidationMessage();
@@ -231,7 +241,8 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
             </div>
           )}
 
-          {found && !partialLand && !demolishedLand && (found.units.length === 0 || found.parcel.layout === "house") && (
+          {/* A house, or a flats building's own open-ground bill (its flats are paid one by one above). */}
+          {found && !partialLand && !demolishedLand && (found.units.length === 0 || found.parcel.layout === "house" || (found.parcel.layout === "flats" && found.invoices.length > 0)) && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">
@@ -239,6 +250,16 @@ export function TakePayment({ shift, initialFind = "" }: { shift: ShiftRow; init
                 </p>
                 <p className="text-sm text-muted-foreground">{t("owedNow", { amount: usd(owed) })}</p>
               </div>
+              {/* Just in case the desk can't take it: ask for the money on the payer's phone. */}
+              {found.invoices.length > 0 && !partialLand && !demolishedLand && (
+                <PushPayment
+                  key={found.parcel.id}
+                  billId={v.invoiceId}
+                  allowed={found.invoices.some((b) => b.id === v.invoiceId && b.push_ok)}
+                  phone={v.payerPhone}
+                  providers={pushProviders}
+                />
+              )}
               {found.invoices.length > 0 && (
                 <ul className="divide-y rounded-md border text-sm">
                   {found.invoices.map((i) => (

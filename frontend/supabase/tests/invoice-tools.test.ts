@@ -16,12 +16,16 @@ type Missing = { parcel_id: string; code: string; amount: number };
 const duplicates = () => asUser(db, admin, (tx) => scalar<Copy[]>(tx, `select public.invoice_duplicates()`));
 const missing = () => asUser(db, admin, (tx) => scalar<Missing[]>(tx, `select public.invoice_missing()`));
 let n = 0;
-const bill = (parcel: string, fee: string, total = 12) =>
-  scalar<string>(
+// New copies are refused on the way in, so old ones are made the way they used to appear: issued in another year, then moved.
+const bill = async (parcel: string, fee: string, total = 12) => {
+  const id = await scalar<string>(
     db,
-    `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total) values ($1, $2, $3, $4, $5, current_date + 30, $6) returning id`,
-    [`T-${++n}`, parcel, hodan, fee, `P-${n}`, total],
+    `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total, issue_date) values ($1, $2, $3, $4, $5, current_date + 30, $6, make_date(1900 + $7::int, 1, 1)) returning id`,
+    [`T-${++n}`, parcel, hodan, fee, `P-${n}`, total, n],
   );
+  await db.query(`update public.invoices set issue_date = current_date where id = $1`, [id]);
+  return id;
+};
 const newLand = (no: number, extra = "") =>
   scalar<string>(
     db,
@@ -95,8 +99,53 @@ describe("duplicate bills", () => {
     expect(res).toEqual({ cancelled: 0, left: 1 });
   });
 
+  it("refuses a new copy, but a cancelled one can be made again", async () => {
+    const fresh = await newLand(77);
+    const insert = (status = "issued") =>
+      db.query(
+        `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total, status) values ($1, $2, $3, $4, $5, current_date + 30, 12, $6::public.invoice_status)`,
+        [`G-${++n}`, fresh, hodan, serviceFee, `P-${n}`, status],
+      );
+    await insert();
+    await expect(insert()).rejects.toThrow(/^CONFLICT: duplicate_bill/);
+    await db.query(`update public.invoices set status = 'cancelled' where parcel_id = $1`, [fresh]);
+    await insert();
+  });
+
+  it("changes one bill's amount with a reason, never below what was paid", async () => {
+    const one = await bill(await newLand(78), serviceFee, 20);
+    await db.query(`select private.invoice_apply_payment($1, 5)`, [one]);
+    const set = (total: number, reason = "Wrong size on the bill") =>
+      asUser(db, admin, (tx) => scalar<{ total: number; balance: number }>(tx, `select public.invoice_set_total($1, $2, $3)`, [one, total, reason]));
+    await expect(set(4)).rejects.toThrow(/^CONFLICT: rebill_below_paid/);
+    await expect(set(10, "no")).rejects.toThrow(/^VALIDATION: reason/);
+    expect(await set(10)).toMatchObject({ total: 10, balance: 5 });
+    expect(await scalar<number>(db, `select count(*)::int from public.invoice_lines where invoice_id = $1 and amount = -10`, [one])).toBe(1);
+    await expect(
+      asUser(db, cashier, (tx) => tx.query(`select public.invoice_set_total($1, 12, 'cashier try')`, [one])),
+    ).rejects.toThrow(/^PERMISSION_DENIED/);
+  });
+
   it("needs the right permission", async () => {
     await expect(asUser(db, cashier, (tx) => tx.query(`select public.invoice_duplicates_fix()`))).rejects.toThrow(/^PERMISSION_DENIED/);
     await expect(asUser(db, cashier, (tx) => tx.query(`select public.invoice_missing_create($1)`, [[land]]))).rejects.toThrow(/^PERMISSION_DENIED/);
+  });
+});
+
+describe("neighbourhood prices per house type (0208)", () => {
+  it("land in the neighbourhood is billed at its own price; clearing it goes back to the normal price", async () => {
+    const grade = await scalar<string>(db, `select id from public.property_grades where code = 'tool_grade'`);
+    const save = (amount: number | "") =>
+      asUser(db, admin, (tx) => scalar<number>(tx, `select public.neighbourhood_grade_prices_save($1, $2)`, [nbhd, JSON.stringify([{ grade_id: grade, amount }])]));
+    expect(await save(0.8)).toBe(1);
+    const here = await newLand(90);
+    const price = async () => (await missing()).find((m) => m.parcel_id === here && m.code === "property_bill")?.amount;
+    expect(Number(await price())).toBe(80);
+    expect(Number(await scalar<string>(db, `select private.compute_assessment($1, 2026) ->> 'rate_m2'`, [here]))).toBe(0.8);
+    expect(await save("")).toBe(0);
+    expect(Number(await price())).toBe(50);
+    await expect(
+      asUser(db, cashier, (tx) => tx.query(`select public.neighbourhood_grade_prices_save($1, $2)`, [nbhd, JSON.stringify([{ grade_id: grade, amount: 1 }])])),
+    ).rejects.toThrow(/^PERMISSION_DENIED/);
   });
 });

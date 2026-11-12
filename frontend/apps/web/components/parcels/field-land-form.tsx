@@ -51,10 +51,12 @@ interface Props {
   returnTo?: string;
   /** The owner just entered with the full owner form: the land is theirs. */
   owner?: { id: string; full_name: string; phone: string | null } | null;
+  /** Opened in a side panel: called after saving instead of going to another page. */
+  onDone?: () => void;
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, start = null, returnTo, owner: fixedOwner = null }: Props) {
+export function FieldLandForm({ districts, grades, start = null, returnTo, owner: fixedOwner = null, onDone }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -237,6 +239,9 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             propertyType: f.grade,
             landUse: f.landUse,
             floors: layout === "flats" ? num(unitsValue.floors) : null,
+            footprintM2: layout === "flats" ? num(unitsValue.footprint) : null,
+            managerName: layout === "flats" ? unitsValue.managerName : "",
+            managerPhone: layout === "flats" ? unitsValue.managerPhone : "",
             split: unitsValue.split,
             units: unitsValue.units.map((u, i) => ({
               no: u.no,
@@ -273,6 +278,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     setSaving(false);
     if (!res.ok) return setError(res.error);
     toast.success(t("saved"));
+    if (onDone) return onDone();
     router.push(returnTo ?? "/parcels?stage=draft");
   };
 

@@ -11,3 +11,13 @@ describe("splitting a compound's shared m²", () => {
     expect(parts.reduce((s, x) => s + x, 0)).toBeCloseTo(100, 2);
   });
 });
+
+describe("missingFloors", () => {
+  it("names the upper floors with no flat; the ground floor is never missing", async () => {
+    const { missingFloors } = await import("@/lib/land-units");
+    expect(missingFloors(5, [1, 2, 3, 5])).toEqual([4]);
+    expect(missingFloors(5, ["0", "1", "2", "3", "4", "5"])).toEqual([]);
+    expect(missingFloors(3, [0])).toEqual([1, 2, 3]);
+    expect(missingFloors(null, [1])).toEqual([]);
+  });
+});

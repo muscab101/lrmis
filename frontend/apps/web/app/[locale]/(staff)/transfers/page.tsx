@@ -4,7 +4,7 @@ import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { ArrowRightLeft, Banknote, Eye, MapPinned, Search } from "lucide-react";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { ParcelLegalCard } from "@/components/legal/parcel-legal";
@@ -26,6 +26,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "transfers.view");
   const canCollect = viewer.can("cashier.view");
+  const lang = await getLocale();
   const t = await getTranslations("legal");
   const format = await getFormatter();
   const sp = await searchParams;
@@ -51,7 +52,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
       <Card className="mb-5">
         <CardContent className="pt-5">
           <form className="flex flex-wrap items-end gap-2" role="search">
-            <label className="grid min-w-60 flex-1 gap-1 text-sm">
+            <label className="grid min-w-0 flex-1 basis-60 gap-1 text-sm">
               <span className="text-muted-foreground text-xs">{t("findParcel")}</span>
               <Input name="pun" defaultValue={pun} placeholder="3441712" className="font-mono" autoComplete="off" />
             </label>
@@ -124,7 +125,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
                   <TableCell>
                     <Mono>{r.parcel?.pun ?? "—"}</Mono>
                   </TableCell>
-                  <TableCell className="text-sm">{t(`transferKinds.${r.kind}`)}</TableCell>
+                  <TableCell className="text-sm">{r.type ? (lang === "so" ? r.type.name_so : r.type.name_en) : t(`transferKinds.${r.kind}`)}</TableCell>
                   <TableCell className="max-w-48 truncate text-sm">{names(r.from_owners)}</TableCell>
                   <TableCell className="max-w-48 truncate text-sm">{names(r.to_owners)}</TableCell>
                   <TableCell className="text-sm">

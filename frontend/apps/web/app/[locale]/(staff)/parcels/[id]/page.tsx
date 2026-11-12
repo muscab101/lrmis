@@ -11,6 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getLandUnits, getParcel, getParentLand, parcelsWithMoney } from "@/lib/server/parcels";
+import { BuildingTaxEdit } from "@/components/parcels/building-tax-edit";
+import { missingFloors } from "@/lib/land-units";
 import { openDemolitionOf } from "@/lib/server/demolitions";
 import { MarkDemolished } from "@/components/demolitions/mark-demolished";
 import { listPropertyTypes, propertyTypeName } from "@/lib/server/property-types";
@@ -89,6 +91,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
       : []),
     ...(p.unit_floor != null ? [[tu("floor"), p.unit_floor] as [string, React.ReactNode]] : []),
     [t("area"), num(p.area_m2, "m²")],
+    ...(p.parent_id && p.unit_factor != null && parent?.layout === "flats" ? [[tu("unitFactor"), Number(p.unit_factor).toFixed(2)] as [string, React.ReactNode]] : []),
     ...(p.parent_id && Number(p.shared_m2) > 0
       ? [
           [tu("ownM2"), num(p.own_m2, "m²")] as [string, React.ReactNode],
@@ -206,12 +209,53 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               <CardTitle className="text-base">{tu(p.layout === "flats" ? "flatsTitle" : "housesTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
+              {/* Flats: the building's shares come from its footprint × floors; the rest of the plot is open ground,
+                  billed to the building management. */}
+              {p.layout === "flats" && (
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-md border p-3 text-sm">
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                    <dt className="text-muted-foreground">{tu("footprint")}</dt>
+                    <dd className="tabular-nums">{p.footprint_m2 != null ? num(p.footprint_m2, "m²") : tu("footprintMissing")}</dd>
+                    {p.footprint_m2 != null && (
+                      <>
+                        <dt className="text-muted-foreground">{tu("builtSpace")}</dt>
+                        <dd className="tabular-nums">{num(Number(p.footprint_m2) * (p.floors ?? 1), "m²")} ({num(p.footprint_m2, "m²")} × {p.floors ?? 1})</dd>
+                        <dt className="text-muted-foreground">{tu("openGroundShort")}</dt>
+                        <dd className="tabular-nums">{num(Math.max(Number(p.area_m2 ?? 0) - Number(p.footprint_m2), 0), "m²")}</dd>
+                      </>
+                    )}
+                    <dt className="text-muted-foreground">{tu("managerName")}</dt>
+                    <dd>{p.manager_name ? `${p.manager_name}${p.manager_phone ? ` · ${p.manager_phone}` : ""}` : "—"}</dd>
+                  </dl>
+                  {missingFloors(p.floors, land.units.map((u) => u.unit_floor)).length > 0 && (
+                    <p className="bg-status-pending/10 text-status-pending w-full rounded-md px-3 py-2 text-xs sm:order-last">
+                      {tu("missingFloors", {
+                        count: missingFloors(p.floors, land.units.map((u) => u.unit_floor)).length,
+                        list: missingFloors(p.floors, land.units.map((u) => u.unit_floor)).join(", "),
+                      })}
+                    </p>
+                  )}
+                  {viewer.can("parcels.update") && !archived && (
+                    <BuildingTaxEdit
+                      id={p.id}
+                      plotM2={p.area_m2 != null ? Number(p.area_m2) : null}
+                      current={{ footprint: p.footprint_m2 != null ? Number(p.footprint_m2) : null, managerName: p.manager_name, managerPhone: p.manager_phone }}
+                    />
+                  )}
+                </div>
+              )}
               <table className="w-full text-sm">
                 <thead className="text-xs text-muted-foreground">
                   <tr className="border-b text-start">
                     <th className="py-2 pe-3 text-start font-medium">PUN</th>
                     {p.layout === "flats" && <th className="py-2 pe-3 text-start font-medium">{tu("floor")}</th>}
                     <th className="py-2 pe-3 text-end font-medium">{tu("ownM2")}</th>
+                    {p.layout === "flats" && (
+                      <>
+                        <th className="py-2 pe-3 text-end font-medium">{tu("unitFactor")}</th>
+                        <th className="py-2 pe-3 text-end font-medium">{tu("taxableM2")}</th>
+                      </>
+                    )}
                     {p.layout === "compound" && (
                       <>
                         <th className="py-2 pe-3 text-end font-medium">{tu("sharedM2")}</th>
@@ -232,6 +276,12 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                       </td>
                       {p.layout === "flats" && <td className="py-2 pe-3 tabular-nums">{u.unit_floor ?? "—"}</td>}
                       <td className="py-2 pe-3 text-end tabular-nums">{num(u.own_m2, "m²")}</td>
+                      {p.layout === "flats" && (
+                        <>
+                          <td className="py-2 pe-3 text-end tabular-nums">{u.unit_factor != null ? Number(u.unit_factor).toFixed(2) : "—"}</td>
+                          <td className="py-2 pe-3 text-end font-medium tabular-nums">{num(u.area_m2, "m²")}</td>
+                        </>
+                      )}
                       {p.layout === "compound" && (
                         <>
                           <td className="py-2 pe-3 text-end tabular-nums">{num(u.shared_m2, "m²")}</td>

@@ -20,11 +20,13 @@ export interface TransferRow {
   decision_note: string | null;
   note: string | null;
   parcel: { id: string; pun: string | null } | null;
+  /** The transfer type chosen (Valuation → Transfer types); older transfers may have none. */
+  type: { name_so: string; name_en: string } | null;
   duty_invoice: { id: string; number: string; status: string; balance: number; total: number } | null;
 }
 
 const TRANSFER_COLS =
-  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decided_at, decision_note, note, parcel:parcels(id, pun), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
+  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decided_at, decision_note, note, parcel:parcels(id, pun), type:transfer_types(name_so, name_en), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
 
 export async function listTransfers(status: RequestStatus | "open" | "any", parcelId?: string) {
   const supabase = await createClient();
@@ -50,11 +52,21 @@ export interface ParcelLegal {
   changes: { id: string; number: string; kind: string; status: string; reason: string; requested_by: string | null; requested_at: string; result_parcel_ids: string[] }[];
   permits: { id: string; number: string; kind: string; status: string; description: string; valid_until: string | null }[];
   transfers: TransferRow[];
+  /** The transfer types staff can choose from (switched-on ones). */
+  transferTypes: TransferTypeChoice[];
+}
+
+export interface TransferTypeChoice {
+  id: string;
+  name_so: string;
+  name_en: string;
+  works_as: TransferRow["kind"];
+  duty: number;
 }
 
 export async function parcelLegal(parcelId: string): Promise<ParcelLegal> {
   const supabase = await createClient();
-  const [s, d, o, l, le, c, p, t] = await Promise.all([
+  const [s, d, o, l, le, c, p, t, ty] = await Promise.all([
     supabase.rpc("parcel_legal_status", { p_parcel: parcelId }),
     supabase.from("disputes").select("id, number, kind, description, claimant_name, status, opened_by, opened_at, resolution").eq("parcel_id", parcelId).order("opened_at", { ascending: false }),
     supabase.from("court_orders").select("id, order_no, court, order_date, kind, description, active, created_by").eq("parcel_id", parcelId).order("order_date", { ascending: false }),
@@ -63,6 +75,7 @@ export async function parcelLegal(parcelId: string): Promise<ParcelLegal> {
     supabase.from("parcel_changes").select("id, number, kind, status, reason, requested_by, requested_at, result_parcel_ids").contains("parcel_ids", [parcelId]).order("requested_at", { ascending: false }),
     supabase.from("permits").select("id, number, kind, status, description, valid_until").eq("parcel_id", parcelId).order("requested_at", { ascending: false }),
     listTransfers("any", parcelId),
+    supabase.from("transfer_types").select("id, name_so, name_en, works_as, duty").eq("active", true).order("sort").order("name_en"),
   ]);
   return {
     blockers: (s.data as ParcelLegal["blockers"] | null) ?? { transfer: [], subdivide: [], permit: [] },
@@ -73,6 +86,7 @@ export async function parcelLegal(parcelId: string): Promise<ParcelLegal> {
     changes: (c.data ?? []) as ParcelLegal["changes"],
     permits: (p.data ?? []) as ParcelLegal["permits"],
     transfers: t,
+    transferTypes: (ty.data ?? []) as TransferTypeChoice[],
   };
 }
 

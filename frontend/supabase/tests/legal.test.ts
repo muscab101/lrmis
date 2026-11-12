@@ -157,6 +157,27 @@ describe("transfers, disputes, liens, orders (Phase 9)", () => {
   });
 });
 
+describe("transfer types (0207)", () => {
+  it("staff add a type with its own stamp duty; the transfer charges it; a used type is only switched off", async () => {
+    const exchange = await asUser(db, admin, (tx) =>
+      scalar<string>(tx, `select public.transfer_type_save(null, $1)`, [JSON.stringify({ name_so: "Is-weydaarsi", name_en: "Exchange", works_as: "sale", duty: 35 })]),
+    );
+    await expectError(
+      asUser(db, admin, (tx) => tx.query(`select public.transfer_type_save(null, $1)`, [JSON.stringify({ name_so: "Is-weydaarsi", name_en: "exchange", works_as: "gift", duty: 1 })])),
+      "CONFLICT: transfer_type_taken",
+    );
+    await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_type_save(null, $1)`, [JSON.stringify({ name_so: "Xx", name_en: "Yy", works_as: "sale" })])), "PERMISSION_DENIED");
+    const tr = await asUser(db, desk, (tx) => scalar<string>(tx, `select public.transfer_create_typed($1, $2, null, null)`, [parcel, exchange]));
+    expect(await scalar<string>(db, `select kind::text from public.transfers where id = $1`, [tr])).toBe("sale");
+    await asUser(db, desk, (tx) => tx.query(`select public.transfer_set_recipients($1, $2)`, [tr, JSON.stringify([{ party_id: sellerParty, role: "owner", share_pct: 100 }])]));
+    const out = await asUser(db, desk, (tx) => scalar<{ duty: number }>(tx, `select public.transfer_submit($1)`, [tr]));
+    expect(Number(out.duty)).toBe(35);
+    await asUser(db, desk, (tx) => tx.query(`select public.transfer_cancel($1, 'Only a test of the type')`, [tr]));
+    expect(await asUser(db, admin, (tx) => scalar<string>(tx, `select public.transfer_type_delete($1)`, [exchange]))).toBe("hidden");
+    await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_create_typed($1, $2, null, null)`, [parcel, exchange])), "VALIDATION: transfer_type");
+  });
+});
+
 describe("subdivision, merge, change of use, leases (Phase 9)", () => {
   let children: string[];
 

@@ -17,7 +17,7 @@ export interface SurveyRow {
   application: { id: string; number: string; type: string; neighbourhood: { code: string; name_so: string; name_en: string } | null; district: { code: string; name_so: string; name_en: string } | null } | null;
 }
 
-export async function querySurveys(opts: { status: SurveyStatus | "open" | "any"; mine: boolean }) {
+export async function querySurveys(opts: { status: SurveyStatus | SurveyStatus[] | "open" | "any"; mine: boolean }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -27,7 +27,8 @@ export async function querySurveys(opts: { status: SurveyStatus | "open" | "any"
     .select(
       "id, status, due_date, assigned_at, submitted_at, area_m2, surveyor_id, surveyor:profiles!surveys_surveyor_id_fkey(full_name), application:applications!surveys_application_id_fkey(id, number, type, neighbourhood:neighbourhoods(code, name_so, name_en), district:districts(code, name_so, name_en))",
     );
-  if (opts.status === "open") req = req.in("status", ["assigned", "in_progress", "returned", "overlap_review"]);
+  if (Array.isArray(opts.status)) req = req.in("status", opts.status);
+  else if (opts.status === "open") req = req.in("status", ["assigned", "in_progress", "returned", "overlap_review"]);
   else if (opts.status !== "any") req = req.eq("status", opts.status);
   if (opts.mine) req = req.eq("surveyor_id", user?.id ?? "");
   const res = await req.order("assigned_at", { ascending: false }).limit(100);

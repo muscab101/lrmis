@@ -127,6 +127,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           ref={mapRef}
           className="absolute inset-0"
           initialView={value ? { center: [value.lon, value.lat], zoom: 17 } : undefined}
+          base="satellite"
           visible={{ facilities: false, streets: false }}
           parcels
           onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}

@@ -22,6 +22,7 @@ import {
   paymentsCounts,
 } from "@/lib/server/payments";
 import { getProvider } from "@/lib/server/providers";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("payments");
@@ -195,11 +196,11 @@ export default async function PaymentsPage({
             <Link
               key={k}
               href={`/payments?tab=${k}`}
-              className={`-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+              className={tabClass(tab === k)}
             >
               {t(`tabs.${k}`)}
               {badge[k] !== undefined && (
-                <span className="bg-muted rounded-sm px-1.5 font-mono text-[11px]">{badge[k]}</span>
+                <TabCount n={badge[k]} />
               )}
             </Link>
           ))}

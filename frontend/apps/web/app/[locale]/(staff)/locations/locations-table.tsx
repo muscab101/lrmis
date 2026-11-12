@@ -6,7 +6,7 @@ import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { ConfirmDialog } from "@dhulka/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
-import { NativeSelect } from "@dhulka/ui/form-controls";
+import { Checkbox, NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -22,6 +22,7 @@ import { archiveLocationAction, deleteLocationAction } from "./actions";
 import { LEVEL_COLOURS } from "@/components/map/style";
 import { BoundarySheet } from "./boundary-sheet";
 import { LocationSheet } from "./location-sheet";
+import { tabClass } from "@/components/shell/tabs";
 
 interface Props {
   rows: LocationRow[];
@@ -87,7 +88,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
           <Link
             key={l}
             href={`/locations?level=${l}${query.district ? `&district=${query.district}` : ""}`}
-            className={`-mb-px inline-flex items-center gap-1.5 border-b-2 pb-2.5 whitespace-nowrap ${l === level ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            className={tabClass(l === level)}
             aria-current={l === level ? "page" : undefined}
           >
             {/* The level's map colour. */}
@@ -111,7 +112,7 @@ export function LocationsTable({ rows, total, pageSize, query, districts, counts
             </NativeSelect>
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="accent-primary" checked={archivedView} onChange={(e) => setParams({ archived: e.target.checked ? "1" : null })} />
+            <Checkbox checked={archivedView} onCheckedChange={(v) => setParams({ archived: v === true ? "1" : null })} />
             {t("showArchived")}
           </label>
           <span className="ms-auto text-xs text-muted-foreground" aria-live="polite">

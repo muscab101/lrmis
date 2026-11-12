@@ -246,6 +246,8 @@ export interface PosCollections {
   disputed: number;
   /** Money by way of paying: cash, evc_plus, edahab, zaad, bank_transfer, card, other. */
   channels: Record<string, number>;
+  /** Money by bill type (what it paid for), in the fee types' order. */
+  bill_types: BillTypeTotal[];
   cashiers: {
     cashier_id: string | null;
     cashier: string | null;
@@ -260,7 +262,16 @@ export interface PosCollections {
     waiting_count: number;
     disputed: number;
     channels: Record<string, number>;
+    /** Money by bill type code (what it paid for). */
+    bill_types: Record<string, number>;
   }[];
+}
+
+export interface BillTypeTotal {
+  code: string;
+  name_so: string;
+  name_en: string;
+  total: number;
 }
 
 /** Points of sale with money in the period, or only the chosen one (shown even when it took nothing). */
@@ -299,6 +310,8 @@ export interface PosPaymentRow {
   verify_status: VerifyStatus;
   verified_by: string | null;
   verified_at: string | null;
+  /** The bills this payment paid: type, bill number and how much went on it. */
+  bills: { code: string; name_so: string; name_en: string; number: string; amount: number }[];
 }
 
 /** The payments behind one cashier's row: at one point of sale, in the period; for a district's online row, only that district's. */

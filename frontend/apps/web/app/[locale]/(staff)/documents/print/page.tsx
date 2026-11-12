@@ -9,6 +9,7 @@ import { IssueQueue, PrintQueue, ReprintQueue } from "@/components/documents/doc
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { certificatesCounts, listDocuments, listReprints, parcelsToCertify } from "@/lib/server/certificates";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("documents");
@@ -125,10 +126,10 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
             <Link
               key={k}
               href={`/documents/print?tab=${k}`}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${tab === k ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={tabClass(tab === k)}
             >
               {t(`tabs.${k}`)}
-              <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{badge[k]}</span>
+              <TabCount n={badge[k]} />
             </Link>
           ))}
         </nav>

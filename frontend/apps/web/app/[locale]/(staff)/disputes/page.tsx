@@ -5,6 +5,7 @@ import { ChangeTable, DisputeTable, LienTable, OrderTable } from "@/components/l
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { legalCounts, listActiveLiens, listActiveOrders, listChanges, listDisputes } from "@/lib/server/legal";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("legal");
@@ -39,10 +40,10 @@ export default async function DisputesPage({ params, searchParams }: { params: P
             <Link
               key={s}
               href={`/disputes?s=${s}`}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${section === s ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={tabClass(section === s)}
             >
               {t(`sections.${s}`)}
-              <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{tabCount[s]}</span>
+              <TabCount n={tabCount[s]} />
             </Link>
           ))}
         </nav>

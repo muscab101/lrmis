@@ -362,7 +362,7 @@ export async function parcelForCashier(term: string) {
   const supabase = await createClient();
   const key = term.trim().toUpperCase();
   const cols =
-    "id, pun, status, building_state, account_no, district_id, layout, application:applications!parcels_application_id_fkey(number)";
+    "id, pun, status, building_state, account_no, district_id, layout, manager_name, manager_phone, application:applications!parcels_application_id_fkey(number)";
   let parcelId: string | null = null;
   if (key.startsWith("INV-") || key.startsWith("SCIN-")) {
     const { data } = await supabase
@@ -391,6 +391,9 @@ export async function parcelForCashier(term: string) {
     account_no: string | null;
     district_id: string;
     layout: string;
+    /** A flats building's management: the payer of its open-ground bill. */
+    manager_name: string | null;
+    manager_phone: string | null;
     application: { number: string } | null;
   };
   // A flats building or compound holds no bills: the cashier picks one of its units. Units that were demolished stay as a record.
@@ -422,20 +425,28 @@ export async function parcelForCashier(term: string) {
   }
   // The payer the cashier starts with: the main owner (the first co-owner when there is none).
   const main = people.find((x) => x.role === "owner" && x.party) ?? people.find((x) => x.party);
+  // Bills whose money went wrong (reversed, not approved, or a failed online payment): only these can be pushed.
+  const billIds = ((inv ?? []) as { id: string }[]).map((b) => b.id);
+  const pushable = new Set(
+    billIds.length ? (((await supabase.rpc("invoices_push_allowed", { p_ids: billIds })).data as string[] | null) ?? []) : [],
+  );
   return {
     parcel,
     units,
     owners: people.map((o) => o.party?.full_name).filter(Boolean) as string[],
-    payer: { name: main?.party?.full_name ?? "", phone: main?.party?.phone ?? "" },
-    invoices: (inv ?? []) as {
-      id: string;
-      number: string;
-      period: string;
-      due_date: string;
-      balance: number;
-      discount_until: string | null;
-      early_discount_pct: number;
-      paid: number;
-    }[],
+    // A flats building's open-ground bill is paid by its management.
+    payer: { name: main?.party?.full_name ?? parcel.manager_name ?? "", phone: main?.party?.phone ?? parcel.manager_phone ?? "" },
+    invoices: (
+      (inv ?? []) as {
+        id: string;
+        number: string;
+        period: string;
+        due_date: string;
+        balance: number;
+        discount_until: string | null;
+        early_discount_pct: number;
+        paid: number;
+      }[]
+    ).map((b) => ({ ...b, push_ok: pushable.has(b.id) })),
   };
 }

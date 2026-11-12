@@ -10,6 +10,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { removeExpiredRecordings } from "@/lib/server/recordings";
 import { createClient } from "@/lib/supabase/server";
 import { actionWords, ONLINE_MS, validDay } from "./words";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 interface Row {
   user_id: string;
@@ -54,7 +55,7 @@ export default async function StaffActivityPage({
   return (
     <>
       <PageHeader title={t("title")} description={t("subtitle")}>
-        <form method="get" className="flex flex-wrap items-center gap-2">
+        <AutoSubmitForm className="flex flex-wrap items-center gap-2">
           {viewer.isSuperAdmin && (
             <Button asChild size="sm">
               <Link href="/admin/activity/live">{t("live")}</Link>
@@ -67,10 +68,7 @@ export default async function StaffActivityPage({
             aria-label={t("day")}
             className="w-44"
           />
-          <Button type="submit" variant="outline" size="sm">
-            {t("show")}
-          </Button>
-        </form>
+        </AutoSubmitForm>
       </PageHeader>
       {rows.length === 0 ? (
         <EmptyState icon={<Activity aria-hidden />} title={t("none")} />

@@ -42,7 +42,7 @@ export function CashDeskCard({
           <p className="text-muted-foreground text-sm">{t("noDesksInDistricts")}</p>
         ) : (
           <div className="flex flex-wrap items-end gap-3">
-            <Field id="posId" label={t("pointOfSale")} className="min-w-64 flex-1" error={vm(error?.fieldErrors?.posId?.[0])}>
+            <Field id="posId" label={t("pointOfSale")} className="min-w-0 flex-1 basis-64" error={vm(error?.fieldErrors?.posId?.[0])}>
               <NativeSelect value={posId} disabled={!canEdit} onChange={(e) => setPosId(e.target.value)}>
                 <option value="">{t("noDesk")}</option>
                 {desks.map((d) => (

@@ -21,6 +21,19 @@ export interface Kpis {
   >;
 }
 
+/** One job's waiting work on the dashboard ("My work"). */
+export interface WorkPanel {
+  panel: "surveyor" | "surveys" | "registration" | "cashier" | "collections" | "billing" | "valuation" | "legal" | "accounting" | "printing" | "admin";
+  month_open?: boolean;
+  items: { key: string; n: number; amount?: number }[];
+}
+
+/** The panels of the jobs the signed-in user does (by their powers), with what waits for them. */
+export async function dashboardWork(): Promise<WorkPanel[]> {
+  const supabase = await createClient();
+  return (unwrap(await supabase.rpc("dashboard_work"), "dashboard work") ?? []) as WorkPanel[];
+}
+
 export async function dashboardKpis(): Promise<Kpis> {
   const supabase = await createClient();
   return unwrap(await supabase.rpc("dashboard_kpis"), "dashboard") as Kpis;

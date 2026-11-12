@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { housesToCollect } from "@/lib/server/collect";
 import { listPayments, listPointsOfSale, myOpenShift } from "@/lib/server/payments";
-import { getProvider } from "@/lib/server/providers";
+import { availableOnlineProviders } from "@/lib/server/providers";
 
 export async function generateMetadata() {
   const t = await getTranslations("payments");
@@ -43,6 +43,8 @@ export default async function CashierPage({
     shift ? listPayments({ shiftId: shift.id, status: "any" }) : [],
   ]);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
+  // Mobile money that can push a payment request to the payer's phone (the cashier's "Push payment").
+  const pushProviders = shift ? (await availableOnlineProviders()).filter((p) => p.method === "mobile_money") : [];
   return (
     <>
       <PageHeader title={t("cashierTitle")} description={t("cashierSubtitle")} />
@@ -51,7 +53,7 @@ export default async function CashierPage({
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
           {/* Keyed by ?find so a Cash link from To collect loads that bill even on the same page. */}
-          <TakePayment key={find} shift={shift} initialFind={find} />
+          <TakePayment key={find} shift={shift} initialFind={find} pushProviders={pushProviders} />
           <Card className="h-fit overflow-hidden">
             <div className="border-b p-4 text-sm">
               <span className="font-medium">{t("thisShift")}</span>
@@ -86,11 +88,7 @@ export default async function CashierPage({
         </div>
       )}
       {shift && (
-        <ToCollect
-          houses={houses}
-          shiftOpen
-          cardEnabled={getProvider("stripe")?.configured() ?? false}
-        />
+        <ToCollect houses={houses} shiftOpen />
       )}
       <CardPrintBill />
     </>

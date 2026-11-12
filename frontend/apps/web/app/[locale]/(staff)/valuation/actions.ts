@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 
-const LAND_USES = ["residential", "commercial", "state", "mixed", "agricultural", "other"] as const;
 const money = z.coerce.number().min(0, "validation.amount").max(10_000_000, "validation.amount");
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
 const year = z.coerce.number().int().min(2000).max(2100);
@@ -91,35 +90,61 @@ export const deleteOwnerTypeAction = defineAction("valuation.delete_owner_type",
   return done({ result });
 });
 
-export const setRateAction = defineAction(
-  "valuation.set_rate",
+export const saveTransferTypeAction = defineAction(
+  "valuation.save_transfer_type",
   z.object({
-    neighbourhoodId: z.uuid("validation.required"),
-    landUse: z.enum(LAND_USES),
-    developed: z.boolean(),
-    rate: money,
-    serviceCharge: money,
-    validFrom: isoDate,
-    note: z.string().max(300).default(""),
+    id: z.uuid().nullable(),
+    nameSo: z.string().trim().min(2, "validation.name").max(80),
+    nameEn: z.string().trim().min(2, "validation.name").max(80),
+    worksAs: z.enum(["sale", "gift", "inheritance", "court_order"]),
+    duty: money,
+    active: z.boolean().default(true),
   }),
   async (v, ctx) => {
     try {
       unwrap(
-        await ctx.supabase.rpc("valuation_set_rate", {
-          p_neighbourhood: v.neighbourhoodId,
-          p_use: v.landUse,
-          p_developed: v.developed,
-          p_rate: v.rate,
-          p_service: v.serviceCharge,
-          p_valid_from: v.validFrom,
-          p_note: v.note,
-        }),
-        "set rate",
+        await ctx.supabase.rpc("transfer_type_save", { p_id: v.id, p: { name_so: v.nameSo, name_en: v.nameEn, works_as: v.worksAs, duty: v.duty, active: v.active } }),
+        "save transfer type",
       );
     } catch (err) {
-      field(err, { rate_exists: "validFrom" });
+      field(err, { transfer_type_taken: "nameEn", amount: "duty" });
     }
+    revalidatePath("/[locale]/transfers", "page");
     return done(null);
+  },
+);
+
+/** Delete a transfer type no transfer used; one that was used is switched off instead. */
+export const deleteTransferTypeAction = defineAction("valuation.delete_transfer_type", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const result = unwrap(await ctx.supabase.rpc("transfer_type_delete", { p_id: id }), "delete transfer type") as "deleted" | "hidden";
+  return done({ result });
+});
+
+/** One neighbourhood's own prices by house type id (the Price check tab). */
+export const neighbourhoodPricesAction = defineAction("valuation.neighbourhood_prices", z.object({ neighbourhoodId: z.uuid() }), async (v, ctx) => {
+  const rows = unwrap(
+    await ctx.supabase.from("neighbourhood_grade_prices").select("grade_id, amount").eq("neighbourhood_id", v.neighbourhoodId),
+    "neighbourhood prices",
+  ) as { grade_id: string; amount: number }[];
+  return Object.fromEntries(rows.map((r) => [r.grade_id, Number(r.amount)])) as Record<string, number>;
+});
+
+/** Prices per house type for one neighbourhood: empty = the type's normal price there. */
+export const saveNeighbourhoodPricesAction = defineAction(
+  "valuation.save_neighbourhood_prices",
+  z.object({
+    neighbourhoodId: z.uuid("validation.required"),
+    prices: z.array(z.object({ gradeId: z.uuid(), amount: z.coerce.number().min(0, "validation.amount").max(100_000, "validation.amount").nullable() })).max(200),
+  }),
+  async (v, ctx) => {
+    const count = unwrap(
+      await ctx.supabase.rpc("neighbourhood_grade_prices_save", {
+        p_neighbourhood: v.neighbourhoodId,
+        p_prices: v.prices.map((x) => ({ grade_id: x.gradeId, amount: x.amount ?? "" })),
+      }),
+      "neighbourhood prices",
+    ) as number;
+    return done({ count });
   },
 );
 
@@ -238,25 +263,6 @@ export const deleteGradeAction = defineAction("valuation.delete_grade", z.object
 });
 
 /** Change a rate no assessment was made with yet. */
-export const updateRateAction = defineAction(
-  "valuation.update_rate",
-  z.object({ id: z.uuid(), rate: money, serviceCharge: money.default(0), validFrom: isoDate, note: z.string().trim().max(300).default("") }),
-  async (v, ctx) => {
-    unwrap(
-      await ctx.supabase.rpc("valuation_update_rate", {
-        p_id: v.id,
-        p: { rate_m2: v.rate, service_charge: v.serviceCharge, valid_from: v.validFrom, note: v.note },
-      }),
-      "update rate",
-    );
-    return done(null);
-  },
-);
-
-export const deleteRateAction = defineAction("valuation.delete_rate", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
-  unwrap(await ctx.supabase.rpc("valuation_delete_rate", { p_id: id }), "delete rate");
-  return done(null);
-});
 
 /** Delete the live assessment (no invoice, no appeal); the one it replaced is live again. */
 export const deleteAssessmentAction = defineAction("valuation.delete_assessment", z.object({ id: z.uuid() }), async ({ id }, ctx) => {

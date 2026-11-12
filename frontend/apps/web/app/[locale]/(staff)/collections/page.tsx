@@ -1,4 +1,3 @@
-import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
@@ -22,6 +21,7 @@ import {
   listDuplicates,
 } from "@/lib/server/collections";
 import { type CollectionsCashierRow, type CollectionsRow, runReport } from "@/lib/server/reports";
+import { tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("collections");
@@ -78,7 +78,7 @@ export default async function CollectionsPage({
         : method;
 
   const periodForm = (
-    <form className="flex flex-wrap items-end gap-3 p-3 text-sm">
+    <AutoSubmitForm className="flex flex-wrap items-end gap-3 p-3 text-sm">
       <input type="hidden" name="tab" value={tab} />
       <label className="grid gap-1">
         <span className="text-muted-foreground text-xs">{t("from")}</span>
@@ -88,10 +88,7 @@ export default async function CollectionsPage({
         <span className="text-muted-foreground text-xs">{t("to")}</span>
         <Input type="date" name="to" defaultValue={to} className="w-40" />
       </label>
-      <Button type="submit" size="sm" variant="outline">
-        {t("apply")}
-      </Button>
-    </form>
+    </AutoSubmitForm>
   );
 
   let body: React.ReactNode = null;
@@ -142,7 +139,7 @@ export default async function CollectionsPage({
           <input type="hidden" name="tab" value="reconcile" />
           <label className="grid gap-1">
             <span className="text-muted-foreground text-xs">{t("pos.search")}</span>
-            <NativeSelect name="pos" defaultValue={posId ?? ""} className="w-auto min-w-64">
+            <NativeSelect name="pos" defaultValue={posId ?? ""} className="w-full sm:w-auto sm:min-w-64">
               <option value="">{t("pos.all")}</option>
               {choices.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -329,7 +326,7 @@ export default async function CollectionsPage({
             <Link
               key={k}
               href={`/collections?tab=${k}`}
-              className={`-mb-px whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+              className={tabClass(tab === k)}
             >
               {t(`tabs.${k}`)}
             </Link>

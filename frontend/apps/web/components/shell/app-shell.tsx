@@ -88,11 +88,11 @@ export function AppShell({ permissions, user, env, testingAs, children }: AppShe
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label={t("open")}>
             <Menu aria-hidden />
           </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-w-10 flex-1 items-center gap-3">
             <CommandMenu groups={groups} />
             <EnvBadge env={env} />
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             <WorkRecorder userId={user.id} />
             <LocaleSwitch />
             <ThemeToggle />

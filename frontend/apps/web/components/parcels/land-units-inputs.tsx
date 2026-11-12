@@ -6,7 +6,7 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { splitSharedM2 } from "@/lib/land-units";
+import { missingFloors, splitSharedM2 } from "@/lib/land-units";
 
 export type LandLayout = "house" | "flats" | "compound";
 export interface UnitRow {
@@ -22,6 +22,10 @@ export interface SpaceRow {
 }
 export interface UnitsValue {
   floors: string;
+  /** Flats: the ground the building covers (m²); the rest of the plot is open ground, billed to the management. */
+  footprint: string;
+  managerName: string;
+  managerPhone: string;
   split: "equal" | "by_size";
   units: UnitRow[];
   spaces: SpaceRow[];
@@ -41,7 +45,7 @@ const houseNo = (i: number) =>
 /** What a new building or compound starts with: two units to fill in. */
 export function startUnits(layout: LandLayout): UnitsValue {
   const name = layout === "flats" ? flatNo : houseNo;
-  return { floors: "1", split: "equal", units: [emptyRow(name(0)), emptyRow(name(1))], spaces: [] };
+  return { floors: "1", footprint: "", managerName: "", managerPhone: "", split: "equal", units: [emptyRow(name(0)), emptyRow(name(1))], spaces: [] };
 }
 
 const positive = (x: string) => {
@@ -90,11 +94,13 @@ export function LandUnitsInputs({
   const allSized = land > 0 && own.every((x) => x > 0);
   const tooBig = allSized && (shared < 0 || empty < 0);
   const parts = allSized && !tooBig ? splitSharedM2(own, shared, value.split) : null;
+  // Flats: floors with no flat yet (a reminder, not a block: a floor may truly be empty).
+  const missing = flats ? missingFloors(Number(value.floors), value.units.map((u) => u.floor)) : [];
 
   return (
     <div className="space-y-4 rounded-md border p-4">
       {flats && (
-        <div className="max-w-40">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Field id="floors" label={t("floors")} hint={t("floorsHint")} required>
             <Input
               type="number"
@@ -105,11 +111,30 @@ export function LandUnitsInputs({
               onChange={(e) => onChange({ ...value, floors: e.target.value })}
             />
           </Field>
+          {/* The building's footprint: each flat's share of the built space, and the open ground billed to the management. */}
+          <Field
+            id="footprint"
+            label={t("footprint")}
+            hint={positive(value.footprint) > 0 && land > 0 ? t("openGround", { m2: m2(Math.max(land - positive(value.footprint), 0)) }) : t("footprintHint")}
+          >
+            <Input type="number" inputMode="decimal" min={0} value={value.footprint} onChange={(e) => onChange({ ...value, footprint: e.target.value })} />
+          </Field>
+          <Field id="manager-name" label={t("managerName")} hint={t("managerHint")}>
+            <Input value={value.managerName} maxLength={200} onChange={(e) => onChange({ ...value, managerName: e.target.value })} />
+          </Field>
+          <Field id="manager-phone" label={t("managerPhone")}>
+            <Input type="tel" inputMode="tel" value={value.managerPhone} onChange={(e) => onChange({ ...value, managerPhone: e.target.value })} />
+          </Field>
         </div>
       )}
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold">{flats ? t("flatsTitle") : t("housesTitle")}</h3>
+        {missing.length > 0 && (
+          <p role="status" className="bg-status-pending/10 text-status-pending rounded-md px-3 py-2 text-xs">
+            {t("missingFloors", { count: missing.length, list: missing.join(", ") })}
+          </p>
+        )}
         {value.units.map((u, i) => (
           <div
             key={i}
@@ -144,22 +169,18 @@ export function LandUnitsInputs({
               />
             </Field>
             {i === 0 && fixedOwner ? (
-              <div className="sm:col-span-2">
-                <Field id="unit-owner-0" label={t("owner")}>
-                  <Input readOnly value={fixedOwner.full_name} />
-                </Field>
-              </div>
+              <Field id="unit-owner-0" label={t("owner")} className="sm:col-span-2">
+                <Input readOnly value={fixedOwner.full_name} />
+              </Field>
             ) : (
               <>
-                <div className="sm:col-span-2">
-                  <Field id={`unit-owner-${i}`} label={t("owner")} required>
-                    <Input
-                      value={u.ownerName}
-                      autoComplete="off"
-                      onChange={(e) => setUnit(i, { ownerName: e.target.value })}
-                    />
-                  </Field>
-                </div>
+                <Field id={`unit-owner-${i}`} label={t("owner")} required className="sm:col-span-2">
+                  <Input
+                    value={u.ownerName}
+                    autoComplete="off"
+                    onChange={(e) => setUnit(i, { ownerName: e.target.value })}
+                  />
+                </Field>
                 <Field id={`unit-phone-${i}`} label={t("phone")}>
                   <Input
                     type="tel"

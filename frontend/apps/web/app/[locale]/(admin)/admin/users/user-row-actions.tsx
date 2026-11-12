@@ -8,13 +8,13 @@ import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
-import { KeyRound, Mail, Trash2, UserCheck, UserX, Wand2 } from "lucide-react";
+import { KeyRound, Mail, ShieldPlus, Trash2, UserCheck, UserX, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { TestLoginButton } from "@/components/activity/test-login";
 import { FormError } from "@/components/forms/form-error";
 import { PasswordInput } from "@/components/forms/password-input";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import { changeUserEmailAction, deleteUserAction, setUserPasswordAction, userStatusAction } from "./actions";
 
@@ -26,6 +26,8 @@ export interface UserRowPerms {
   remove: boolean;
   /** Deactivate someone who left the job, or activate them again. */
   manage: boolean;
+  /** Super Admin: give or take away powers for one user (their Powers tab). */
+  powers: boolean;
 }
 
 /**
@@ -36,10 +38,13 @@ export function UserRowActions({
   user,
   perms,
   canTest,
+  canPowers,
 }: {
   user: { user_id: string; email: string | null; full_name: string | null; status: string };
   perms: UserRowPerms;
   canTest: boolean;
+  /** Not for a Super Admin, who has every power. */
+  canPowers: boolean;
 }) {
   const t = useTranslations("admin.users.security");
   const tc = useTranslations("common");
@@ -85,6 +90,15 @@ export function UserRowActions({
     <>
       <div className="flex justify-end gap-0.5">
         {canTest && <TestLoginButton userId={user.user_id} name={user.full_name || (user.email ?? "")} size="icon-sm" />}
+        {canPowers && (
+          <Tooltip content={t("powers")}>
+            <Button asChild variant="ghost" size="icon-sm" className="text-flag" aria-label={t("powers")}>
+              <Link href={`/admin/users/${user.user_id}?tab=powers`}>
+                <ShieldPlus aria-hidden />
+              </Link>
+            </Button>
+          </Tooltip>
+        )}
         {perms.manage && user.status === "active" && key(t("suspend"), "text-warning", <UserX aria-hidden />, "status")}
         {perms.manage && user.status === "suspended" && key(t("reactivate"), "text-success", <UserCheck aria-hidden />, "status")}
         {perms.changeEmail && key(t("changeEmail"), "text-primary", <Mail aria-hidden />, "email")}

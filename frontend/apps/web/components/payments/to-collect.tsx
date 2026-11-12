@@ -2,7 +2,7 @@ import { Button } from "@dhulka/ui/button";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { Banknote, CreditCard, HandCoins } from "lucide-react";
+import { HandCoins } from "lucide-react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { CollectHouse } from "@/lib/server/collect";
@@ -10,9 +10,9 @@ import { fullHouseNo } from "@/lib/house-no";
 
 /**
  * Cashier → To collect: a table of the registered houses in the desk's district that still owe, one line per unpaid bill.
- * Cash opens the payment form on that bill (needs an open shift); Card opens Stripe Checkout in a new tab.
+ * "Take payment" opens the cash payment form on that bill. Card payments are for citizens only (online).
  */
-export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: CollectHouse[]; shiftOpen: boolean; cardEnabled: boolean }) {
+export async function ToCollect({ houses, shiftOpen }: { houses: CollectHouse[]; shiftOpen: boolean }) {
   const t = await getTranslations("payments.collect");
   const format = await getFormatter();
   const lang = await getLocale();
@@ -34,7 +34,8 @@ export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: Co
           <TableHeader>
             <TableRow>
               <TableHead>{t("colPun")}</TableHead>
-              <TableHead className="hidden md:table-cell">{t("colPlace")}</TableHead>
+              <TableHead className="hidden md:table-cell">{t("colHouseNo")}</TableHead>
+              <TableHead className="hidden md:table-cell">{t("colAccountNo")}</TableHead>
               <TableHead className="hidden sm:table-cell">{t("colOwner")}</TableHead>
               <TableHead>{t("colBill")}</TableHead>
               <TableHead className="hidden lg:table-cell">{t("colInvoice")}</TableHead>
@@ -54,12 +55,11 @@ export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: Co
                         </Link>
                         {h.bills.length > 1 && <div className="text-muted-foreground text-xs tabular-nums">{t("houseTotal", { amount: usd(h.due) })}</div>}
                       </TableCell>
-                      <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm md:table-cell">
-                        {/* "House KRWJXL01 07"; with no house number, the neighbourhood. */}
-                        {fullHouseNo(h.neighbourhood_so, h.house_no) !== h.house_no?.trim()
-                          ? t("house", { no: fullHouseNo(h.neighbourhood_so, h.house_no)! })
-                          : [h.house_no && t("house", { no: h.house_no }), lang === "so" ? h.neighbourhood_so : h.neighbourhood_en].filter(Boolean).join(" · ")}
-                        <div className="text-muted-foreground text-xs">{lang === "so" ? h.district_so : h.district_en}</div>
+                      <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm font-medium md:table-cell">
+                        {fullHouseNo(h.neighbourhood_code, h.house_no) ?? "—"}
+                      </TableCell>
+                      <TableCell rowSpan={h.bills.length} className="hidden align-top md:table-cell">
+                        <Mono className="text-muted-foreground text-xs">{h.account_no ?? "—"}</Mono>
                       </TableCell>
                       <TableCell rowSpan={h.bills.length} className="hidden align-top text-sm sm:table-cell">
                         {h.owners ?? "—"}
@@ -72,20 +72,12 @@ export async function ToCollect({ houses, shiftOpen, cardEnabled }: { houses: Co
                   </TableCell>
                   <TableCell className="text-end text-sm tabular-nums">{usd(b.balance)}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end gap-1.5">
+                    <div className="flex justify-end">
                       {shiftOpen && (
-                        <Button size="sm" variant="outline" asChild>
+                        <Button size="sm" variant="ghost" className="text-primary" asChild>
                           <Link href={`/cashier?find=${encodeURIComponent(b.invoice_number)}`}>
-                            <Banknote aria-hidden />
-                            {t("cash")}
-                          </Link>
-                        </Button>
-                      )}
-                      {cardEnabled && b.pay_path && (
-                        <Button size="sm" asChild>
-                          <Link href={b.pay_path} target="_blank">
-                            <CreditCard aria-hidden />
-                            {t("card")}
+                            <HandCoins aria-hidden />
+                            {t("takePayment")}
                           </Link>
                         </Button>
                       )}

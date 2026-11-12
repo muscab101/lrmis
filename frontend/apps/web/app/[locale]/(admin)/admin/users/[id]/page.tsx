@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { UserStatusBadge } from "@/components/admin/badges";
 import { UserForm } from "@/components/admin/user-form";
+import { UserPowers } from "@/components/admin/user-powers";
 import { TestLoginButton } from "@/components/activity/test-login";
 import { Button } from "@dhulka/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -16,9 +17,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CashDeskCard } from "./cash-desk-card";
 import { UserSecurityPanel } from "./security-panel";
 
-export default async function UserDetailPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ created?: string }> }) {
+export default async function UserDetailPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ created?: string; tab?: string }> }) {
   const { locale, id } = await params;
-  const { created } = await searchParams;
+  const { created, tab } = await searchParams;
   setRequestLocale(locale);
   const viewer = await requirePermission(locale, "users.view");
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -34,7 +35,7 @@ export default async function UserDetailPage({ params, searchParams }: { params:
     .maybeSingle();
   if (!profile) notFound();
 
-  const [roles, rolePermissions, mfa, logins, audit, records, desks] = await Promise.all([
+  const [roles, rolePermissions, mfa, logins, audit, records, desks, overrides] = await Promise.all([
     listRoles(),
     rolePermissionMap(),
     supabase.rpc("admin_user_mfa_status", { p_user_ids: [id] }),
@@ -44,6 +45,7 @@ export default async function UserDetailPage({ params, searchParams }: { params:
       : Promise.resolve({ data: null }),
     supabase.rpc("admin_user_record_counts", { p_user_id: id }),
     supabase.from("points_of_sale").select("id, code, name, district_id, districts(name_so, name_en)").eq("active", true).neq("kind", "online").order("code"),
+    supabase.from("user_permission_overrides").select("permission_key, allow").eq("user_id", id),
   ]);
 
   type DistrictJoin = { district_id: string; districts: { id: string; code: string; name_so: string; name_en: string } | null };
@@ -57,6 +59,9 @@ export default async function UserDetailPage({ params, searchParams }: { params:
   const myRoles = roles.filter((r) => roleIds.includes(r.id));
   // A super admin can't be tested as, by anyone.
   const canTest = viewer.isSuperAdmin && !isSelf && ["active", "invited"].includes(profile.status) && !myRoles.some((r) => r.key === "super_admin");
+  // Powers: what the roles give, and what was given or taken away for this user only (Super Admin sets these).
+  const fromRole = [...new Set(roleIds.flatMap((r) => rolePermissions[r] ?? []))];
+  const overrideRows = (overrides.data ?? []) as { permission_key: string; allow: boolean }[];
   const recordTotal = ((records.data ?? {}) as { total?: number }).total ?? 0;
   // Desks the user may work at: those in their districts (all of them for an all-districts account).
   type DeskJoin = { id: string; code: string; name: string; district_id: string | null; districts: { name_so: string; name_en: string } | null };
@@ -105,9 +110,10 @@ export default async function UserDetailPage({ params, searchParams }: { params:
         </div>
       )}
 
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue={["powers", "security", "activity"].includes(tab ?? "") ? tab : "overview"}>
         <TabsList>
           <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
+          <TabsTrigger value="powers">{t("tabPowers")}</TabsTrigger>
           <TabsTrigger value="security">{t("tabSecurity")}</TabsTrigger>
           <TabsTrigger value="activity">{t("tabActivity")}</TabsTrigger>
         </TabsList>
@@ -137,6 +143,17 @@ export default async function UserDetailPage({ params, searchParams }: { params:
             </Card>
           )}
           <CashDeskCard userId={id} current={(profile.point_of_sale_id as string | null) ?? null} desks={userDesks} canEdit={viewer.can("users.update")} />
+        </TabsContent>
+
+        <TabsContent value="powers">
+          <UserPowers
+            userId={id}
+            fromRole={fromRole}
+            allow={overrideRows.filter((o) => o.allow).map((o) => o.permission_key)}
+            deny={overrideRows.filter((o) => !o.allow).map((o) => o.permission_key)}
+            canEdit={viewer.isSuperAdmin && !isSelf}
+            superAdminUser={myRoles.some((r) => r.grants_all)}
+          />
         </TabsContent>
 
         <TabsContent value="security">

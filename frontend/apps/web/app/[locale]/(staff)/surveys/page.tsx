@@ -13,13 +13,21 @@ import { SiteCheckActions } from "@/components/applications/site-check";
 import { ZoneTable } from "@/components/parcels/zone-table";
 import { listZones } from "@/lib/server/zones";
 import { fullHouseNo } from "@/lib/house-no";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("surveys");
   return { title: t("title") };
 }
 
-const TABS = ["open", "zones", "site_checks", "assigned", "in_progress", "overlap_review", "returned", "submitted", "any"] as const;
+// Zones first; "Assigned" is all a surveyor still has to do (site checks, assigned, in progress); "Submitted" is all
+// waiting for a supervisor (submitted, overlap review).
+const TABS = ["zones", "assigned", "submitted", "returned", "any"] as const;
+type Tab = (typeof TABS)[number];
+const ASSIGNED: SurveyStatus[] = ["assigned", "in_progress"];
+const SUBMITTED: SurveyStatus[] = ["submitted", "overlap_review"];
+// Links from before the tabs were combined.
+const OLD_TABS: Record<string, Tab> = { open: "assigned", site_checks: "assigned", in_progress: "assigned", overlap_review: "submitted" };
 
 export default async function SurveysPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
@@ -31,26 +39,30 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
   const lang = await getLocale();
   const nm = (o: { name_so: string; name_en: string } | null | undefined) => (o ? (lang === "so" ? o.name_so : o.name_en || o.name_so) : "");
   const sp = await searchParams;
-  const status = (TABS as readonly string[]).includes(sp.status ?? "") ? (sp.status as (typeof TABS)[number]) : "open";
+  const asked = OLD_TABS[sp.status ?? ""] ?? sp.status;
+  const status: Tab = (TABS as readonly string[]).includes(asked ?? "") ? (asked as Tab) : "zones";
   const mine = sp.mine === "1" || !viewer.can("surveys.approve");
   const [rows, counts, checks, landChecks, zones] = await Promise.all([
-    status === "site_checks" || status === "zones" ? Promise.resolve([]) : querySurveys({ status: status as SurveyStatus | "open" | "any", mine }),
+    status === "zones"
+      ? Promise.resolve([])
+      : querySurveys({ status: status === "assigned" ? ASSIGNED : status === "submitted" ? SUBMITTED : (status as SurveyStatus | "any"), mine }),
     surveyStatusCounts(),
     querySiteChecks(mine),
     queryParcelSiteChecks(mine),
     listZones(mine),
   ]);
   const siteCan = { request: false, checkAny: viewer.can("surveys.approve"), checkOwn: viewer.can("surveys.update") };
-  const count = (tab: (typeof TABS)[number]) =>
-    tab === "site_checks"
-      ? checks.length + landChecks.length
-      : tab === "zones"
+  const sum = (keys: SurveyStatus[]) => keys.reduce((s, k) => s + (counts[k] ?? 0), 0);
+  const count = (tab: Tab) =>
+    tab === "zones"
       ? zones.length
-      : tab === "open"
-      ? (["assigned", "in_progress", "returned", "overlap_review"] as const).reduce((s, k) => s + (counts[k] ?? 0), 0)
-      : tab === "any"
-        ? Object.values(counts).reduce((s, n) => s + (n ?? 0), 0)
-        : (counts[tab] ?? 0);
+      : tab === "assigned"
+        ? checks.length + landChecks.length + sum(ASSIGNED)
+        : tab === "submitted"
+          ? sum(SUBMITTED)
+          : tab === "any"
+            ? Object.values(counts).reduce((s, n) => s + (n ?? 0), 0)
+            : (counts[tab] ?? 0);
   const href = (p: Record<string, string>) => `/surveys?${new URLSearchParams({ status, ...(mine ? { mine: "1" } : {}), ...p })}`;
 
   return (
@@ -64,10 +76,10 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
             <Link
               key={tab}
               href={href({ status: tab })}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${status === tab ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={tabClass(status === tab)}
             >
               {t(`tabs.${tab}`)}
-              <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{count(tab)}</span>
+              <TabCount n={count(tab)} />
             </Link>
           ))}
         </nav>
@@ -76,11 +88,12 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
         <Card className="overflow-hidden">
           <ZoneTable rows={zones} me={viewer.user.id} />
         </Card>
-      ) : status === "site_checks" ? (
+      ) : (
+        <div className="space-y-5">
+        {status === "assigned" && checks.length + landChecks.length > 0 && (
         <Card className="overflow-hidden">
-          {checks.length + landChecks.length === 0 ? (
-            <EmptyState icon={<Compass />} title={t("noSiteChecks")} description={t("noSiteChecksBody")} />
-          ) : (
+          <p className="border-b px-4 py-3 text-sm font-medium">{t("tabs.site_checks")}</p>
+          {(
             <Table>
               <TableHeader>
                 <TableRow>
@@ -151,7 +164,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
             </Table>
           )}
         </Card>
-      ) : (
+        )}
       <Card className="overflow-hidden">
         {rows.length === 0 ? (
           <EmptyState icon={<Compass />} title={t("emptyTitle")} description={t("emptyBody")} />
@@ -201,6 +214,7 @@ export default async function SurveysPage({ params, searchParams }: { params: Pr
           </Table>
         )}
       </Card>
+        </div>
       )}
     </>
   );

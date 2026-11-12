@@ -32,6 +32,8 @@ import {
   trialBalance,
 } from "@/lib/server/payments";
 import { myDistricts } from "@/lib/server/scope";
+import { tabClass } from "@/components/shell/tabs";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 export async function generateMetadata() {
   const t = await getTranslations("accounting");
@@ -114,7 +116,7 @@ export default async function AccountingPage({
   ];
 
   const periodFilter = (
-    <form className="flex flex-wrap items-end gap-2 text-sm">
+    <AutoSubmitForm className="flex flex-wrap items-end gap-2 text-sm">
       <input type="hidden" name="tab" value={tab} />
       {tab === "ledger" && sp.account && <input type="hidden" name="account" value={sp.account} />}
       {tab === "ledger" && sp.district && (
@@ -128,9 +130,6 @@ export default async function AccountingPage({
         <span className="text-muted-foreground block text-xs">{t("to")}</span>
         <Input type="date" name="to" defaultValue={to} />
       </label>
-      <button type="submit" className="hover:bg-muted h-9 rounded-md border px-3 text-sm">
-        {t("show")}
-      </button>
       <span className="flex flex-wrap gap-1">
         {quick.map((q) => (
           <Link
@@ -142,7 +141,7 @@ export default async function AccountingPage({
           </Link>
         ))}
       </span>
-    </form>
+    </AutoSubmitForm>
   );
 
   let body: React.ReactNode;
@@ -419,11 +418,19 @@ export default async function AccountingPage({
             <Link
               key={k}
               href={`/accounting?tab=${k}`}
-              className={`-mb-px whitespace-nowrap border-b-2 pb-2 ${tab === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+              className={tabClass(tab === k)}
             >
               {t(`tabs.${k}`)}
             </Link>
           ))}
+          {viewer.isSuperAdmin && (
+            <Link
+              href="/accounting/migration"
+              className="text-muted-foreground hover:text-foreground -mb-px ms-auto whitespace-nowrap border-b-2 border-transparent pb-2"
+            >
+              {t("migrationLink")}
+            </Link>
+          )}
         </nav>
       </PageHeader>
       <div className="space-y-4">

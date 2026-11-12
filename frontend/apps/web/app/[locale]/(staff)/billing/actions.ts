@@ -64,6 +64,20 @@ export const cancelInvoiceAction = defineAction("invoices.cancel", z.object({ id
   return done(null);
 });
 
+/** Change one bill's amount, with a reason (kept on the bill). Never below what's already paid. */
+export const editInvoiceAmountAction = defineAction(
+  "invoices.update",
+  z.object({ id: z.uuid(), total: z.coerce.number().positive("validation.amount").max(100_000_000, "validation.amount"), reason: z.string().trim().min(5, "validation.reason").max(500) }),
+  async (v, ctx) => {
+    try {
+      unwrap(await ctx.supabase.rpc("invoice_set_total", { p_id: v.id, p_total: v.total, p_reason: v.reason }), "change invoice amount");
+    } catch (err) {
+      field(err, { amount: "total", reason: "reason", rebill_below_paid: "total" });
+    }
+    return done(null);
+  },
+);
+
 export interface DuplicateCopy {
   id: string;
   number: string;

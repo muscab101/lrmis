@@ -22,7 +22,6 @@ function field(err: unknown, map: Record<string, string>): never {
 const done = <T>(v: T) => {
   revalidatePath("/[locale]/accounting", "layout");
   revalidatePath("/[locale]/dashboard", "page");
-  revalidatePath("/[locale]/incomplete", "page");
   return v;
 };
 

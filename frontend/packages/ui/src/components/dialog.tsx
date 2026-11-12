@@ -24,7 +24,7 @@ export function DialogContent({
       <DialogPrimitive.Overlay className={overlay} />
       <DialogPrimitive.Content
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-card p-6 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-card-solid p-6 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}
@@ -64,7 +64,7 @@ export function SheetContent({
       <DialogPrimitive.Overlay className={overlay} />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-y-0 end-0 z-50 flex h-dvh w-full max-w-xl flex-col border-s bg-card shadow-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right",
+          "fixed inset-y-0 end-0 z-50 flex h-dvh w-full max-w-xl flex-col border-s bg-card-solid shadow-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right",
           className,
         )}
         {...props}
@@ -114,7 +114,7 @@ export function ConfirmDialog({
         <AlertPrimitive.Overlay className={overlay} />
         <AlertPrimitive.Content
           className={cn(
-            "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-card p-6 shadow-2xl",
+            "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-card-solid p-6 shadow-2xl",
             className,
           )}
         >

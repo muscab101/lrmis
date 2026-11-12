@@ -128,7 +128,7 @@ describe("billing (Phase 6)", () => {
         hodan,
         propertyTax,
       ]),
-      "duplicate key",
+      "CONFLICT: duplicate_bill",
     );
   });
 

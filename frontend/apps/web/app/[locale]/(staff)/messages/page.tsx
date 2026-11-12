@@ -10,6 +10,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { listCampaigns, listMessages, listTemplates, listWarnings, messageCounts, type MessageStatus } from "@/lib/server/messages";
 import { myDistricts } from "@/lib/server/scope";
 import { listDistricts } from "@/lib/server/users";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("messages");
@@ -76,10 +77,10 @@ export default async function MessagesPage({ params, searchParams }: { params: P
               <Link
                 key={s}
                 href={`/messages?s=${s}`}
-                className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${section === s ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                className={tabClass(section === s)}
               >
                 {t(`sections.${s}`)}
-                {tabCount[s] !== null && <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{tabCount[s]}</span>}
+                {tabCount[s] !== null && <TabCount n={tabCount[s]} />}
               </Link>
             ))}
           </nav>

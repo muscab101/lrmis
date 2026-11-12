@@ -289,3 +289,15 @@ export const setUserPosAction = defineAction(
     return null;
   },
 );
+
+/** Super Admin: powers for one user on top of their role — extra ones given, role ones taken away. */
+export const setUserPowersAction = defineAction(
+  "users.set_powers",
+  z.object({ userId: z.uuid(), allow: z.array(z.string().max(80)).max(500), deny: z.array(z.string().max(80)).max(500) }),
+  async (v, ctx) => {
+    unwrap(await ctx.supabase.rpc("user_permissions_set", { p_user: v.userId, p_allow: v.allow, p_deny: v.deny }), "set user powers");
+    revalidatePath("/[locale]/admin/users/[id]", "page");
+    return null;
+  },
+);
+

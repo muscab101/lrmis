@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { StatusBadge } from "@dhulka/ui/badge";
 import { Mono } from "@dhulka/ui/misc";
 import { ArrowRight } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { listChanges, listTransfers } from "@/lib/server/legal";
 import { createClient } from "@/lib/supabase/server";
@@ -24,6 +24,7 @@ export async function TransferHistory({
   currentId?: string;
 }) {
   const t = await getTranslations("legal");
+  const lang = await getLocale();
   const format = await getFormatter();
   const [rows, allChanges] = await Promise.all([
     listTransfers("any", parcelId),
@@ -122,7 +123,7 @@ export async function TransferHistory({
                         <Mono>{it.r.number}</Mono>
                       </Link>
                       <span className="text-muted-foreground">
-                        {t(`transferKinds.${it.r.kind}`)}
+                        {it.r.type ? (lang === "so" ? it.r.type.name_so : it.r.type.name_en) : t(`transferKinds.${it.r.kind}`)}
                       </span>
                       <StatusBadge tone={TONE[it.r.status] ?? "draft"}>
                         {t(`status.${it.r.status}`)}

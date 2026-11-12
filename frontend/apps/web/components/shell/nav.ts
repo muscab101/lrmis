@@ -11,10 +11,8 @@ import {
   History,
   Home,
   IdCard,
-  KeyRound,
   Landmark,
   LayoutDashboard,
-  ListTodo,
   Map,
   MapPinned,
   Hammer,
@@ -59,7 +57,6 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
       { key: "map", href: "/map", icon: Map, permission: "map.view" },
       { key: "chat", href: "/chat", icon: MessagesSquare },
-      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
     ],
   },
   {
@@ -110,7 +107,6 @@ export const STAFF_NAV: NavGroup[] = [
     items: [
       { key: "users", href: "/admin/users", icon: Users, permission: "users.view" },
       { key: "roles", href: "/admin/roles", icon: ShieldCheck, permission: "roles.view" },
-      { key: "permissions", href: "/admin/permissions", icon: KeyRound, permission: "roles.view" },
       { key: "activity", href: "/admin/activity", icon: MonitorPlay, permission: "audit.view" },
       { key: "loginHistory", href: "/admin/login-history", icon: History, permission: "audit.view" },
       { key: "audit", href: "/audit", icon: ScrollText, permission: "audit.view" },

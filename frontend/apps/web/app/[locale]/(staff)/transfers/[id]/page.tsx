@@ -102,7 +102,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
                 )}
               </dd>
               <dt className="text-muted-foreground">{t("kind")}</dt>
-              <dd>{t(`transferKinds.${tr.kind}`)}</dd>
+              <dd>{tr.type ? (lang === "so" ? tr.type.name_so : tr.type.name_en) : t(`transferKinds.${tr.kind}`)}</dd>
               <dt className="text-muted-foreground">{t("declaredValue")}</dt>
               <dd>{tr.declared_value != null ? usd(tr.declared_value) : "—"}</dd>
               <dt className="text-muted-foreground">{t("duty")}</dt>

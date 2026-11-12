@@ -43,8 +43,9 @@ export function UsersTable({ rows, total, query, roles, districts, perms, me }: 
 
   const roleMap = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles]);
   // No actions on your own account or on one already deleted.
-  const canAct = (u: UserRow) => u.user_id !== me && u.status !== "deleted" && (perms.test || perms.changeEmail || perms.resetPassword || perms.remove || perms.manage);
+  const canAct = (u: UserRow) => u.user_id !== me && u.status !== "deleted" && (perms.test || perms.changeEmail || perms.resetPassword || perms.remove || perms.manage || perms.powers);
   // A super admin can't be tested as, by anyone.
+  const canPowers = (u: UserRow) => perms.powers && u.user_id !== me && !u.role_ids.some((id) => roleMap.get(id)?.grants_all);
   const canTest = (u: UserRow) => perms.test && u.user_id !== me && ["active", "invited"].includes(u.status) && !u.role_ids.some((id) => roleMap.get(id)?.key === "super_admin");
   const districtMap = useMemo(() => new Map(districts.map((d) => [d.id, locale === "so" ? d.name_so : d.name_en])), [districts, locale]);
 
@@ -145,7 +146,7 @@ export function UsersTable({ rows, total, query, roles, districts, perms, me }: 
     {
       id: "actions",
       header: () => <span className="sr-only">{t("colActions")}</span>,
-      cell: ({ row }) => (canAct(row.original) ? <UserRowActions user={row.original} perms={perms} canTest={canTest(row.original)} /> : null),
+      cell: ({ row }) => (canAct(row.original) ? <UserRowActions user={row.original} perms={perms} canTest={canTest(row.original)} canPowers={canPowers(row.original)} /> : null),
     },
   ];
 
@@ -227,7 +228,7 @@ export function UsersTable({ rows, total, query, roles, districts, perms, me }: 
                 </div>
                 {canAct(u) && (
                   <div className="flex justify-end">
-                    <UserRowActions user={u} perms={perms} canTest={canTest(u)} />
+                    <UserRowActions user={u} perms={perms} canTest={canTest(u)} canPowers={canPowers(u)} />
                   </div>
                 )}
                 <div className="flex flex-wrap gap-1">

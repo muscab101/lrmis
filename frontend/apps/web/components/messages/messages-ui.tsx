@@ -4,7 +4,7 @@ import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Field } from "@dhulka/ui/field";
-import { NativeSelect } from "@dhulka/ui/form-controls";
+import { Checkbox, NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -316,7 +316,7 @@ function TemplateCard({ row, canEdit }: { row: TemplateRow; canEdit: boolean }) 
               <Textarea rows={3} maxLength={640} value={en} onChange={(e) => setEn(e.target.value)} />
             </Field>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+              <Checkbox checked={active} onCheckedChange={(v) => setActive(v === true)} />
               {t("activeLabel")}
             </label>
           </>

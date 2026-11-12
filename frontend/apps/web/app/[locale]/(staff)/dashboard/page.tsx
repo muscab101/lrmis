@@ -1,16 +1,18 @@
 import { Button } from "@dhulka/ui/button";
 import { cn } from "@dhulka/ui/lib/cn";
-import { Alert, Mono } from "@dhulka/ui/misc";
-import { Banknote, CheckCircle2, ClipboardList, FileBarChart, MapPinned, Users, Wallet } from "lucide-react";
+import { Mono } from "@dhulka/ui/misc";
+import { Banknote, CheckCircle2, ClipboardList, FileBarChart, MapPinned, Users } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { AssistantCard } from "@/components/dashboard/assistant-card";
+import { MyWork } from "@/components/dashboard/my-work";
+import { segClass, segGroupClass } from "@/components/shell/tabs";
 import { Gauge, SplitBars, WeekdayBars } from "@/components/dashboard/mini-charts";
 import { DeltaPill, StatCard, change } from "@/components/dashboard/stat-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Link } from "@/i18n/navigation";
 import { requireStaff } from "@/lib/server/auth";
-import { dashboardKpis, dashboardPeriod } from "@/lib/server/reports";
+import { dashboardKpis, dashboardPeriod, dashboardWork } from "@/lib/server/reports";
 import { createClient } from "@/lib/supabase/server";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
 
@@ -19,12 +21,8 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
+/** Other waiting work not in a job panel (My work covers surveys, transfers, permits, changes and disputes). */
 const TASK_LINKS = {
-  surveys: "/surveys",
-  transfers: "/transfers?f=submitted",
-  permits: "/permits",
-  changes: "/disputes?s=changes",
-  disputes: "/disputes",
   campaigns: "/messages?s=campaigns",
   messages_failed: "/messages?f=failed",
 } as const;
@@ -53,13 +51,14 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   const format = await getFormatter();
   const range = (RANGES as readonly number[]).includes(Number((await searchParams).range)) ? Number((await searchParams).range) : 30;
 
-  const canUsers = viewer.can("users.view");
   const supabase = await createClient();
-  const [kpis, period, invited] = await Promise.all([
+  const [kpis, period, work, myRoles] = await Promise.all([
     dashboardKpis(),
     dashboardPeriod(range),
-    canUsers ? supabase.from("profiles").select("*", { count: "exact", head: true }).eq("kind", "staff").eq("status", "invited") : null,
+    dashboardWork(),
+    supabase.from("user_roles").select("roles(key)").eq("user_id", viewer.user.id),
   ]);
+  const roleKeys = ((myRoles.data ?? []) as unknown as { roles: { key: string } | null }[]).map((r) => r.roles?.key ?? "").filter(Boolean);
 
   const usd = (n: number, compact = false) =>
     format.number(Number(n), { style: "currency", currency: "USD", maximumFractionDigits: compact ? 1 : 0, notation: compact ? "compact" : "standard" });
@@ -96,13 +95,13 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           <p className="text-muted-foreground mt-0.5 text-sm">{t("periodSubtitle", { range: rangeLabel })}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <nav className="bg-card flex rounded-lg border p-0.5 text-sm" aria-label={t("periodLabel")}>
+          <nav className={segGroupClass} aria-label={t("periodLabel")}>
             {RANGES.map((r) => (
               <Link
                 key={r}
                 href={`/dashboard?range=${r}`}
                 aria-current={r === range ? "page" : undefined}
-                className={cn("rounded-md px-5 py-1 font-medium whitespace-nowrap transition-colors", r === range ? "bg-ink text-ink-foreground" : "text-muted-foreground hover:text-foreground")}
+                className={segClass(r === range)}
               >
                 {t("lastDays", { days: r })}
               </Link>
@@ -118,6 +117,9 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           )}
         </div>
       </header>
+
+      {/* The user's own jobs first: what waits for them now. */}
+      <MyWork panels={work} roleKeys={roleKeys} />
 
       {/* Headline numbers. */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -219,7 +221,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
             <Panel
               title={t("latestApplications")}
               action={
-                <Link href="/applications" className="text-primary text-sm hover:underline">
+                <Link href="/parcels?stage=draft" className="text-primary text-sm hover:underline">
                   {t("viewAll")}
                 </Link>
               }
@@ -242,9 +244,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                       {period.recent.map((a) => (
                         <tr key={a.id} className="hover:bg-muted/40">
                           <td className="px-4 py-2.5 sm:px-5">
-                            <Link href={`/applications/${a.id}`} className="hover:text-primary">
-                              <Mono>{a.number}</Mono>
-                            </Link>
+                            <Mono>{a.number}</Mono>
                           </td>
                           <td className="max-w-48 truncate px-2 py-2.5">{a.owners ?? "—"}</td>
                           <td className="px-2 py-2.5">{(locale === "so" ? a.district_so : a.district_en) ?? "—"}</td>
@@ -305,25 +305,8 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 ))}
               </ul>
             )}
-            <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
-              {viewer.can("cashier.view") && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/cashier">
-                    <Wallet aria-hidden />
-                    {t("quickCashier")}
-                  </Link>
-                </Button>
-              )}
-            </div>
           </Panel>
           <AssistantCard title={t("assistantTitle")} body={t("assistantBody")} placeholder={t("assistantPlaceholder")} send={t("assistantSend")} />
-          {canUsers && (invited?.count ?? 0) > 0 && (
-            <Alert tone="warning" title={t("invitedAlertTitle", { count: invited?.count ?? 0 })}>
-              <Link href="/admin/users?status=invited" className="underline">
-                {t("invitedAlertLink")}
-              </Link>
-            </Alert>
-          )}
         </div>
       </div>
     </div>

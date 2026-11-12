@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { BadgeCheck, ClipboardList } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { ApplicationStatusBadge } from "@/components/applications/status-badge";
@@ -91,7 +91,6 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
       party.phone ? (
         <span key="ph" className="inline-flex items-center gap-1 font-mono">
           {party.phone}
-          {party.phone_verified_at && <BadgeCheck className="size-4 text-success" aria-label={t("verified")} />}
         </span>
       ) : null,
     ],

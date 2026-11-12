@@ -33,8 +33,7 @@ export const createTransferAction = defineAction(
   "transfers.create",
   z.object({
     parcelId: id,
-    kind: z.enum(["sale", "gift", "inheritance", "court_order"]),
-    value: z.coerce.number().min(0).max(1_000_000_000).nullable(),
+    typeId: z.uuid("validation.required"),
     courtOrderId: z.uuid().nullable(),
     owners: z.array(z.object({ partyId: id, role: z.enum(["owner", "co_owner", "heir"]), share: z.coerce.number().gt(0).max(100) })).min(1, "validation.recipients"),
     note: note,
@@ -42,9 +41,12 @@ export const createTransferAction = defineAction(
   async (v, ctx) => {
     let tid: string;
     try {
-      tid = unwrap(await ctx.supabase.rpc("transfer_create", { p_parcel: v.parcelId, p_kind: v.kind, p_value: v.value, p_court_order: v.courtOrderId, p_note: v.note }), "transfer") as string;
+      tid = unwrap(
+        await ctx.supabase.rpc("transfer_create_typed", { p_parcel: v.parcelId, p_type: v.typeId, p_court_order: v.courtOrderId, p_note: v.note }),
+        "transfer",
+      ) as string;
     } catch (err) {
-      field(err, { declared_value: "value", court_order: "courtOrderId" });
+      field(err, { transfer_type: "typeId", court_order: "courtOrderId" });
     }
     try {
       unwrap(

@@ -62,6 +62,7 @@ import { myDistricts, myPointsOfSale, myScope } from "@/lib/server/scope";
 import { listFeeTypes } from "@/lib/server/valuation";
 import { CHANNELS } from "@/lib/server/collections";
 import { zonePlaces } from "@/lib/server/zones";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 export async function generateMetadata() {
   const t = await getTranslations("reports");
@@ -683,7 +684,7 @@ export default async function ReportsPage({
       </PageHeader>
       <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-3">
-          <form className="flex flex-wrap items-end gap-3 text-sm">
+          <AutoSubmitForm className="flex flex-wrap items-end gap-3 text-sm">
             <input type="hidden" name="r" value={report} />
             {usesRange && (
               <>
@@ -840,9 +841,6 @@ export default async function ReportsPage({
                 </NativeSelect>
               </label>
             )}
-            <Button type="submit" size="sm" variant="outline">
-              {t("apply")}
-            </Button>
             {viewer.can("reports.export") && rows.length > 0 && (
               <div className="ms-auto flex flex-wrap gap-1">
                 <Button size="sm" variant="outline" asChild>
@@ -865,7 +863,7 @@ export default async function ReportsPage({
                 </Button>
               </div>
             )}
-          </form>
+          </AutoSubmitForm>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">{t("related")}</span>
             {RELATED_REPORTS[report].filter(canOpen).map((r) => (

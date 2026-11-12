@@ -74,6 +74,12 @@ describe("collections by point of sale", () => {
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => "owners" in r)).toBe(true);
     expect(rows.every((r) => r.channel === "cash" && Number(r.amount) === 30 && r.pun)).toBe(true);
+    // By bill type: what the money paid for, for the office and for each payment.
+    const types = (list[0] as unknown as { bill_types: { code: string; total: number }[] }).bill_types;
+    expect(types.map((b) => [b.code, Number(b.total)])).toEqual([["property_tax", 90]]);
+    expect(Number((one as unknown as { bill_types: Record<string, number> }).bill_types.property_tax)).toBe(60);
+    const bills = (rows[0] as unknown as { bills: { code: string; number: string; amount: number }[] }).bills;
+    expect(bills.map((b) => [b.code, Number(b.amount)])).toEqual([["property_tax", 30]]);
     await expectError(asUser(db, cashier, (tx) => tx.query(`select * from public.pos_cashier_payments($1, $2, $3, $3)`, [pos, cashier, today])), "PERMISSION_DENIED");
     // Choosing a point of sale shows it even with no money yet; the list offers every point of sale in your districts.
     const choices = await asUser(db, officer, async (tx) => (await tx.query<{ id: string; code: string }>(`select id, code from public.collections_pos_choices()`)).rows);
@@ -140,3 +146,17 @@ describe("collections by point of sale", () => {
     await expectError(asUser(db, officer, (tx) => tx.query(`select public.payment_verify($1)`, [[theirs]])), "MAKER_CHECKER");
   });
 });
+
+describe("push payment only after a problem (0212)", () => {
+  it("a bill can be pushed only once its money went wrong", async () => {
+    const inv = await scalar<string>(db, `select id from public.invoices where balance > 0 order by number limit 1`);
+    const allowed = () => asUser(db, cashier, (tx) => scalar<string[]>(tx, `select public.invoices_push_allowed($1)`, [[inv]]));
+    expect(await allowed()).toEqual([]);
+    await db.query(
+      `insert into public.payment_intents (invoice_id, provider, amount, currency, status, expires_at) select id, 'test', balance, 'USD', 'failed', now() from public.invoices where id = $1`,
+      [inv],
+    );
+    expect(await allowed()).toEqual([inv]);
+  });
+});
+

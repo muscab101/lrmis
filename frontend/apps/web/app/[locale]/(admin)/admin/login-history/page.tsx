@@ -10,6 +10,7 @@ import { Pager } from "@/components/admin/pager";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
+import { tabClass } from "@/components/shell/tabs";
 
 const PAGE = 50;
 const querySchema = z.object({
@@ -39,7 +40,7 @@ export default async function LoginHistoryPage({ params, searchParams }: { param
             <Link
               key={r}
               href={`/admin/login-history?result=${r}`}
-              className={`-mb-px border-b-2 pb-2 ${q.result === r ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={tabClass(q.result === r)}
               aria-current={q.result === r ? "page" : undefined}
             >
               {t(`result_${r}`)}

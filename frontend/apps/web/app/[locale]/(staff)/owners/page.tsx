@@ -3,7 +3,7 @@ import { StatusBadge } from "@dhulka/ui/badge";
 import { Card } from "@dhulka/ui/card";
 import { EmptyState, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { BadgeCheck, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Pager } from "@/components/admin/pager";
 import { OwnerRowActions } from "@/components/owners/owner-row-actions";
@@ -13,6 +13,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
 import { OwnersFilters } from "./owners-filters";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("owners");
@@ -65,9 +66,9 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
               key={k}
               href={stageHref(k)}
               aria-current={q.stage === k ? "page" : undefined}
-              className={`-mb-px border-b-2 pb-2 whitespace-nowrap ${q.stage === k ? "border-flag text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}
+              className={tabClass(q.stage === k)}
             >
-              {t(`stage_${k}`)} <span className="text-muted-foreground tabular-nums">{counts[k]}</span>
+              {t(`stage_${k}`)} <TabCount n={counts[k]} />
             </Link>
           ))}
         </nav>
@@ -111,7 +112,6 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
                     {p.phone ? (
                       <span className="inline-flex items-center gap-1 font-mono text-xs">
                         {p.phone}
-                        {p.phone_verified_at && <BadgeCheck className="text-success size-3.5" aria-label={t("verified")} />}
                       </span>
                     ) : (
                       "—"

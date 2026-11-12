@@ -6,7 +6,7 @@ export function EnvBadge({ env }: { env: "development" | "staging" | "production
   return (
     <span
       className={cn(
-        "hidden rounded-sm border px-1.5 py-0.5 font-mono sm:inline text-[10px] font-semibold tracking-widest",
+        "hidden shrink-0 rounded-sm border px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-widest xl:inline",
         env === "staging" ? "border-warning/40 text-warning" : "border-accent/40 text-accent",
       )}
     >

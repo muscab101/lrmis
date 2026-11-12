@@ -6,6 +6,7 @@ import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { EVIDENCE_BUCKET } from "@/lib/server/collections";
 import { log } from "@/lib/server/log";
 import { parcelForCashier } from "@/lib/server/payments";
+import { getProvider, ingestEvent } from "@/lib/server/providers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePun, punFilter } from "@/lib/pun";
 
@@ -371,3 +372,64 @@ export async function uploadEvidenceAction(form: FormData) {
     note: String(form.get("note") ?? ""),
   });
 }
+
+/**
+ * Cashier: a push payment, just in case — the bill's amount is requested on the payer's phone (EVC Plus, ZAAD, eDahab
+ * through the mobile money provider) and they approve it with their PIN. The payment is recorded when the provider
+ * confirms, exactly like a payment the owner starts online; the desk itself records nothing.
+ */
+export const pushPaymentAction = defineAction(
+  "cashier.push_payment",
+  z.object({
+    invoiceId: z.uuid(),
+    provider: z.string().min(2).max(20),
+    // Spaces, brackets and dashes are allowed while typing; they're taken out below.
+    phone: z.string().trim().regex(/^\+?[\s()-]*2[\s()-]*5[\s()-]*2(?:[\s()-]*[0-9]){8,9}[\s()-]*$/, "validation.phone_so"),
+  }),
+  async (input, ctx) => {
+    const v = { ...input, phone: input.phone.replace(/[\s()-]/g, "") };
+    // Only a bill whose money went wrong (reversed, not approved, or a failed online payment) can be pushed.
+    const allowed = unwrap(await ctx.supabase.rpc("invoices_push_allowed", { p_ids: [v.invoiceId] }), "push allowed") as string[];
+    if (!allowed.includes(v.invoiceId)) throw new AppFailure("CONFLICT", { detail: "push_not_needed" });
+    const provider = getProvider(v.provider);
+    if (!provider || !provider.configured()) throw new AppFailure("VALIDATION", undefined, { provider: ["validation.provider"] });
+    let intent: { intent_id: string; amount: number; currency: string; invoice_number: string; pun: string | null };
+    try {
+      intent = unwrap(
+        await ctx.supabase.rpc("payment_intent_create", { p_invoice: v.invoiceId, p_token: null, p_provider: v.provider, p_phone: v.phone }),
+        "push payment",
+      ) as typeof intent;
+    } catch (err) {
+      field(err, { phone: "phone" });
+    }
+    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const result = await provider.createCheckout({
+      intentId: intent.intent_id,
+      invoiceNumber: intent.invoice_number,
+      pun: intent.pun,
+      amount: Number(intent.amount),
+      currency: intent.currency,
+      phone: v.phone,
+      returnUrl: `${site}/en/cashier`,
+    });
+    const admin = await createAdminClient();
+    await admin.rpc("payment_intent_set_checkout", { p_id: intent.intent_id, p_provider_ref: result.providerRef, p_checkout_url: "" });
+    if (result.kind === "completed") {
+      const out = await ingestEvent(v.provider, result.event, true, { source: "api", event: result.event });
+      log("info", "cashier.push_completed", { requestId: ctx.requestId, provider: v.provider, result: out.result });
+    }
+    return done({ intentId: intent.intent_id, amount: Number(intent.amount), invoiceNumber: intent.invoice_number });
+  },
+);
+
+/** Whether a push payment was approved on the phone yet (the cashier's window waits on this). */
+export const pushPaymentStatusAction = defineAction(
+  "cashier.push_status",
+  z.object({ intentId: z.uuid() }),
+  async ({ intentId }, ctx) =>
+    unwrap(await ctx.supabase.rpc("payment_intent_status", { p_id: intentId }), "status") as {
+      status: string;
+      receipt_no: string | null;
+      failure_reason: string | null;
+    } | null,
+);

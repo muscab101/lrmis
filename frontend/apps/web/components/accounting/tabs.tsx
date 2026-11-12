@@ -36,6 +36,7 @@ import {
   listMovements,
   type MovementStatus,
 } from "@/lib/server/accounting";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 const STATUS_TONE: Record<string, StatusTone> = {
   pending: "pending",
@@ -973,7 +974,7 @@ export async function LedgerTab({
   const districtName = (id: string | null) => (id ? name(districts.find((d) => d.id === id)) : "");
   return (
     <div className="bg-card overflow-hidden rounded-xl border">
-      <form className="flex flex-wrap items-end gap-2 border-b p-3 text-sm">
+      <AutoSubmitForm className="flex flex-wrap items-end gap-2 border-b p-3 text-sm">
         <input type="hidden" name="tab" value="ledger" />
         <input type="hidden" name="from" value={from} />
         <input type="hidden" name="to" value={to} />
@@ -1006,15 +1007,12 @@ export async function LedgerTab({
             ))}
           </select>
         </label>
-        <button type="submit" className="hover:bg-muted h-9 rounded-md border px-3 text-sm">
-          {t("show")}
-        </button>
         <span className="ms-auto flex flex-wrap gap-x-5 text-sm">
           <span>{t("ledger.opening", { amount: usd(gl.opening) })}</span>
           <span>{t("ledger.movement", { debit: usd(gl.debit), credit: usd(gl.credit) })}</span>
           <span className="font-semibold">{t("ledger.closing", { amount: usd(closing) })}</span>
         </span>
-      </form>
+      </AutoSubmitForm>
       {gl.lines.length === 0 ? (
         <p className="text-muted-foreground p-6 text-center text-sm">{t("ledger.empty")}</p>
       ) : (

@@ -25,6 +25,29 @@ export async function listFeeTypes() {
   return unwrap(await supabase.from("fee_types").select("id, code, name_so, name_en, interval, amount, active, sort").order("sort"), "fee types") as FeeType[];
 }
 
+export interface TransferType {
+  id: string;
+  name_so: string;
+  name_en: string;
+  /** Which rules it follows: a court-order type needs the court's order. */
+  works_as: "sale" | "gift" | "inheritance" | "court_order";
+  /** Stamp duty charged when the transfer is sent for approval (USD). */
+  duty: number;
+  active: boolean;
+  sort: number;
+  /** How many transfers used it. */
+  used: number;
+}
+
+export async function listTransferTypes() {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase.from("transfer_types").select("id, name_so, name_en, works_as, duty, active, sort, transfers(count)").order("sort").order("name_en"),
+    "transfer types",
+  ) as unknown as (Omit<TransferType, "used"> & { transfers: { count: number }[] })[];
+  return rows.map(({ transfers, ...r }) => ({ ...r, duty: Number(r.duty), used: transfers[0]?.count ?? 0 })) as TransferType[];
+}
+
 export interface OwnerType {
   id: string;
   name_so: string;
@@ -42,26 +65,50 @@ export async function listOwnerTypes() {
   return rows.map(({ parties, ...r }) => ({ ...r, owners: parties[0]?.count ?? 0 })) as OwnerType[];
 }
 
-export interface RateRow {
+/** A neighbourhood that has prices of its own, for the Rates overview. */
+export interface PricedNeighbourhood {
   id: string;
-  land_use: string;
-  developed: boolean;
-  rate_m2: number;
-  service_charge: number;
-  valid_from: string;
-  note: string | null;
-  created_at: string;
-  neighbourhood: { id: string; code: string; name_so: string; name_en: string } | null;
+  code: string;
+  name_so: string;
+  name_en: string;
+  district_code: string | null;
+  prices: number;
+  updated_at: string;
 }
 
-export async function listRates(neighbourhoodId: string | null) {
+/** Every neighbourhood with prices of its own (newest change first). */
+export async function listPricedNeighbourhoods() {
   const supabase = await createClient();
-  let req = supabase
-    .from("neighbourhood_rates")
-    .select("id, land_use, developed, rate_m2, service_charge, valid_from, note, created_at, neighbourhood:neighbourhoods(id, code, name_so, name_en)");
-  if (neighbourhoodId) req = req.eq("neighbourhood_id", neighbourhoodId);
-  const res = await req.order("valid_from", { ascending: false }).order("land_use").limit(200);
-  return unwrap(res, "rates") as unknown as RateRow[];
+  const rows = unwrap(
+    await supabase
+      .from("neighbourhood_grade_prices")
+      .select("updated_at, neighbourhood:neighbourhoods(id, code, name_so, name_en, sector:sectors(section:sections(district:districts(code))))")
+      .order("updated_at", { ascending: false })
+      .limit(2000),
+    "priced neighbourhoods",
+  ) as unknown as {
+    updated_at: string;
+    neighbourhood: { id: string; code: string; name_so: string; name_en: string; sector: { section: { district: { code: string } | null } | null } | null } | null;
+  }[];
+  const by = new Map<string, PricedNeighbourhood>();
+  for (const r of rows) {
+    const n = r.neighbourhood;
+    if (!n) continue;
+    const cur = by.get(n.id);
+    if (cur) cur.prices += 1;
+    else by.set(n.id, { id: n.id, code: n.code, name_so: n.name_so, name_en: n.name_en, district_code: n.sector?.section?.district?.code ?? null, prices: 1, updated_at: r.updated_at });
+  }
+  return [...by.values()];
+}
+
+/** One neighbourhood's own prices, by house type id. */
+export async function neighbourhoodPrices(neighbourhoodId: string) {
+  const supabase = await createClient();
+  const rows = unwrap(
+    await supabase.from("neighbourhood_grade_prices").select("grade_id, amount").eq("neighbourhood_id", neighbourhoodId),
+    "neighbourhood prices",
+  ) as { grade_id: string; amount: number }[];
+  return Object.fromEntries(rows.map((r) => [r.grade_id, Number(r.amount)])) as Record<string, number>;
 }
 
 export interface AssessmentRow {

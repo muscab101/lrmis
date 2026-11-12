@@ -22,6 +22,8 @@ export interface CollectHouse {
   district_so: string;
   district_en: string;
   owners: string | null;
+  account_no: string | null;
+  neighbourhood_code: string | null;
   due: number;
   bills: CollectBill[];
 }
@@ -44,6 +46,8 @@ export async function housesToCollect(): Promise<CollectHouse[]> {
           district_so: r.district_so,
           district_en: r.district_en,
           owners: r.owners,
+          account_no: r.account_no,
+          neighbourhood_code: r.neighbourhood_code,
           due: 0,
           bills: [],
         })

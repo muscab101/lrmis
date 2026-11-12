@@ -96,6 +96,12 @@ export interface ParcelDetail {
   building_state: "standing" | "demolished";
   building_no: string | null;
   floors: number | null;
+  /** Flats building: the ground it covers, and who pays its open-ground bill. */
+  footprint_m2: number | null;
+  manager_name: string | null;
+  manager_phone: string | null;
+  /** A flat's share of its building, out of 10,000. */
+  unit_factor: number | null;
   shared_split: "equal" | "by_size" | null;
   /** On a unit: the land it belongs to, its number and floor, and its m². */
   parent_id: string | null;
@@ -155,7 +161,7 @@ export async function getParcel(id: string) {
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, shared_split, building_state, building_no, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, footprint_m2, manager_name, manager_phone, unit_factor, shared_split, building_state, building_no, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, geom, application_id,
        site_check_status, site_check_surveyor, site_check_requested_at, site_check_done_at, site_check_note,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
@@ -181,6 +187,7 @@ export interface LandUnit {
   own_m2: number | null;
   shared_m2: number | null;
   area_m2: number | null;
+  unit_factor: number | null;
   owners: string[];
   owed: number;
 }
@@ -191,7 +198,7 @@ export async function getLandUnits(parcelId: string) {
   const [{ data: units }, { data: spaces }] = await Promise.all([
     supabase
       .from("parcels")
-      .select("id, pun, unit_no, unit_floor, own_m2, shared_m2, area_m2, parcel_owners(valid_to, party:parties(full_name))")
+      .select("id, pun, unit_no, unit_floor, own_m2, shared_m2, area_m2, unit_factor, parcel_owners(valid_to, party:parties(full_name))")
       .eq("parent_id", parcelId)
       .is("deleted_at", null)
       .order("unit_no"),

@@ -81,7 +81,7 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
 
         {!archived && (
           <div className="flex flex-wrap gap-2">
-            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} transferOrders={transferOrders} newOwner={newOwner} />}
+            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} transferOrders={transferOrders} newOwner={newOwner} />}
             {openTransfer && (
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/transfers/${openTransfer.id}`}>

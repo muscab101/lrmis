@@ -1,7 +1,7 @@
-import { Button } from "@dhulka/ui/button";
 import { Card, CardContent } from "@dhulka/ui/card";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
+import { Button } from "@dhulka/ui/button";
 import { Home, MapPinPlus, UserPlus, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -58,7 +58,7 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
           <div className="flex flex-wrap gap-2">
             {canAddLand && (
               <Button asChild>
-                <Link href={`/parcels/new?${new URLSearchParams({ nbhd: zone.neighbourhood_id, zone: zone.id })}`}>
+                <Link href={`/surveys/zones/${zone.id}/land`}>
                   <MapPinPlus aria-hidden />
                   {t("addLand")}
                 </Link>
@@ -66,7 +66,7 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
             )}
             {open && (mine || viewer.can("surveys.approve")) && viewer.can("owners.create") && (
               <Button asChild variant="outline">
-                <Link href={`/owners/new?${new URLSearchParams({ zone: zone.id, nbhd: zone.neighbourhood_id })}`}>
+                <Link href={`/surveys/zones/${zone.id}/owner`}>
                   <UserPlus aria-hidden />
                   {t("addOwner")}
                 </Link>
@@ -121,7 +121,7 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
                   <span className="text-muted-foreground text-xs">{format.dateTime(new Date(o.created_at), { dateStyle: "medium", timeStyle: "short" })}</span>
                   {canAddLand && (
                     <Button asChild size="sm" className="ms-auto">
-                      <Link href={`/parcels/new?${new URLSearchParams({ nbhd: zone.neighbourhood_id, zone: zone.id, owner: o.party_id })}`}>
+                      <Link href={`/surveys/zones/${zone.id}/land?owner=${o.party_id}`}>
                         <MapPinPlus aria-hidden />
                         {t("addLandFor")}
                       </Link>

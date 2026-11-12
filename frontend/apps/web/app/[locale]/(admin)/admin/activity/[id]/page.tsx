@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { actionWords, validDay } from "../words";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 
 interface Entry {
   kind: "action" | "test" | "page" | "login";
@@ -86,7 +87,7 @@ export default async function StaffActivityPersonPage({
     <>
       <PageHeader title={name} description={person.email ?? undefined}>
         <div className="flex flex-wrap items-center gap-2">
-          <form method="get" className="flex items-center gap-2">
+          <AutoSubmitForm className="flex items-center gap-2">
             <Input
               type="date"
               name="day"
@@ -94,10 +95,7 @@ export default async function StaffActivityPersonPage({
               aria-label={t("day")}
               className="w-44"
             />
-            <Button type="submit" variant="outline" size="sm">
-              {t("show")}
-            </Button>
-          </form>
+          </AutoSubmitForm>
           <Button asChild size="sm" variant="outline">
             <Link href={`/admin/activity/${id}/work${day ? `?day=${day}` : ""}`}>
               {t("viewWork")}

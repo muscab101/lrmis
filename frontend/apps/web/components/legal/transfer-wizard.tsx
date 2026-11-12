@@ -7,15 +7,15 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { ArrowRightLeft, Trash2, UserPlus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import { createTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { PartyForm } from "@/components/owners/party-form";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import type { TransferTypeChoice } from "@/lib/server/legal";
 
-type Kind = "sale" | "gift" | "inheritance" | "court_order";
 type Recipient = { party: ComboOption; role: "owner" | "co_owner" | "heir" };
 
 /** Equal shares that add up to exactly 100 % (the last one takes the rounding). */
@@ -24,13 +24,15 @@ function equalShares(n: number): number[] {
   return Array.from({ length: n }, (_, i) => (i === n - 1 ? Math.round((100 - each * (n - 1)) * 100) / 100 : each));
 }
 
-/** Start a transfer: kind (or court order), and the new owners (who share the land equally). */
+/** Start a transfer: its type (from Valuation → Transfer types; a court-order type needs the order), and the new owners (who share the land equally). */
 export function TransferWizard({
   parcelId,
+  types,
   transferOrders,
   newOwner,
 }: {
   parcelId: string;
+  types: TransferTypeChoice[];
   transferOrders: { id: string; order_no: string }[];
   /** Staff who may create owners can register a new one here (the full owner form) and add them straight away. */
   newOwner?: { districts: { id: string; name_so: string; name_en: string }[]; districtId: string | null } | null;
@@ -39,7 +41,12 @@ export function TransferWizard({
   const tc = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<Kind>("sale");
+  const locale = useLocale();
+  const format = useFormatter();
+  const usable = types.filter((x) => x.works_as !== "court_order" || transferOrders.length > 0);
+  const [typeId, setTypeId] = useState(usable[0]?.id ?? "");
+  const kind = types.find((x) => x.id === typeId)?.works_as ?? null;
+  const typeName = (x: TransferTypeChoice) => (locale === "so" ? x.name_so : x.name_en);
   const [orderId, setOrderId] = useState(transferOrders[0]?.id ?? "");
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
@@ -78,8 +85,7 @@ export function TransferWizard({
         submit={() =>
           createTransferAction({
             parcelId,
-            kind,
-            value: null,
+            typeId,
             courtOrderId: kind === "court_order" ? orderId || null : null,
             owners: people.map((p, i) => ({ partyId: p.party.value, role: p.role, share: equalShares(people.length)[i]! })),
             note,
@@ -91,14 +97,29 @@ export function TransferWizard({
         {(fe) => (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Field id="kind" label={t("kind")}>
-                <NativeSelect value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
-                  {(["sale", "gift", "inheritance", "court_order"] as const).map((k) => (
-                    <option key={k} value={k} disabled={k === "court_order" && transferOrders.length === 0}>
-                      {t(`transferKinds.${k}`)}
-                    </option>
-                  ))}
-                </NativeSelect>
+              <Field
+                id="kind"
+                label={t("kind")}
+                error={fe("typeId")}
+                hint={types.length === 0 ? undefined : t("typeDuty", { amount: format.number(Number(types.find((x) => x.id === typeId)?.duty ?? 0), { style: "currency", currency: "USD" }) })}
+                required
+              >
+                {types.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    {t("noTransferTypes")}{" "}
+                    <Link href="/valuation?tab=transfer_types" className="text-primary hover:underline">
+                      {t("addTransferTypes")}
+                    </Link>
+                  </p>
+                ) : (
+                  <NativeSelect value={typeId} onChange={(e) => setTypeId(e.target.value)}>
+                    {types.map((x) => (
+                      <option key={x.id} value={x.id} disabled={x.works_as === "court_order" && transferOrders.length === 0}>
+                        {typeName(x)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                )}
               </Field>
               {kind === "court_order" && (
                 <Field id="order" label={t("courtOrder")} error={fe("courtOrderId")} required>

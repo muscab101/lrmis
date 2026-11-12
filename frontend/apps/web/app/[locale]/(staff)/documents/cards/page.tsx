@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { cardPrintPayments, listDocuments } from "@/lib/server/certificates";
 import { createClient } from "@/lib/supabase/server";
+import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("idCards");
@@ -60,10 +61,10 @@ export default async function IdCardsPage({ params, searchParams }: { params: Pr
               key={k}
               href={`/documents/cards?${new URLSearchParams({ tab: k, ...(q ? { q } : {}) })}`}
               aria-current={tab === k ? "page" : undefined}
-              className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 whitespace-nowrap ${tab === k ? "border-flag font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={tabClass(tab === k)}
             >
               {t(`tab_${k}`)}
-              <span className="rounded-sm bg-muted px-1.5 font-mono text-[11px]">{counts[k]}</span>
+              <TabCount n={counts[k]} />
             </Link>
           ))}
         </nav>

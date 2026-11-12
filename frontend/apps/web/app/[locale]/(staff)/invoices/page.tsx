@@ -31,6 +31,7 @@ import {
   type InvoiceFilter,
   type InvoiceSort,
 } from "@/lib/server/billing";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 
 export async function generateMetadata() {
   const t = await getTranslations("billing");
@@ -140,6 +141,21 @@ export default async function InvoicesPage({
     body = (
       <>
         <div className="flex flex-wrap items-center gap-3 border-b p-3">
+          <form className="flex items-center text-sm" role="search">
+            {Object.entries(query)
+              .filter(([k]) => k !== "q")
+              .map(([k, v]) => (
+                <input key={k} type="hidden" name={k} value={v} />
+              ))}
+            <Input
+              id="invoice-search"
+              name="q"
+              defaultValue={q}
+              placeholder={t("searchInvoices")}
+              aria-label={t("table.search")}
+              className="w-72"
+            />
+          </form>
           <details className="relative">
             <summary className="bg-primary text-primary-foreground inline-flex h-9 cursor-pointer select-none list-none items-center gap-1.5 rounded-md px-4 text-sm font-medium">
               <Filter className="size-4" aria-hidden />
@@ -168,14 +184,14 @@ export default async function InvoicesPage({
               </label>
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("table.landFilter")}</span>
-                <select name="land" defaultValue={land ?? ""} className="bg-background h-9 rounded-md border px-2">
+                <NativeSelect name="land" defaultValue={land ?? ""} className="h-9 w-auto">
                   <option value="">{t("land_any")}</option>
                   {INVOICE_LANDS.map((k) => (
                     <option key={k} value={k}>
                       {t(`land_${k}`)}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </label>
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("feeType")}</span>
@@ -213,22 +229,8 @@ export default async function InvoicesPage({
             </form>
           </details>
           <EntriesSelect size={size} query={query} />
-          <InvoiceTools canFixDuplicates={viewer.can("invoices.cancel")} canCreateMissing={viewer.can("invoices.create")} />
-          <form className="ms-auto flex items-center gap-2 text-sm" role="search">
-            {Object.entries(query)
-              .filter(([k]) => k !== "q")
-              .map(([k, v]) => (
-                <input key={k} type="hidden" name={k} value={v} />
-              ))}
-            <label htmlFor="invoice-search">{t("table.search")}</label>
-            <Input
-              id="invoice-search"
-              name="q"
-              defaultValue={q}
-              placeholder={t("searchInvoices")}
-              className="w-64"
-            />
-          </form>
+          <span className="ms-auto" />
+          <InvoiceTools canFixDuplicates={viewer.can("invoices.cancel")} canCreateMissing={viewer.can("invoices.create")} canEditAmount={viewer.can("invoices.update")} />
         </div>
         {rows.length === 0 ? (
           <EmptyState
