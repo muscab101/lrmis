@@ -2,6 +2,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { getCertificateMarks } from "@/lib/server/certificate-marks";
 import { type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
+import { getCertificateDesign } from "@/lib/server/certificate-design";
 import { ParcelMapSvg } from "./parcel-map-svg";
 import { SignBlock } from "./sign-block";
 
@@ -105,6 +106,8 @@ export async function CertificateSheet({
   const to = await getTranslations("owners");
   // The official signature and office stamp set by an admin (Admin → Signature and stamp).
   const marks = await getCertificateMarks();
+  // How certificates look (Admin → Certificate design).
+  const design = await getCertificateDesign();
   const format = await getFormatter();
   const lang = await getLocale();
   const s = doc.snapshot;
@@ -150,13 +153,16 @@ export async function CertificateSheet({
     ],
   ];
   return (
-    <article className="relative mx-auto flex h-[297mm] w-[210mm] flex-col overflow-hidden bg-white p-[14mm] text-[11.5px] text-[#0b1a3a] print:shadow-none">
+    <article
+      className="relative mx-auto flex h-[297mm] w-[210mm] flex-col overflow-hidden bg-white p-[14mm] text-[11.5px] text-[#0b1a3a] print:shadow-none"
+      style={{ "--cert": design.accent } as React.CSSProperties}
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-[6mm] border-[3px] border-double border-[#1f45b8]/60"
+        className="pointer-events-none absolute inset-[6mm] border-[3px] border-double border-(--cert)/60"
       />
       {/* Security seals: small grey copies of the city seal, placed and turned differently on every certificate. */}
-      {sealsFor(`${doc.verify_code}${doc.serial}`).map((seal, i) => (
+      {design.seals && sealsFor(`${doc.verify_code}${doc.serial}`).map((seal, i) => (
         // eslint-disable-next-line @next/next/no-img-element -- print, static asset
         <img
           key={i}
@@ -175,18 +181,20 @@ export async function CertificateSheet({
         />
       ))}
       {/* Security watermark: the owner and bill details tiled diagonally over the whole page, behind the content. */}
+      {design.watermark && (
       <div aria-hidden className="pointer-events-none absolute inset-0 select-none overflow-hidden">
         <div className="-rotate-30 absolute left-1/2 top-1/2 flex w-[200%] -translate-x-1/2 -translate-y-1/2 flex-col gap-[7mm]">
           {Array.from({ length: 44 }, (_, i) => (
             <p
               key={i}
-              className={`whitespace-pre text-[12px] font-semibold leading-none text-[#1f45b8]/[0.11] ${i % 2 ? "-ms-[40mm]" : ""}`}
+              className={`whitespace-pre text-[12px] font-semibold leading-none text-(--cert)/[0.11] ${i % 2 ? "-ms-[40mm]" : ""}`}
             >
               {Array.from({ length: 5 }, () => mark).join("     ✦     ")}
             </p>
           ))}
         </div>
       </div>
+      )}
       <header className="relative flex items-center justify-between gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- print, static asset */}
         <img src="/brand/banadir-emblem-256.png" alt="" className="size-20 object-contain" />
@@ -194,9 +202,9 @@ export async function CertificateSheet({
           <p className="text-[13px] font-semibold">{t("republic")}</p>
           <p className="text-[12px]">{tc("orgName")}</p>
           <h1 className="mt-2 text-[24px] font-semibold leading-tight tracking-tight">
-            {t("certificateTitleSo")}
+            {design.title_so ?? t("certificateTitleSo")}
           </h1>
-          <p className="text-[14px] font-medium text-[#1f45b8]">{t("certificateTitleEn")}</p>
+          <p className="text-[14px] font-medium text-(--cert)">{design.title_en ?? t("certificateTitleEn")}</p>
         </div>
         <div className="w-20 text-end">
           <p className="text-[9px] text-neutral-500">{t("serial")}</p>
@@ -205,9 +213,9 @@ export async function CertificateSheet({
       </header>
 
       {/* Which tax year this certificate covers, and where it sits in the land's line of certificates. */}
-      <section className="relative mt-4 flex items-center justify-between gap-4 rounded-md border border-[#1f45b8]/30 bg-[#1f45b8]/[0.04] px-4 py-2.5">
+      <section className="relative mt-4 flex items-center justify-between gap-4 rounded-md border border-(--cert)/30 bg-(--cert)/[0.04] px-4 py-2.5">
         <div className="flex items-baseline gap-3">
-          <p className="text-[10px] font-semibold text-[#1f45b8]">
+          <p className="text-[10px] font-semibold text-(--cert)">
             {t("taxYear")}
           </p>
           <p className="text-[26px] font-bold tabular-nums leading-none tracking-tight">{year}</p>
@@ -421,7 +429,7 @@ export async function CertificateSheet({
           </p>
           <p className="mt-3 text-neutral-500">{t("registrar")}</p>
           <p className="font-medium">{s.registrar ?? "—"}</p>
-          <p className="mt-0.5 whitespace-nowrap font-mono text-[9px] text-[#1f45b8]">
+          <p className="mt-0.5 whitespace-nowrap font-mono text-[9px] text-(--cert)">
             {t("eSigned")} · {doc.verify_code.slice(0, 4)}-{doc.verify_code.slice(4, 8)}-
             {doc.verify_code.slice(8)}
           </p>
@@ -441,6 +449,9 @@ export async function CertificateSheet({
           <div className="size-[30mm] shrink-0" dangerouslySetInnerHTML={{ __html: qr }} />
         </div>
       </footer>
+      {design.note && (
+        <p className="pointer-events-none absolute inset-x-[16mm] bottom-[7.5mm] text-center text-[8.5px] leading-tight text-neutral-600">{design.note}</p>
+      )}
     </article>
   );
 }

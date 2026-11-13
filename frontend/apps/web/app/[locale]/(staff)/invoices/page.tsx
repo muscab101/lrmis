@@ -11,12 +11,12 @@ import {
   ChevronDown,
   Eye,
   Filter,
-  Printer,
   Receipt,
 } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
 import { InvoiceTools } from "@/components/billing/invoice-tools";
+import { InvoicePrintNow } from "@/components/billing/invoice-print-now";
 import { PAGE_SIZES } from "@/components/billing/page-sizes";
 import { EntriesSelect } from "@/components/billing/table-controls";
 import { InvoiceStatusBadge } from "@/components/billing/status";
@@ -55,6 +55,7 @@ export default async function InvoicesPage({
   const lang = await getLocale();
   const sp = await searchParams;
   const canCollect = viewer.can("cashier.view");
+  const canPrint = viewer.can("invoices.print");
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
@@ -323,15 +324,7 @@ export default async function InvoicesPage({
                           <Eye aria-hidden />
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon-sm" asChild>
-                        <Link
-                          href={`/invoices/${i.id}/print`}
-                          aria-label={t("printInvoice")}
-                          title={t("printInvoice")}
-                        >
-                          <Printer aria-hidden />
-                        </Link>
-                      </Button>
+                      {i.status !== "cancelled" && canPrint && <InvoicePrintNow id={i.id} iconOnly />}
                       {/* Only registered land's bills can be paid. */}
                       {canCollect &&
                         !i.partial_land &&

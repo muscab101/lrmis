@@ -22,6 +22,7 @@ import {
   requestReprintAction,
 } from "@/app/[locale]/(staff)/documents/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { usePrintNow } from "@/components/documents/use-print-now";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
 import type { DocumentChange, DocumentRow, ReprintRow } from "@/lib/server/certificates";
@@ -204,7 +205,7 @@ export function ReprintQueue({
   canCashier?: boolean;
 }) {
   const t = useTranslations("documents");
-  const router = useRouter();
+  const reprinting = usePrintNow();
   const [target, setTarget] = useState<{ id: string; mode: "approve" | "reject" | "direct" } | null>(null);
   const [note, setNote] = useState("");
   if (rows.length === 0) return <EmptyState icon={<Inbox />} title={t("noReprints")} description={t("noReprintsBody")} />;
@@ -311,8 +312,9 @@ export function ReprintQueue({
             : decideReprintAction({ id: target!.id, approve: target!.mode === "approve", note })
         }
         onDone={(d) => {
+          // The new copy goes straight to the printer at this person's point of sale (no page opens).
           const next = (d as { document_id?: string } | null)?.document_id;
-          if (next) router.push(`/documents/${next}/print`);
+          if (next) void reprinting.print([next]);
         }}
       >
         {target?.mode === "direct"
@@ -440,24 +442,24 @@ export function PrintQueue({ rows, canPrint, notes = {} }: { rows: DocumentRow[]
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const toggle = (id: string, on: boolean) => setPicked((p) => (on ? new Set(p).add(id) : new Set([...p].filter((x) => x !== id))));
   const all = rows.length > 0 && rows.every((r) => picked.has(r.id));
+  const printing = usePrintNow();
   return (
     <>
       {canPrint && (
         <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5 text-sm">
           <span className="text-muted-foreground">{t("selected", { count: picked.size })}</span>
-          {picked.size > 0 ? (
-            <Button size="sm" className="ms-auto" asChild>
-              <Link href={`/documents/batch-print?ids=${[...picked].join(",")}`} target="_blank">
-                <Printer aria-hidden />
-                {t("printSelected", { count: picked.size })}
-              </Link>
-            </Button>
-          ) : (
-            <Button size="sm" className="ms-auto" disabled>
-              <Printer aria-hidden />
-              {t("printSelected", { count: 0 })}
-            </Button>
-          )}
+          <Button
+            size="sm"
+            className="ms-auto"
+            disabled={picked.size === 0}
+            loading={printing.busy}
+            onClick={async () => {
+              if ((await printing.print([...picked])) > 0) setPicked(new Set());
+            }}
+          >
+            <Printer aria-hidden />
+            {printing.busy ? t("printNowSending") : t("printSelected", { count: picked.size })}
+          </Button>
         </div>
       )}
       <Table>

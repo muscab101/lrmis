@@ -106,6 +106,7 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
                         reprint: viewer.can("certificates.reprint"),
                         direct: viewer.isSuperAdmin,
                         cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id,
+                        print: viewer.can("certificates.print") && d.print_count === 0,
                       }}
                     />
                   </TableCell>

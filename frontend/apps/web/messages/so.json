@@ -100,7 +100,8 @@
       "incomplete": "Aan dhammaystirnayn",
       "addPrinter": "Ku dar daabace",
       "chat": "Wada-hadalka shaqaalaha",
-      "signatureStamp": "Saxiixa iyo shaabadda"
+      "signatureStamp": "Saxiixa iyo shaabadda",
+      "certificateDesign": "Naqshadda shahaadada"
     }
   },
   "status": {
@@ -187,7 +188,7 @@
       "already_printed": "Horey ayaa loo daabacay. Daabacaad kale waxay u baahan tahay dib-u-daabacaad la ansixiyay.",
       "reprint_pending": "Dib-u-daabacaad dukumentigan ah horey ayay u sugaysaa.",
       "fee_unpaid": "Khidmadda dib-u-daabacaadda weli lama bixin.",
-      "cancelled": "Dukumentigan waa la joojiyay.",
+      "cancelled": "Kan waa la joojiyay.",
       "blocked": "Dhulkan waa la xannibay: {list}.",
       "duty_unpaid": "Biilka canshuurta weli lama bixin.",
       "transfer_open": "Dhulkan horey wareejin furan ayuu u leeyahay.",
@@ -273,7 +274,7 @@
       "draft_exists": "Xeerkan horay ayuu u leeyahay nooc qabyo ah. Marka hore dhammee ama tirtir.",
       "nothing_payable": "Cidan waxba laguma laha ilaa taariikhdaas.",
       "printer_not_allowed": "Daabacahan lama isticmaali karo. Waxaa laga yaabaa inuu dansan yahay ama aan la diyaarin.",
-      "already_queued": "Dukumentigan horay ayuu u sugayaa daabacaad.",
+      "already_queued": "Kani horay ayuu u sugayaa daabacaad.",
       "use_printer": "Nuqullada rasmiga ah waxaa lagu daabacaa daabace lagu daray oo keliya.",
       "chat_person": "Qofkaas wada-hadal laguma dari karo.",
       "chat_empty": "Qor fariin ama ku dar fayl.",
@@ -332,7 +333,10 @@
       "migration_needs_test": "Marka hore tijaabi hormuujintan (heerka 9).",
       "migration_not_prepared": "Marka hore xisaabi hormuujinta (heerka 8).",
       "migration_no_tables": "Marka hore isku xir ugu yaraan hal shax (heerka 5).",
-      "migration_entries_used": "Qoraallo la guuriyay ayaa tan iyo markaas la beddelay, sidaas darteed guurinta lama soo saari karo."
+      "migration_entries_used": "Qoraallo la guuriyay ayaa tan iyo markaas la beddelay, sidaas darteed guurinta lama soo saari karo.",
+      "colour": "Dooro midab sida #1f45b8.",
+      "too_long": "Qoraal ayaa aad u dheer.",
+      "no_desk_printer": "Goobta lacag-qabashadaada ama degmadan weli printer ma leh. Mid ku dar bogga Daabacayaasha."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -367,7 +371,7 @@
     "password_breached": "Furahan wuxuu ka soo muuqday xog la xaday. Dooro mid kale.",
     "role_required": "Dooro ugu yaraan hal door.",
     "district_required": "Dooro ugu yaraan hal degmo, ama dooro dhammaan degmooyinka.",
-    "colour": "Dooro midab.",
+    "colour": "Dooro midab sida #1f45b8.",
     "setup_token": "Calaamadda dejinta sax maaha.",
     "code": "Isticmaal 1–8 xaraf waaweyn ama tiro.",
     "geojson": "Dooro fayl GeoJSON ah ama ku dheji GeoJSON.",
@@ -1400,7 +1404,11 @@
       "settings": "Dejinta",
       "audit": "Hubinta",
       "users": "Isticmaalayaasha",
-      "roles": "Doorarka"
+      "roles": "Doorarka",
+      "parcels_partial": "Dhulka — Qayb ahaan",
+      "parcels_registered": "Dhulka — La diiwaangeliyay",
+      "owners_partial": "Milkiilayaasha — Qayb ahaan",
+      "owners_registered": "Milkiilayaasha — La diiwaangeliyay"
     },
     "specials": {
       "payments_refund": "Celin",
@@ -1418,7 +1426,15 @@
       "parcels_registered": "Arag dhulka la diiwaangeliyay",
       "parcels_delete_registered": "Tirtir dhulka la diiwaangeliyay",
       "owners_registered": "Arag milkiilayaasha la diiwaangeliyay",
-      "owners_delete_registered": "Tirtir milkiilayaasha la diiwaangeliyay"
+      "owners_delete_registered": "Tirtir milkiilayaasha la diiwaangeliyay",
+      "applications_capture_location": "Deji GPS-ka guriga",
+      "certificates_printers": "Daabacayaasha",
+      "certificates_signature": "Saxiixa iyo shaabadda",
+      "certificates_design": "Naqshadda shahaadada",
+      "parcels_demolitions": "Arag dhulka la dumiyay",
+      "parcels_demolish": "Calaamadee la dumiyay",
+      "parcels_demolish_approve": "Ansixi dumin",
+      "messages_broadcast": "Fariimo guud"
     },
     "what": {
       "dashboard": {
@@ -1574,7 +1590,8 @@
         "create": "Samee doorar cusub.",
         "update": "Beddel ogolaanshaha door oo u wareeji isticmaalayaashiisa.",
         "delete": "Tirtir doorar."
-      }
+      },
+      "certificates.design": "Beddel muuqaalka shahaadooyinka: midabka, cinwaannada, calaamadda biyaha, shaabadaha amniga iyo qoraal hoose."
     }
   },
   "design": {
@@ -2561,7 +2578,7 @@
     "count": "{count, plural, one {# dhul} other {# dhul}}",
     "searchPlaceholderMore": "PUN, lambarka xisaabta, masuul, lambarka guriga, biil ama codsi",
     "editTitle": "Wax ka beddel {pun}",
-    "rebillHint": "Haddii cabbirka ama nooca la beddelo, biilka aan la bixin ee dhulkan wuu isbeddelayaa.",
+    "rebillHint": "Marka aad kaydiso, waxaad biilka aan la bixin u beddeli kartaa cabbirka ama nooca cusub (Dib u biil).",
     "editBodyRegistered": "Faahfaahinta xafiiska oo keliya. Cabbirka iyo nooca waxay ahaanayaan sidii la diiwaangeliyay, maxaa yeelay biilasha iyo shahaadada ayaa laga sameeyay.",
     "editBody": "Faahfaahinta xafiiska. Xuduudaha iyo masuuliyiinta waxaa lagu beddelaa sixitaan xog ama wareejin.",
     "plotNo": "Lambarka dhulka",
@@ -2713,7 +2730,20 @@
     "units": "Tirada qaybaha",
     "unitsHint": "Guryaha ama dukaamada dhulkan ku yaal.",
     "editLand": "Dhulka",
-    "notPaidLabel": "Lama bixin"
+    "notPaidLabel": "Lama bixin",
+    "rebill": {
+      "title": "Cabbirka ama nooca waa la beddelay: hubi biilka",
+      "body": "Biilka dhulkan waxaa laga sameeyay cabbirkii ama noocii hore. Riix Dib u biil si biilka aan la bixin loo cusboonaysiiyo, kadib Ansixi si dhulka loo diiwaangeliyo.",
+      "billNow": "Biilka hadda",
+      "billNew": "Biilka cabbirka iyo nooca cusub",
+      "noBill": "Weli biil ma jiro",
+      "upToDate": "Biilku wuu la jaanqaadayaa cabbirka iyo nooca.",
+      "belowPaid": "Waxaa horay loo bixiyay wax ka badan biilka cusub, sidaas darteed lama yarayn karo.",
+      "rebill": "Dib u biil",
+      "approve": "Ansixi",
+      "approveFirst": "Biilku weli wuxuu muujinayaa cabbirkii ama noocii hore: marka hore dib u biil haddii uu isbeddeli lahaa.",
+      "done": "Biilka waa la cusboonaysiiyay"
+    }
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",
@@ -4205,7 +4235,9 @@
     "printNowSending": "Waa la dirayaa…",
     "printNowSent": "Waxaa loo diray {printer}. Hadda ayuu daabacayaa.",
     "printNowQueued": "Waxaa loo diray {printer}. Wuu daabacayaa marka barnaamijka daabacaadda ee printer-kaas la shido.",
-    "printNowFailed": "Lama gaarsiin karin printer-ka."
+    "printNowFailed": "Lama gaarsiin karin printer-ka.",
+    "printNowMany": "{count, plural, =1 {1 waa la diray} other {# waa la diray}} {printer}.",
+    "printNowSomeFailed": "{count, plural, =1 {1 lama dirin} other {# lama dirin}}: {reason}"
   },
   "verify": {
     "title": "Hubi shahaado",
@@ -6498,5 +6530,24 @@
     "demolishedShort": "la dumiyay",
     "forLand": "dhul {key}",
     "forBill": "biil {key}"
+  },
+  "certificateDesign": {
+    "title": "Naqshadda shahaadada",
+    "subtitle": "Sida shahaado kasta u muuqato marka la daabaco: midabkeeda, cinwaannadeeda, calaamadda biyaha iyo shaabadaha amniga, iyo qoraal hoose.",
+    "colour": "Midabka ugu weyn",
+    "colourHint": "Waxaa loo isticmaalaa xuduudda, cinwaanka Ingiriisiga iyo sanduuqyada.",
+    "titleSo": "Cinwaanka (Soomaali)",
+    "titleEn": "Cinwaanka (Ingiriis)",
+    "emptyStandard": "Banaan = cinwaanka caadiga.",
+    "note": "Qoraal hoose",
+    "noteHint": "Ikhtiyaari. Waxaa lagu daabacaa si yar shahaado kasta hoosteeda.",
+    "watermark": "Calaamadda biyaha amniga",
+    "watermarkHint": "Faahfaahinta milkiilaha iyo biilka oo si khafiif ah loogu qoray bogga oo dhan.",
+    "seals": "Shaabadaha amniga",
+    "sealsHint": "Nuqullo yaryar oo cawl ah oo shaabadda magaalada, meelo kala duwan shahaado kasta.",
+    "save": "Kaydi naqshadda",
+    "saved": "Naqshadda waa la kaydiyay. Shahaadooyinka hadda ka dib la daabaco waxay isticmaalaan.",
+    "preview": "Muuqaal",
+    "taxYearSample": "Sannadka canshuurta 2026"
   }
 }

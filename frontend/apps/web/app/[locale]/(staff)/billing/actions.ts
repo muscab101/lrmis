@@ -123,3 +123,15 @@ export const createMissingAction = defineAction("invoices.create_missing", z.obj
 export const applyPenaltiesAction = defineAction("billing.penalties", z.object({}), async (_v, ctx) =>
   done(unwrap(await ctx.supabase.rpc("apply_late_penalties", {}), "penalties") as number),
 );
+
+/** Print an invoice now: straight to the added printer at this person's own point of sale (no page opens). */
+export const invoicePrintNowAction = defineAction(
+  "invoices.print_now",
+  z.object({ id: z.uuid(), locale: z.enum(["so", "en"]) }),
+  async (v, ctx) =>
+    unwrap(await ctx.supabase.rpc("invoice_print_now", { p_id: v.id, p_locale: v.locale }), "print invoice") as {
+      job: string;
+      printer: string;
+      online: boolean;
+    },
+);

@@ -1,5 +1,6 @@
 import "server-only";
 import type { NextRequest } from "next/server";
+import type { InvoiceSheetData } from "@/components/billing/invoice-sheet";
 import type { banadirOutlines, DocumentDetail, WatermarkFacts } from "@/lib/server/certificates";
 import { PARTY_PHOTO_BUCKET } from "@/lib/server/party-photo";
 import { createAdminClient, createIsolatedClient } from "@/lib/supabase/admin";
@@ -15,12 +16,15 @@ export function agentIp(req: NextRequest): string | null {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim().slice(0, 45) || req.headers.get("x-real-ip")?.slice(0, 45) || null;
 }
 
-/** The document behind a job being printed, or null when the one-time token no longer works. */
+/** What a job prints (a document, or an invoice), or null when the one-time token no longer works. */
 export async function loadAgentJob(token: string) {
   if (!/^[0-9a-f]{64}$/.test(token)) return null;
   const { data } = await createIsolatedClient().rpc("agent_job_document", { p_token: token });
-  const job = data as { doc: DocumentDetail; facts: WatermarkFacts; photo_path: string | null; outlines: Awaited<ReturnType<typeof banadirOutlines>> | null } | null;
-  if (!job) return null;
+  if (!data) return null;
+  if ((data as { invoice?: unknown }).invoice) {
+    return { kind: "invoice" as const, invoice: (data as { invoice: InvoiceSheetData & { pay_link: string | null } }).invoice };
+  }
+  const job = data as { doc: DocumentDetail; facts: WatermarkFacts; photo_path: string | null; outlines: Awaited<ReturnType<typeof banadirOutlines>> | null };
   const photoUrl = job.photo_path ? ((await (await createAdminClient()).storage.from(PARTY_PHOTO_BUCKET).createSignedUrl(job.photo_path, 600)).data?.signedUrl ?? null) : null;
-  return { doc: job.doc, facts: job.facts, photoUrl, outlines: job.outlines ?? [] };
+  return { kind: "document" as const, doc: job.doc, facts: job.facts, photoUrl, outlines: job.outlines ?? [] };
 }

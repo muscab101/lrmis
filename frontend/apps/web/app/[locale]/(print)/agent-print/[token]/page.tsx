@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { InvoiceSheet, payQr } from "@/components/billing/invoice-sheet";
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { loadAgentJob } from "@/lib/server/print-agent";
@@ -15,8 +16,17 @@ export default async function AgentPrintPage({ params }: { params: Promise<{ loc
   setRequestLocale(locale);
   const job = await loadAgentJob(token);
   if (!job) notFound();
-  const { doc } = job;
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  if (job.kind === "invoice") {
+    const payUrl = job.invoice.pay_link ? `${site}/${locale}${job.invoice.pay_link}` : null;
+    return (
+      <div className="bg-white">
+        <style>{"@page { size: A4; margin: 0 }"}</style>
+        <InvoiceSheet inv={job.invoice} payUrl={payUrl} qr={await payQr(payUrl)} />
+      </div>
+    );
+  }
+  const { doc } = job;
   const verifyUrl = `${site}/${locale}/verify/${doc.verify_code}`;
   return (
     <div className="bg-white">

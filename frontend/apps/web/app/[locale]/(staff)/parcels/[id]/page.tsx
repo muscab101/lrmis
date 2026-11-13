@@ -22,6 +22,8 @@ import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
 import { TransferHistory } from "@/components/legal/transfer-history";
 import { fullHouseNo } from "@/lib/house-no";
+import { PartialRebill } from "@/components/parcels/partial-rebill";
+import type { BillCheck } from "@/app/[locale]/(staff)/parcels/actions";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -64,11 +66,16 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const [land, parent] = await Promise.all([holdsUnits ? getLandUnits(p.id) : null, p.parent_id ? getParentLand(p.parent_id) : null]);
   const money = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const td = await getTranslations("demolitions");
+  const tr = await getTranslations("parcels.rebill");
   const canSeeDemolitions = viewer.can("parcels.demolitions");
   const demolitions = canSeeDemolitions ? await openDemolitionOf(p.id) : [];
   const waiting = demolitions.find((x) => x.status === "pending");
   const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
   const hasMoney = (await parcelsWithMoney([p.id])).has(p.id);
+  // Partial land whose bill no longer matches its size and type (after an edit): Re-bill and Approve.
+  const billCheck = partial && p.layout === "house" && p.building_state !== "demolished"
+    ? (((await (await createClient()).rpc("parcel_bill_check", { p_parcel: p.id })).data ?? null) as BillCheck)
+    : null;
   // Demolished land is an archive: it can be seen, nothing else.
   const archived = p.building_state === "demolished";
   const canMark =
@@ -188,6 +195,22 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
         <Alert tone="warning" className="mb-5" title={t("lockedTitle", { date: format.dateTime(new Date(p.locked_at), { dateStyle: "medium" }) })}>
           {p.lock_reason}
         </Alert>
+      )}
+      {billCheck?.differs && (viewer.can("parcels.update") || viewer.can("parcels.approve")) && (
+        <Card className="border-status-pending/40 mb-5">
+          <CardHeader>
+            <CardTitle className="text-base">{tr("title")}</CardTitle>
+            <p className="text-muted-foreground text-sm">{tr("body")}</p>
+          </CardHeader>
+          <CardContent>
+            <PartialRebill
+              parcelId={p.id}
+              land={p.house_no ? `${t("houseNoShort")} ${fullHouseNo(p.neighbourhood?.code, p.house_no)}` : t("noPun")}
+              check={billCheck}
+              can={{ rebill: viewer.can("parcels.update") && !p.locked_at, approve: viewer.can("parcels.approve") && !p.locked_at }}
+            />
+          </CardContent>
+        </Card>
       )}
       <div className="grid gap-5 md:grid-cols-2">
         <Card>

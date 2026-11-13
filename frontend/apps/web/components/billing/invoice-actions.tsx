@@ -4,17 +4,17 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { Printer } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { cancelInvoiceAction, createInvoiceAction } from "@/app/[locale]/(staff)/billing/actions";
+import { InvoicePrintNow } from "@/components/billing/invoice-print-now";
 import { FormDialog } from "@/components/forms/form-dialog";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 interface Props {
   invoice: { id: string; paid: number; status: string; createdBy: string | null };
   me: string;
-  can: { cancel: boolean };
+  can: { cancel: boolean; print?: boolean };
 }
 
 export function InvoiceActions({ invoice, me, can }: Props) {
@@ -24,12 +24,7 @@ export function InvoiceActions({ invoice, me, can }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="outline" asChild>
-        <Link href={`/invoices/${invoice.id}/print`} target="_blank">
-          <Printer aria-hidden />
-          {t("print")}
-        </Link>
-      </Button>
+      {invoice.status !== "cancelled" && can.print && <InvoicePrintNow id={invoice.id} />}
       {invoice.status !== "cancelled" && can.cancel && invoice.paid === 0 && invoice.createdBy !== me && (
         <Button size="sm" variant="destructive" onClick={() => setCancelling(true)}>
           {t("cancelInvoice")}

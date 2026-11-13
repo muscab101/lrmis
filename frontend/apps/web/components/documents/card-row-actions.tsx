@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { cancelDocumentAction, reprintDirectAction, requestReprintAction } from "@/app/[locale]/(staff)/documents/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { usePrintNow } from "@/components/documents/use-print-now";
 import { Link, useRouter } from "@/i18n/navigation";
 
 type Dialog = "reprint" | "direct" | "cancel";
@@ -24,12 +25,13 @@ export function CardRowActions({
   id: string;
   serial: string;
   status: string;
-  can: { reprint: boolean; direct: boolean; cancel: boolean };
+  can: { reprint: boolean; direct: boolean; cancel: boolean; print?: boolean };
   kind?: "id_card" | "certificate";
 }) {
   const t = useTranslations("documents");
   const router = useRouter();
   const [dialog, setDialog] = useState<Dialog | null>(null);
+  const printing = usePrintNow();
   const [reason, setReason] = useState("");
   const valid = status === "valid";
   const key = (label: string, node: React.ReactElement) => <Tooltip content={label}>{node}</Tooltip>;
@@ -49,14 +51,14 @@ export function CardRowActions({
           </Link>
         </Button>,
       )}
-      {key(
-        t("openPrint"),
-        <Button asChild variant="ghost" size="icon-sm">
-          <Link href={`/documents/${id}/print`} target="_blank" aria-label={t("openPrint")}>
+      {valid &&
+        can.print &&
+        key(
+          t("printNow"),
+          <Button variant="ghost" size="icon-sm" aria-label={t("printNow")} loading={printing.busy} onClick={() => void printing.print([id])}>
             <Printer aria-hidden />
-          </Link>
-        </Button>,
-      )}
+          </Button>,
+        )}
       {valid &&
         can.reprint &&
         key(

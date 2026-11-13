@@ -69,7 +69,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
           <InvoiceActions
             invoice={{ id: inv.id, paid: Number(inv.paid), status: inv.status, createdBy: inv.created_by }}
             me={viewer.user.id}
-            can={{ cancel: viewer.can("invoices.cancel") && !demolishedLand }}
+            can={{ cancel: viewer.can("invoices.cancel") && !demolishedLand, print: viewer.can("invoices.print") }}
           />
         }
       />

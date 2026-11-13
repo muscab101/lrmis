@@ -12,7 +12,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
   const { locale } = await params;
   setRequestLocale(locale);
   const viewer = await requireStaff(locale);
-  const allowed = ["users.view", "roles.view", "audit.view", "settings.view"] as const;
+  const allowed = ["users.view", "roles.view", "audit.view", "settings.view", "certificates.signature", "certificates.design"] as const;
   if (!allowed.some((p) => viewer.can(p))) forbidden();
   return <StaffShell viewer={viewer}>{children}</StaffShell>;
 }

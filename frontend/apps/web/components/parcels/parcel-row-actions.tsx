@@ -9,12 +9,17 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, MapPin, Pencil, Trash2, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { deleteParcelAction, lockParcelAction, parcelEditInfoAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
+import { type BillCheck, deleteParcelAction, lockParcelAction, parcelBillCheckAction, parcelEditInfoAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { OwnerFields } from "@/components/owners/owner-fields";
 import { HouseNoSelect } from "@/components/parcels/house-no-select";
+import { PartialRebillDialog } from "@/components/parcels/partial-rebill";
 import { Link, useRouter } from "@/i18n/navigation";
 import { isApartmentType } from "@/lib/apartment";
+
+/** The size and type of land being edited, as one value to compare. */
+const sizeKey = (i: { propertyType: string | null; widthM: string; lengthM: string; unit?: { ownM2: string } | null }) =>
+  [i.propertyType, i.widthM, i.lengthM, i.unit?.ownM2 ?? ""].join("|");
 
 export interface ParcelRowAbilities {
   update: boolean;
@@ -51,10 +56,17 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const ts = useTranslations("stage");
   const tf = useTranslations("parcels.fieldLand");
   const tu = useTranslations("parcels.landUnits");
+  // The size and type when the edit opened: a change to them shows Re-bill and Approve after saving.
+  const [sizeBefore, setSizeBefore] = useState("");
+  const [bill, setBill] = useState<NonNullable<BillCheck> | null>(null);
   useEffect(() => {
     if (dialog !== "edit") return;
     setInfo(null);
-    void parcelEditInfoAction({ id: parcel.id }).then((r) => r.ok && setInfo(r.data));
+    void parcelEditInfoAction({ id: parcel.id }).then((r) => {
+      if (!r.ok) return;
+      setInfo(r.data);
+      setSizeBefore(sizeKey(r.data));
+    });
   }, [dialog, parcel.id]);
   const apartment = !!info && isApartmentType(info.propertyType, info.types);
   const locked = !!parcel.locked_at;
@@ -165,6 +177,11 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         description={partial ? t("editBody") : t("editBodyRegistered")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
+        onDone={() => {
+          // Partial land with a new size or type: show its bill now and the new one, with Re-bill and Approve.
+          if (!partial || !info || sizeKey(info) === sizeBefore) return;
+          void parcelBillCheckAction({ id: parcel.id }).then((r) => r.ok && r.data && setBill(r.data));
+        }}
         submit={() =>
           updateParcelDetailsAction({
             id: parcel.id,
@@ -299,6 +316,16 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
           </div>
         )}
       </FormDialog>
+      {bill && (
+        <PartialRebillDialog
+          open
+          onOpenChange={(o) => !o && setBill(null)}
+          parcelId={parcel.id}
+          land={parcel.house_no ? `${t("houseNoShort")} ${parcel.house_no}` : name}
+          check={bill}
+          can={{ rebill: can.update, approve: canRegister }}
+        />
+      )}
       <FormDialog
         open={dialog === "register"}
         onOpenChange={close}

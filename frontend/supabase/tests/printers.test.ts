@@ -197,6 +197,34 @@ describe("certificates print only on added printers", () => {
     await agent(`select public.agent_report_job($1, $2, false)`, [key, c.job!.id]);
   });
 
+  it("Print now sends to the printer at the person's own point of sale; an invoice prints the same way", async () => {
+    const billing = await createStaff(db, admin, "invoice.printer@gmail.com", ["billing_officer"], [hodan]);
+    const pos = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDNP', 'Hodan desk', $1, 'HDNP') returning id`, [hodan]);
+    await db.query(`update public.printers set pos_id = $2 where id = $1`, [printer, pos]);
+    await db.query(`update public.profiles set point_of_sale_id = $2 where user_id = $1`, [billing, pos]);
+    const inv = await scalar<string>(
+      db,
+      `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total)
+       values ('INV-2026-000901', $1, $2, (select id from public.fee_types where code = 'property_bill'), '2026', current_date + 30, 25) returning id`,
+      [parcel, hodan],
+    );
+    await expectError(asUser(db, officer, (tx) => tx.query(`select public.invoice_print_now($1)`, [inv])), "PERMISSION_DENIED");
+    const out = await asUser(db, billing, (tx) => scalar<{ job: string; printer: string }>(tx, `select public.invoice_print_now($1, 'en')`, [inv]));
+    expect(out.printer).toBe("Registry printer");
+    await expectError(asUser(db, billing, (tx) => tx.query(`select public.invoice_print_now($1)`, [inv])), "CONFLICT: already_queued");
+    const c = await claim(key, "10.0.0.9");
+    expect(c.job).toMatchObject({ id: out.job, type: "invoice", serial: "INV-2026-000901" });
+    const page = await agent<{ invoice: { number: string; total: number; lines: unknown[] } }>(`select public.agent_job_document($1)`, [c.job!.token]);
+    expect(page.invoice).toMatchObject({ number: "INV-2026-000901" });
+    expect(Number(page.invoice.total)).toBe(25);
+    await agent(`select public.agent_report_job($1, $2, true)`, [key, out.job]);
+    expect(await scalar<string>(db, `select status from public.printer_queue where id = $1`, [out.job])).toBe("printed");
+    // No printer at the desk or in the district: it says so.
+    await db.query(`update public.printers set active = false`);
+    await expectError(asUser(db, billing, (tx) => tx.query(`select public.invoice_print_now($1)`, [inv])), "CONFLICT: no_desk_printer");
+    await db.query(`update public.printers set active = true`);
+  });
+
   it("a new key stops the old one", async () => {
     const fresh = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.printer_new_key($1)`, [printer]));
     expect((await claim(key)).error).toBe("bad_key");

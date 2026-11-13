@@ -165,6 +165,8 @@ describe("changing land not registered yet", () => {
       )
       .then((r) => r.rows[0]);
   const edit = (id: string, p: Record<string, unknown>) => asUser(db, admin, (tx) => tx.query(`select public.parcel_update_details($1, $2)`, [id, JSON.stringify(p)]));
+  /** Saving leaves the bill; the Re-bill button makes it follow the new size or type. */
+  const rebill = (id: string) => asUser(db, admin, (tx) => tx.query(`select public.parcel_rebill_now($1)`, [id]));
   const remove = (id: string) => asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'saved by mistake')`, [id]));
   const unitId = (land: string, no: string) => scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = $2`, [land, no]);
   const flats = [
@@ -176,13 +178,18 @@ describe("changing land not registered yet", () => {
     await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('unit_test','Darajo','Grade', 0.5), ('unit_dear','Qaali','Dear', 1) on conflict (code) do update set amount = excluded.amount`);
   });
 
-  it("a flat's new size or type changes the same bill, and the books; its neighbour's bill stays", async () => {
+  it("after a flat's new size or type, Re-bill changes the same bill, and the books; its neighbour's bill stays", async () => {
     const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "71" });
     const a = await unitId(r.parcel_id, "A");
     const b = await unitId(r.parcel_id, "B");
     const before = (await taxBill(a))!;
     expect(Number(before.total)).toBe(40);
     await edit(a, { own_m2: "100", unit_floor: "1" });
+    expect(Number((await taxBill(a))!.total)).toBe(40);
+    const check = await asUser(db, admin, (tx) => scalar<{ differs: boolean; expected: { amount: number } }>(tx, `select public.parcel_bill_check($1)`, [a]));
+    expect(check.differs).toBe(true);
+    expect(Number(check.expected.amount)).toBe(50);
+    await rebill(a);
     const after = (await taxBill(a))!;
     expect(after.id).toBe(before.id);
     expect(Number(after.total)).toBe(50);
@@ -191,6 +198,7 @@ describe("changing land not registered yet", () => {
     expect(await scalar<number>(db, `select sum(l.debit - l.credit)::float from public.journal_lines l join public.journal_entries e on e.id = l.entry_id where e.source_id = $1 and l.account = '1200'`, [after.id])).toBe(50);
     expect(Number((await taxBill(b))!.total)).toBe(45);
     await edit(a, { property_type: "unit_dear" });
+    await rebill(a);
     expect(Number((await taxBill(a))!.total)).toBe(100);
     // A new price on the grade waits for a change that needs a new bill: a new house number isn't one.
     await db.query(`update public.property_grades set amount = 2 where code = 'unit_dear'`);
@@ -209,7 +217,7 @@ describe("changing land not registered yet", () => {
     expect(Number((await taxBill(a))!.total)).toBe(40);
   });
 
-  it("a normal house not registered yet is re-billed when its size changes", async () => {
+  it("a normal house not registered yet is re-billed (with Re-bill) after its size changes", async () => {
     const r = await asUser(db, surveyor, (tx) =>
       scalar<{ parcel_id: string }>(tx, `select public.land_with_units_create($1)`, [JSON.stringify({ ...base(), layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "73" })]),
     );
@@ -222,6 +230,8 @@ describe("changing land not registered yet", () => {
     await db.query(`select private.parcel_bill($1)`, [house]);
     expect(Number((await taxBill(house))!.total)).toBe(50);
     await edit(house, { plot_width_m: "20", plot_length_m: "10" });
+    expect(Number((await taxBill(house))!.total)).toBe(50);
+    await rebill(house);
     expect(Number((await taxBill(house))!.total)).toBe(100);
   });
 

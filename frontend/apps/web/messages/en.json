@@ -100,7 +100,8 @@
       "incomplete": "Incomplete",
       "addPrinter": "Add printer",
       "chat": "Staff chat",
-      "signatureStamp": "Signature and stamp"
+      "signatureStamp": "Signature and stamp",
+      "certificateDesign": "Certificate design"
     }
   },
   "status": {
@@ -187,7 +188,7 @@
       "already_printed": "Already printed. Another print needs an approved reprint.",
       "reprint_pending": "A reprint for this document is already waiting.",
       "fee_unpaid": "The reprint fee isn't paid yet.",
-      "cancelled": "This document is cancelled.",
+      "cancelled": "This is cancelled.",
       "blocked": "This parcel is blocked: {list}.",
       "duty_unpaid": "The stamp duty invoice hasn't been paid yet.",
       "transfer_open": "This parcel already has an open transfer.",
@@ -273,7 +274,7 @@
       "draft_exists": "This rule already has a draft version. Finish or delete it first.",
       "nothing_payable": "Nothing is owed to this party up to that date.",
       "printer_not_allowed": "This printer can't be used. It may be switched off or not set up.",
-      "already_queued": "This document is already waiting to print.",
+      "already_queued": "This is already waiting to print.",
       "use_printer": "Official copies print only on an added printer.",
       "chat_person": "That person can't be added to a chat.",
       "chat_empty": "Write a message or attach a file.",
@@ -332,7 +333,10 @@
       "migration_needs_test": "Run the test on this preview first (stage 9).",
       "migration_not_prepared": "Work out the preview first (stage 8).",
       "migration_no_tables": "Map at least one old table first (stage 5).",
-      "migration_entries_used": "Some migrated entries were reversed or reversed others since, so the migration can't be taken out."
+      "migration_entries_used": "Some migrated entries were reversed or reversed others since, so the migration can't be taken out.",
+      "colour": "Choose a colour like #1f45b8.",
+      "too_long": "Some text is too long.",
+      "no_desk_printer": "There is no printer at your point of sale or in this district yet. Add one on the Printers page."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -367,7 +371,7 @@
     "password_breached": "This password appeared in a data breach. Choose another.",
     "role_required": "Choose at least one role.",
     "district_required": "Choose at least one district, or select all districts.",
-    "colour": "Choose a colour.",
+    "colour": "Choose a colour like #1f45b8.",
     "setup_token": "The setup token is not correct.",
     "code": "Use 1–8 capital letters or digits.",
     "geojson": "Choose a GeoJSON file or paste GeoJSON.",
@@ -1400,7 +1404,11 @@
       "settings": "Settings",
       "audit": "Audit",
       "users": "Users",
-      "roles": "Roles"
+      "roles": "Roles",
+      "parcels_partial": "Parcels — Partial",
+      "parcels_registered": "Parcels — Registered",
+      "owners_partial": "Owners — Partial",
+      "owners_registered": "Owners — Registered"
     },
     "specials": {
       "payments_refund": "Refund",
@@ -1418,7 +1426,15 @@
       "parcels_registered": "See registered land",
       "parcels_delete_registered": "Delete registered land",
       "owners_registered": "See registered owners",
-      "owners_delete_registered": "Delete registered owners"
+      "owners_delete_registered": "Delete registered owners",
+      "applications_capture_location": "Set house GPS pin",
+      "certificates_printers": "Printers",
+      "certificates_signature": "Signature & stamp",
+      "certificates_design": "Certificate design",
+      "parcels_demolitions": "See demolished land",
+      "parcels_demolish": "Mark demolished",
+      "parcels_demolish_approve": "Approve demolition",
+      "messages_broadcast": "Broadcast messages"
     },
     "what": {
       "dashboard": {
@@ -1574,7 +1590,8 @@
         "create": "Create new roles.",
         "update": "Change a role's permissions and move its users.",
         "delete": "Delete roles."
-      }
+      },
+      "certificates.design": "Change how certificates look: colour, titles, watermark, security seals and a footer note."
     }
   },
   "design": {
@@ -2561,7 +2578,7 @@
     "count": "{count, plural, one {# parcel} other {# parcels}}",
     "searchPlaceholderMore": "PUN, account no, owner, house no, invoice or application",
     "editTitle": "Edit {pun}",
-    "rebillHint": "Changing the size or type here updates this land's unpaid bill.",
+    "rebillHint": "After saving, you can re-bill this land's unpaid bill to the new size or type.",
     "editBodyRegistered": "Office details only. Size and property type stay as registered, because its bills and certificate were made from them.",
     "editBody": "Office details. Boundary and owners change through a data correction or a transfer.",
     "plotNo": "Plot number",
@@ -2713,7 +2730,20 @@
     "units": "Number of units",
     "unitsHint": "Flats or shops on this land.",
     "editLand": "Land",
-    "notPaidLabel": "Not paid"
+    "notPaidLabel": "Not paid",
+    "rebill": {
+      "title": "Size or type changed: check the bill",
+      "body": "This land's bill was made from its old size or type. Re-bill to update the unpaid bill, then Approve to register the land.",
+      "billNow": "Bill now",
+      "billNew": "Bill by the new size and type",
+      "noBill": "No bill yet",
+      "upToDate": "The bill matches the size and type.",
+      "belowPaid": "More has already been paid than the new bill, so it can't be re-billed lower.",
+      "rebill": "Re-bill",
+      "approve": "Approve",
+      "approveFirst": "The bill still shows the old size or type: re-bill it first if it should change.",
+      "done": "Bill updated"
+    }
   },
   "notices": {
     "eyebrow": "Public notice",
@@ -4205,7 +4235,9 @@
     "printNowSending": "Sending…",
     "printNowSent": "Sent to {printer}. It is printing now.",
     "printNowQueued": "Sent to {printer}. It prints as soon as that printer's print program is on.",
-    "printNowFailed": "Could not send it to the printer."
+    "printNowFailed": "Could not send it to the printer.",
+    "printNowMany": "{count, plural, =1 {1 sent} other {# sent}} to {printer}.",
+    "printNowSomeFailed": "{count, plural, =1 {1 could not be sent} other {# could not be sent}}: {reason}"
   },
   "verify": {
     "title": "Verify a certificate",
@@ -6498,5 +6530,24 @@
     "demolishedShort": "demolished",
     "forLand": "land {key}",
     "forBill": "bill {key}"
+  },
+  "certificateDesign": {
+    "title": "Certificate design",
+    "subtitle": "How every certificate looks when printed: its colour, titles, security watermark and seals, and a footer note.",
+    "colour": "Main colour",
+    "colourHint": "Used for the frame, the English title and the boxes.",
+    "titleSo": "Title (Somali)",
+    "titleEn": "Title (English)",
+    "emptyStandard": "Empty = the standard title.",
+    "note": "Footer note",
+    "noteHint": "Optional. Printed small at the bottom of every certificate.",
+    "watermark": "Security watermark",
+    "watermarkHint": "The owner and bill details written faintly across the whole page, so copies can be told apart.",
+    "seals": "Security seals",
+    "sealsHint": "Small grey copies of the city seal, placed differently on every certificate.",
+    "save": "Save design",
+    "saved": "Design saved. Certificates printed from now on use it.",
+    "preview": "Preview",
+    "taxYearSample": "Tax year 2026"
   }
 }

@@ -570,3 +570,24 @@ export const buildingTaxSetupAction = defineAction(
     return out as { footprint_m2: number | null; open_m2: number };
   },
 );
+
+/** Partial land: the bill now against the bill its size and type give (after an edit). */
+export type BillCheck = {
+  invoice: { id: string; number: string; total: number; paid: number } | null;
+  expected: { amount: number; area: number; price: number; type_so: string; type_en: string };
+  differs: boolean;
+  below_paid: boolean;
+} | null;
+
+export const parcelBillCheckAction = defineAction("parcels.bill_check", z.object({ id: z.uuid() }), async ({ id }, ctx) =>
+  unwrap(await ctx.supabase.rpc("parcel_bill_check", { p_parcel: id }), "bill check") as BillCheck,
+);
+
+/** Re-bill partial land: its unpaid bill follows its size and type now. */
+export const rebillParcelAction = defineAction("parcels.rebill", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  const out = unwrap(await ctx.supabase.rpc("parcel_rebill_now", { p_parcel: id }), "re-bill") as BillCheck;
+  refresh();
+  revalidatePath("/[locale]/invoices", "layout");
+  revalidatePath("/[locale]/cashier", "page");
+  return out;
+});
