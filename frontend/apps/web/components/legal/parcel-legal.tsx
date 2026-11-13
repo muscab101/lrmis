@@ -12,15 +12,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import {
-  addCourtOrderAction,
-  applyPermitAction,
-  closeDisputeAction,
   createLeaseAction,
   endLeaseAction,
-  liftCourtOrderAction,
-  openDisputeAction,
-  registerLienAction,
-  releaseLienAction,
   requestChangeAction,
 } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
@@ -33,15 +26,15 @@ interface Props {
   parcel: { id: string; pun: string; ownership: string; land_use: string; status: string; plot_no: string | null; deed_no: string | null; govt_file_no: string | null; developed: boolean };
   data: Data;
   me: string;
-  can: { transfer: boolean; legal: boolean; legalApprove: boolean; change: boolean; permit: boolean; lease: boolean };
+  can: { transfer: boolean; change: boolean; lease: boolean };
   /** Lets the transfer form register a new owner (staff with owners.create). */
   newOwner?: { districts: { id: string; name_so: string; name_en: string }[]; districtId: string | null } | null;
 }
 
-type Dialog = null | "dispute" | "order" | "lien" | "use" | "merge" | "permit" | "lease" | "correct";
+type Dialog = null | "use" | "merge" | "lease" | "correct";
 const USES = ["residential", "commercial", "mixed", "state", "agricultural", "other"] as const;
 
-export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Props) {
+export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
   const t = useTranslations("legal");
   const ts = useTranslations("stage");
   const tc = useTranslations("common");
@@ -62,7 +55,6 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
     setDialog(d);
   };
   const openTransfer = data.transfers.find((x) => x.status === "draft" || x.status === "submitted");
-  const transferOrders = data.orders.filter((o) => o.active && o.kind === "transfer").map((o) => ({ id: o.id, order_no: o.order_no }));
 
   return (
     <Card>
@@ -81,7 +73,7 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
 
         {!archived && (
           <div className="flex flex-wrap gap-2">
-            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} transferOrders={transferOrders} newOwner={newOwner} />}
+            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} newOwner={newOwner} />}
             {openTransfer && (
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/transfers/${openTransfer.id}`}>
@@ -113,60 +105,8 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
           </div>
         )}
 
-        <Section title={t("disputes")} empty={t("none")} items={data.disputes}>
-          {(d) => (
-            <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-              <span>
-                <Mono>{d.number}</Mono> · {t(`disputeKinds.${d.kind}`)} · {d.claimant_name}
-                <span className="block text-xs text-muted-foreground">{d.status === "open" ? d.description : d.resolution}</span>
-              </span>
-              <span className="flex items-center gap-2 text-xs">
-                {t(`disputeStatus.${d.status}`)}
-                {d.status === "open" && can.legalApprove && d.opened_by !== me && (
-                  <>
-                    <NoteAction label={t("resolve")} title={t("resolveTitle")} noteLabel={t("resolution")} success={t("saved")} submit={(n) => closeDisputeAction({ id: d.id, status: "resolved", note: n })} />
-                    <NoteAction label={t("dismiss")} title={t("dismissTitle")} noteLabel={t("resolution")} success={t("saved")} submit={(n) => closeDisputeAction({ id: d.id, status: "dismissed", note: n })} />
-                  </>
-                )}
-              </span>
-            </li>
-          )}
-        </Section>
 
-        <Section title={t("liens")} empty={t("none")} items={data.liens}>
-          {(l) => (
-            <li key={l.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-              <span>
-                {t(`lienKinds.${l.kind}`)} · {l.holder}
-                {l.amount != null && ` · ${format.number(Number(l.amount), { style: "currency", currency: "USD" })}`}
-                {l.reference && <span className="ms-1 text-xs text-muted-foreground">({l.reference})</span>}
-              </span>
-              <span className="flex items-center gap-2 text-xs">
-                {l.active ? t("active") : t("released")}
-                {l.active && can.legalApprove && l.registered_by !== me && (
-                  <NoteAction label={t("release")} title={t("releaseTitle")} noteLabel={t("reason")} success={t("saved")} submit={(n) => releaseLienAction({ id: l.id, note: n })} />
-                )}
-              </span>
-            </li>
-          )}
-        </Section>
 
-        <Section title={t("orders")} empty={t("none")} items={data.orders}>
-          {(o) => (
-            <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-              <span>
-                <Mono>{o.order_no}</Mono> · {t(`orderKinds.${o.kind}`)} · {o.court} · {date(o.order_date)}
-                <span className="block text-xs text-muted-foreground">{o.description}</span>
-              </span>
-              <span className="flex items-center gap-2 text-xs">
-                {o.active ? t("active") : t("lifted")}
-                {o.active && can.legalApprove && o.created_by !== me && (
-                  <NoteAction label={t("lift")} title={t("liftTitle")} noteLabel={t("reason")} success={t("saved")} submit={(n) => liftCourtOrderAction({ id: o.id, note: n })} />
-                )}
-              </span>
-            </li>
-          )}
-        </Section>
 
         <Section title={t("transfers")} empty={t("none")} items={data.transfers}>
           {(x) => (
@@ -190,19 +130,6 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
           )}
         </Section>
 
-        <Section title={t("permits")} empty={t("none")} items={data.permits}>
-          {(p) => (
-            <li key={p.id} className="flex justify-between gap-2 py-2">
-              <span>
-                <Mono>{p.number}</Mono> · {t(`permitKinds.${p.kind}`)}
-              </span>
-              <span className="text-xs">
-                {t(`status.${p.status}`)}
-                {p.valid_until && ` · ${t("until", { date: date(p.valid_until) })}`}
-              </span>
-            </li>
-          )}
-        </Section>
 
         {(parcel.ownership === "public" || data.leases.length > 0) && (
           <Section title={t("leases")} empty={t("none")} items={data.leases}>
@@ -223,114 +150,8 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
         )}
       </CardContent>
 
-      <FormDialog
-        open={dialog === "dispute"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("openDispute")}
-        description={t("openDisputeBody")}
-        confirmLabel={t("openDispute")}
-        successMessage={t("saved")}
-        submit={() => openDisputeAction({ parcelId: parcel.id, kind: (f.kind ?? "boundary") as "boundary", description: f.description ?? "", claimantName: f.claimant ?? "", claimantPhone: f.phone ?? "", courtCaseNo: f.case ?? "" })}
-      >
-        {(fe) => (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Field id="kind" label={t("kind")}>
-                <NativeSelect value={f.kind ?? "boundary"} onChange={(e) => set("kind", e.target.value)}>
-                  {(["boundary", "ownership", "inheritance", "other"] as const).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`disputeKinds.${k}`)}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-              <Field id="case" label={t("courtCase")}>
-                <Input value={f.case ?? ""} onChange={(e) => set("case", e.target.value)} />
-              </Field>
-              <Field id="claimant" label={t("claimant")} error={fe("claimantName")} required>
-                <Input value={f.claimant ?? ""} onChange={(e) => set("claimant", e.target.value)} />
-              </Field>
-              <Field id="phone" label={t("phone")}>
-                <Input inputMode="tel" value={f.phone ?? ""} onChange={(e) => set("phone", e.target.value)} />
-              </Field>
-            </div>
-            <Field id="desc" label={t("description")} error={fe("description")} required>
-              <Textarea rows={3} value={f.description ?? ""} onChange={(e) => set("description", e.target.value)} />
-            </Field>
-          </>
-        )}
-      </FormDialog>
 
-      <FormDialog
-        open={dialog === "lien"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("registerLien")}
-        description={t("registerLienBody")}
-        confirmLabel={t("register")}
-        successMessage={t("saved")}
-        submit={() => registerLienAction({ parcelId: parcel.id, kind: (f.kind ?? "mortgage") as "mortgage", holder: f.holder ?? "", amount: f.amount ? f.amount : null, reference: f.ref ?? "" })}
-      >
-        {(fe) => (
-          <div className="grid grid-cols-2 gap-3">
-            <Field id="kind" label={t("kind")}>
-              <NativeSelect value={f.kind ?? "mortgage"} onChange={(e) => set("kind", e.target.value)}>
-                {(["mortgage", "lien", "caveat"] as const).map((k) => (
-                  <option key={k} value={k}>
-                    {t(`lienKinds.${k}`)}
-                  </option>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field id="holder" label={t("holder")} error={fe("holder")} required>
-              <Input value={f.holder ?? ""} onChange={(e) => set("holder", e.target.value)} />
-            </Field>
-            <Field id="amount" label={t("amount")}>
-              <Input type="number" min={0} value={f.amount ?? ""} onChange={(e) => set("amount", e.target.value)} />
-            </Field>
-            <Field id="ref" label={t("reference")}>
-              <Input value={f.ref ?? ""} onChange={(e) => set("ref", e.target.value)} />
-            </Field>
-          </div>
-        )}
-      </FormDialog>
 
-      <FormDialog
-        open={dialog === "order"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("addOrder")}
-        description={t("addOrderBody")}
-        confirmLabel={t("record")}
-        successMessage={t("saved")}
-        submit={() => addCourtOrderAction({ parcelId: parcel.id, orderNo: f.no ?? "", court: f.court ?? "", orderDate: f.date ?? "", kind: (f.kind ?? "freeze") as "freeze", description: f.description ?? "" })}
-      >
-        {(fe) => (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Field id="no" label={t("orderNo")} error={fe("orderNo")} required>
-                <Input value={f.no ?? ""} onChange={(e) => set("no", e.target.value)} />
-              </Field>
-              <Field id="date" label={t("orderDate")} error={fe("orderDate")} required>
-                <Input type="date" value={f.date ?? ""} onChange={(e) => set("date", e.target.value)} />
-              </Field>
-              <Field id="court" label={t("court")} error={fe("court")} required>
-                <Input value={f.court ?? ""} onChange={(e) => set("court", e.target.value)} />
-              </Field>
-              <Field id="kind" label={t("kind")}>
-                <NativeSelect value={f.kind ?? "freeze"} onChange={(e) => set("kind", e.target.value)}>
-                  {(["freeze", "transfer", "release", "other"] as const).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`orderKinds.${k}`)}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-            </div>
-            <Field id="desc" label={t("description")} error={fe("description")} required>
-              <Textarea rows={3} value={f.description ?? ""} onChange={(e) => set("description", e.target.value)} />
-            </Field>
-          </>
-        )}
-      </FormDialog>
 
       <FormDialog
         open={dialog === "use"}
@@ -380,53 +201,6 @@ export function ParcelLegalCard({ parcel, data, me, can, newOwner = null }: Prop
         )}
       </FormDialog>
 
-      <FormDialog
-        open={dialog === "permit"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("applyPermit")}
-        description={t("applyPermitBody")}
-        confirmLabel={t("submitRequest")}
-        successMessage={t("permitApplied")}
-        submit={() =>
-          applyPermitAction({
-            parcelId: parcel.id,
-            kind: (f.kind ?? "construction") as "construction",
-            description: f.description ?? "",
-            floors: f.floors ? f.floors : null,
-            areaM2: f.area ? f.area : null,
-            applicantName: f.applicant ?? "",
-            applicantPhone: f.phone ?? "",
-          })
-        }
-      >
-        {(fe) => (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Field id="kind" label={t("kind")}>
-                <NativeSelect value={f.kind ?? "construction"} onChange={(e) => set("kind", e.target.value)}>
-                  {(["construction", "extension", "renovation", "demolition", "fence"] as const).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`permitKinds.${k}`)}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
-              <Field id="applicant" label={t("applicant")} error={fe("applicantName")} required>
-                <Input value={f.applicant ?? ""} onChange={(e) => set("applicant", e.target.value)} />
-              </Field>
-              <Field id="floors" label={t("floors")}>
-                <Input type="number" min={0} value={f.floors ?? ""} onChange={(e) => set("floors", e.target.value)} />
-              </Field>
-              <Field id="area" label={t("areaM2")}>
-                <Input type="number" min={0} value={f.area ?? ""} onChange={(e) => set("area", e.target.value)} />
-              </Field>
-            </div>
-            <Field id="desc" label={t("works")} error={fe("description")} required>
-              <Textarea rows={3} value={f.description ?? ""} onChange={(e) => set("description", e.target.value)} />
-            </Field>
-          </>
-        )}
-      </FormDialog>
 
       <FormDialog
         open={dialog === "lease"}

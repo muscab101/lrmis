@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prepare, type AccountMap, type ColumnMap, type TableTarget } from "@/lib/migration/prepare";
+import { ENTITIES, prepare, type AccountMap, type ColumnMap, type TableTarget } from "@/lib/migration/prepare";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { getMigration, mappingTargets, migrationRows, type RunResult } from "@/lib/server/acct-migration";
 
@@ -20,14 +20,14 @@ const fieldMap = z.object({
   default: z.string().max(200).optional(),
   factor: z.number().positive().max(1_000_000).optional(),
 });
-const entity = z.enum(["accounts", "entries", "lines"]);
+const entity = z.enum(ENTITIES);
 
 /** Stages 5–7 and 10: save the table, column and ID mapping, and the options. Changing them means testing again. */
 export const saveMigrationAction = defineAction(
   "accounting.migration_save",
   z.object({
     id,
-    tableMap: z.record(z.string().max(200), z.enum(["accounts", "entries", "lines", "ignore"])).optional(),
+    tableMap: z.record(z.string().max(200), z.enum([...ENTITIES, "ignore"])).optional(),
     columnMap: z.partialRecord(entity, z.record(z.string().max(40), fieldMap)).optional(),
     accountMap: z
       .record(
@@ -42,6 +42,9 @@ export const saveMigrationAction = defineAction(
       )
       .optional(),
     districtMap: z.record(z.string().max(200), z.union([z.uuid(), z.literal("")])).optional(),
+    neighbourhoodMap: z.record(z.string().max(200), z.union([z.uuid(), z.literal("")])).optional(),
+    gradeMap: z.record(z.string().max(200), z.string().max(60)).optional(),
+    feeMap: z.record(z.string().max(200), z.string().max(60)).optional(),
     options: z.object({ lock_months: z.boolean() }).optional(),
   }),
   async (v, ctx) => {
@@ -50,6 +53,9 @@ export const saveMigrationAction = defineAction(
     if (v.columnMap) p.column_map = v.columnMap;
     if (v.accountMap) p.account_map = v.accountMap;
     if (v.districtMap) p.district_map = v.districtMap;
+    if (v.neighbourhoodMap) p.neighbourhood_map = v.neighbourhoodMap;
+    if (v.gradeMap) p.grade_map = v.gradeMap;
+    if (v.feeMap) p.fee_map = v.feeMap;
     if (v.options) p.options = v.options;
     unwrap(await ctx.supabase.rpc("acct_migration_save", { p_id: v.id, p }), "save migration");
     return done(null);
@@ -72,6 +78,11 @@ export const prepareMigrationAction = defineAction("accounting.migration_prepare
     columnMap: m.column_map as ColumnMap,
     accountMap: m.account_map as AccountMap,
     ourAccounts: targets.accounts.map((a) => a.code),
+    neighbourhoodMap: m.neighbourhood_map,
+    gradeMap: m.grade_map,
+    feeMap: m.fee_map,
+    ourGrades: targets.grades.map((g) => g.code),
+    ourFees: targets.fees.map((f) => f.code),
   });
   const chunks = Math.max(1, Math.ceil(out.items.length / 2000));
   for (let i = 0; i < chunks; i++) {

@@ -2,6 +2,7 @@
 
 import type { ComboOption } from "@dhulka/ui/combobox";
 import { Button } from "@dhulka/ui/button";
+import { Switch } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { Alert, EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -44,6 +45,7 @@ export function RatesPanel({
   const start = () => Object.fromEntries(grades.map((g) => [g.id, prices[g.id] != null ? String(prices[g.id]) : ""]));
   const [values, setValues] = useState<Record<string, string>>(start);
   const [busy, setBusy] = useState(false);
+  const [rebill, setRebill] = useState(true);
   const [problem, setProblem] = useState<string | null>(null);
   const changed = grades.some((g) => (values[g.id] ?? "") !== (prices[g.id] != null ? String(prices[g.id]) : ""));
 
@@ -51,13 +53,19 @@ export function RatesPanel({
     if (!selected) return;
     setBusy(true);
     setProblem(null);
+    // The house types whose price here changed (set, changed or cleared).
+    const changedIds = grades.filter((g) => (values[g.id] ?? "").trim() !== (prices[g.id] != null ? String(prices[g.id]) : "")).map((g) => g.id);
     const res = await saveNeighbourhoodPricesAction({
       neighbourhoodId: selected.value,
       prices: grades.map((g) => ({ gradeId: g.id, amount: (values[g.id] ?? "").trim() === "" ? null : Number(values[g.id]) })),
+      rebillGradeIds: rebill ? changedIds : [],
     });
     setBusy(false);
     if (!res.ok) return setProblem(errorMessage(res.error));
-    toast.success(t("pricesSaved", { place: selected.label }));
+    const r = res.data.rebilled;
+    toast.success(
+      r ? t("pricesSavedRebilled", { place: selected.label, changed: r.changed, paidMore: r.paid_more }) : t("pricesSaved", { place: selected.label }),
+    );
     router.refresh();
   };
 
@@ -140,7 +148,13 @@ export function RatesPanel({
           </Table>
           {canEdit && (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-muted-foreground text-xs">{t("priceHereHint")}</p>
+              <label className="flex items-start gap-2 text-sm">
+                <Switch checked={rebill} onCheckedChange={setRebill} />
+                <span>
+                  {t("rebillUnpaid")}
+                  <span className="text-muted-foreground block text-xs">{t("rebillUnpaidHint")}</span>
+                </span>
+              </label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={!changed || busy} onClick={() => setValues(start())}>
                   {t("undoChanges")}

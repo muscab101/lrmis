@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { suggestColumns, suggestTable, type ColumnMap, type Entity, type TableTarget } from "@/lib/migration/prepare";
+import { ENTITIES, suggestColumns, suggestTable, type ColumnMap, type TableTarget } from "@/lib/migration/prepare";
 import { parseCsv, parseMysqlDump, type SourceTable } from "@/lib/migration/source";
 import { MIGRATION_BUCKET } from "@/lib/server/acct-migration";
 import { getViewer } from "@/lib/server/auth";
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
   // First guesses for the table and column mapping (the admin checks and changes them).
   const tableMap: Record<string, TableTarget> = Object.fromEntries(tables.map((t) => [t.name, suggestTable(t.name, t.columns.map((c) => c.name))]));
   const columnMap: ColumnMap = {};
-  for (const e of ["accounts", "entries", "lines"] as Entity[]) {
+  for (const e of ENTITIES) {
     const cols = [...new Set(tables.filter((t) => tableMap[t.name] === e).flatMap((t) => t.columns.map((c) => c.name)))];
     if (cols.length) columnMap[e] = suggestColumns(e, cols);
   }

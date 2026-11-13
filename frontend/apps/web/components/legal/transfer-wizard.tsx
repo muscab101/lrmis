@@ -24,16 +24,14 @@ function equalShares(n: number): number[] {
   return Array.from({ length: n }, (_, i) => (i === n - 1 ? Math.round((100 - each * (n - 1)) * 100) / 100 : each));
 }
 
-/** Start a transfer: its type (from Valuation → Transfer types; a court-order type needs the order), and the new owners (who share the land equally). */
+/** Start a transfer: its type (from Valuation → Transfer types), and the new owners (who share the land equally). */
 export function TransferWizard({
   parcelId,
-  types,
-  transferOrders,
+  types: allTypes,
   newOwner,
 }: {
   parcelId: string;
   types: TransferTypeChoice[];
-  transferOrders: { id: string; order_no: string }[];
   /** Staff who may create owners can register a new one here (the full owner form) and add them straight away. */
   newOwner?: { districts: { id: string; name_so: string; name_en: string }[]; districtId: string | null } | null;
 }) {
@@ -43,11 +41,10 @@ export function TransferWizard({
   const [open, setOpen] = useState(false);
   const locale = useLocale();
   const format = useFormatter();
-  const usable = types.filter((x) => x.works_as !== "court_order" || transferOrders.length > 0);
-  const [typeId, setTypeId] = useState(usable[0]?.id ?? "");
-  const kind = types.find((x) => x.id === typeId)?.works_as ?? null;
+  // Court orders are not used any more: court-order types are not offered.
+  const types = allTypes.filter((x) => x.works_as !== "court_order");
+  const [typeId, setTypeId] = useState(types[0]?.id ?? "");
   const typeName = (x: TransferTypeChoice) => (locale === "so" ? x.name_so : x.name_en);
-  const [orderId, setOrderId] = useState(transferOrders[0]?.id ?? "");
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
   const [creating, setCreating] = useState(false);
@@ -86,7 +83,7 @@ export function TransferWizard({
           createTransferAction({
             parcelId,
             typeId,
-            courtOrderId: kind === "court_order" ? orderId || null : null,
+            courtOrderId: null,
             owners: people.map((p, i) => ({ partyId: p.party.value, role: p.role, share: equalShares(people.length)[i]! })),
             note,
           })
@@ -114,24 +111,13 @@ export function TransferWizard({
                 ) : (
                   <NativeSelect value={typeId} onChange={(e) => setTypeId(e.target.value)}>
                     {types.map((x) => (
-                      <option key={x.id} value={x.id} disabled={x.works_as === "court_order" && transferOrders.length === 0}>
+                      <option key={x.id} value={x.id}>
                         {typeName(x)}
                       </option>
                     ))}
                   </NativeSelect>
                 )}
               </Field>
-              {kind === "court_order" && (
-                <Field id="order" label={t("courtOrder")} error={fe("courtOrderId")} required>
-                  <NativeSelect value={orderId} onChange={(e) => setOrderId(e.target.value)}>
-                    {transferOrders.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.order_no}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </Field>
-              )}
             </div>
             <Field id="people" label={t("newOwners")} hint={t("newOwnersHint")} error={fe("owners")} required>
               <div className="space-y-2">

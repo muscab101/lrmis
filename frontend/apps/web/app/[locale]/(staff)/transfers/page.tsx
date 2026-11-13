@@ -34,7 +34,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
   const [rows, counts] = await Promise.all([listTransfers(filter), legalCounts()]);
   const badge: Partial<Record<string, number>> = { submitted: counts.transfers_waiting, draft: counts.transfers_draft };
   const names = (o: { full_name: string }[]) => o.map((x) => x.full_name).join(", ") || "—";
-  // Legal work on one parcel (transfer, subdivide, merge, change of use, correction, permit, dispute, lien, court
+  // Legal work on one parcel (transfer, subdivide, merge, change of use, correction
   // order): find it by its PUN (dashes from an old printout are ignored).
   const pun = normalizePun(sp.pun ?? "").slice(0, 30);
   const found = pun
@@ -78,10 +78,7 @@ export default async function TransfersPage({ params, searchParams }: { params: 
             me={viewer.user.id}
             can={{
               transfer: viewer.can("transfers.create"),
-              legal: viewer.can("disputes.create"),
-              legalApprove: viewer.can("disputes.approve"),
               change: viewer.can("parcels.update"),
-              permit: viewer.can("permits.create"),
               lease: viewer.can("parcels.approve"),
             }}
             newOwner={newOwner}

@@ -45,12 +45,8 @@ export async function getTransfer(id: string) {
 
 export interface ParcelLegal {
   blockers: { transfer: string[]; subdivide: string[]; permit: string[] };
-  disputes: { id: string; number: string; kind: string; description: string; claimant_name: string; status: string; opened_by: string | null; opened_at: string; resolution: string | null }[];
-  orders: { id: string; order_no: string; court: string; order_date: string; kind: string; description: string; active: boolean; created_by: string | null }[];
-  liens: { id: string; kind: string; holder: string; amount: number | null; reference: string | null; active: boolean; registered_by: string | null; registered_at: string }[];
   leases: { id: string; number: string; start_date: string; end_date: string; annual_rent: number; purpose: string | null; status: string; lessee: { full_name: string } | null }[];
   changes: { id: string; number: string; kind: string; status: string; reason: string; requested_by: string | null; requested_at: string; result_parcel_ids: string[] }[];
-  permits: { id: string; number: string; kind: string; status: string; description: string; valid_until: string | null }[];
   transfers: TransferRow[];
   /** The transfer types staff can choose from (switched-on ones). */
   transferTypes: TransferTypeChoice[];
@@ -66,49 +62,20 @@ export interface TransferTypeChoice {
 
 export async function parcelLegal(parcelId: string): Promise<ParcelLegal> {
   const supabase = await createClient();
-  const [s, d, o, l, le, c, p, t, ty] = await Promise.all([
+  const [s, le, c, t, ty] = await Promise.all([
     supabase.rpc("parcel_legal_status", { p_parcel: parcelId }),
-    supabase.from("disputes").select("id, number, kind, description, claimant_name, status, opened_by, opened_at, resolution").eq("parcel_id", parcelId).order("opened_at", { ascending: false }),
-    supabase.from("court_orders").select("id, order_no, court, order_date, kind, description, active, created_by").eq("parcel_id", parcelId).order("order_date", { ascending: false }),
-    supabase.from("liens").select("id, kind, holder, amount, reference, active, registered_by, registered_at").eq("parcel_id", parcelId).order("registered_at", { ascending: false }),
     supabase.from("leases").select("id, number, start_date, end_date, annual_rent, purpose, status, lessee:parties(full_name)").eq("parcel_id", parcelId).order("start_date", { ascending: false }),
     supabase.from("parcel_changes").select("id, number, kind, status, reason, requested_by, requested_at, result_parcel_ids").contains("parcel_ids", [parcelId]).order("requested_at", { ascending: false }),
-    supabase.from("permits").select("id, number, kind, status, description, valid_until").eq("parcel_id", parcelId).order("requested_at", { ascending: false }),
     listTransfers("any", parcelId),
     supabase.from("transfer_types").select("id, name_so, name_en, works_as, duty").eq("active", true).order("sort").order("name_en"),
   ]);
   return {
     blockers: (s.data as ParcelLegal["blockers"] | null) ?? { transfer: [], subdivide: [], permit: [] },
-    disputes: (d.data ?? []) as ParcelLegal["disputes"],
-    orders: (o.data ?? []) as ParcelLegal["orders"],
-    liens: (l.data ?? []) as ParcelLegal["liens"],
     leases: (le.data ?? []) as unknown as ParcelLegal["leases"],
     changes: (c.data ?? []) as ParcelLegal["changes"],
-    permits: (p.data ?? []) as ParcelLegal["permits"],
     transfers: t,
     transferTypes: (ty.data ?? []) as TransferTypeChoice[],
   };
-}
-
-export async function listDisputes(status: "open" | "any") {
-  const supabase = await createClient();
-  let req = supabase.from("disputes").select("id, number, kind, description, claimant_name, status, opened_by, opened_at, resolution, parcel:parcels(id, pun)");
-  if (status === "open") req = req.eq("status", "open");
-  return unwrap(await req.order("opened_at", { ascending: false }).limit(100), "disputes") as unknown as (ParcelLegal["disputes"][number] & { parcel: { id: string; pun: string | null } | null })[];
-}
-
-type WithParcel<T> = T & { parcel: { id: string; pun: string | null } | null };
-
-export async function listActiveLiens() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("liens").select("id, kind, holder, amount, reference, active, registered_by, registered_at, parcel:parcels(id, pun)").eq("active", true).order("registered_at", { ascending: false }).limit(100);
-  return (data ?? []) as unknown as WithParcel<ParcelLegal["liens"][number]>[];
-}
-
-export async function listActiveOrders() {
-  const supabase = await createClient();
-  const { data } = await supabase.from("court_orders").select("id, order_no, court, order_date, kind, description, active, created_by, parcel:parcels(id, pun)").eq("active", true).order("order_date", { ascending: false }).limit(100);
-  return (data ?? []) as unknown as WithParcel<ParcelLegal["orders"][number]>[];
 }
 
 /** Parcel changes, newest first; with a parcel, only those it was part of or came out of. */

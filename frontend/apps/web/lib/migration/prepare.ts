@@ -5,7 +5,8 @@
  */
 import type { Cell, Row } from "./source";
 
-export type Entity = "accounts" | "entries" | "lines";
+export const ENTITIES = ["accounts", "entries", "lines", "owners", "land", "bills", "payments"] as const;
+export type Entity = (typeof ENTITIES)[number];
 export type TableTarget = Entity | "ignore";
 export type Transform = "none" | "trim" | "upper" | "lower" | "number" | "date";
 export type DateFormat = "auto" | "ymd" | "dmy" | "mdy" | "unix";
@@ -49,6 +50,50 @@ export const FIELDS: Record<Entity, { field: string; required: boolean; kind: "t
     { field: "ref", required: false, kind: "text" },
     { field: "memo", required: false, kind: "text" },
   ],
+  owners: [
+    { field: "key", required: true, kind: "text" },
+    { field: "full_name", required: true, kind: "text" },
+    { field: "phone", required: false, kind: "text" },
+    { field: "mother_name", required: false, kind: "text" },
+  ],
+  land: [
+    { field: "key", required: true, kind: "text" },
+    { field: "owner_key", required: false, kind: "text" },
+    { field: "neighbourhood", required: true, kind: "text" },
+    { field: "house_no", required: false, kind: "text" },
+    { field: "width", required: false, kind: "number" },
+    { field: "length", required: false, kind: "number" },
+    { field: "area", required: false, kind: "number" },
+    { field: "type", required: false, kind: "text" },
+    { field: "pun", required: false, kind: "text" },
+    { field: "account_no", required: false, kind: "text" },
+    { field: "lat", required: false, kind: "number" },
+    { field: "lon", required: false, kind: "number" },
+    { field: "registered_at", required: false, kind: "date" },
+    { field: "demolished", required: false, kind: "text" },
+    { field: "demolished_at", required: false, kind: "date" },
+  ],
+  bills: [
+    { field: "key", required: true, kind: "text" },
+    { field: "land_key", required: true, kind: "text" },
+    { field: "fee", required: false, kind: "text" },
+    { field: "year", required: true, kind: "number" },
+    { field: "issue_date", required: false, kind: "date" },
+    { field: "due_date", required: false, kind: "date" },
+    { field: "amount", required: true, kind: "money" },
+    { field: "ref", required: false, kind: "text" },
+  ],
+  payments: [
+    { field: "key", required: true, kind: "text" },
+    { field: "land_key", required: false, kind: "text" },
+    { field: "bill_key", required: false, kind: "text" },
+    { field: "date", required: true, kind: "date" },
+    { field: "amount", required: true, kind: "money" },
+    { field: "method", required: false, kind: "text" },
+    { field: "ref", required: false, kind: "text" },
+    { field: "payer_name", required: false, kind: "text" },
+    { field: "payer_phone", required: false, kind: "text" },
+  ],
 };
 
 const SYNONYMS: Record<string, string[]> = {
@@ -56,8 +101,8 @@ const SYNONYMS: Record<string, string[]> = {
   code: ["code", "acc_code", "account_code", "account_no", "acc_no", "gl_code", "number"],
   name: ["name", "acc_name", "account_name", "name_en", "title", "description"],
   name_so: ["name_so", "magaca", "acc_name_so"],
-  type: ["type", "acc_type", "account_type", "category", "class", "nature"],
-  date: ["date", "entry_date", "jv_date", "trans_date", "transaction_date", "posting_date", "voucher_date", "created_at"],
+  type: ["type", "acc_type", "account_type", "property_type", "grade", "category", "class", "nature"],
+  date: ["date", "entry_date", "jv_date", "trans_date", "transaction_date", "posting_date", "voucher_date", "payment_date", "paid_at", "created_at"],
   ref: ["ref", "reference", "jv_no", "voucher_no", "entry_no", "number", "doc_no", "receipt_no"],
   memo: ["memo", "narration", "description", "details", "remarks", "note", "particulars"],
   entry_key: ["jv_no", "jv_id", "journal_id", "entry_id", "voucher_no", "voucher_id", "trans_id", "transaction_id", "entry_no", "ref"],
@@ -67,6 +112,30 @@ const SYNONYMS: Record<string, string[]> = {
   credit: ["credit", "cr", "credit_amount", "cr_amount"],
   amount: ["amount", "value", "amt", "total"],
   side: ["side", "dr_cr", "drcr", "type", "entry_type", "nature"],
+  full_name: ["full_name", "name", "owner_name", "fullname", "magaca"],
+  phone: ["phone", "mobile", "tel", "telephone", "phone_no"],
+  mother_name: ["mother_name", "mother", "hooyo"],
+  owner_key: ["owner_id", "taxpayer_id", "person_id", "owner"],
+  neighbourhood: ["neighbourhood", "neighborhood", "neighbourhood_id", "xaafad", "zone", "village"],
+  house_no: ["house_no", "house_number", "houseno", "property_number", "plot_no"],
+  width: ["width", "plot_width", "w"],
+  length: ["length", "plot_length", "l"],
+  pun: ["pun", "parcel_no", "parcel_number", "property_no"],
+  account_no: ["account_no", "account_number", "acc_no"],
+  lat: ["lat", "latitude", "y"],
+  lon: ["lon", "lng", "longitude", "x"],
+  registered_at: ["registered_at", "registration_date", "reg_date", "created_at"],
+  demolished: ["demolished", "is_demolished", "status"],
+  demolished_at: ["demolished_at", "demolition_date"],
+  land_key: ["property_id", "house_id", "parcel_id", "land_id", "plot_id"],
+  bill_key: ["bill_id", "invoice_id", "tax_id"],
+  fee: ["fee", "fee_type", "tax_type", "bill_type", "type"],
+  year: ["year", "tax_year", "period", "fiscal_year"],
+  issue_date: ["issue_date", "bill_date", "invoice_date", "created_at"],
+  due_date: ["due_date", "due"],
+  method: ["method", "payment_method", "channel", "mode"],
+  payer_name: ["payer_name", "paid_by", "payer"],
+  payer_phone: ["payer_phone", "payer_mobile"],
 };
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -76,6 +145,10 @@ export function suggestTable(name: string, columns: string[]): TableTarget {
   const n = norm(name);
   const cols = columns.map(norm);
   const has = (...xs: string[]) => xs.some((x) => cols.includes(norm(x)));
+  if (/(owner|taxpayer|person|citizen|customer)/.test(n)) return "owners";
+  if (/(house|property|parcel|plot|land|building)/.test(n) && !/(tax|bill|invoice|payment)/.test(n)) return "land";
+  if (/(payment|receipt|collection)/.test(n)) return "payments";
+  if (/(invoice|bill|tax)/.test(n) && !/(account|journal)/.test(n)) return "bills";
   if (/(account|acc|coa|chart|ledgeracc|glacc)/.test(n) && !/(line|detail|entry|trans|journal)/.test(n)) return "accounts";
   if (/(journal|voucher|jv|trans|gl|ledger|entr)/.test(n)) {
     if (/(line|detail|item|split|row)/.test(n)) return "lines";
@@ -180,7 +253,7 @@ export function toGlType(v: string | number | null): GlType | null {
 }
 
 export interface PreparedItem {
-  entity: "account" | "entry";
+  entity: "account" | "entry" | "owner" | "land" | "bill" | "payment";
   source_key: string;
   status: "ready" | "error" | "skipped";
   message?: string;
@@ -188,12 +261,24 @@ export interface PreparedItem {
 }
 export interface Prepared {
   items: PreparedItem[];
+  /** Old values to map to ours (property data): neighbourhoods, house types, fees. */
+  valueKeys: { neighbourhoods: { key: string; n: number }[]; grades: { key: string; n: number }[]; fees: { key: string; n: number }[] };
   /** Every old account key the lines use (for the ID mapping), with the old name when known. */
   accountKeys: { key: string; code: string | null; name: string | null; type: GlType | null; lines: number }[];
   /** Every old district value the lines use. */
   districtKeys: { key: string; lines: number }[];
   warnings: string[];
-  summary: { accounts: Record<string, number>; entries: Record<string, number>; lines: number; debit: number; credit: number };
+  summary: {
+    accounts: Record<string, number>;
+    entries: Record<string, number>;
+    lines: number;
+    debit: number;
+    credit: number;
+    owners: Record<string, number>;
+    land: Record<string, number>;
+    bills: Record<string, number>;
+    payments: Record<string, number>;
+  };
 }
 
 const cents = (n: number) => Math.round(n * 100) / 100;
@@ -210,6 +295,13 @@ export function prepare(input: {
   accountMap: AccountMap;
   /** Our account codes. */
   ourAccounts: string[];
+  /** Old neighbourhood / house type / fee values → ours (ids for neighbourhoods, codes for types and fees). */
+  neighbourhoodMap?: Record<string, string>;
+  gradeMap?: Record<string, string>;
+  feeMap?: Record<string, string>;
+  /** Our house type and fee codes (an old value that already is one needs no mapping). */
+  ourGrades?: string[];
+  ourFees?: string[];
 }): Prepared {
   const { tables, tableMap, columnMap, accountMap } = input;
   const ours = new Set(input.ourAccounts);
@@ -358,13 +450,231 @@ export function prepare(input: {
     });
   }
 
-  const tally = (e: "account" | "entry") =>
+  // ---- Property data: owners, land, bills, payments ------------------------------------------------------------------
+  const prop = prepareProperty(rowsOf, columnMap, input);
+  items.push(...prop.items);
+  warnings.push(...prop.warnings);
+
+  const tally = (e: PreparedItem["entity"]) =>
     items.filter((i) => i.entity === e).reduce<Record<string, number>>((s, i) => ({ ...s, [i.status]: (s[i.status] ?? 0) + 1 }), {});
   return {
     items,
     accountKeys,
     districtKeys: [...districtUse.entries()].map(([key, lines]) => ({ key, lines })).sort((a, b) => a.key.localeCompare(b.key)),
     warnings: [...new Set(warnings)],
-    summary: { accounts: tally("account"), entries: tally("entry"), lines: lineCount, debit: cents(debit), credit: cents(credit) },
+    valueKeys: prop.valueKeys,
+    summary: {
+      accounts: tally("account"),
+      entries: tally("entry"),
+      lines: lineCount,
+      debit: cents(debit),
+      credit: cents(credit),
+      owners: tally("owner"),
+      land: tally("land"),
+      bills: tally("bill"),
+      payments: tally("payment"),
+    },
   };
+}
+
+const METHODS: Record<string, string> = {
+  cash: "cash", lacag: "cash", caddaan: "cash", cheque: "cheque", check: "cheque", bank: "bank_transfer", bank_transfer: "bank_transfer",
+  transfer: "bank_transfer", card: "card", visa: "card", mastercard: "card", evc: "mobile_money", evc_plus: "mobile_money", evcplus: "mobile_money",
+  zaad: "mobile_money", edahab: "mobile_money", sahal: "mobile_money", mobile: "mobile_money", mobile_money: "mobile_money", mpesa: "mobile_money",
+};
+const yes = (v: unknown) => /^(1|y|yes|true|demolished|dumay|haa)$/i.test(String(v ?? "").trim());
+
+/** Owners, land, bills and payments from the old rows, with every problem named; old values to map counted. */
+function prepareProperty(
+  rowsOf: (e: Entity) => Row[],
+  columnMap: ColumnMap,
+  input: { neighbourhoodMap?: Record<string, string>; gradeMap?: Record<string, string>; feeMap?: Record<string, string>; ourGrades?: string[]; ourFees?: string[] },
+) {
+  const items: PreparedItem[] = [];
+  const warnings: string[] = [];
+  const nMap = input.neighbourhoodMap ?? {};
+  const gMap = input.gradeMap ?? {};
+  const fMap = input.feeMap ?? {};
+  const ourGrades = new Set(input.ourGrades ?? []);
+  const ourFees = new Set(input.ourFees ?? []);
+  const count = new Map<string, Map<string, number>>([["n", new Map()], ["g", new Map()], ["f", new Map()]]);
+  const bump = (k: "n" | "g" | "f", v: string) => count.get(k)!.set(v, (count.get(k)!.get(v) ?? 0) + 1);
+  const get = (r: Row, e: Entity, f: string) => fieldValue(r, columnMap[e]?.[f]);
+  const text = (r: Row, e: Entity, f: string) => {
+    const v = get(r, e, f).value;
+    return v === null ? null : String(v).trim() || null;
+  };
+  const seen = (_entity: PreparedItem["entity"]) => {
+    const keys = new Set<string>();
+    return (key: string | null) => {
+      if (key === null) return "no old ID";
+      if (keys.has(key)) return "repeated old ID";
+      keys.add(key);
+      return null;
+    };
+  };
+
+  // Owners.
+  const ownerKeys = new Set<string>();
+  const ownerSeen = seen("owner");
+  for (const r of rowsOf("owners")) {
+    const key = text(r, "owners", "key");
+    const dup = ownerSeen(key);
+    if (dup) {
+      if (key) items.push({ entity: "owner", source_key: `${key}#${items.length}`, status: "skipped", message: dup, data: {} });
+      else warnings.push("An owner row has no old ID and was left out.");
+      continue;
+    }
+    ownerKeys.add(key!);
+    const name = text(r, "owners", "full_name");
+    items.push({
+      entity: "owner",
+      source_key: key!,
+      status: name ? "ready" : "error",
+      message: name ? undefined : "no name",
+      data: { full_name: name, phone: text(r, "owners", "phone"), mother_name: text(r, "owners", "mother_name") },
+    });
+  }
+
+  // Land.
+  const landKeys = new Set<string>();
+  const landSeen = seen("land");
+  for (const r of rowsOf("land")) {
+    const key = text(r, "land", "key");
+    const dup = landSeen(key);
+    if (dup) {
+      if (key) items.push({ entity: "land", source_key: `${key}#${items.length}`, status: "skipped", message: dup, data: {} });
+      else warnings.push("A land row has no old ID and was left out.");
+      continue;
+    }
+    landKeys.add(key!);
+    const problems: string[] = [];
+    const nOld = text(r, "land", "neighbourhood");
+    if (nOld) bump("n", nOld);
+    const nbhd = nOld ? (nMap[nOld] ?? null) : null;
+    if (!nOld) problems.push("no neighbourhood");
+    else if (!nbhd) problems.push(`neighbourhood "${nOld}" not matched to ours`);
+    const tOld = text(r, "land", "type");
+    if (tOld) bump("g", tOld);
+    const grade = tOld ? (gMap[tOld] ?? (ourGrades.has(tOld) ? tOld : null)) : null;
+    if (tOld && !grade) problems.push(`house type "${tOld}" not matched to ours`);
+    const owner = text(r, "land", "owner_key");
+    if (owner && !ownerKeys.has(owner)) problems.push(`owner ${owner} is not among the old owners`);
+    const num = (f: string) => {
+      const v = get(r, "land", f);
+      if (v.bad) problems.push(`${f}: ${v.bad}`);
+      return v.value as number | null;
+    };
+    const date = (f: string) => {
+      const v = get(r, "land", f);
+      if (v.bad) problems.push(`${f}: ${v.bad}`);
+      return v.value as string | null;
+    };
+    const lat = num("lat");
+    const lon = num("lon");
+    if ((lat === null) !== (lon === null)) problems.push("only one of latitude / longitude");
+    if (lat !== null && (lat < -5 || lat > 15 || lon! < 38 || lon! > 55)) problems.push("location is not in Somalia");
+    const demolishedRaw = get(r, "land", "demolished").value;
+    items.push({
+      entity: "land",
+      source_key: key!,
+      status: problems.length ? "error" : "ready",
+      message: problems.length ? problems.join("; ") : undefined,
+      data: {
+        owner_key: owner,
+        neighbourhood_id: nbhd,
+        house_no: text(r, "land", "house_no"),
+        width: num("width"),
+        length: num("length"),
+        area: num("area"),
+        property_type: grade,
+        legacy_pun: text(r, "land", "pun"),
+        legacy_account: text(r, "land", "account_no"),
+        lat,
+        lon,
+        registered_at: date("registered_at"),
+        demolished: yes(demolishedRaw),
+        demolished_at: date("demolished_at"),
+      },
+    });
+  }
+
+  // Bills.
+  const billKeys = new Set<string>();
+  const billSeen = seen("bill");
+  for (const r of rowsOf("bills")) {
+    const key = text(r, "bills", "key");
+    const dup = billSeen(key);
+    if (dup) {
+      if (key) items.push({ entity: "bill", source_key: `${key}#${items.length}`, status: "skipped", message: dup, data: {} });
+      continue;
+    }
+    billKeys.add(key!);
+    const problems: string[] = [];
+    const land = text(r, "bills", "land_key");
+    if (!land) problems.push("no land");
+    else if (!landKeys.has(land)) problems.push(`land ${land} is not among the old land`);
+    const fOld = text(r, "bills", "fee") ?? "property_bill";
+    bump("f", fOld);
+    const fee = fMap[fOld] ?? (ourFees.has(fOld) ? fOld : null);
+    if (!fee) problems.push(`bill type "${fOld}" not matched to ours`);
+    const yearV = get(r, "bills", "year");
+    const year = yearV.value === null ? null : Math.trunc(Number(String(yearV.value).slice(0, 4)));
+    if (!year || year < 1950 || year > 2100) problems.push("no valid year");
+    const amount = get(r, "bills", "amount");
+    if (amount.bad || !(Number(amount.value) > 0)) problems.push("no amount");
+    const d = (f: string) => {
+      const v = get(r, "bills", f);
+      if (v.bad) problems.push(`${f}: ${v.bad}`);
+      return v.value as string | null;
+    };
+    items.push({
+      entity: "bill",
+      source_key: key!,
+      status: problems.length ? "error" : "ready",
+      message: problems.length ? problems.join("; ") : undefined,
+      data: { land_key: land, fee_code: fee, year, issue_date: d("issue_date"), due_date: d("due_date"), amount: Number(amount.value), ref: text(r, "bills", "ref") },
+    });
+  }
+
+  // Payments.
+  const paySeen = seen("payment");
+  for (const r of rowsOf("payments")) {
+    const key = text(r, "payments", "key");
+    const dup = paySeen(key);
+    if (dup) {
+      if (key) items.push({ entity: "payment", source_key: `${key}#${items.length}`, status: "skipped", message: dup, data: {} });
+      continue;
+    }
+    const problems: string[] = [];
+    const land = text(r, "payments", "land_key");
+    const bill = text(r, "payments", "bill_key");
+    if (!land && !bill) problems.push("no land or bill");
+    if (bill && !billKeys.has(bill)) problems.push(`bill ${bill} is not among the old bills`);
+    if (!bill && land && !landKeys.has(land)) problems.push(`land ${land} is not among the old land`);
+    const date = get(r, "payments", "date");
+    if (date.bad || !date.value) problems.push("no date");
+    const amount = get(r, "payments", "amount");
+    if (amount.bad || !(Number(amount.value) > 0)) problems.push("no amount");
+    const m = norm(String(text(r, "payments", "method") ?? "cash"));
+    items.push({
+      entity: "payment",
+      source_key: key!,
+      status: problems.length ? "error" : "ready",
+      message: problems.length ? problems.join("; ") : undefined,
+      data: {
+        land_key: land,
+        bill_key: bill,
+        date: date.value,
+        amount: Number(amount.value),
+        method: METHODS[m] ?? "cash",
+        ref: text(r, "payments", "ref"),
+        payer_name: text(r, "payments", "payer_name"),
+        payer_phone: text(r, "payments", "payer_phone"),
+      },
+    });
+  }
+
+  const list = (k: "n" | "g" | "f") => [...count.get(k)!.entries()].map(([key, n]) => ({ key, n })).sort((a, b) => a.key.localeCompare(b.key));
+  return { items, warnings, valueKeys: { neighbourhoods: list("n"), grades: list("g"), fees: list("f") } };
 }

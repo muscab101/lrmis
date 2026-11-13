@@ -149,3 +149,25 @@ describe("neighbourhood prices per house type (0208)", () => {
     ).rejects.toThrow(/^PERMISSION_DENIED/);
   });
 });
+
+describe("unpaid bills follow a neighbourhood price change (0218)", () => {
+  it("open bills are set to the new price; never below what was paid", async () => {
+    const grade = await scalar<string>(db, `select id from public.property_grades where code = 'tool_grade'`);
+    const here = await newLand(91);
+    await asUser(db, admin, (tx) => tx.query(`select public.invoice_missing_create($1)`, [[here]]));
+    const bill = await scalar<string>(db, `select i.id from public.invoices i join public.fee_types f on f.id = i.fee_type_id where i.parcel_id = $1 and f.code = 'property_bill'`, [here]);
+    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(50);
+    const price = (amount: number) =>
+      asUser(db, admin, (tx) => tx.query(`select public.neighbourhood_grade_prices_save($1, $2)`, [nbhd, JSON.stringify([{ grade_id: grade, amount }])]));
+    const rebill = () => asUser(db, admin, (tx) => scalar<{ changed: number; paid_more: number }>(tx, `select public.neighbourhood_rebill($1, $2)`, [nbhd, [grade]]));
+    await price(0.8);
+    expect((await rebill()).changed).toBeGreaterThanOrEqual(1);
+    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(80);
+    await db.query(`select private.invoice_apply_payment($1, 60)`, [bill]);
+    await price(0.5);
+    expect((await rebill()).paid_more).toBeGreaterThanOrEqual(1);
+    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(80);
+    await expect(asUser(db, cashier, (tx) => tx.query(`select public.neighbourhood_rebill($1, $2)`, [nbhd, [grade]]))).rejects.toThrow(/^PERMISSION_DENIED/);
+  });
+});
+

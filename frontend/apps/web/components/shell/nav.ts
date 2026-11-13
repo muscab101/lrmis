@@ -5,11 +5,9 @@ import {
   BadgeCheck,
   Banknote,
   BarChart3,
-  Building2,
   FileStack,
-  Gavel,
+  ArrowRightLeft,
   History,
-  Home,
   IdCard,
   Landmark,
   LayoutDashboard,
@@ -40,6 +38,10 @@ export interface NavItem {
   icon: LucideIcon;
   /** Left out: every staff member sees it. */
   permission?: PermissionKey;
+  /** Shown when the user has any one of these (instead of one permission). */
+  anyOf?: PermissionKey[];
+  /** Other pages that belong to this item (it lights up on them too). */
+  also?: string[];
   /** Delivery phase that builds the page (§13). Items without it exist now. */
   phase?: number;
 }
@@ -85,9 +87,7 @@ export const STAFF_NAV: NavGroup[] = [
   {
     key: "legal",
     items: [
-      { key: "transfers", href: "/transfers", icon: Home, permission: "transfers.view" },
-      { key: "disputes", href: "/disputes", icon: Gavel, permission: "disputes.view" },
-      { key: "permits", href: "/permits", icon: Building2, permission: "permits.view" },
+      { key: "transfers", href: "/transfers", icon: ArrowRightLeft, permission: "transfers.view" },
       { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
       { key: "idCards", href: "/documents/cards", icon: IdCard, permission: "certificates.id_cards" },
       { key: "addPrinter", href: "/printers", icon: Printer, permission: "certificates.printers" },
@@ -118,7 +118,8 @@ export const STAFF_NAV: NavGroup[] = [
 ];
 
 export function visibleNav(can: (p: PermissionKey) => boolean): NavGroup[] {
-  return STAFF_NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.permission || can(i.permission)) })).filter(
+  return STAFF_NAV.map((g) => ({ ...g, items: g.items
+      .filter((i) => (i.anyOf ? i.anyOf.some(can) : !i.permission || can(i.permission))) })).filter(
     (g) => g.items.length > 0,
   );
 }

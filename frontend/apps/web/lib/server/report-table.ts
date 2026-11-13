@@ -9,9 +9,7 @@ import type {
   CertificateStatusRow,
   CollectionRow,
   DemolishedRow,
-  DisputeRow,
   MessageRow,
-  PermitRow,
   StaffActivityRow,
   SurveyZoneRow,
   TransferRow,
@@ -618,68 +616,6 @@ export async function reportTable(
         num(x.duty_balance),
       ]);
       links = r.map((x) => [to("transfers", x.transfer_id), to("parcels", x.parcel_id)]);
-      break;
-    }
-    case "permits": {
-      columns = [
-        { label: t("number"), kind: "mono" },
-        { label: t("pun"), kind: "mono" },
-        { label: t("typeLabel"), kind: "text" },
-        { label: t("applicant"), kind: "text" },
-        { label: t("phone"), kind: "mono" },
-        { label: t("floors"), kind: "int" },
-        { label: t("area"), kind: "num", sum: true },
-        { label: t("district"), kind: "text" },
-        { label: t("requested"), kind: "date" },
-        { label: t("decided"), kind: "date" },
-        { label: t("status"), kind: "text" },
-        { label: t("validUntil"), kind: "date" },
-      ];
-      const r = data as PermitRow[];
-      rows = r.map((x) => [
-        x.number,
-        x.pun,
-        label("legal.permitKinds", x.kind),
-        x.applicant,
-        x.phone,
-        num(x.floors),
-        num(x.area_m2),
-        pick(x as never, "district"),
-        day(x.requested_at),
-        day(x.decided_at),
-        label("legal.status", x.status),
-        x.valid_until,
-      ]);
-      links = r.map((x) => [null, to("parcels", x.parcel_id)]);
-      break;
-    }
-    case "disputes": {
-      columns = [
-        { label: t("number"), kind: "mono" },
-        { label: t("pun"), kind: "mono" },
-        { label: t("typeLabel"), kind: "text" },
-        { label: t("claimant"), kind: "text" },
-        { label: t("courtCase"), kind: "mono" },
-        { label: t("district"), kind: "text" },
-        { label: t("opened"), kind: "date" },
-        { label: t("resolvedOn"), kind: "date" },
-        { label: t("daysOpen"), kind: "int" },
-        { label: t("status"), kind: "text" },
-      ];
-      const r = data as DisputeRow[];
-      rows = r.map((x) => [
-        x.number,
-        x.pun,
-        label("legal.disputeKinds", x.kind),
-        x.claimant,
-        x.court_case_no,
-        pick(x as never, "district"),
-        day(x.opened_at),
-        day(x.resolved_at),
-        num(x.days_open),
-        label("legal.disputeStatus", x.status),
-      ]);
-      links = r.map((x) => [null, to("parcels", x.parcel_id)]);
       break;
     }
     case "demolished": {

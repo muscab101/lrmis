@@ -2951,7 +2951,7 @@
     "houseType": "House type",
     "normalPrice": "Normal price (per m²)",
     "priceHere": "Price in {place} (per m²)",
-    "priceHereHint": "Empty = normal price. New bills use these prices; bills already made stay as they are.",
+    "priceHereHint": "Empty = normal price. New bills always use these prices.",
     "undoChanges": "Undo changes",
     "savePrices": "Save prices",
     "pricesSaved": "Prices for {place} saved",
@@ -2969,7 +2969,10 @@
       "serviceCharge": "Service charge",
       "total": "A year",
       "note": "What a new bill would be today. Flats in a building are billed on their share instead."
-    }
+    },
+    "rebillUnpaid": "Also update unpaid bills here",
+    "rebillUnpaidHint": "Open bills of land with a changed house type move to the new price. A bill is never set below what was already paid. Off: only new bills use it.",
+    "pricesSavedRebilled": "Prices for {place} saved. {changed, plural, =0 {No bill changed} one {# bill changed} other {# bills changed}}{paidMore, plural, =0 {} other {; # already paid more, left as they were}}."
   },
   "billing": {
     "runsTitle": "Billing runs",
@@ -4505,7 +4508,12 @@
     "noTransfersList": "Nothing in this list",
     "typeDuty": "Stamp duty: {amount}",
     "noTransferTypes": "No transfer type is switched on.",
-    "addTransferTypes": "Add them in Valuation → Transfer types."
+    "addTransferTypes": "Add them in Valuation → Transfer types.",
+    "legalTitle": "Transfers & disputes",
+    "legalSubtitle": "Ownership changes, disputes, liens, court orders and land changes, in one place. Find a parcel by its PUN to start any of them.",
+    "transfersTab": "Transfers",
+    "actionsTab": "Actions",
+    "changesSubtitle": "Splitting, merging, change of use and corrections of land, waiting for a decision."
   },
   "reports": {
     "title": "Reports",
@@ -6105,7 +6113,7 @@
   },
   "migration": {
     "title": "Migration center",
-    "subtitle": "Bring the old system's chart of accounts and journal history into the books, safely: read, map, preview, test, back up, migrate, check.",
+    "subtitle": "Bring the old system in safely: chart of accounts and journal, owners, land, bills and payments. Read, map, preview, test, back up, migrate, check.",
     "backToAccounting": "Back to Accounting",
     "allMigrations": "All migrations",
     "newTitle": "New migration",
@@ -6174,8 +6182,8 @@
       "ids": "Old IDs are never reused. Each old account is matched to one of ours, or made as a new account with a 4-digit code; each old district value to one of our districts. The ID map keeps old → new for every record.",
       "preview": "Work out every record from the old rows and the mapping. Each one is ready, or says why it can't go. Do this again after changing the mapping.",
       "test": "Runs the whole migration and then puts everything back, so the books don't change. Shows exactly what would be created and what would fail.",
-      "historical": "How the old journal is kept once it is in the books.",
-      "production": "Accounts go first, then each journal entry with its lines. Every entry is checked again as it is posted; one that fails is left out and listed, the rest go in.",
+      "historical": "How old records are kept once they are in. Owners, land, bills and payments come in quietly: no SMS, no commissions, nothing posted to this year's books.",
+      "production": "Accounts, then journal entries; then owners, land, bills and payments, then demolished land is marked. Each record is checked as it goes in; one that fails is left out and listed, the rest go in.",
       "report": "What is in the books now compared with the old data, the trial balance of what was migrated, and every step taken."
     },
     "file": "File",
@@ -6219,7 +6227,11 @@
       "accounts": "Chart of accounts",
       "entries": "Journal entries (headers)",
       "lines": "Journal lines",
-      "ignore": "Ignore"
+      "ignore": "Ignore",
+      "owners": "Owners",
+      "land": "Land / houses",
+      "bills": "Bills (tax history)",
+      "payments": "Payments / receipts"
     },
     "suggested": "suggested",
     "saveMapping": "Save",
@@ -6245,7 +6257,32 @@
       "debit": "Debit",
       "credit": "Credit",
       "amount": "Amount",
-      "side": "Debit or credit"
+      "side": "Debit or credit",
+      "full_name": "Full name",
+      "phone": "Phone",
+      "mother_name": "Mother's name",
+      "owner_key": "Owner it belongs to",
+      "neighbourhood": "Neighbourhood",
+      "house_no": "House no.",
+      "width": "Width (m)",
+      "length": "Length (m)",
+      "area": "Area (m²)",
+      "pun": "Old PUN / property no.",
+      "account_no": "Old account no.",
+      "lat": "Latitude",
+      "lon": "Longitude",
+      "registered_at": "Registered on",
+      "demolished": "Demolished?",
+      "demolished_at": "Demolished on",
+      "land_key": "Land it belongs to",
+      "bill_key": "Bill it pays",
+      "fee": "Bill type",
+      "year": "Year",
+      "issue_date": "Issued on",
+      "due_date": "Due on",
+      "method": "Paid by (cash, EVC …)",
+      "payer_name": "Paid by (name)",
+      "payer_phone": "Payer's phone"
     },
     "fieldHints": {
       "accounts": {
@@ -6272,6 +6309,50 @@
         "date": "When the old system has no entries table.",
         "ref": "When the old system has no entries table.",
         "memo": "When the old system has no entries table."
+      },
+      "owners": {
+        "key": "Each old owner's ID; land points to it.",
+        "full_name": "Required.",
+        "phone": "Same name and phone as an owner here = that owner, not a copy.",
+        "mother_name": "Optional."
+      },
+      "land": {
+        "key": "Each old house's ID; bills and payments point to it.",
+        "neighbourhood": "Matched to ours in stage 7.",
+        "pun": "Kept as the old number; the house gets our PUN.",
+        "lat": "Without a location the house goes to its neighbourhood, marked to check.",
+        "demolished": "Yes / 1 / true = demolished in the old system.",
+        "type": "Matched to our house types in stage 7.",
+        "owner_key": "Optional.",
+        "house_no": "Optional.",
+        "width": "Optional.",
+        "length": "Optional.",
+        "area": "Optional.",
+        "account_no": "Optional.",
+        "lon": "Optional.",
+        "registered_at": "Optional.",
+        "demolished_at": "Optional."
+      },
+      "bills": {
+        "land_key": "Required.",
+        "fee": "Matched to our bill types in stage 7. Empty = tax bill.",
+        "year": "Required.",
+        "key": "Optional.",
+        "issue_date": "Optional.",
+        "due_date": "Optional.",
+        "amount": "Optional.",
+        "ref": "Optional."
+      },
+      "payments": {
+        "bill_key": "Or Land: the payment goes to that land's oldest unpaid bills.",
+        "method": "Cash, EVC, ZAAD, eDahab, bank, card …",
+        "key": "Optional.",
+        "land_key": "Optional.",
+        "date": "Optional.",
+        "amount": "Optional.",
+        "ref": "Optional.",
+        "payer_name": "Optional.",
+        "payer_phone": "Optional."
       }
     },
     "transforms": {
@@ -6330,7 +6411,11 @@
     "why": "Why",
     "entity": {
       "account": "Account",
-      "entry": "Entry"
+      "entry": "Entry",
+      "owner": "Owner",
+      "land": "Land",
+      "bill": "Bill",
+      "payment": "Payment"
     },
     "previewFirst": "Work out the preview first (stage 8).",
     "testOutOfDate": "The preview changed after the last test. Test again.",
@@ -6343,7 +6428,13 @@
       "skippedCount": "Skipped",
       "debitTotal": "Debit total",
       "creditTotal": "Credit total",
-      "monthsLocked": "Months locked"
+      "monthsLocked": "Months locked",
+      "ownersCreated": "Owners",
+      "landIn": "Land",
+      "billsIn": "Bills",
+      "paymentsIn": "Payments",
+      "demolishedIn": "Demolished",
+      "toCheckIn": "Location to check"
     },
     "historicalRule1": "Each entry keeps its old date, and its old reference in the description (\"Migrated JV-123: …\").",
     "historicalRule2": "Entries are marked as Migrated, so they can be told apart from the system's own entries.",
@@ -6391,6 +6482,21 @@
     "verifyFailed": "{count, plural, =0 {No record failed} one {# record failed (listed in stage 11)} other {# records failed (listed in stage 11)}}",
     "trialOfMigrated": "Trial balance of the migrated entries",
     "account": "Account",
-    "logTitle": "Every step"
+    "logTitle": "Every step",
+    "readyOf": {
+      "owners": "Owners ready",
+      "land": "Land ready",
+      "bills": "Bills ready",
+      "payments": "Payments ready"
+    },
+    "neighbourhoodIds": "Neighbourhoods: old → ours",
+    "gradeIds": "House types: old → ours",
+    "feeIds": "Bill types: old → ours",
+    "houseShort": "House {no}",
+    "oldNo": "old {no}",
+    "toCheck": "location to check",
+    "demolishedShort": "demolished",
+    "forLand": "land {key}",
+    "forBill": "bill {key}"
   }
 }

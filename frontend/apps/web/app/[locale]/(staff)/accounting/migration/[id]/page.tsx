@@ -6,10 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { ColumnMapping, IdMapping, MigrationOptions, StepButton, TableMapping, UndoMigration } from "@/components/accounting/migration/controls";
+import { ColumnMapping, IdMapping, MigrationOptions, PropertyMapping, StepButton, TableMapping, UndoMigration } from "@/components/accounting/migration/controls";
 import { MIGRATION_TONE, STAGES, type Stage } from "@/components/accounting/migration/status";
 import { Link } from "@/i18n/navigation";
-import { FIELDS, prepare, suggestTable, type AccountMap, type ColumnMap, type Entity, type TableTarget } from "@/lib/migration/prepare";
+import { ENTITIES, FIELDS, prepare, suggestTable, type AccountMap, type ColumnMap, type Entity, type TableTarget } from "@/lib/migration/prepare";
 import {
   getMigration,
   itemCounts,
@@ -27,21 +27,22 @@ import {
   type RunResult,
 } from "@/lib/server/acct-migration";
 import { requirePermission } from "@/lib/server/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
   const t = await getTranslations("migration");
   return { title: t("title") };
 }
 
-const ENTITIES: Entity[] = ["accounts", "entries", "lines"];
 const ITEM_STATUSES = ["ready", "error", "skipped", "migrated", "failed"] as const;
 
 /** Each of our fields the column mapping must fill, for the stage to count as done. */
 function columnsDone(m: Migration) {
   const mapped = new Set(Object.values(m.table_map).filter((x) => x !== "ignore"));
-  if (!mapped.has("lines")) return false;
+  if (!mapped.has("lines") && !mapped.has("land")) return false;
   const has = (e: Entity, f: string) => Boolean((m.column_map as ColumnMap)[e]?.[f]?.col || (m.column_map as ColumnMap)[e]?.[f]?.default);
   for (const e of mapped) for (const f of FIELDS[e as Entity]) if (f.required && !has(e as Entity, f.field)) return false;
+  if (!mapped.has("lines")) return true;
   const money = has("lines", "debit") || has("lines", "credit") || has("lines", "amount");
   const dated = mapped.has("entries") || has("lines", "date");
   return money && dated;
@@ -74,7 +75,7 @@ export default async function MigrationPage({
 
   const [tables, counts, targets] = await Promise.all([migrationTables(id), itemCounts(id), mappingTargets()]);
   const sourceRecords = tables.reduce((s, x) => s + x.row_count, 0);
-  const sum = (status: string) => (counts[`account:${status}`] ?? 0) + (counts[`entry:${status}`] ?? 0);
+  const sum = (status: string) => ["account", "entry", "owner", "land", "bill", "payment"].reduce((n, e) => n + (counts[`${e}:${status}`] ?? 0), 0);
   const ready = sum("ready");
   const migrated = sum("migrated");
   const failed = sum("failed") + sum("error");
@@ -88,7 +89,7 @@ export default async function MigrationPage({
     backups: m.source_backup_ok && m.target_backup_ok,
     inspectOld: tables.length > 0,
     inspectNew: true,
-    tables: Object.values(m.table_map).some((x) => x === "lines"),
+    tables: Object.values(m.table_map).some((x) => x === "lines" || x === "land"),
     columns: columnsDone(m),
     ids: m.prepared_at !== null && (counts["account:error"] ?? 0) === 0,
     preview: m.prepared_at !== null,
@@ -113,6 +114,11 @@ export default async function MigrationPage({
         columnMap: m.column_map as ColumnMap,
         accountMap: m.account_map as AccountMap,
         ourAccounts: targets.accounts.map((a) => a.code),
+        neighbourhoodMap: m.neighbourhood_map,
+        gradeMap: m.grade_map,
+        feeMap: m.fee_map,
+        ourGrades: targets.grades.map((g) => g.code),
+        ourFees: targets.fees.map((f) => f.code),
       })
     : null;
 
@@ -131,6 +137,16 @@ export default async function MigrationPage({
               ["debitTotal", money(r.debit)],
               ["creditTotal", money(r.credit)],
               ["monthsLocked", r.locked_months.length],
+              ...((r.land ?? 0) + (r.owners_created ?? 0) > 0
+                ? ([
+                    ["ownersCreated", (r.owners_created ?? 0) + (r.owners_matched ?? 0)],
+                    ["landIn", r.land ?? 0],
+                    ["billsIn", r.bills ?? 0],
+                    ["paymentsIn", r.payments ?? 0],
+                    ["demolishedIn", r.demolished ?? 0],
+                    ["toCheckIn", r.to_check ?? 0],
+                  ] as const)
+                : []),
             ] as const
           ).map(([k, v]) => (
             <div key={k} className="rounded-md border px-3 py-2">
@@ -407,28 +423,77 @@ export default async function MigrationPage({
       </div>
     );
   } else if (stage === "ids") {
+    // Property values: suggest ours where an old value is our code or name; show the names of those already chosen.
+    const vk = live?.valueKeys ?? { neighbourhoods: [], grades: [], fees: [] };
+    const nKeys = vk.neighbourhoods.map((k) => k.key);
+    const nIds = Object.values(m.neighbourhood_map).filter(Boolean);
+    type Nb = { id: string; code: string; name_so: string; name_en: string; sector: { section: { district: { code: string } | null } | null } | null };
+    const nbs: Nb[] = [];
+    if (nKeys.length || nIds.length) {
+      const supabase = await createClient();
+      const cols = "id, code, name_so, name_en, sector:sectors(section:sections(district:districts(code)))";
+      const found = await Promise.all([
+        nIds.length ? supabase.from("neighbourhoods").select(cols).in("id", nIds) : null,
+        nKeys.length ? supabase.from("neighbourhoods").select(cols).in("code", [...nKeys, ...nKeys.map((k) => k.toUpperCase())]) : null,
+        nKeys.length ? supabase.from("neighbourhoods").select(cols).in("name_en", nKeys) : null,
+        nKeys.length ? supabase.from("neighbourhoods").select(cols).in("name_so", nKeys) : null,
+      ]);
+      for (const f of found) nbs.push(...(((f?.data ?? []) as unknown) as Nb[]));
+    }
+    const nLabel = Object.fromEntries(nbs.map((n) => [n.id, { label: name(n), hint: [n.sector?.section?.district?.code, n.code].filter(Boolean).join("-") }]));
+    const lower = (x: string) => x.trim().toLowerCase();
+    const nSuggest = Object.fromEntries(
+      nKeys.map((k) => [k, m.neighbourhood_map[k] ?? nbs.find((n) => [n.code, n.name_en, n.name_so].some((v) => lower(v) === lower(k)))?.id ?? ""]),
+    );
+    const gSuggest = Object.fromEntries(
+      vk.grades.map((k) => [k.key, m.grade_map[k.key] ?? targets.grades.find((g) => [g.code, g.name_en, g.name_so].some((v) => lower(v) === lower(k.key)))?.code ?? ""]),
+    );
+    const fSuggest = Object.fromEntries(
+      vk.fees.map((k) => [
+        k.key,
+        m.fee_map[k.key] ??
+          targets.fees.find((f) => [f.code, f.name_en, f.name_so].some((v) => lower(v) === lower(k.key)))?.code ??
+          (/service/i.test(k.key) ? "service_charge" : /tax|property|bill|canshuur/i.test(k.key) ? "property_bill" : ""),
+      ]),
+    );
+    const hasBooks = (live?.accountKeys.length ?? 0) > 0;
     body = (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <p className="text-muted-foreground text-sm">{t("help.ids")}</p>
-        {!live || live.accountKeys.length === 0 ? (
+        {!live || (!hasBooks && vk.neighbourhoods.length + vk.grades.length + vk.fees.length === 0) ? (
           <Alert tone="warning" title={t("mapColumnsFirst")} />
         ) : (
-          <IdMapping
-            id={id}
-            accountKeys={live.accountKeys}
-            accountMap={m.account_map}
-            ours={targets.accounts.map((a) => ({ code: a.code, name: name(a) }))}
-            districtKeys={live.districtKeys}
-            districtMap={m.district_map}
-            districts={targets.districts.map((d) => ({ id: d.id, code: d.code, name: name(d) }))}
-            locked={done}
-          />
+          <>
+            {hasBooks && (
+              <IdMapping
+                id={id}
+                accountKeys={live.accountKeys}
+                accountMap={m.account_map}
+                ours={targets.accounts.map((a) => ({ code: a.code, name: name(a) }))}
+                districtKeys={live.districtKeys}
+                districtMap={m.district_map}
+                districts={targets.districts.map((d) => ({ id: d.id, code: d.code, name: name(d) }))}
+                locked={done}
+              />
+            )}
+            <PropertyMapping
+              id={id}
+              valueKeys={vk}
+              neighbourhoodMap={nSuggest}
+              gradeMap={gSuggest}
+              feeMap={fSuggest}
+              neighbourhoodLabels={nLabel}
+              grades={targets.grades.map((g) => ({ code: g.code, name: name(g) }))}
+              fees={targets.fees.map((f) => ({ code: f.code, name: name(f) }))}
+              locked={done}
+            />
+          </>
         )}
       </div>
     );
   } else if (stage === "preview") {
     const show = (ITEM_STATUSES as readonly string[]).includes(sp.show ?? "") ? (sp.show as MigrationItem["status"]) : null;
-    const kind = sp.kind === "account" || sp.kind === "entry" ? sp.kind : null;
+    const kind = (["account", "entry", "owner", "land", "bill", "payment"] as const).find((k) => k === sp.kind) ?? null;
     const items = m.prepared_at ? await migrationItems(id, show, kind) : [];
     const s = m.prepared_summary;
     body = (
@@ -464,6 +529,18 @@ export default async function MigrationPage({
                 </dd>
               </div>
             </dl>
+            {(["owners", "land", "bills", "payments"] as const).some((k) => Object.keys(s[k] ?? {}).length > 0) && (
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {(["owners", "land", "bills", "payments"] as const).map((k) => (
+                  <div key={k} className="rounded-md border px-3 py-2">
+                    <dt className="text-muted-foreground text-xs">{t(`readyOf.${k}`)}</dt>
+                    <dd className="font-semibold tabular-nums">
+                      {s[k]?.ready ?? 0} / {Object.values(s[k] ?? {}).reduce((a, b) => a + b, 0)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
             {(s.warnings ?? []).map((w) => (
               <Alert key={w} tone="warning" title={w} />
             ))}
@@ -478,7 +555,7 @@ export default async function MigrationPage({
                 </Link>
               ))}
               <span className="mx-1" />
-              {[null, "account", "entry"].map((x) => (
+              {[null, "account", "entry", "owner", "land", "bill", "payment"].map((x) => (
                 <Link
                   key={x ?? "both"}
                   href={href(8, `${show ? `&show=${show}` : ""}${x ? `&kind=${x}` : ""}`)}
@@ -499,14 +576,49 @@ export default async function MigrationPage({
                 </TableHeader>
                 <TableBody>
                   {items.map((i) => {
-                    const d = i.data as { code?: string; create?: boolean; name_en?: string; date?: string; memo?: string; lines?: { account_key: string; debit: number; credit: number }[] };
+                    const d = i.data as {
+                      code?: string;
+                      create?: boolean;
+                      name_en?: string;
+                      date?: string;
+                      memo?: string;
+                      lines?: { account_key: string; debit: number; credit: number }[];
+                      full_name?: string;
+                      phone?: string;
+                      house_no?: string;
+                      legacy_pun?: string;
+                      lat?: number | null;
+                      demolished?: boolean;
+                      year?: number;
+                      amount?: number;
+                      fee_code?: string;
+                      land_key?: string;
+                      bill_key?: string;
+                      method?: string;
+                    };
+                    const other =
+                      i.entity === "owner"
+                        ? [d.full_name, d.phone].filter(Boolean).join(" · ")
+                        : i.entity === "land"
+                          ? [d.house_no && t("houseShort", { no: d.house_no }), d.legacy_pun && t("oldNo", { no: d.legacy_pun }), d.lat == null ? t("toCheck") : null, d.demolished ? t("demolishedShort") : null]
+                              .filter(Boolean)
+                              .join(" · ")
+                          : i.entity === "bill"
+                            ? [d.year, d.fee_code, d.amount !== undefined ? money(d.amount) : null, d.land_key && t("forLand", { key: d.land_key })].filter(Boolean).join(" · ")
+                            : i.entity === "payment"
+                              ? [d.date, d.amount !== undefined ? money(d.amount) : null, d.method, d.bill_key ? t("forBill", { key: d.bill_key }) : d.land_key && t("forLand", { key: d.land_key })]
+                                  .filter(Boolean)
+                                  .join(" · ")
+                              : null;
                     return (
                       <TableRow key={`${i.entity}-${i.source_key}`} className="align-top">
                         <TableCell className="text-sm">
                           {t(`entity.${i.entity}`)} <Mono>{i.source_key}</Mono>
                         </TableCell>
                         <TableCell className="text-xs">
-                          {i.entity === "account" ? (
+                          {other !== null ? (
+                            <span>{other}</span>
+                          ) : i.entity === "account" ? (
                             <span>
                               {d.code ?? "—"} {d.create ? `(${t("createNew")}) ${d.name_en ?? ""}` : ""}
                             </span>

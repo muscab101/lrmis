@@ -13,7 +13,7 @@ import { deleteTransferTypeAction, saveTransferTypeAction } from "@/app/[locale]
 import { FormDialog } from "@/components/forms/form-dialog";
 import type { TransferType } from "@/lib/server/valuation";
 
-const RULES = ["sale", "gift", "inheritance", "court_order"] as const;
+const RULES = ["sale", "gift", "inheritance"] as const;
 
 /** Transfer types: the choices on the transfer form, each with its rules and stamp duty. */
 export function TransferTypesEditor({ items, canEdit }: { items: TransferType[]; canEdit: boolean }) {

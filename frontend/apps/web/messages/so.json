@@ -2951,7 +2951,7 @@
     "houseType": "Nooca guriga",
     "normalPrice": "Qiimaha caadiga (m² kasta)",
     "priceHere": "Qiimaha {place} (m² kasta)",
-    "priceHereHint": "Banaan = qiimaha caadiga. Biilasha cusub ayaa isticmaala qiimahan; biilashii hore sidooda ayay ahaanayaan.",
+    "priceHereHint": "Banaan = qiimaha caadiga. Biilasha cusub had iyo jeer waxay isticmaalaan qiimahan.",
     "undoChanges": "Ka noqo isbeddelka",
     "savePrices": "Kaydi qiimayaasha",
     "pricesSaved": "Qiimayaasha {place} waa la kaydiyay",
@@ -2969,7 +2969,10 @@
       "serviceCharge": "Khidmadda adeegga",
       "total": "Sannadkii",
       "note": "Waxa biil cusub noqon lahaa maanta. Guryaha dabaqyada ku jira waxaa lagu biilaa qaybtooda."
-    }
+    },
+    "rebillUnpaid": "Sidoo kale cusbooneysii biilasha aan la bixin ee halkan",
+    "rebillUnpaidHint": "Biilasha furan ee dhulka nooca guriga la beddelay waxay u guurayaan qiimaha cusub. Biil weligiis lagama dhigo wixii horay loo bixiyay ka hooseeya. Dami: biilasha cusub oo keliya.",
+    "pricesSavedRebilled": "Qiimayaasha {place} waa la kaydiyay. {changed, plural, =0 {Biil ma beddelmin} other {# biil ayaa beddelmay}}{paidMore, plural, =0 {} other {; # horay ayaa wax badan loo bixiyay, sidoodii ayay ahaadeen}}."
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",
@@ -4505,7 +4508,12 @@
     "noTransfersList": "Liiskan waxba kuma jiraan",
     "typeDuty": "Canshuurta wareejinta: {amount}",
     "noTransferTypes": "Ma jiro nooc wareejin oo shidan.",
-    "addTransferTypes": "Ku dar Qiimaynta → Noocyada wareejinta."
+    "addTransferTypes": "Ku dar Qiimaynta → Noocyada wareejinta.",
+    "legalTitle": "Wareejinta iyo murannada",
+    "legalSubtitle": "Beddelka lahaanshaha, murannada, deymaha, amarrada maxkamadda iyo isbeddellada dhulka, hal meel. Ku raadi dhul PUN-kiisa si aad mid kasta u bilowdo.",
+    "transfersTab": "Wareejinta",
+    "actionsTab": "Tallaabooyin",
+    "changesSubtitle": "Kala qaybinta, isku darka, beddelka isticmaalka iyo saxitaanka dhulka, oo sugaya go'aan."
   },
   "reports": {
     "title": "Warbixinada",
@@ -6105,7 +6113,7 @@
   },
   "migration": {
     "title": "Xarunta guurinta",
-    "subtitle": "Keen jaantuska akoonnada iyo taariikhda joornaalka nidaamka hore buugaagta, si ammaan ah: akhri, isku xir, hormuuji, tijaabi, kaydi, guuri, hubi.",
+    "subtitle": "Si ammaan ah u keen nidaamka hore: akoonnada iyo joornaalka, milkiilayaasha, dhulka, biilasha iyo lacagaha. Akhri, isku xir, hormuuji, tijaabi, kaydi, guuri, hubi.",
     "backToAccounting": "Ku noqo Xisaabaadka",
     "allMigrations": "Dhammaan guurinta",
     "newTitle": "Guurin cusub",
@@ -6174,8 +6182,8 @@
       "ids": "Aqoonsiyada hore dib looma isticmaalo. Akoon kasta oo hore waxaa lagu xiraa mid kanaga ah, ama akoon cusub oo kood 4 god ah; qiime degmo kasta oo hore degmo kanaga ah. Khariidadda aqoonsigu waxay haysaa hore → cusub diiwaan kasta.",
       "preview": "Xisaabi diiwaan kasta oo ka yimaada safafka hore iyo isku xirka. Mid kastaa waa diyaar, ama wuxuu sheegayaa sababta uusan u gudbi karin. Mar kale samee kadib marka aad beddesho isku xirka.",
       "test": "Waxay socodsiisaa guurinta oo dhan kadibna wax walba dib ayay u celisaa, buugaagtu isma beddelaan. Waxay tusaysaa waxa la abuuri lahaa iyo waxa fashilmi lahaa.",
-      "historical": "Sida joornaalka hore loo hayo marka uu buugaagta galo.",
-      "production": "Akoonnada ayaa hormara, kadib qoraal kasta iyo khadadkiisa. Qoraal kasta mar kale ayaa la hubiyaa marka la diiwaangelinayo; midka fashilma waa laga reebaa oo la qoraa, inta kale way galaan.",
+      "historical": "Sida diiwaannada hore loo hayo marka ay galaan. Milkiilayaasha, dhulka, biilasha iyo lacagaha si aamusan ayay u galaan: SMS ma jiro, guddi ma jiro, waxba laguma qoro buugaagta sannadkan.",
+      "production": "Akoonnada, kadib qoraallada; kadib milkiilayaasha, dhulka, biilasha iyo lacagaha, kadib dhulka la dumiyay. Diiwaan kasta waa la hubiyaa; midka fashilma waa laga reebaa oo la qoraa.",
       "report": "Waxa hadda buugaagta ku jira iyo xogta hore, isku dheelitirka waxa la guuriyay, iyo tallaabo kasta oo la qaaday."
     },
     "file": "Faylka",
@@ -6219,7 +6227,11 @@
       "accounts": "Jaantuska akoonnada",
       "entries": "Qoraallada joornaalka (madaxyada)",
       "lines": "Khadadka joornaalka",
-      "ignore": "Iska indho tir"
+      "ignore": "Iska indho tir",
+      "owners": "Milkiilayaasha",
+      "land": "Dhulka / guryaha",
+      "bills": "Biilasha (taariikhda canshuurta)",
+      "payments": "Lacag-bixinta / rasiidhada"
     },
     "suggested": "la soo jeediyay",
     "saveMapping": "Kaydi",
@@ -6245,7 +6257,32 @@
       "debit": "Deyn (Debit)",
       "credit": "Amaah (Credit)",
       "amount": "Qaddarka",
-      "side": "Debit ama credit"
+      "side": "Debit ama credit",
+      "full_name": "Magaca oo buuxa",
+      "phone": "Taleefan",
+      "mother_name": "Magaca hooyada",
+      "owner_key": "Milkiilaha",
+      "neighbourhood": "Xaafadda",
+      "house_no": "Lambarka guriga",
+      "width": "Ballaca (m)",
+      "length": "Dhererka (m)",
+      "area": "Bedka (m²)",
+      "pun": "PUN-kii hore",
+      "account_no": "Akoonkii hore",
+      "lat": "Loolka (lat)",
+      "lon": "Dhererka (lon)",
+      "registered_at": "La diiwaangeliyay",
+      "demolished": "Ma la dumiyay?",
+      "demolished_at": "La dumiyay",
+      "land_key": "Dhulka uu ka tirsan yahay",
+      "bill_key": "Biilka uu bixiyo",
+      "fee": "Nooca biilka",
+      "year": "Sannadka",
+      "issue_date": "La bixiyay",
+      "due_date": "Waqtiga",
+      "method": "Habka (lacag, EVC …)",
+      "payer_name": "Bixiyaha",
+      "payer_phone": "Taleefanka bixiyaha"
     },
     "fieldHints": {
       "accounts": {
@@ -6272,6 +6309,50 @@
         "date": "Marka nidaamka hore uusan lahayn shax qoraallo.",
         "ref": "Marka nidaamka hore uusan lahayn shax qoraallo.",
         "memo": "Marka nidaamka hore uusan lahayn shax qoraallo."
+      },
+      "owners": {
+        "key": "Aqoonsiga milkiile kasta; dhulka ayaa tilmaama.",
+        "full_name": "Waa in la buuxiyaa.",
+        "phone": "Magac iyo taleefan la mid ah = isla milkiilaha.",
+        "mother_name": "Ikhtiyaari."
+      },
+      "land": {
+        "key": "Aqoonsiga guri kasta; biilasha iyo lacagaha ayaa tilmaama.",
+        "neighbourhood": "Waxaa lagu xiraa heerka 7.",
+        "pun": "Waxaa loo hayaa lambarkii hore; guriga wuxuu helaa PUN-keena.",
+        "lat": "Goob la'aan wuxuu aadaa xaafaddiisa, iyadoo la calaamadeeyay in la hubiyo.",
+        "demolished": "Haa / 1 = waa la dumiyay.",
+        "type": "Waxaa lagu xiraa noocyada guryaha heerka 7.",
+        "owner_key": "Ikhtiyaari.",
+        "house_no": "Ikhtiyaari.",
+        "width": "Ikhtiyaari.",
+        "length": "Ikhtiyaari.",
+        "area": "Ikhtiyaari.",
+        "account_no": "Ikhtiyaari.",
+        "lon": "Ikhtiyaari.",
+        "registered_at": "Ikhtiyaari.",
+        "demolished_at": "Ikhtiyaari."
+      },
+      "bills": {
+        "land_key": "Waa in la buuxiyaa.",
+        "fee": "Waxaa lagu xiraa heerka 7. Banaan = biilka canshuurta.",
+        "year": "Waa in la buuxiyaa.",
+        "key": "Ikhtiyaari.",
+        "issue_date": "Ikhtiyaari.",
+        "due_date": "Ikhtiyaari.",
+        "amount": "Ikhtiyaari.",
+        "ref": "Ikhtiyaari."
+      },
+      "payments": {
+        "bill_key": "Ama Dhulka: lacagta waxay aadaysaa biilasha ugu horreeya.",
+        "method": "Lacag, EVC, ZAAD, eDahab, bangi, kaar …",
+        "key": "Ikhtiyaari.",
+        "land_key": "Ikhtiyaari.",
+        "date": "Ikhtiyaari.",
+        "amount": "Ikhtiyaari.",
+        "ref": "Ikhtiyaari.",
+        "payer_name": "Ikhtiyaari.",
+        "payer_phone": "Ikhtiyaari."
       }
     },
     "transforms": {
@@ -6330,7 +6411,11 @@
     "why": "Sababta",
     "entity": {
       "account": "Akoon",
-      "entry": "Qoraal"
+      "entry": "Qoraal",
+      "owner": "Milkiile",
+      "land": "Dhul",
+      "bill": "Biil",
+      "payment": "Lacag"
     },
     "previewFirst": "Marka hore xisaabi hormuujinta (heerka 8).",
     "testOutOfDate": "Hormuujintu way isbeddeshay tijaabadii ugu dambeysay kadib. Mar kale tijaabi.",
@@ -6343,7 +6428,13 @@
       "skippedCount": "La dhaafay",
       "debitTotal": "Wadarta debit",
       "creditTotal": "Wadarta credit",
-      "monthsLocked": "Bilo la xiray"
+      "monthsLocked": "Bilo la xiray",
+      "ownersCreated": "Milkiilayaal",
+      "landIn": "Dhul",
+      "billsIn": "Biilal",
+      "paymentsIn": "Lacag-bixin",
+      "demolishedIn": "La dumiyay",
+      "toCheckIn": "Goob la hubinayo"
     },
     "historicalRule1": "Qoraal kastaa wuxuu hayaa taariikhdiisii hore, iyo tixraaciisii hore sharaxaadda (\"Migrated JV-123: …\").",
     "historicalRule2": "Qoraallada waxaa lagu calaameeyaa La guuriyay, si looga sooco qoraallada nidaamka.",
@@ -6391,6 +6482,21 @@
     "verifyFailed": "{count, plural, =0 {Diiwaan ma fashilmin} other {# diiwaan ayaa fashilmay (waxaa ku qoran heerka 11)}}",
     "trialOfMigrated": "Isku dheelitirka qoraallada la guuriyay",
     "account": "Akoon",
-    "logTitle": "Tallaabo kasta"
+    "logTitle": "Tallaabo kasta",
+    "readyOf": {
+      "owners": "Milkiilayaal diyaar",
+      "land": "Dhul diyaar",
+      "bills": "Biilal diyaar",
+      "payments": "Lacag diyaar"
+    },
+    "neighbourhoodIds": "Xaafadaha: hore → kanaga",
+    "gradeIds": "Noocyada guryaha: hore → kanaga",
+    "feeIds": "Noocyada biilka: hore → kanaga",
+    "houseShort": "Guri {no}",
+    "oldNo": "hore {no}",
+    "toCheck": "goob la hubinayo",
+    "demolishedShort": "la dumiyay",
+    "forLand": "dhul {key}",
+    "forBill": "biil {key}"
   }
 }

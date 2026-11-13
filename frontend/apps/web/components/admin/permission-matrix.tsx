@@ -1,6 +1,9 @@
 "use client";
 
-import { ACTIONS, MODULES, specialPermissionsFor, type Action, type Module } from "@dhulka/core/permissions";
+import { ACTIONS, MODULES as ALL_MODULES, specialPermissionsFor, type Action, type Module } from "@dhulka/core/permissions";
+
+/** Parts of the system that are no longer used are not offered (Disputes, liens and court orders; Permits). */
+const MODULES = ALL_MODULES.filter((m) => m !== "disputes" && m !== "permits");
 import { Checkbox } from "@dhulka/ui/form-controls";
 import { cn } from "@dhulka/ui/lib/cn";
 import { useTranslations } from "next-intl";

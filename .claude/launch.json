@@ -4,7 +4,7 @@
     {
       "name": "web",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "cd frontend/apps/web && exec node node_modules/next/dist/bin/next dev --turbopack"],
+      "runtimeArgs": ["-c", "cd frontend/apps/web && exec node node_modules/next/dist/bin/next dev"],
       "port": 3000
     }
   ]

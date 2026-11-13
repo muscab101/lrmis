@@ -135,6 +135,8 @@ export const saveNeighbourhoodPricesAction = defineAction(
   z.object({
     neighbourhoodId: z.uuid("validation.required"),
     prices: z.array(z.object({ gradeId: z.uuid(), amount: z.coerce.number().min(0, "validation.amount").max(100_000, "validation.amount").nullable() })).max(200),
+    /** Also set the unpaid bills of land there with these (changed) house types to the new price. */
+    rebillGradeIds: z.array(z.uuid()).max(200).default([]),
   }),
   async (v, ctx) => {
     const count = unwrap(
@@ -144,7 +146,14 @@ export const saveNeighbourhoodPricesAction = defineAction(
       }),
       "neighbourhood prices",
     ) as number;
-    return done({ count });
+    const rebilled = v.rebillGradeIds.length
+      ? (unwrap(await ctx.supabase.rpc("neighbourhood_rebill", { p_neighbourhood: v.neighbourhoodId, p_grades: v.rebillGradeIds }), "rebill") as {
+          changed: number;
+          same: number;
+          paid_more: number;
+        })
+      : null;
+    return done({ count, rebilled });
   },
 );
 

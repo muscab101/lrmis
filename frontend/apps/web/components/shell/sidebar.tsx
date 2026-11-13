@@ -21,9 +21,9 @@ export function Sidebar({ groups, collapsed, onToggle, onNavigate }: SidebarProp
   const pathname = usePathname();
   // The longest matching link wins, so /parcels/yet-to-register lights up its own item, not Parcels too.
   const activeHref = groups
-    .flatMap((g) => g.items.map((i) => i.href))
-    .filter((href) => pathname === href || pathname.startsWith(`${href}/`))
-    .sort((a, b) => b.length - a.length)[0];
+    .flatMap((g) => g.items.flatMap((i) => [i.href, ...(i.also ?? [])].map((path) => ({ path, href: i.href }))))
+    .filter(({ path }) => pathname === path || pathname.startsWith(`${path}/`))
+    .sort((a, b) => b.path.length - a.path.length)[0]?.href;
 
   return (
     <nav aria-label={t("label")} className="glass-bar flex h-full flex-col bg-sidebar text-sidebar-foreground">

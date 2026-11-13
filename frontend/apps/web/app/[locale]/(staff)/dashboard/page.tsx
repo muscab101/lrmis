@@ -21,7 +21,7 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-/** Other waiting work not in a job panel (My work covers surveys, transfers, permits, changes and disputes). */
+/** Other waiting work not in a job panel (My work covers surveys, transfers and land changes). */
 const TASK_LINKS = {
   campaigns: "/messages?s=campaigns",
   messages_failed: "/messages?f=failed",

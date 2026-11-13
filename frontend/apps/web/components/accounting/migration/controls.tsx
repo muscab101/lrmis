@@ -21,8 +21,10 @@ import {
 import { FormDialog } from "@/components/forms/form-dialog";
 import { useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
-import { FIELDS, fieldValue, type AccountMap, type ColumnMap, type DateFormat, type Entity, type FieldMap, type GlType, type TableTarget, type Transform } from "@/lib/migration/prepare";
+import { ENTITIES, FIELDS, fieldValue, type AccountMap, type ColumnMap, type DateFormat, type Entity, type FieldMap, type GlType, type TableTarget, type Transform } from "@/lib/migration/prepare";
 import type { Row } from "@/lib/migration/source";
+import type { ComboOption } from "@dhulka/ui/combobox";
+import { NeighbourhoodPicker } from "@/components/valuation/neighbourhood-picker";
 
 /** Stage 1: name the migration and upload the old file(s). */
 export function UploadMigration() {
@@ -188,7 +190,7 @@ export function TableMapping({
             </span>
             <span className="text-muted-foreground text-xs">→</span>
             <NativeSelect className="w-52" value={map[x.name]} disabled={locked} onChange={(e) => setMap({ ...map, [x.name]: e.target.value as TableTarget })}>
-              {(["accounts", "entries", "lines", "ignore"] as const).map((k) => (
+              {([...ENTITIES, "ignore"] as const).map((k) => (
                 <option key={k} value={k}>
                   {t(`targets.${k}`)}
                   {suggested[x.name] === k && k !== "ignore" ? ` (${t("suggested")})` : ""}
@@ -488,6 +490,132 @@ export function MigrationOptions({ id, lockMonths, locked }: { id: string; lockM
       {!locked && (
         <div className="flex justify-end">
           <Button loading={busy} disabled={lock === lockMonths} onClick={() => void save({ options: { lock_months: lock } })}>
+            {t("saveMapping")}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Stage 7, property data: each old neighbourhood, house type and bill type value to one of ours. */
+export function PropertyMapping({
+  id,
+  valueKeys,
+  neighbourhoodMap,
+  gradeMap,
+  feeMap,
+  neighbourhoodLabels,
+  grades,
+  fees,
+  locked,
+}: {
+  id: string;
+  valueKeys: { neighbourhoods: { key: string; n: number }[]; grades: { key: string; n: number }[]; fees: { key: string; n: number }[] };
+  /** Saved maps, with the page's own suggestions already filled in where nothing was saved. */
+  neighbourhoodMap: Record<string, string>;
+  gradeMap: Record<string, string>;
+  feeMap: Record<string, string>;
+  /** Our neighbourhoods named in the maps: id → label. */
+  neighbourhoodLabels: Record<string, { label: string; hint: string }>;
+  grades: { code: string; name: string }[];
+  fees: { code: string; name: string }[];
+  locked: boolean;
+}) {
+  const t = useTranslations("migration");
+  const [nMap, setNMap] = useState(neighbourhoodMap);
+  const [gMap, setGMap] = useState(gradeMap);
+  const [fMap, setFMap] = useState(feeMap);
+  const [labels, setLabels] = useState(neighbourhoodLabels);
+  const { busy, save } = useSave(id);
+  if (valueKeys.neighbourhoods.length + valueKeys.grades.length + valueKeys.fees.length === 0) return null;
+  const option = (v: string): ComboOption | null => (v && labels[v] ? { value: v, label: labels[v]!.label, hint: labels[v]!.hint } : null);
+  const row = (key: string, n: number, control: React.ReactNode) => (
+    <div key={key} className="flex flex-wrap items-center gap-3 px-3 py-2 text-sm">
+      <span className="min-w-0 flex-1">
+        <Mono>{key}</Mono>
+        <span className="text-muted-foreground ms-2 text-xs">{t("rowsCount", { count: n })}</span>
+      </span>
+      <div className="w-64">{control}</div>
+    </div>
+  );
+  return (
+    <div className="space-y-6">
+      {valueKeys.neighbourhoods.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-sm font-semibold">{t("neighbourhoodIds")}</p>
+          <div className="divide-y rounded-md border">
+            {valueKeys.neighbourhoods.map((k) =>
+              row(
+                k.key,
+                k.n,
+                <NeighbourhoodPicker
+                  value={option(nMap[k.key] ?? "")}
+                  disabled={locked}
+                  onChange={(o) => {
+                    if (o) setLabels((l) => ({ ...l, [o.value]: { label: o.label, hint: o.hint ?? "" } }));
+                    setNMap({ ...nMap, [k.key]: o?.value ?? "" });
+                  }}
+                />,
+              ),
+            )}
+          </div>
+        </section>
+      )}
+      {valueKeys.grades.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-sm font-semibold">{t("gradeIds")}</p>
+          <div className="divide-y rounded-md border">
+            {valueKeys.grades.map((k) =>
+              row(
+                k.key,
+                k.n,
+                <NativeSelect value={gMap[k.key] ?? ""} disabled={locked} onChange={(e) => setGMap({ ...gMap, [k.key]: e.target.value })}>
+                  <option value="">{t("chooseAccount")}</option>
+                  {grades.map((g) => (
+                    <option key={g.code} value={g.code}>
+                      {g.name}
+                    </option>
+                  ))}
+                </NativeSelect>,
+              ),
+            )}
+          </div>
+        </section>
+      )}
+      {valueKeys.fees.length > 0 && (
+        <section className="space-y-2">
+          <p className="text-sm font-semibold">{t("feeIds")}</p>
+          <div className="divide-y rounded-md border">
+            {valueKeys.fees.map((k) =>
+              row(
+                k.key,
+                k.n,
+                <NativeSelect value={fMap[k.key] ?? ""} disabled={locked} onChange={(e) => setFMap({ ...fMap, [k.key]: e.target.value })}>
+                  <option value="">{t("chooseAccount")}</option>
+                  {fees.map((f) => (
+                    <option key={f.code} value={f.code}>
+                      {f.name}
+                    </option>
+                  ))}
+                </NativeSelect>,
+              ),
+            )}
+          </div>
+        </section>
+      )}
+      {!locked && (
+        <div className="flex justify-end">
+          <Button
+            loading={busy}
+            onClick={() =>
+              void save({
+                neighbourhoodMap: Object.fromEntries(Object.entries(nMap).filter(([, v]) => v)),
+                gradeMap: Object.fromEntries(Object.entries(gMap).filter(([, v]) => v)),
+                feeMap: Object.fromEntries(Object.entries(fMap).filter(([, v]) => v)),
+              })
+            }
+          >
             {t("saveMapping")}
           </Button>
         </div>

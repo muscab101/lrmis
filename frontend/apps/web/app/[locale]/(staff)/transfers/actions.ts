@@ -67,47 +67,6 @@ export const decideTransferAction = defineAction("transfers.decide", z.object({ 
 );
 export const cancelTransferAction = defineAction("transfers.cancel", z.object({ id, note }), async (v, ctx) => rpc(ctx, "transfer_cancel", { p_id: v.id, p_reason: v.note }));
 
-// ---- Disputes, court orders, liens ----
-export const openDisputeAction = defineAction(
-  "disputes.open",
-  z.object({
-    parcelId: id,
-    kind: z.enum(["boundary", "ownership", "inheritance", "other"]),
-    description: z.string().trim().min(10, "validation.reason_long").max(2000),
-    claimantName: z.string().trim().min(2, "validation.name").max(120),
-    claimantPhone: z.string().max(20).default(""),
-    courtCaseNo: z.string().max(60).default(""),
-  }),
-  async (v, ctx) =>
-    rpc(ctx, "dispute_open", {
-      p_parcel: v.parcelId,
-      p: { kind: v.kind, description: v.description, claimant_name: v.claimantName, claimant_phone: v.claimantPhone, court_case_no: v.courtCaseNo },
-    }),
-);
-export const closeDisputeAction = defineAction("disputes.close", z.object({ id, status: z.enum(["resolved", "dismissed"]), note }), async (v, ctx) =>
-  rpc(ctx, "dispute_close", { p_id: v.id, p_status: v.status, p_resolution: v.note }),
-);
-export const addCourtOrderAction = defineAction(
-  "disputes.order",
-  z.object({
-    parcelId: id,
-    orderNo: z.string().trim().min(2, "validation.required").max(60),
-    court: z.string().trim().min(2, "validation.required").max(120),
-    orderDate: isoDate,
-    kind: z.enum(["freeze", "transfer", "release", "other"]),
-    description: z.string().trim().min(5, "validation.reason").max(1000),
-  }),
-  async (v, ctx) =>
-    rpc(ctx, "court_order_add", { p_parcel: v.parcelId, p: { order_no: v.orderNo, court: v.court, order_date: v.orderDate, kind: v.kind, description: v.description } }),
-);
-export const liftCourtOrderAction = defineAction("disputes.lift", z.object({ id, note }), async (v, ctx) => rpc(ctx, "court_order_lift", { p_id: v.id, p_note: v.note }));
-export const registerLienAction = defineAction(
-  "disputes.lien",
-  z.object({ parcelId: id, kind: z.enum(["mortgage", "lien", "caveat"]), holder: z.string().trim().min(2, "validation.name").max(120), amount: z.coerce.number().min(0).nullable(), reference: z.string().max(60).default("") }),
-  async (v, ctx) => rpc(ctx, "lien_register", { p_parcel: v.parcelId, p: { kind: v.kind, holder: v.holder, amount: v.amount ?? "", reference: v.reference } }),
-);
-export const releaseLienAction = defineAction("disputes.release", z.object({ id, note }), async (v, ctx) => rpc(ctx, "lien_release", { p_id: v.id, p_note: v.note }));
-
 // ---- Parcel changes ----
 export const requestChangeAction = defineAction(
   "parcels.change",
@@ -161,28 +120,6 @@ export const requestChangeAction = defineAction(
 );
 export const decideChangeAction = defineAction("parcels.decide_change", z.object({ id, approve: z.boolean(), note }), async (v, ctx) =>
   rpc(ctx, "parcel_change_decide", { p_id: v.id, p_approve: v.approve, p_note: v.note }),
-);
-
-// ---- Permits ----
-export const applyPermitAction = defineAction(
-  "permits.apply",
-  z.object({
-    parcelId: id,
-    kind: z.enum(["construction", "extension", "renovation", "demolition", "fence"]),
-    description: z.string().trim().min(10, "validation.reason_long").max(2000),
-    floors: z.coerce.number().int().min(0).max(60).nullable(),
-    areaM2: z.coerce.number().positive().max(1_000_000).nullable(),
-    applicantName: z.string().trim().min(2, "validation.name").max(120),
-    applicantPhone: z.string().max(20).default(""),
-  }),
-  async (v, ctx) =>
-    rpc(ctx, "permit_apply", {
-      p_parcel: v.parcelId,
-      p: { kind: v.kind, description: v.description, floors: v.floors ?? "", area_m2: v.areaM2 ?? "", applicant_name: v.applicantName, applicant_phone: v.applicantPhone },
-    }),
-);
-export const decidePermitAction = defineAction("permits.decide", z.object({ id, approve: z.boolean(), conditions: z.string().max(1000).default(""), note }), async (v, ctx) =>
-  rpc(ctx, "permit_decide", { p_id: v.id, p_approve: v.approve, p_conditions: v.conditions, p_note: v.note }),
 );
 
 // ---- Leases ----

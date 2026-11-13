@@ -23,9 +23,23 @@ export interface Migration {
   column_map: ColumnMap;
   account_map: AccountMap;
   district_map: Record<string, string>;
+  neighbourhood_map: Record<string, string>;
+  grade_map: Record<string, string>;
+  fee_map: Record<string, string>;
   options: { lock_months?: boolean };
   prepared_at: string | null;
-  prepared_summary: { accounts: Record<string, number>; entries: Record<string, number>; lines: number; debit: number; credit: number; warnings?: string[] } | null;
+  prepared_summary: {
+    accounts: Record<string, number>;
+    entries: Record<string, number>;
+    lines: number;
+    debit: number;
+    credit: number;
+    owners?: Record<string, number>;
+    land?: Record<string, number>;
+    bills?: Record<string, number>;
+    payments?: Record<string, number>;
+    warnings?: string[];
+  } | null;
   test_at: string | null;
   test_prepared_at: string | null;
   test_result: RunResult | null;
@@ -45,6 +59,13 @@ export interface RunResult {
   debit: number;
   credit: number;
   locked_months: { year: number; month: number }[];
+  owners_created?: number;
+  owners_matched?: number;
+  land?: number;
+  bills?: number;
+  payments?: number;
+  demolished?: number;
+  to_check?: number;
 }
 
 export interface MigrationTable {
@@ -58,7 +79,7 @@ export interface MigrationTable {
 }
 
 export interface MigrationItem {
-  entity: "account" | "entry";
+  entity: "account" | "entry" | "owner" | "land" | "bill" | "payment";
   source_key: string;
   status: "ready" | "error" | "skipped" | "migrated" | "failed";
   message: string | null;
@@ -66,7 +87,7 @@ export interface MigrationItem {
 }
 
 const COLS =
-  "id, name, status, source_kind, source_files, source_backup_at, source_backup_ok, target_backup_at, target_backup_ok, table_map, column_map, account_map, district_map, options, prepared_at, prepared_summary, test_at, test_prepared_at, test_result, run_at, run_result, undone_at, created_at";
+  "id, name, status, source_kind, source_files, source_backup_at, source_backup_ok, target_backup_at, target_backup_ok, table_map, column_map, account_map, district_map, neighbourhood_map, grade_map, fee_map, options, prepared_at, prepared_summary, test_at, test_prepared_at, test_result, run_at, run_result, undone_at, created_at";
 
 export async function listMigrations() {
   const supabase = await createClient();
@@ -120,17 +141,11 @@ export async function migrationItems(id: string, status: MigrationItem["status"]
   return unwrap(await q.order("entity").order("source_key").limit(limit), "migration items") as MigrationItem[];
 }
 
-/** How many records of each kind are in each state. */
+/** How many records of each kind are in each state ("entity:status" → count). */
 export async function itemCounts(id: string) {
   const supabase = await createClient();
-  const out: Record<string, number> = {};
-  for (const entity of ["account", "entry"]) {
-    for (const status of ["ready", "error", "skipped", "migrated", "failed"]) {
-      const { count } = await supabase.from("acct_migration_items").select("source_key", { count: "exact", head: true }).eq("migration_id", id).eq("entity", entity).eq("status", status);
-      out[`${entity}:${status}`] = count ?? 0;
-    }
-  }
-  return out;
+  const rep = unwrap(await supabase.rpc("acct_migration_report", { p_id: id }), "migration counts") as { items: Record<string, number> };
+  return rep.items ?? {};
 }
 
 export async function migrationLog(id: string) {
@@ -181,14 +196,18 @@ export async function migrationReport(id: string) {
 /** Our chart of accounts and districts, for the ID mapping. */
 export async function mappingTargets() {
   const supabase = await createClient();
-  const [a, d, j] = await Promise.all([
+  const [a, d, j, g, f] = await Promise.all([
     supabase.from("gl_accounts").select("code, name_so, name_en, type, active").order("code"),
     supabase.from("districts").select("id, code, name_so, name_en").is("deleted_at", null).order("name_en"),
     supabase.from("journal_entries").select("id", { count: "exact", head: true }),
+    supabase.from("property_grades").select("code, name_so, name_en").eq("active", true).order("sort"),
+    supabase.from("fee_types").select("code, name_so, name_en").order("sort"),
   ]);
   return {
     accounts: (a.data ?? []) as { code: string; name_so: string; name_en: string; type: string; active: boolean }[],
     districts: (d.data ?? []) as { id: string; code: string; name_so: string; name_en: string }[],
     journalEntries: j.count ?? 0,
+    grades: (g.data ?? []) as { code: string; name_so: string; name_en: string }[],
+    fees: (f.data ?? []) as { code: string; name_so: string; name_en: string }[],
   };
 }

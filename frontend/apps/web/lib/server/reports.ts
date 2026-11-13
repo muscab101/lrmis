@@ -99,8 +99,6 @@ export const REPORTS = [
   "shortages",
   "unreconciled",
   "transfers",
-  "permits",
-  "disputes",
   "demolished",
   "surveyZones",
   "certificateStatus",
@@ -235,8 +233,6 @@ export const DISTRICT_REPORTS: readonly ReportName[] = [
   "shortages",
   "unreconciled",
   "transfers",
-  "permits",
-  "disputes",
   "demolished",
   "surveyZones",
   "certificateStatus",
@@ -276,7 +272,7 @@ export const REPORT_GROUPS: {
     key: "land",
     reports: ["parcels", "owners", "locations", "registrations", "surveyZones", "demolished"],
   },
-  { key: "cases", reports: ["transfers", "permits", "disputes"] },
+  { key: "cases", reports: ["transfers"] },
   { key: "documents", reports: ["certificates", "certificateStatus"] },
   { key: "staff", reports: ["staffActivity", "messages"] },
 ];
@@ -301,10 +297,8 @@ export const RELATED_REPORTS: Record<ReportName, ReportName[]> = {
   locations: ["parcels", "surveyZones", "owners"],
   registrations: ["parcels", "surveyZones", "certificates"],
   certificates: ["certificateStatus", "parcels", "owners"],
-  transfers: ["owners", "certificates", "disputes"],
-  permits: ["parcels", "demolished", "invoices"],
-  disputes: ["transfers", "parcels"],
-  demolished: ["parcels", "permits"],
+  transfers: ["owners", "certificates", "parcels"],
+  demolished: ["parcels", "invoices"],
   surveyZones: ["locations", "registrations", "staffActivity"],
   certificateStatus: ["certificates", "arrears", "invoices"],
   staffActivity: ["cashiers", "surveyZones", "certificates"],
@@ -518,13 +512,11 @@ export async function runReport(name: ReportName, args: ReportArgs, client?: Sup
         "report",
       ) as LocationRow[];
     case "transfers":
-    case "permits":
-    case "disputes":
     case "demolished":
       return unwrap(
         await supabase.rpc(`report_${name}`, { p_from: args.from, p_to: args.to, p_district: d, ...area }),
         "report",
-      ) as TransferRow[] | PermitRow[] | DisputeRow[] | DemolishedRow[];
+      ) as TransferRow[] | DemolishedRow[];
     case "surveyZones":
       return unwrap(
         await supabase.rpc("report_survey_zones", { p_district: d, ...area }),
@@ -901,40 +893,6 @@ export interface TransferRow {
   decided_by: string | null;
   status: string;
   duty_balance: number | null;
-}
-export interface PermitRow {
-  permit_id: string;
-  parcel_id: string | null;
-  number: string;
-  pun: string | null;
-  kind: string;
-  applicant: string | null;
-  phone: string | null;
-  floors: number | null;
-  area_m2: number | null;
-  district_so: string;
-  district_en: string;
-  requested_at: string;
-  decided_at: string | null;
-  decided_by: string | null;
-  status: string;
-  valid_until: string | null;
-}
-export interface DisputeRow {
-  dispute_id: string;
-  parcel_id: string | null;
-  number: string;
-  pun: string | null;
-  kind: string;
-  claimant: string | null;
-  court_case_no: string | null;
-  district_so: string;
-  district_en: string;
-  opened_at: string;
-  resolved_at: string | null;
-  days_open: number;
-  status: string;
-  resolution: string | null;
 }
 export interface DemolishedRow {
   demolition_id: string;

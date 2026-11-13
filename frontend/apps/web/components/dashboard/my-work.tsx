@@ -28,7 +28,7 @@ const HREF: Record<string, string> = {
   site_checks: "/surveys?tab=assigned",
   partial_land: "/parcels?stage=draft",
   ready_to_register: "/parcels?stage=draft",
-  changes: "/disputes?s=changes",
+  changes: "/parcels/changes",
   demolitions: "/demolished?tab=pending",
   owners_draft: "/owners",
   no_certificate: "/documents/print",
@@ -48,8 +48,6 @@ const HREF: Record<string, string> = {
   appeals: "/valuation?tab=requests",
   transfers: "/transfers?f=submitted",
   transfer_drafts: "/transfers",
-  disputes: "/disputes",
-  permits: "/permits",
   movements_pending: "/accounting?tab=deposits",
   entries_month: "/accounting?tab=journal",
   print_queue: "/documents/print?tab=print",
@@ -82,6 +80,9 @@ const ROLE_FIRST: Record<string, WorkPanel["panel"]> = {
   it_support: "admin",
 };
 
+/** Counts no longer shown (Permits and Disputes were removed). */
+const HIDDEN = new Set(["permits", "disputes"]);
+
 /** Counts that are not "waiting" (shown plain, not as work to do). */
 const INFO = new Set(["shift_open", "taken_today", "collected_today", "entries_month", "active"]);
 
@@ -108,7 +109,7 @@ export async function MyWork({ panels, roleKeys }: { panels: WorkPanel[]; roleKe
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {ordered.map((p, i) => {
           const Icon = ICON[p.panel];
-          const waiting = p.items.filter((x) => !INFO.has(x.key)).reduce((s, x) => s + Number(x.n), 0);
+          const waiting = p.items.filter((x) => !INFO.has(x.key) && !HIDDEN.has(x.key)).reduce((s, x) => s + Number(x.n), 0);
           return (
             <div key={p.panel} className={cn("bg-card rounded-xl border p-4 shadow-xs", i === 0 && "border-primary/40 ring-primary/10 ring-2")}>
               <div className="mb-3 flex items-center gap-2">
@@ -123,7 +124,7 @@ export async function MyWork({ panels, roleKeys }: { panels: WorkPanel[]; roleKe
                 )}
               </div>
               <ul className="divide-y text-sm">
-                {p.items.map((x) => (
+                {p.items.filter((x) => !HIDDEN.has(x.key)).map((x) => (
                   <li key={x.key}>
                     <Link href={HREF[x.key] ?? "/dashboard"} className="hover:text-primary flex items-center justify-between gap-3 py-2">
                       <span className="text-muted-foreground">{t(`items.${x.key}`)}</span>
