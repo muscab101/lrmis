@@ -87,8 +87,6 @@ describe("application fee invoice", () => {
       asUser(db, cashier, (tx) =>
         tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: inv!.parcel_id, invoice_id: inv!.id, amount: 5, method: "cash" })]),
       );
-    // The land isn't registered yet, so its bill waits.
-    await expect(pay5()).rejects.toThrow(/^CONFLICT: bill_needs_registered/);
     await db.query(`update public.parcels set status = 'registered', registered_at = now(), pun = coalesce(pun, 'FEE' || left(id::text, 8)), account_no = coalesce(account_no, left(id::text, 8)) where id = $1`, [inv!.parcel_id]);
     await pay5();
     expect(await scalar<string>(db, `select fee_status::text from public.applications where id = $1`, [app])).toBe("due"); // part-paid

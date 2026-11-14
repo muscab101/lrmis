@@ -16,10 +16,6 @@ const done = <T>(v: T) => {
   return v;
 };
 
-export const issueCertificateAction = defineAction("certificates.issue", z.object({ parcelId: z.uuid() }), async ({ parcelId }, ctx) =>
-  done(unwrap(await ctx.supabase.rpc("certificate_issue", { p_parcel: parcelId }), "issue") as { certificate_id: string; id_cards: number }),
-);
-
 /** Official copies go to an added printer: the job waits for that printer's print program. */
 export const sendToPrinterAction = defineAction(
   "certificates.send_to_printer",
@@ -54,14 +50,6 @@ export const requestReprintAction = defineAction("certificates.reprint", z.objec
   }
 });
 
-export const decideReprintAction = defineAction("certificates.decide_reprint", z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().max(500).default("") }), async (v, ctx) => {
-  try {
-    return done(unwrap(await ctx.supabase.rpc("reprint_decide", { p_id: v.id, p_approve: v.approve, p_note: v.note }), "decide") as { status: string; document_id?: string });
-  } catch (err) {
-    field(err, { note_required: "note" });
-  }
-});
-
 export const cancelDocumentAction = defineAction("certificates.cancel", z.object({ id: z.uuid(), reason: z.string().trim().min(5, "validation.reason").max(500) }), async (v, ctx) => {
   unwrap(await ctx.supabase.rpc("document_cancel", { p_id: v.id, p_reason: v.reason }), "cancel");
   return done(null);
@@ -83,16 +71,6 @@ export const reprintDirectAction = defineAction("certificates.reprint_direct", z
     field(err, { reason: "reason" });
   }
 });
-
-export interface BulkIssueResult {
-  issued: number;
-  id_cards: number;
-  failed: { parcel_id: string; pun: string | null; error: string }[];
-}
-
-export const issueBulkAction = defineAction("certificates.issue_bulk", z.object({ parcelIds: z.array(z.uuid()).min(1).max(100) }), async ({ parcelIds }, ctx) =>
-  done(unwrap(await ctx.supabase.rpc("certificate_issue_bulk", { p_parcels: parcelIds }), "issue") as BulkIssueResult),
-);
 
 export const sendBulkToPrinterAction = defineAction(
   "certificates.send_bulk_to_printer",

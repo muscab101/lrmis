@@ -4,7 +4,7 @@ import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
-import { Input, Textarea } from "@dhulka/ui/input";
+import { Input } from "@dhulka/ui/input";
 import { Alert, Mono } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
 import { Calculator, Pencil, Plus, Trash2 } from "lucide-react";
@@ -12,10 +12,8 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import {
   assessParcelAction,
-  fileAppealAction,
   previewAssessmentAction,
   removeBuildingAction,
-  requestExemptionAction,
   saveBuildingAction,
 } from "@/app/[locale]/(staff)/valuation/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
@@ -29,8 +27,6 @@ interface Props {
   can: { edit: boolean; assess: boolean };
 }
 
-const KINDS = ["mosque", "school", "hospital", "government", "hardship", "other"] as const;
-
 export function ParcelValuation({ parcelId, registered, data, grades, can }: Props) {
   const t = useTranslations("valuation");
   const format = useFormatter();
@@ -42,11 +38,8 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
   const [building, setBuilding] = useState<null | { id: string | null; gradeId: string; units: string; floors: string; areaM2: string; use: string; note: string }>(null);
   const [removing, setRemoving] = useState<string | null>(null);
   const [assessOpen, setAssessOpen] = useState(false);
-  const [exemption, setExemption] = useState<null | { kind: (typeof KINDS)[number]; pct: string; reason: string; validFrom: string; validTo: string }>(null);
-  const [appeal, setAppeal] = useState<null | { assessmentId: string; reason: string; requested: string }>(null);
 
   const live = data.assessments.filter((a) => a.status === "issued");
-  const openAppealIds = new Set(data.appeals.filter((a) => a.status === "open").map((a) => a.assessment?.id));
   const activeGrades = grades.filter((g) => g.active);
   const gname = (g: { name_so: string; name_en: string } | null) => (g ? (locale === "so" ? g.name_so : g.name_en) : "—");
 
@@ -181,12 +174,6 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
                   <span className="flex items-center gap-2">
                     <span className="tabular-nums">{usd(a.total)}</span>
                     <span className="text-xs">{t(`assessmentStatus.${a.status}`)}</span>
-                    {a.status === "issued" && can.assess && !openAppealIds.has(a.id) && (
-                      <Button size="sm" variant="ghost" onClick={() => setAppeal({ assessmentId: a.id, reason: "", requested: "" })}>
-                        {t("recordAppeal")}
-                      </Button>
-                    )}
-                    {openAppealIds.has(a.id) && <span className="rounded-sm bg-status-pending/10 px-1.5 text-[11px] text-status-pending">{t("appealStatus.open")}</span>}
                   </span>
                 </li>
               ))}
@@ -194,32 +181,6 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
           </section>
         )}
 
-        {/* Exemptions */}
-        <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="label-caps text-muted-foreground">{t("exemptions")}</h3>
-            {can.assess && registered && (
-              <Button size="sm" variant="outline" onClick={() => setExemption({ kind: "hardship", pct: "50", reason: "", validFrom: `${thisYear}-01-01`, validTo: "" })}>
-                <Plus aria-hidden />
-                {t("requestExemption")}
-              </Button>
-            )}
-          </div>
-          {data.exemptions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("noExemptionsParcel")}</p>
-          ) : (
-            <ul className="divide-y rounded-md border text-sm">
-              {data.exemptions.map((e) => (
-                <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-                  <span>
-                    {t(`exemptionKinds.${e.kind}`)} · {Number(e.pct)}%<span className="block text-xs text-muted-foreground">{e.reason}</span>
-                  </span>
-                  <span className="text-xs">{t(`decision.${e.status}`)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
         {live.length === 0 && registered && <p className="text-xs text-muted-foreground">{t("noLiveAssessment")}</p>}
       </CardContent>
 
@@ -294,77 +255,7 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
         onDone={(d) => toast.success(t("assessmentIssued", { total: usd((d as { total: number }).total) }))}
       />
 
-      <FormDialog
-        open={exemption !== null}
-        onOpenChange={(o) => !o && setExemption(null)}
-        title={t("requestExemption")}
-        description={t("requestExemptionBody")}
-        confirmLabel={t("submitRequest")}
-        successMessage={t("exemptionRequested")}
-        submit={() =>
-          requestExemptionAction({
-            parcelId,
-            kind: exemption!.kind,
-            pct: exemption!.pct,
-            reason: exemption!.reason,
-            validFrom: exemption!.validFrom,
-            validTo: exemption!.validTo || null,
-          })
-        }
-      >
-        {(fe) =>
-          exemption && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="kind" label={t("exemptionKind")}>
-                  <NativeSelect value={exemption.kind} onChange={(e) => setExemption({ ...exemption, kind: e.target.value as (typeof KINDS)[number] })}>
-                    {KINDS.map((k) => (
-                      <option key={k} value={k}>
-                        {t(`exemptionKinds.${k}`)}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </Field>
-                <Field id="pct" label={t("pct")} error={fe("pct")} required>
-                  <Input type="number" min={1} max={100} value={exemption.pct} onChange={(e) => setExemption({ ...exemption, pct: e.target.value })} />
-                </Field>
-                <Field id="from" label={t("validFrom")} error={fe("validFrom")} required>
-                  <Input type="date" value={exemption.validFrom} onChange={(e) => setExemption({ ...exemption, validFrom: e.target.value })} />
-                </Field>
-                <Field id="to" label={t("validTo")} error={fe("validTo")}>
-                  <Input type="date" value={exemption.validTo} onChange={(e) => setExemption({ ...exemption, validTo: e.target.value })} />
-                </Field>
-              </div>
-              <Field id="reason" label={t("reason")} error={fe("reason")} required>
-                <Textarea rows={3} value={exemption.reason} onChange={(e) => setExemption({ ...exemption, reason: e.target.value })} />
-              </Field>
-            </>
-          )
-        }
-      </FormDialog>
 
-      <FormDialog
-        open={appeal !== null}
-        onOpenChange={(o) => !o && setAppeal(null)}
-        title={t("recordAppeal")}
-        description={t("recordAppealBody")}
-        confirmLabel={t("submitRequest")}
-        successMessage={t("appealFiled")}
-        submit={() => fileAppealAction({ assessmentId: appeal!.assessmentId, reason: appeal!.reason, requestedTotal: appeal!.requested === "" ? null : appeal!.requested })}
-      >
-        {(fe) =>
-          appeal && (
-            <>
-              <Field id="reason" label={t("appealReason")} error={fe("reason")} required>
-                <Textarea rows={4} value={appeal.reason} onChange={(e) => setAppeal({ ...appeal, reason: e.target.value })} />
-              </Field>
-              <Field id="requested" label={t("requested")} hint={t("requestedHint")} error={fe("requestedTotal")}>
-                <Input type="number" min={0} step="0.01" value={appeal.requested} onChange={(e) => setAppeal({ ...appeal, requested: e.target.value })} />
-              </Field>
-            </>
-          )
-        }
-      </FormDialog>
     </Card>
   );
 }

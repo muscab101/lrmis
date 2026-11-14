@@ -327,7 +327,6 @@ export default async function InvoicesPage({
                       {i.status !== "cancelled" && canPrint && <InvoicePrintNow id={i.id} iconOnly />}
                       {/* Only registered land's bills can be paid. */}
                       {canCollect &&
-                        !i.partial_land &&
                         !i.demolished_land &&
                         Number(i.balance) > 0 &&
                         (i.status === "issued" || i.status === "partially_paid") && (

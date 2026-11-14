@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { BadgeCheck } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { CardRowActions } from "@/components/documents/card-row-actions";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { IssueQueue, PrintQueue, ReprintQueue } from "@/components/documents/document-actions";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -38,17 +39,30 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
       rows.length === 0 ? (
         <EmptyState icon={<BadgeCheck />} title={t("nothingToIssue")} description={t("nothingToIssueBody")} />
       ) : (
-        <IssueQueue rows={rows} canIssue={viewer.can("certificates.approve")} />
+        <>
+          {viewer.can("certificates.approve") && (
+            <div className="flex justify-end border-b px-4 py-2.5">
+              <GoApprove tab="certificates" />
+            </div>
+          )}
+          {/* Issuing is approved on Applications: here the list only shows what is ready and what is missing. */}
+          <IssueQueue rows={rows} />
+        </>
       );
   } else if (tab === "reprints") {
     body = (
+      <>
+      {viewer.can("certificates.approve") && (
+        <div className="flex justify-end border-b px-4 py-2.5">
+          <GoApprove tab="certificates" />
+        </div>
+      )}
       <ReprintQueue
         rows={await listReprints(sp.all === "1" ? "any" : "pending")}
         me={viewer.user.id}
-        canDecide={viewer.can("certificates.approve")}
-        isSuperAdmin={viewer.isSuperAdmin}
         canCashier={viewer.can("cashier.view")}
       />
+      </>
     );
   } else {
     const rows = await listDocuments({
@@ -107,6 +121,7 @@ export default async function DocumentsPage({ params, searchParams }: { params: 
                         direct: viewer.isSuperAdmin,
                         cancel: viewer.can("certificates.cancel") && d.issued_by !== viewer.user.id,
                         print: viewer.can("certificates.print") && d.print_count === 0,
+                        view: viewer.can("certificates.design"),
                       }}
                     />
                   </TableCell>

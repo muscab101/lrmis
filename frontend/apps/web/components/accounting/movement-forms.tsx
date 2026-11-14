@@ -4,16 +4,16 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { Check, Pencil, Plus, Trash2, Undo2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, Undo2 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   cancelMovementAction,
-  decideMovementAction,
   deleteMovementAction,
   saveMovementAction,
 } from "@/app/[locale]/(staff)/accounting/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 
 export type Kind = "deposit" | "expense" | "income";
 export interface Acct {
@@ -366,7 +366,7 @@ export function MovementActions({
   can: { edit: boolean; approve: boolean; cancel: boolean; delete: boolean };
 }) {
   const t = useTranslations("accounting");
-  const [dialog, setDialog] = useState<"confirm" | "reject" | "cancel" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"cancel" | "delete" | null>(null);
   const [note, setNote] = useState("");
   const close = (o: boolean) => {
     if (!o) {
@@ -379,28 +379,7 @@ export function MovementActions({
     <>
       <span className="inline-flex justify-end gap-0.5">
         {pending && can.approve && (
-          <>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              className="text-success"
-              aria-label={t("movement.confirm")}
-              title={t("movement.confirm")}
-              onClick={() => setDialog("confirm")}
-            >
-              <Check aria-hidden />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              className="text-warning"
-              aria-label={t("movement.reject")}
-              title={t("movement.reject")}
-              onClick={() => setDialog("reject")}
-            >
-              <X aria-hidden />
-            </Button>
-          </>
+          <GoApprove tab="accounting" iconOnly />
         )}
         {pending && can.edit && (
           <MovementButton
@@ -436,31 +415,6 @@ export function MovementActions({
           </Button>
         )}
       </span>
-      <FormDialog
-        open={dialog === "confirm"}
-        onOpenChange={close}
-        title={t("movement.confirmTitle", { number: row.number })}
-        description={t(`movement.confirmBody.${row.kind}`)}
-        confirmLabel={t("movement.confirm")}
-        successMessage={t("movement.confirmed")}
-        submit={() => decideMovementAction({ id: row.id, approve: true, note })}
-      />
-      <FormDialog
-        open={dialog === "reject"}
-        onOpenChange={close}
-        title={t("movement.rejectTitle", { number: row.number })}
-        description={t("movement.rejectBody")}
-        confirmLabel={t("movement.reject")}
-        destructive
-        successMessage={t("movement.rejected")}
-        submit={() => decideMovementAction({ id: row.id, approve: false, note })}
-      >
-        {(fe) => (
-          <Field id="note" label={t("movement.rejectNote")} error={fe("note")} required>
-            <Textarea id="note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
-          </Field>
-        )}
-      </FormDialog>
       <FormDialog
         open={dialog === "cancel"}
         onOpenChange={close}

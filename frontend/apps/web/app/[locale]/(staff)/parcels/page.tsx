@@ -36,7 +36,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const split: (typeof REGISTERED_SPLITS)[number] = stage === "registered" && (REGISTERED_SPLITS as readonly string[]).includes(sp.pay ?? "") ? (sp.pay as (typeof REGISTERED_SPLITS)[number]) : "all";
   const [rows, counts] = await Promise.all([searchParcels(q, stage === "registered" && split !== "all" ? split : stage, nbhdId), parcelStageCounts()]);
   const partial = (s: string) => s === "draft" || s === "surveyed" || s === "verified";
-  const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock"), register: viewer.can("parcels.approve") };
+  const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
   // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
   const canDelete = (status: string) => (partial(status) ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"));
   const showInvoices = viewer.can("invoices.view");
@@ -169,7 +169,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     {/* Partial land: View, Update, Delete, and Move to registered once it has an owner; locking is on its own page. Registered land can't be deleted once money was received, and a registered flat goes with its building. */}
                     <ParcelRowActions
                       parcel={p}
-                      can={p.building_state === "demolished" ? { update: false, lock: false } : partial(p.status) ? { update: can.update, lock: false, register: can.register && !!p.owners, delete: canDelete(p.status) } : { ...can, delete: !p.parent_id && !p.has_money && canDelete(p.status) }}
+                      can={p.building_state === "demolished" ? { update: false, lock: false } : partial(p.status) ? { update: can.update, lock: false, delete: canDelete(p.status) } : { ...can, delete: !p.parent_id && !p.has_money && canDelete(p.status) }}
                     />
                   </TableCell>
                 </TableRow>

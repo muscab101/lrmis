@@ -4,9 +4,9 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import { ReconDecide } from "@/components/collections/recon-decide";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { ReconForm } from "@/components/collections/recon-form";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { cashierDaySummary, dayReconciliations, type Reconciliation } from "@/lib/server/collections";
 
@@ -23,7 +23,8 @@ export default async function ReconcilePage({ params, searchParams }: { params: 
   const t = await getTranslations("collections");
   const format = await getFormatter();
   const sp = await searchParams;
-  if (!/^[0-9a-f-]{36}$/i.test(sp.cashier ?? "") || !/^\d{4}-\d{2}-\d{2}$/.test(sp.date ?? "")) notFound();
+  // Without a cashier and a day there is nothing to reconcile here: the list of days is on Collections → Reconcile.
+  if (!/^[0-9a-f-]{36}$/i.test(sp.cashier ?? "") || !/^\d{4}-\d{2}-\d{2}$/.test(sp.date ?? "")) redirect({ href: "/collections?tab=reconcile", locale });
   const cashierId = sp.cashier!;
   const date = sp.date!;
   const [channels, recs] = await Promise.all([cashierDaySummary(cashierId, date), dayReconciliations(cashierId, date)]);
@@ -105,7 +106,7 @@ export default async function ReconcilePage({ params, searchParams }: { params: 
               <Mono>{active.number}</Mono>
               <StatusBadge tone={tone(active.status)}>{t(`recon.status.${active.status}`)}</StatusBadge>
             </CardTitle>
-            {active.status === "submitted" && viewer.can("reconciliation.approve") && active.prepared_by !== viewer.user.id && !own && <ReconDecide id={active.id} number={active.number} />}
+            {active.status === "submitted" && viewer.can("reconciliation.approve") && active.prepared_by !== viewer.user.id && !own && <GoApprove tab="accounting" />}
           </CardHeader>
           {lines(active)}
           {who(active)}

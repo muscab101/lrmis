@@ -10,6 +10,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { approveRunAction, cancelRunAction, generateRunAction, issueNowRunAction, refreshRunAction, submitRunAction } from "@/app/[locale]/(staff)/billing/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { Link } from "@/i18n/navigation";
 import type { RunStatus } from "@/lib/server/billing";
 
@@ -40,7 +41,7 @@ export function RunActions({
   // Bills out straight away, without waiting for approval.
   if (["draft", "submitted", "approved"].includes(status) && can.create) steps.push("issueNow");
   if (status === "draft" && can.create) steps.push("submit");
-  if (status === "submitted" && can.approve && !isCreator) steps.push("approve");
+  // Approving a run happens on the Applications page.
   if ((status === "approved" || status === "generating") && can.approve) steps.push("generate");
   if (["draft", "submitted", "approved"].includes(status) && (isCreator ? can.create : can.cancel)) steps.push("cancel");
   if (steps.length === 0 && !compact) return null;
@@ -76,6 +77,7 @@ export function RunActions({
         ))
       )}
       {!compact && status === "submitted" && isCreator && can.approve && <span className="self-center text-xs text-muted-foreground">{t("needsSomeoneElse")}</span>}
+      {!compact && status === "submitted" && !isCreator && can.approve && <GoApprove tab="accounting" />}
       <FormDialog
         open={step !== null}
         onOpenChange={(o) => {

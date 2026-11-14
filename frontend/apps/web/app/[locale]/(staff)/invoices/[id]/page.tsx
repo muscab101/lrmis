@@ -84,7 +84,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ locale
         </Alert>
       )}
       {partialLand && (
-        <Alert tone="warning" title={t("landPartialTitle")} className="mb-5">
+        <Alert tone="info" title={t("landPartialTitle")} className="mb-5">
           {t("landPartialHint")}
         </Alert>
       )}

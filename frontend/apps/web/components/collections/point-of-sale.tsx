@@ -5,7 +5,7 @@ import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { ArrowLeft, CopyCheck, Info } from "lucide-react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { PosApprove } from "@/components/collections/pos-approve";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { ROW_ICON } from "@/components/collections/row-icon";
 import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 import { Link } from "@/i18n/navigation";
@@ -70,16 +70,7 @@ export async function PointOfSaleTab({
 
   const approveIcon = (place: PosCollections, c: Row) =>
     c.waiting_count > 0 && c.cashier_id && canApprove && (c.cashier_id !== me || superAdmin) ? (
-      <PosApprove
-        pos={c.pos_id}
-        district={c.online ? place.district_id : null}
-        cashier={c.cashier_id}
-        name={rowName(c)}
-        amount={usd(c.waiting)}
-        count={c.waiting_count}
-        from={from}
-        to={to}
-      />
+      <GoApprove tab="accounting" iconOnly />
     ) : c.waiting_count === 0 ? (
       <StatusBadge tone="approved">{t("pos.allApproved")}</StatusBadge>
     ) : null;

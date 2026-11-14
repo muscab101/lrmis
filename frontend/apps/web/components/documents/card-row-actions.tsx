@@ -4,17 +4,17 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { Tooltip } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
-import { Ban, Eye, Printer, RotateCcw, Zap } from "lucide-react";
+import { Ban, Eye, Printer, RefreshCw, RotateCcw, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { cancelDocumentAction, reprintDirectAction, requestReprintAction } from "@/app/[locale]/(staff)/documents/actions";
+import { cancelDocumentAction, reprintDirectAction, requestReissueAction, requestReprintAction } from "@/app/[locale]/(staff)/documents/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { usePrintNow } from "@/components/documents/use-print-now";
 import { Link, useRouter } from "@/i18n/navigation";
 
-type Dialog = "reprint" | "direct" | "cancel";
+type Dialog = "reprint" | "reissue" | "direct" | "cancel";
 
-/** A document's keys on the ID cards and Certificates lists: view, print, ask for a reprint, reprint now (super admin), cancel. */
+/** A document's keys on the ID cards and Certificates lists: view, print, ask for a reprint, correct & reissue (certificates), reprint now (ID cards, super admin), cancel. */
 export function CardRowActions({
   id,
   serial,
@@ -25,7 +25,7 @@ export function CardRowActions({
   id: string;
   serial: string;
   status: string;
-  can: { reprint: boolean; direct: boolean; cancel: boolean; print?: boolean };
+  can: { reprint: boolean; direct: boolean; cancel: boolean; print?: boolean; view?: boolean };
   kind?: "id_card" | "certificate";
 }) {
   const t = useTranslations("documents");
@@ -38,12 +38,15 @@ export function CardRowActions({
   const viewLabel = kind === "certificate" ? t("certificateView") : t("cardView");
   const copy: Record<Dialog, { title: string; body: string; confirm: string; success: string }> = {
     reprint: { title: t("requestReprint"), body: t("reprintBody"), confirm: t("submitRequest"), success: t("reprintRequested") },
+    reissue: { title: t("reissueTitle"), body: t("reissueBody"), confirm: t("submitRequest"), success: t("reissueRequested") },
     direct: { title: t("directTitle"), body: t("directBody"), confirm: t("directConfirm"), success: t("directDone") },
     cancel: { title: t("cancelTitle"), body: t("cancelBody"), confirm: t("cancelDocument"), success: t("cancelled") },
   };
   return (
     <div className="flex justify-end gap-0.5">
-      {key(
+      {/* Certificates: only people with "See certificate" get the view key. */}
+      {can.view !== false &&
+        key(
         viewLabel,
         <Button asChild variant="ghost" size="icon-sm" className="text-status-partial">
           <Link href={`/documents/${id}`} aria-label={viewLabel}>
@@ -67,8 +70,20 @@ export function CardRowActions({
             <RotateCcw aria-hidden />
           </Button>,
         )}
+      {/* A certificate whose details are out of date: ask for a corrected one (approved on Applications). */}
+      {valid &&
+        can.reprint &&
+        kind === "certificate" &&
+        key(
+          t("reissue"),
+          <Button variant="ghost" size="icon-sm" aria-label={t("reissue")} onClick={() => setDialog("reissue")}>
+            <RefreshCw aria-hidden />
+          </Button>,
+        )}
+      {/* ID cards only: certificates are reprinted after a request is approved (Reprint now on the certificate). */}
       {valid &&
         can.direct &&
+        kind !== "certificate" &&
         key(
           t("directReprint"),
           <Button variant="ghost" size="icon-sm" aria-label={t("directReprint")} onClick={() => setDialog("direct")}>
@@ -97,7 +112,13 @@ export function CardRowActions({
         destructive={dialog === "cancel"}
         successMessage={dialog ? copy[dialog].success : undefined}
         submit={() =>
-          dialog === "cancel" ? cancelDocumentAction({ id, reason }) : dialog === "direct" ? reprintDirectAction({ id, reason }) : requestReprintAction({ id, reason })
+          dialog === "cancel"
+            ? cancelDocumentAction({ id, reason })
+            : dialog === "direct"
+              ? reprintDirectAction({ id, reason })
+              : dialog === "reissue"
+                ? requestReissueAction({ id, reason })
+                : requestReprintAction({ id, reason })
         }
         onDone={(d) => {
           const next = (d as { document_id?: string } | null)?.document_id;

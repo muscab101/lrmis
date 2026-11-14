@@ -138,57 +138,6 @@ export const photoUrlAction = defineAction("surveys.photo_url", z.object({ photo
   return { url: data.signedUrl };
 });
 
-// ---------------------------------------------------------------------------
-// Application stage actions (fee waiver, assignment, verification, notice, registration)
-// ---------------------------------------------------------------------------
-function noteRequired(err: unknown): never {
-  if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "note_required") {
-    throw new AppFailure("VALIDATION", undefined, { note: ["validation.note_required"] });
-  }
-  throw err;
-}
-
-export const waiveFeeAction = defineAction("applications.waive_fee", z.object({ applicationId: z.uuid(), note: z.string().max(500) }), async ({ applicationId, note }, ctx) => {
-  try {
-    unwrap(await ctx.supabase.rpc("application_waive_fee", { p_id: applicationId, p_reason: note }), "waive fee");
-  } catch (err) {
-    noteRequired(err);
-  }
-  revalidatePath("/[locale]/applications", "layout");
-  return null;
-});
-
-export const surveyCandidatesAction = defineAction("surveys.candidates", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) =>
-  unwrap(await ctx.supabase.rpc("survey_candidates", { p_application_id: applicationId }), "candidates") as { user_id: string; full_name: string; open_tasks: number }[],
-);
-
-export const assignSurveyAction = defineAction(
-  "surveys.assign",
-  z.object({ applicationId: z.uuid(), surveyorId: z.uuid().nullable(), dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable() }),
-  async ({ applicationId, surveyorId, dueDate }, ctx) => {
-    const id = unwrap(await ctx.supabase.rpc("survey_assign", { p_application_id: applicationId, p_surveyor_id: surveyorId, p_due: dueDate }), "assign") as string;
-    revalidatePath("/[locale]/applications", "layout");
-    return { surveyId: id };
-  },
-);
-
-export const verifyApplicationAction = defineAction(
-  "applications.verify",
-  z.object({ applicationId: z.uuid(), documentsOk: z.boolean(), surveyOk: z.boolean(), identityOk: z.boolean(), note: z.string().max(1000).default("") }),
-  async (v, ctx) => {
-    const out = unwrap(
-      await ctx.supabase.rpc("application_verify", {
-        p_id: v.applicationId,
-        p_checks: { documents_ok: v.documentsOk, survey_ok: v.surveyOk, identity_ok: v.identityOk },
-        p_note: v.note,
-      }),
-      "verify",
-    ) as { status: string; notice_days: number };
-    revalidatePath("/[locale]/applications", "layout");
-    return out;
-  },
-);
-
 const objectionSchema = z.object({
   noticeId: z.uuid(),
   name: z.string().trim().min(2, "validation.name").max(120),
@@ -205,20 +154,6 @@ export const fileObjectionAction = defineAction(
   objectionSchema,
   async (v, ctx) => {
     unwrap(await ctx.supabase.rpc("objection_file", { p_notice_id: v.noticeId, p_name: v.name, p_phone: v.phone, p_statement: v.statement }), "objection");
-    revalidatePath("/[locale]/applications", "layout");
-    return null;
-  },
-);
-
-export const resolveObjectionAction = defineAction(
-  "notices.resolve",
-  z.object({ objectionId: z.uuid(), status: z.enum(["dismissed", "upheld", "withdrawn"]), note: z.string().max(1000).default("") }),
-  async ({ objectionId, status, note }, ctx) => {
-    try {
-      unwrap(await ctx.supabase.rpc("objection_resolve", { p_id: objectionId, p_status: status, p_note: note }), "resolve objection");
-    } catch (err) {
-      noteRequired(err);
-    }
     revalidatePath("/[locale]/applications", "layout");
     return null;
   },

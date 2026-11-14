@@ -80,8 +80,8 @@ const ROLE_FIRST: Record<string, WorkPanel["panel"]> = {
   it_support: "admin",
 };
 
-/** Counts no longer shown (Permits and Disputes were removed). */
-const HIDDEN = new Set(["permits", "disputes"]);
+/** Counts no longer shown (Permits, Disputes, Exemptions and Appeals were removed). */
+const HIDDEN = new Set(["permits", "disputes", "exemptions", "appeals"]);
 
 /** Counts that are not "waiting" (shown plain, not as work to do). */
 const INFO = new Set(["shift_open", "taken_today", "collected_today", "entries_month", "active"]);

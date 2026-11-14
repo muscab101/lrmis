@@ -5,10 +5,10 @@ import { ConfirmDialog } from "@dhulka/ui/dialog";
 import { toast } from "@dhulka/ui/toaster";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { cancelTransferAction, decideTransferAction, submitTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
+import { cancelTransferAction, submitTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
-import { DecideButtons } from "./decide";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { NoteAction } from "./note-action";
 
 export function TransferActions({ id, status, can }: { id: string; status: string; can: { create: boolean; approve: boolean } }) {
@@ -48,7 +48,7 @@ export function TransferActions({ id, status, can }: { id: string; status: strin
           />
         </>
       )}
-      {status === "submitted" && can.approve && <DecideButtons decide={(v) => decideTransferAction({ id, approve: v.approve, note: v.note })} />}
+      {status === "submitted" && can.approve && <GoApprove tab="transfers" />}
       {can.create && (
         <NoteAction label={t("cancelTransfer")} title={t("cancelTransfer")} noteLabel={t("reason")} variant="ghost" destructive success={t("cancelled")} submit={(n) => cancelTransferAction({ id, note: n })} />
       )}

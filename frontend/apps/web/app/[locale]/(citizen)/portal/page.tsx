@@ -15,8 +15,8 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
   const lang = await getLocale();
   const me = await citizenOverview();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
-  // Only registered land can be paid; partial or demolished land waits for the district office.
-  const payable = (p: (typeof me.parcels)[number]) => !p.partial && !p.demolished;
+  // Demolished land waits for the district office; partial land can pay (it registers by itself once paid).
+  const payable = (p: (typeof me.parcels)[number]) => !p.demolished;
   const owed = me.parcels.filter(payable).reduce((s, p) => s + Number(p.balance), 0);
   const name = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en) : "");
 

@@ -10,15 +10,12 @@ import {
   Link2,
   MessageSquareText,
   Send,
-  ShieldCheck,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
-  decideBatchAction,
   deleteBatchAction,
   matchLineAction,
   resolveLineAction,
@@ -27,6 +24,7 @@ import {
   uploadStatementAction,
 } from "@/app/[locale]/(staff)/collections/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { useRouter } from "@/i18n/navigation";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -304,7 +302,7 @@ export function BatchActions({
   can: { work: boolean; approve: boolean; selfMade: boolean };
 }) {
   const t = useTranslations("collections");
-  const [dialog, setDialog] = useState<"submit" | "approve" | "reject" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"submit" | "delete" | null>(null);
   const [note, setNote] = useState("");
   const close = (o: boolean) => {
     if (!o) {
@@ -339,16 +337,7 @@ export function BatchActions({
           </>
         )}
         {status === "submitted" && can.approve && !can.selfMade && (
-          <>
-            <Button size="sm" variant="outline" onClick={() => setDialog("reject")}>
-              <X aria-hidden />
-              {t("statements.reject")}
-            </Button>
-            <Button size="sm" onClick={() => setDialog("approve")}>
-              <ShieldCheck aria-hidden />
-              {t("statements.approve")}
-            </Button>
-          </>
+          <GoApprove tab="accounting" />
         )}
         {status === "submitted" && can.approve && can.selfMade && (
           <span className="text-muted-foreground text-sm">{t("statements.notYours")}</span>
@@ -371,31 +360,6 @@ export function BatchActions({
       >
         {() => (
           <Field id="note" label={t("statements.noteOptional")}>
-            <Textarea id="note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
-          </Field>
-        )}
-      </FormDialog>
-      <FormDialog
-        open={dialog === "approve"}
-        onOpenChange={close}
-        title={t("statements.approveTitle", { number })}
-        description={t("statements.approveBody")}
-        confirmLabel={t("statements.approve")}
-        successMessage={t("statements.approved")}
-        submit={() => decideBatchAction({ id, approve: true, note })}
-      />
-      <FormDialog
-        open={dialog === "reject"}
-        onOpenChange={close}
-        title={t("statements.rejectTitle", { number })}
-        description={t("statements.rejectBody")}
-        confirmLabel={t("statements.reject")}
-        destructive
-        successMessage={t("statements.rejected")}
-        submit={() => decideBatchAction({ id, approve: false, note })}
-      >
-        {(fe) => (
-          <Field id="note" label={t("statements.why")} error={fe("note")} required>
             <Textarea id="note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
         )}

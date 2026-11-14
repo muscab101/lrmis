@@ -43,7 +43,7 @@ export default async function PayPage({ params, searchParams }: { params: Promis
   const supabase = await createClient();
   const { data } = /^[0-9a-f]{64}$/.test(token) ? await supabase.rpc("invoice_by_token", { p_token: token }) : { data: null };
   const inv = data as Pub | null;
-  const providers = inv && Number(inv.balance) > 0 && !inv.partial && !inv.demolished ? await availableOnlineProviders() : [];
+  const providers = inv && Number(inv.balance) > 0 && !inv.demolished ? await availableOnlineProviders() : [];
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
 
   return (
@@ -84,10 +84,6 @@ export default async function PayPage({ params, searchParams }: { params: Promis
               ) : inv.demolished ? (
                 <Alert tone="warning" title={t("demolishedTitle")}>
                   {t("demolishedBody")}
-                </Alert>
-              ) : inv.partial ? (
-                <Alert tone="warning" title={t("notRegisteredTitle")}>
-                  {t("notRegisteredBody")}
                 </Alert>
               ) : (
                 <>

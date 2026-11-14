@@ -34,8 +34,8 @@ export default async function TrackPage({ params }: { params: Promise<{ locale: 
                   <p className="mt-1 text-sm text-muted-foreground">
                     {p.district ? (lang === "so" ? p.district.name_so : p.district.name_en) : ""} ·{" "}
                     {p.documents.some((d) => d.type === "certificate") ? t("titleIssued") : t("noTitleYet")}
-                    {/* Only registered land's bills are shown as owed; partial or demolished land waits for the district office. */}
-                    {Number(p.balance) > 0 && !p.partial && !p.demolished && ` · ${t("owes", { amount: format.number(Number(p.balance), { style: "currency", currency: "USD" }) })}`}
+                    {/* Demolished land's bills wait for the district office; all other land can pay. */}
+                    {Number(p.balance) > 0 && !p.demolished && ` · ${t("owes", { amount: format.number(Number(p.balance), { style: "currency", currency: "USD" }) })}`}
                   </p>
                   {(p.partial || p.demolished) && (
                     <p className="bg-status-pending/10 text-status-pending mt-2 rounded-md px-3 py-2 text-xs">

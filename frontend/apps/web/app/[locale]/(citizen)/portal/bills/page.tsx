@@ -17,8 +17,8 @@ export default async function BillsPage({ params }: { params: Promise<{ locale: 
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const today = new Date().toISOString().slice(0, 10);
   const bills = me.parcels
-    // Only registered land's bills can be paid; partial or demolished land waits for the district office.
-    .flatMap((p) => p.invoices.map((i) => ({ ...i, pun: p.pun, parcelId: p.id, payable: !p.partial && !p.demolished, demolished: p.demolished, district: p.district })))
+    // Demolished land waits for the district office; partial land can pay (it registers by itself once paid).
+    .flatMap((p) => p.invoices.map((i) => ({ ...i, pun: p.pun, parcelId: p.id, payable: !p.demolished, demolished: p.demolished, district: p.district })))
     .sort((a, b) => (Number(b.balance) > 0 ? 1 : 0) - (Number(a.balance) > 0 ? 1 : 0) || a.due_date.localeCompare(b.due_date));
   const open = bills.filter((b) => Number(b.balance) > 0 && b.payable);
   const owed = open.reduce((s, b) => s + Number(b.balance), 0);

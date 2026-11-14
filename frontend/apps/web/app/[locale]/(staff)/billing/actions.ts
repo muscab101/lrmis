@@ -120,10 +120,6 @@ export const createMissingAction = defineAction("invoices.create_missing", z.obj
   done(unwrap(await ctx.supabase.rpc("invoice_missing_create", { p_parcels: parcelIds }), "create missing") as number),
 );
 
-export const applyPenaltiesAction = defineAction("billing.penalties", z.object({}), async (_v, ctx) =>
-  done(unwrap(await ctx.supabase.rpc("apply_late_penalties", {}), "penalties") as number),
-);
-
 /** Print an invoice now: straight to the added printer at this person's own point of sale (no page opens). */
 export const invoicePrintNowAction = defineAction(
   "invoices.print_now",

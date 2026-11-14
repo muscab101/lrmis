@@ -4,29 +4,24 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { toast } from "@dhulka/ui/toaster";
 import {
   Banknote,
   CalendarX2,
-  Check,
   CopyPlus,
   Pencil,
   Plus,
-  ShieldCheck,
   Trash2,
-  X,
 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
-  approveRuleAction,
   createPayoutAction,
-  decidePayoutAction,
   deleteRuleAction,
   retireRuleAction,
   saveRuleAction,
 } from "@/app/[locale]/(staff)/accounting/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import type { Acct, Dist } from "./movement-forms";
 
 export interface RuleLite {
@@ -334,7 +329,7 @@ export function RuleActions({
   can: { edit: boolean; approve: boolean };
 }) {
   const t = useTranslations("accounting");
-  const [dialog, setDialog] = useState<"approve" | "retire" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"retire" | "delete" | null>(null);
   const [to, setTo] = useState(today());
   return (
     <>
@@ -343,16 +338,7 @@ export function RuleActions({
           <RuleButton row={row} feeTypes={feeTypes} districts={districts} />
         )}
         {row.status === "draft" && can.approve && row.created_by !== me && (
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            className="text-success"
-            aria-label={t("rules.approve")}
-            title={t("rules.approve")}
-            onClick={() => setDialog("approve")}
-          >
-            <ShieldCheck aria-hidden />
-          </Button>
+          <GoApprove tab="accounting" iconOnly />
         )}
         {row.status === "draft" && can.edit && (
           <Button
@@ -382,18 +368,6 @@ export function RuleActions({
           </Button>
         )}
       </span>
-      <FormDialog
-        open={dialog === "approve"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("rules.approveTitle", { name: row.name })}
-        description={t("rules.approveBody")}
-        confirmLabel={t("rules.approve")}
-        submit={async () => {
-          const res = await approveRuleAction({ id: row.id });
-          if (res.ok) toast.success(t("rules.approved", { count: Number(res.data ?? 0) }));
-          return res;
-        }}
-      />
       <FormDialog
         open={dialog === "retire"}
         onOpenChange={(o) => !o && setDialog(null)}
@@ -508,64 +482,7 @@ export function PayoutButton({
 }
 
 /** A second person pays a prepared payout, or rejects it with a note. */
-export function PayoutDecide({ id, number }: { id: string; number: string }) {
-  const t = useTranslations("accounting");
-  const [dialog, setDialog] = useState<"pay" | "reject" | null>(null);
-  const [note, setNote] = useState("");
-  return (
-    <>
-      <span className="inline-flex gap-0.5">
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          className="text-success"
-          aria-label={t("payouts.approve")}
-          title={t("payouts.approve")}
-          onClick={() => setDialog("pay")}
-        >
-          <Check aria-hidden />
-        </Button>
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          className="text-warning"
-          aria-label={t("movement.reject")}
-          title={t("movement.reject")}
-          onClick={() => setDialog("reject")}
-        >
-          <X aria-hidden />
-        </Button>
-      </span>
-      <FormDialog
-        open={dialog === "pay"}
-        onOpenChange={(o) => !o && setDialog(null)}
-        title={t("payouts.approveTitle", { number })}
-        description={t("payouts.approveBody")}
-        confirmLabel={t("payouts.approve")}
-        successMessage={t("payouts.paid")}
-        submit={() => decidePayoutAction({ id, approve: true, note })}
-      />
-      <FormDialog
-        open={dialog === "reject"}
-        onOpenChange={(o) => {
-          if (!o) {
-            setDialog(null);
-            setNote("");
-          }
-        }}
-        title={t("payouts.rejectTitle", { number })}
-        description={t("payouts.rejectBody")}
-        confirmLabel={t("movement.reject")}
-        destructive
-        successMessage={t("movement.rejected")}
-        submit={() => decidePayoutAction({ id, approve: false, note })}
-      >
-        {(fe) => (
-          <Field id="note" label={t("movement.rejectNote")} error={fe("note")} required>
-            <Textarea id="note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
-          </Field>
-        )}
-      </FormDialog>
-    </>
-  );
+export function PayoutDecide(_: { id: string; number: string }) {
+  // Paying a prepared payout is approved on the Applications page.
+  return <GoApprove tab="accounting" iconOnly />;
 }

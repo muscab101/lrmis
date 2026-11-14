@@ -125,15 +125,6 @@ export const closeShiftAction = defineAction(
     ),
 );
 
-export const approveShiftAction = defineAction(
-  "cashier.approve",
-  z.object({ id: z.uuid() }),
-  async ({ id }, ctx) => {
-    unwrap(await ctx.supabase.rpc("shift_approve", { p_id: id }), "approve shift");
-    return done(null);
-  },
-);
-
 // ---- Payments ----
 export const recordBankPaymentAction = defineAction(
   "payments.record_bank",
@@ -221,26 +212,6 @@ export const requestReversalAction = defineAction(
       await ctx.supabase.rpc("reversal_request", { p_payment: v.id, p_reason: v.reason }),
       "reversal",
     );
-    return done(null);
-  },
-);
-
-export const decideReversalAction = defineAction(
-  "payments.decide_reversal",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().max(500).default("") }),
-  async (v, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("reversal_decide", {
-          p_id: v.id,
-          p_approve: v.approve,
-          p_note: v.note,
-        }),
-        "decide reversal",
-      );
-    } catch (err) {
-      field(err, { note_required: "note" });
-    }
     return done(null);
   },
 );

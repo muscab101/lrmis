@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getLocale, setRequestLocale } from "next-intl/server";
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
+import { CertificateLocked } from "@/components/documents/certificate-locked";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { OpenInApp } from "@/components/documents/open-in-app";
 import { ScreenshotShield } from "@/components/documents/screenshot-shield";
@@ -42,7 +43,7 @@ export default async function DocumentPrintPage({ params }: { params: Promise<{ 
       <style>{d.type === "certificate" ? "@page { size: A4; margin: 0 }" : "@page { size: 85.6mm 54mm; margin: 0 }"}</style>
       <PrintControls id={d.id} printed={d.print_count > 0} status={d.status} canPrint={canPrint} printers={printers} payment={awaitingCardPayment(pay) ? { invoiceNumber: pay!.invoiceNumber } : null}>
         <ScreenshotShield off={inApp}>
-          <div className="shadow-sm print:shadow-none">{d.type === "certificate" ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}</div>
+          <div className="shadow-sm print:shadow-none">{d.type === "certificate" ? (viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <CertificateLocked serial={d.serial} />) : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}</div>
         </ScreenshotShield>
       </PrintControls>
     </div>

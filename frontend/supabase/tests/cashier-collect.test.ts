@@ -52,12 +52,14 @@ beforeAll(async () => {
 });
 
 describe("cashier: to collect", () => {
-  it("lists the unpaid bills of registered houses in the cashier's district, with a pay link", async () => {
+  it("lists the unpaid bills in the cashier's district (registered and partial land), with a pay link", async () => {
     const rows = await asUser(db, cashier, (tx) => tx.query<{ pun: string; house_no: string; balance: string; owners: string; pay_path: string }>(`select * from public.cashier_to_collect()`));
-    expect(rows.rows).toHaveLength(1);
-    expect(rows.rows[0]).toMatchObject({ pun: "BNHDN01201", house_no: "01", owners: "Cali Xasan" });
-    expect(Number(rows.rows[0]!.balance)).toBe(30);
-    expect(rows.rows[0]!.pay_path).toMatch(/^\/pay\/[0-9a-f]{64}$/);
+    // Partial land pays too now (it registers by itself once paid).
+    expect(rows.rows.map((r) => r.house_no).sort()).toEqual(["01", "03"]);
+    const one = rows.rows.find((r) => r.house_no === "01")!;
+    expect(one).toMatchObject({ pun: "BNHDN01201", owners: "Cali Xasan" });
+    expect(Number(one.balance)).toBe(30);
+    expect(one.pay_path).toMatch(/^\/pay\/[0-9a-f]{64}$/);
   });
 
   it("another district's cashier sees none; staff without cashier rights are refused", async () => {

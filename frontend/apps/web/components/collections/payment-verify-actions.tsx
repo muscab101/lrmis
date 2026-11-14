@@ -4,11 +4,12 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { CheckCheck, PenLine, Undo2 } from "lucide-react";
+import { PenLine, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { disputePaymentAction, requestCorrectionAction, verifyPaymentsAction } from "@/app/[locale]/(staff)/collections/actions";
+import { disputePaymentAction, requestCorrectionAction } from "@/app/[locale]/(staff)/collections/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 
 interface Props {
   paymentId: string;
@@ -24,19 +25,15 @@ const HOWS = ["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "cheque"] a
 export function PaymentVerifyActions({ paymentId, status, current, can, correctionPending }: Props) {
   const t = useTranslations("collections");
   const tp = useTranslations("payments");
-  const [open, setOpen] = useState<"verify" | "dispute" | "correct" | null>(null);
+  const [open, setOpen] = useState<"dispute" | "correct" | null>(null);
   const [note, setNote] = useState("");
   const [c, setC] = useState({ how: current.how, reference: current.reference, payerName: current.payerName, payerPhone: current.payerPhone, reason: "" });
   const card = current.how === "card";
 
   return (
     <div className="flex flex-wrap gap-2">
-      {can.verify && (status === "pending" || status === "disputed") && (
-        <Button size="sm" onClick={() => setOpen("verify")}>
-          <CheckCheck aria-hidden />
-          {t("verify.verify")}
-        </Button>
-      )}
+      {/* Approving a payment happens on the Applications page. */}
+      {can.verify && (status === "pending" || status === "disputed") && <GoApprove tab="accounting" />}
       {can.verify && (status === "pending" || status === "verified") && (
         <Button size="sm" variant="outline" onClick={() => setOpen("dispute")}>
           <Undo2 aria-hidden />
@@ -50,21 +47,6 @@ export function PaymentVerifyActions({ paymentId, status, current, can, correcti
         </Button>
       )}
 
-      <FormDialog
-        open={open === "verify"}
-        onOpenChange={(o) => !o && setOpen(null)}
-        title={t("verify.oneTitle")}
-        description={t("verify.oneBody")}
-        confirmLabel={t("verify.verify")}
-        submit={() => verifyPaymentsAction({ ids: [paymentId], note })}
-        successMessage={t("verify.done")}
-      >
-        {(fe) => (
-          <Field id="note" label={status === "disputed" ? t("verify.noteDisputed") : t("verify.note")} error={fe("note")} required={status === "disputed"}>
-            <Input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} />
-          </Field>
-        )}
-      </FormDialog>
       <FormDialog
         open={open === "dispute"}
         onOpenChange={(o) => !o && setOpen(null)}

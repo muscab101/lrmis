@@ -3,6 +3,7 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
+import { CertificateLocked } from "@/components/documents/certificate-locked";
 import { DocumentActions } from "@/components/documents/document-actions";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { OpenInApp } from "@/components/documents/open-in-app";
@@ -30,6 +31,12 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
   if (!d) notFound();
   const changes = d.status === "valid" ? await documentChanges(d.id) : [];
   const pending = d.reprint_requests.find((r) => r.status === "pending") ?? null;
+  // An approved reprint: its new copy, while it still waits to be printed (Reprint now).
+  const approved = d.reprint_requests
+    .filter((r) => r.status === "approved" && r.new_document_id)
+    .sort((a, b) => b.requested_at.localeCompare(a.requested_at))[0];
+  const newCopy = approved?.new_document_id ? await getDocument(approved.new_document_id) : null;
+  const reprintReady = newCopy && newCopy.status === "valid" && newCopy.print_count === 0 ? newCopy.id : null;
   const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
   const lang = await getLocale();
   const holder = d.type === "id_card" ? (d.snapshot.holder ?? null) : null;
@@ -52,6 +59,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
             printed={d.print_count > 0}
             changes={changes}
             pendingReason={pending?.reason ?? null}
+            reprintReady={reprintReady}
           />
         }
       />
@@ -80,7 +88,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
         ) : (
         <ScreenshotShield off={inApp}>
         <div className="relative mx-auto w-fit">
-          {d.type === "certificate" ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}
+          {d.type === "certificate" ? (
+            viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <CertificateLocked serial={d.serial} />
+          ) : (
+            <IdCardSheet doc={d} verifyUrl={verifyUrl} />
+          )}
           <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden">
             <span className={`-rotate-30 font-bold tracking-widest whitespace-nowrap text-red-600/15 select-none ${d.type === "certificate" ? "text-[64px]" : "text-[28px]"}`}>
               {t("previewWatermark")}

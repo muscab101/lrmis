@@ -2,7 +2,6 @@ import type { PermissionKey } from "@dhulka/core/permissions";
 import {
   Activity,
   Stamp,
-  Palette,
   BadgeCheck,
   Banknote,
   BarChart3,
@@ -31,6 +30,7 @@ import {
   Printer,
   MessagesSquare,
   MonitorPlay,
+  Inbox,
 } from "lucide-react";
 
 export interface NavItem {
@@ -58,6 +58,22 @@ export const STAFF_NAV: NavGroup[] = [
     key: "overview",
     items: [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
+      // Everything waiting for this person's approval, in one place.
+      {
+        key: "applications",
+        href: "/applications",
+        icon: Inbox,
+        anyOf: [
+          "transfers.approve",
+          "certificates.approve",
+          "invoices.approve",
+          "billing.approve",
+          "payments.approve",
+          "reconciliation.approve",
+          "reconciliation.update",
+          "accounting.approve",
+        ],
+      },
       { key: "map", href: "/map", icon: Map, permission: "map.view" },
       { key: "chat", href: "/chat", icon: MessagesSquare },
     ],
@@ -112,7 +128,6 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "loginHistory", href: "/admin/login-history", icon: History, permission: "audit.view" },
       { key: "audit", href: "/audit", icon: ScrollText, permission: "audit.view" },
       { key: "signatureStamp", href: "/admin/signature-stamp", icon: Stamp, permission: "certificates.signature" },
-      { key: "certificateDesign", href: "/admin/certificate-design", icon: Palette, permission: "certificates.design" },
       { key: "settings", href: "/admin/settings", icon: Settings, permission: "settings.view" },
       { key: "health", href: "/admin/health", icon: Activity, permission: "settings.view" },
     ],

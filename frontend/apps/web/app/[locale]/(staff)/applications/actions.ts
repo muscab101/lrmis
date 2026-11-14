@@ -1,60 +1,19 @@
 "use server";
 
 import {
-  applicationPartiesSchema,
-  applicationTransitionSchema,
   DOCUMENT_MAX_BYTES,
   DOCUMENT_MIME_TYPES,
   ownerSchema,
   partySchema,
-  saveApplicationLocationSchema,
 } from "@dhulka/core/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { AppFailure, defineAction, fail, unwrap, withIdempotency } from "@/lib/server/action";
-import { isApartmentType } from "@/lib/apartment";
+import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { log } from "@/lib/server/log";
 import { partyErrors, partyPayload } from "@/lib/server/party-payload";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const BUCKET = "application-documents";
-
-type LocationOut = z.output<typeof saveApplicationLocationSchema>;
-
-function locationPayload(v: LocationOut) {
-  return {
-    type: v.type,
-    channel: v.channel,
-    district_id: v.districtId,
-    neighbourhood_id: v.neighbourhoodId,
-    pin_lon: v.pinLon,
-    pin_lat: v.pinLat,
-    pin_accuracy_m: v.pinAccuracyM,
-    address_note: v.addressNote,
-    plot_no: v.plotNo,
-    old_deed_no: v.oldDeedNo,
-    govt_file_no: v.govtFileNo,
-  };
-}
-
-/** How the pin was captured (GPS or moved by hand) and the declared plot size. */
-async function saveLocationMeta(ctx: { supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>> }, id: string, v: LocationOut) {
-  unwrap(
-    await ctx.supabase.rpc("application_location_meta", { p_id: id, p_method: v.pinLon == null ? null : v.pinMethod, p_width: v.plotWidthM, p_length: v.plotLengthM }),
-    "location meta",
-  );
-  unwrap(
-    await ctx.supabase.rpc("application_set_details", {
-      p_id: id,
-      p_house_no: v.houseNo,
-      p_flat_no: v.flatNo || null,
-      p_govt_receipt_no: v.govtReceiptNo,
-      p_property_type: v.propertyType || null,
-      p_land_use: v.landUse || null,
-    }),
-    "details",
-  );
-}
 
 /** Parcels or open applications within a few metres of a point (possible double registration). */
 export const nearbyPinsAction = defineAction(
@@ -67,92 +26,6 @@ export const nearbyPinsAction = defineAction(
       applications?: { number: string; metres: number }[];
     },
 );
-
-/** Map location RPC errors (e.g. "VALIDATION: pin_outside_neighbourhood") onto form fields. */
-function locationFieldError(err: unknown): never {
-  if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
-    throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
-  }
-  if (err instanceof AppFailure && err.code === "VALIDATION") {
-    const detail = String(err.values?.detail ?? "");
-    const field = detail.startsWith("pin") ? "pin" : detail.startsWith("neighbourhood") ? "neighbourhoodId" : "districtId";
-    throw new AppFailure("VALIDATION", err.values, { [field]: [`validation.${detail}`] });
-  }
-  throw err;
-}
-
-/** House numbers already given to other land in a neighbourhood (for the 01–50 House No list). */
-export const houseNumbersTakenAction = defineAction(
-  "applications.house_numbers",
-  z.object({ neighbourhoodId: z.uuid(), applicationId: z.uuid().nullable().default(null) }),
-  async ({ neighbourhoodId, applicationId }, ctx) =>
-    unwrap(await ctx.supabase.rpc("house_numbers_taken", { p_neighbourhood: neighbourhoodId, p_application: applicationId }), "house numbers") as {
-      house_no: string;
-      apartment: boolean;
-    }[],
-);
-
-async function assertHouseNoFree(
-  ctx: { supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>> },
-  neighbourhoodId: string,
-  applicationId: string | null,
-  houseNo: string,
-  propertyType: string,
-) {
-  if (!houseNo || !neighbourhoodId) return;
-  const taken = unwrap(await ctx.supabase.rpc("house_numbers_taken", { p_neighbourhood: neighbourhoodId, p_application: applicationId }), "house numbers") as {
-    house_no: string;
-    apartment: boolean;
-  }[];
-  const hit = taken.find((t) => t.house_no === houseNo);
-  if (hit && !(hit.apartment && isApartmentType(propertyType))) fail("CONFLICT", { detail: "house_no_taken" });
-}
-
-export const createApplicationAction = defineAction(
-  "applications.create",
-  saveApplicationLocationSchema.extend({ idempotencyKey: z.uuid() }),
-  async ({ idempotencyKey, ...input }, ctx) =>
-    withIdempotency(ctx, idempotencyKey, "applications.create", async () => {
-      try {
-        // Checked before the application exists, so a taken House No doesn't leave a half-saved one behind.
-        await assertHouseNoFree(ctx, input.neighbourhoodId, null, input.houseNo, input.propertyType);
-        const out = unwrap(await ctx.supabase.rpc("application_create", { p: locationPayload(input) }), "create application") as {
-          id: string;
-          number: string;
-        };
-        await saveLocationMeta(ctx, out.id, input);
-        return out;
-      } catch (err) {
-        locationFieldError(err);
-      }
-    }),
-);
-
-export const updateApplicationAction = defineAction(
-  "applications.update",
-  saveApplicationLocationSchema.extend({ applicationId: z.uuid() }),
-  async ({ applicationId, ...input }, ctx) => {
-    try {
-      unwrap(await ctx.supabase.rpc("application_update", { p_id: applicationId, p: locationPayload(input) }), "update application");
-      await saveLocationMeta(ctx, applicationId, input);
-    } catch (err) {
-      locationFieldError(err);
-    }
-    revalidatePath("/[locale]/applications/[id]", "page");
-    return null;
-  },
-);
-
-export const setApplicationPartiesAction = defineAction("applications.parties", applicationPartiesSchema, async ({ applicationId, parties }, ctx) => {
-  unwrap(
-    await ctx.supabase.rpc("application_set_parties", {
-      p_id: applicationId,
-      p_parties: parties.map((p) => ({ party_id: p.partyId, role: p.role, share_pct: p.sharePct })),
-    }),
-    "set parties",
-  );
-  return null;
-});
 
 function safeFileName(name: string) {
   return name.normalize("NFKD").replace(/[^\w.-]+/g, "_").slice(-80) || "file";
@@ -193,50 +66,6 @@ export async function uploadDocumentAction(form: FormData) {
   );
   return handler({ applicationId: String(form.get("applicationId") ?? ""), docType: String(form.get("docType") ?? "") });
 }
-
-export const removeDocumentAction = defineAction("applications.remove_document", z.object({ docId: z.uuid() }), async ({ docId }, ctx) => {
-  unwrap(await ctx.supabase.rpc("application_remove_document", { p_doc_id: docId }), "remove document");
-  revalidatePath("/[locale]/applications/[id]", "page");
-  return null;
-});
-
-/** Short-lived signed link, issued only if the caller may see the application. */
-export const documentUrlAction = defineAction("applications.document_url", z.object({ docId: z.uuid() }), async ({ docId }, ctx) => {
-  const path = unwrap(await ctx.supabase.rpc("application_document_path", { p_doc_id: docId }), "document path") as string | null;
-  if (!path) fail("NOT_FOUND");
-  const admin = await createAdminClient();
-  const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, 120);
-  if (error || !data) throw new Error(`signed url: ${error?.message}`);
-  return { url: data.signedUrl };
-});
-
-/** Delete an application for good: its draft land, unpaid invoices and owners (unless used elsewhere) go with it. */
-export const deleteApplicationAction = defineAction("applications.delete", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
-  unwrap(await ctx.supabase.rpc("application_delete", { p_id: applicationId }), "delete application");
-  revalidatePath("/[locale]/applications", "layout");
-  revalidatePath("/[locale]/owners", "layout");
-  revalidatePath("/[locale]/parcels", "layout");
-  return null;
-});
-
-export const submitApplicationAction = defineAction("applications.submit", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
-  const out = unwrap(await ctx.supabase.rpc("application_submit", { p_id: applicationId }), "submit") as { number: string };
-  revalidatePath("/[locale]/applications", "layout");
-  return out;
-});
-
-export const transitionApplicationAction = defineAction("applications.transition", applicationTransitionSchema, async ({ applicationId, action, note }, ctx) => {
-  try {
-    unwrap(await ctx.supabase.rpc("application_transition", { p_id: applicationId, p_action: action, p_note: note }), "transition");
-  } catch (err) {
-    if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "note_required") {
-      throw new AppFailure("VALIDATION", undefined, { note: ["validation.note_required"] });
-    }
-    throw err;
-  }
-  revalidatePath("/[locale]/applications", "layout");
-  return null;
-});
 
 // ---------------------------------------------------------------------------
 // Owners (parties)
@@ -296,30 +125,6 @@ export const searchPartiesAction = defineAction("owners.search", z.object({ q: z
   }[],
 );
 
-export const duplicatePartiesAction = defineAction(
-  "owners.duplicates",
-  z.object({
-    fullName: z.string().max(160),
-    motherName: z.string().max(120).default(""),
-    idType: z.string().max(40).default(""),
-    idNumber: z.string().max(40).default(""),
-    phone: z.string().max(20).default(""),
-    excludeId: z.uuid().nullable().default(null),
-  }),
-  async (v, ctx) =>
-    unwrap(
-      await ctx.supabase.rpc("find_duplicate_parties", {
-        p_full_name: v.fullName,
-        p_mother_name: v.motherName,
-        p_id_type: v.idType,
-        p_id_number: v.idNumber,
-        p_phone: v.phone.replace(/[\s()-]/g, ""),
-        p_exclude: v.excludeId,
-      }),
-      "duplicates",
-    ) as { count: number; matches?: { id: string; full_name: string; mother_name: string | null; phone: string | null; reasons: string[] }[]; reasons?: string[] },
-);
-
 /** "!" — send a surveyor to check the land exists. */
 export const requestSiteCheckAction = defineAction(
   "applications.site_check",
@@ -356,66 +161,3 @@ export const confirmSiteAction = defineAction(
   },
 );
 
-const REGISTER_BLOCKERS = ["site_not_confirmed", "not_submitted", "fee_due", "open_objection", "no_location"];
-
-/** Move to Parcels right after the ✓ site check (Registrar): PUN, account number and owners. */
-export const registerConfirmedAction = defineAction(
-  "applications.register_confirmed",
-  z.object({
-    applicationId: z.uuid(),
-    landUse: z.enum(["residential", "commercial", "mixed", "state", "agricultural", "other"]),
-    note: z.string().trim().max(1000, "validation.too_long").default(""),
-  }),
-  async ({ applicationId, landUse, note }, ctx) => {
-    let out: { pun: string; parcel_id: string };
-    try {
-      out = unwrap(
-        await ctx.supabase.rpc("application_register_confirmed", { p_id: applicationId, p_land_use: landUse, p_note: note || null }),
-        "register",
-      ) as { pun: string; parcel_id: string };
-    } catch (err) {
-      const detail = err instanceof AppFailure ? String(err.values?.detail ?? "") : "";
-      if (err instanceof AppFailure && err.code === "CONFLICT" && REGISTER_BLOCKERS.includes(detail)) {
-        throw new AppFailure("CONFLICT", undefined, { register: [`validation.register_${detail}`] });
-      }
-      throw err;
-    }
-    revalidatePath("/[locale]/applications", "layout");
-    revalidatePath("/[locale]/parcels", "layout");
-    return out;
-  },
-);
-
-/** Staff correct the plot size and the type of house after checking it (then Re-bill). */
-export const correctLandAction = defineAction(
-  "applications.correct_land",
-  z.object({
-    applicationId: z.uuid(),
-    widthM: z.number().gt(0, "validation.plot_size").max(5000, "validation.plot_size"),
-    lengthM: z.number().gt(0, "validation.plot_size").max(5000, "validation.plot_size"),
-    propertyType: z.string().trim().max(60).default(""),
-    note: z.string().trim().max(500).default(""),
-  }),
-  async (v, ctx) => {
-    unwrap(
-      await ctx.supabase.rpc("application_correct_land", {
-        p_id: v.applicationId,
-        p_width: v.widthM,
-        p_length: v.lengthM,
-        p_property_type: v.propertyType,
-        p_note: v.note,
-      }),
-      "correct land",
-    );
-    revalidatePath("/[locale]/applications/[id]", "page");
-    return null;
-  },
-);
-
-/** Re-bill: update the application's invoices to its size and type now (the same invoices). */
-export const rebillAction = defineAction("applications.rebill", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) => {
-  const out = unwrap(await ctx.supabase.rpc("application_rebill", { p_id: applicationId }), "rebill") as { tax: number; service: number; changed: number };
-  revalidatePath("/[locale]/applications/[id]", "page");
-  revalidatePath("/[locale]/invoices", "layout");
-  return out;
-});

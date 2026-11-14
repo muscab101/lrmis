@@ -78,29 +78,6 @@ export const saveMovementAction = defineAction(
   },
 );
 
-export const decideMovementAction = defineAction(
-  "accounting.movement_decide",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: optText(500) }),
-  async (v, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("movement_decide", {
-          p_id: v.id,
-          p_approve: v.approve,
-          p_note: v.note,
-        }),
-        "movement decide",
-      );
-      return done(null);
-    } catch (err) {
-      if (err instanceof AppFailure && err.values?.detail === "note_required") {
-        throw new AppFailure("VALIDATION", err.values, { note: ["validation.note_required"] });
-      }
-      throw err;
-    }
-  },
-);
-
 export const cancelMovementAction = defineAction(
   "accounting.movement_cancel",
   z.object({
@@ -391,18 +368,6 @@ export const saveRuleAction = defineAction(
   },
 );
 
-export const approveRuleAction = defineAction(
-  "accounting.rule_approve",
-  z.object({ id: z.uuid() }),
-  async (v, ctx) =>
-    done(
-      unwrap(
-        await ctx.supabase.rpc("commission_rule_approve", { p_id: v.id }),
-        "rule approve",
-      ) as number,
-    ),
-);
-
 export const retireRuleAction = defineAction(
   "accounting.rule_retire",
   z.object({ id: z.uuid(), to: isoDate }),
@@ -456,24 +421,3 @@ export const createPayoutAction = defineAction(
   },
 );
 
-export const decidePayoutAction = defineAction(
-  "accounting.payout_decide",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: optText(500) }),
-  async (v, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("commission_payout_decide", {
-          p_id: v.id,
-          p_approve: v.approve,
-          p_note: v.note || null,
-        }),
-        "payout decide",
-      );
-      return done(null);
-    } catch (err) {
-      if (err instanceof AppFailure && err.values?.detail === "note_required")
-        throw new AppFailure("VALIDATION", err.values, { note: ["validation.note_required"] });
-      throw err;
-    }
-  },
-);

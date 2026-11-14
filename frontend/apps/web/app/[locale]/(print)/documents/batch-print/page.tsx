@@ -2,6 +2,7 @@ import { Alert, Mono } from "@dhulka/ui/misc";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { BatchPrintControls } from "@/components/documents/print-controls";
 import { CertificateSheet } from "@/components/documents/certificate-sheet";
+import { CertificateLocked } from "@/components/documents/certificate-locked";
 import { IdCardSheet } from "@/components/documents/id-card-sheet";
 import { OpenInApp } from "@/components/documents/open-in-app";
 import { requirePermission } from "@/lib/server/auth";
@@ -67,7 +68,11 @@ export default async function BatchPrintPage({ params, searchParams }: { params:
               const verifyUrl = `${site}/${lang}/verify/${d.verify_code}`;
               return (
                 <div key={d.id} className={`shadow-sm print:shadow-none ${d.type === "certificate" ? "sheet-cert" : "sheet-card"}`}>
-                  {d.type === "certificate" ? await CertificateSheet({ doc: d, verifyUrl }) : await IdCardSheet({ doc: d, verifyUrl })}
+                  {d.type === "certificate"
+                    ? viewer.can("certificates.design")
+                      ? await CertificateSheet({ doc: d, verifyUrl })
+                      : <CertificateLocked serial={d.serial} />
+                    : await IdCardSheet({ doc: d, verifyUrl })}
                 </div>
               );
             }),

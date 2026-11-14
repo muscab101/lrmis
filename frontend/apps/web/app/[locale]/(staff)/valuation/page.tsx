@@ -11,11 +11,11 @@ import { TransferTypesEditor } from "@/components/valuation/transfer-types-edito
 import { AssessmentRowActions } from "@/components/valuation/row-actions";
 import { PriceCheck } from "@/components/valuation/price-check";
 import { RatesPanel } from "@/components/valuation/rates-panel";
-import { AppealQueue, AssessNeighbourhoodButton, ExemptionQueue } from "@/components/valuation/review-queues";
+import { AssessNeighbourhoodButton } from "@/components/valuation/review-queues";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
-import { listAppeals, listAssessments, listExemptions, listFeeTypes, listGrades, listOwnerTypes, listPricedNeighbourhoods, listTransferTypes, neighbourhoodPrices, valuationCounts } from "@/lib/server/valuation";
+import { listAssessments, listFeeTypes, listGrades, listOwnerTypes, listPricedNeighbourhoods, listTransferTypes, neighbourhoodPrices } from "@/lib/server/valuation";
 import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
@@ -23,9 +23,9 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const TABS = ["price_check", "rates", "grades", "fees", "transfer_types", "owner_types", "requests", "assessments"] as const;
-/** Old links: Exemptions and Appeals are one tab now. */
-const OLD_TABS: Record<string, Tab> = { exemptions: "requests", appeals: "requests" };
+const TABS = ["price_check", "rates", "grades", "fees", "transfer_types", "owner_types", "assessments"] as const;
+/** Exemptions and appeals are no longer used: their old links open the first tab. */
+const OLD_TABS: Record<string, Tab> = {};
 type Tab = (typeof TABS)[number];
 
 export default async function ValuationPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -37,10 +37,8 @@ export default async function ValuationPage({ params, searchParams }: { params: 
   const lang = await getLocale();
   const sp = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : (OLD_TABS[sp.tab ?? ""] ?? "price_check");
-  const counts = await valuationCounts();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
-  const waiting = counts.exemptions_pending + counts.appeals_open;
-  const badge: Partial<Record<Tab, number>> = { ...(waiting > 0 ? { requests: waiting } : {}) };
+  const badge: Partial<Record<Tab, number>> = {};
 
   let body: React.ReactNode = null;
   const canReassess = viewer.can("valuation.create");
@@ -137,21 +135,6 @@ export default async function ValuationPage({ params, searchParams }: { params: 
     body = <OwnerTypesEditor items={await listOwnerTypes()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "transfer_types") {
     body = <TransferTypesEditor items={await listTransferTypes()} canEdit={viewer.can("valuation.update")} />;
-  } else {
-    // Exemptions and appeals: both are requests someone decides.
-    const all = sp.all === "1" ? "any" : null;
-    body = (
-      <div className="divide-y">
-        <section>
-          <p className="px-4 pt-4 text-sm font-semibold">{t("tabs.exemptions")}</p>
-          <ExemptionQueue rows={await listExemptions(all ?? "pending")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} canEdit={viewer.can("valuation.create")} />
-        </section>
-        <section>
-          <p className="px-4 pt-4 text-sm font-semibold">{t("tabs.appeals")}</p>
-          <AppealQueue rows={await listAppeals(all ?? "open")} me={viewer.user.id} canDecide={viewer.can("valuation.approve")} canEdit={viewer.can("valuation.create")} />
-        </section>
-      </div>
-    );
   }
 
   return (
@@ -172,13 +155,6 @@ export default async function ValuationPage({ params, searchParams }: { params: 
         </nav>
       </PageHeader>
       <Card className="overflow-hidden">{body}</Card>
-      {tab === "requests" && (
-        <p className="mt-3 text-sm">
-          <Link href={`/valuation?tab=${tab}${sp.all === "1" ? "" : "&all=1"}`} className="text-primary hover:underline">
-            {sp.all === "1" ? t("showPendingOnly") : t("showAll")}
-          </Link>
-        </p>
-      )}
     </>
   );
 }

@@ -3,7 +3,7 @@
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { NativeSelect, Switch } from "@dhulka/ui/form-controls";
-import { Input, Textarea } from "@dhulka/ui/input";
+import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { toast } from "@dhulka/ui/toaster";
@@ -11,13 +11,12 @@ import { Inbox } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
-  approveShiftAction,
-  decideReversalAction,
   matchPaymentAction,
   recordBankPaymentAction,
   toggleProviderAction,
 } from "@/app/[locale]/(staff)/payments/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { PaymentRow, ReversalRow, ShiftRow } from "@/lib/server/payments";
 
@@ -120,8 +119,6 @@ export function ReversalQueue({
   const t = useTranslations("payments");
   const format = useFormatter();
   const usd = usdFmt(format);
-  const [target, setTarget] = useState<{ id: string; approve: boolean } | null>(null);
-  const [note, setNote] = useState("");
   if (rows.length === 0)
     return (
       <EmptyState icon={<Inbox />} title={t("noReversals")} description={t("noReversalsBody")} />
@@ -158,22 +155,7 @@ export function ReversalQueue({
               {canDecide && (
                 <TableCell className="whitespace-nowrap text-end">
                   {r.status === "pending" && r.requested_by !== me && (
-                    <span className="inline-flex gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setTarget({ id: r.id, approve: false })}
-                      >
-                        {t("reject")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setTarget({ id: r.id, approve: true })}
-                      >
-                        {t("approveReversal")}
-                      </Button>
-                    </span>
+                    <GoApprove tab="accounting" iconOnly />
                   )}
                 </TableCell>
               )}
@@ -181,32 +163,6 @@ export function ReversalQueue({
           ))}
         </TableBody>
       </Table>
-      <FormDialog
-        open={target !== null}
-        onOpenChange={(o) => {
-          if (!o) {
-            setTarget(null);
-            setNote("");
-          }
-        }}
-        title={target?.approve ? t("approveReversalTitle") : t("rejectReversalTitle")}
-        description={target?.approve ? t("approveReversalBody") : ""}
-        confirmLabel={target?.approve ? t("approveReversal") : t("reject")}
-        destructive={target?.approve}
-        successMessage={t("decided")}
-        submit={() => decideReversalAction({ id: target!.id, approve: target!.approve, note })}
-      >
-        {(fe) => (
-          <Field
-            id="note"
-            label={target?.approve ? t("noteOptional") : t("reason")}
-            error={fe("note")}
-            required={!target?.approve}
-          >
-            <Textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
-          </Field>
-        )}
-      </FormDialog>
     </>
   );
 }
@@ -223,7 +179,6 @@ export function ShiftApprovals({
   const t = useTranslations("payments");
   const format = useFormatter();
   const usd = usdFmt(format);
-  const router = useRouter();
   if (rows.length === 0)
     return <EmptyState icon={<Inbox />} title={t("noShifts")} description={t("noShiftsBody")} />;
   return (
@@ -266,18 +221,7 @@ export function ShiftApprovals({
             {canApprove && (
               <TableCell className="text-end">
                 {s.status === "closed" && s.cashier_id !== me && (
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      const res = await approveShiftAction({ id: s.id });
-                      if (res.ok) {
-                        toast.success(t("shiftApproved"));
-                        router.refresh();
-                      } else toast.error(t("actionFailed"));
-                    }}
-                  >
-                    {t("approve")}
-                  </Button>
+                  <GoApprove tab="accounting" iconOnly />
                 )}
               </TableCell>
             )}

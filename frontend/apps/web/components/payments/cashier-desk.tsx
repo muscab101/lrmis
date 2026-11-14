@@ -202,10 +202,10 @@ export function TakePayment({
             </Button>
           </form>
 
-          {/* Bills of land not registered yet wait: the database refuses them too. */}
+          {/* Land not registered yet pays like any other; once its bills are paid it registers by itself. */}
           {partialLand && (
-            <Alert tone="warning" title={t("notRegisteredTitle", { pun: found!.parcel.pun ?? "—" })} className="border-t">
-              {t("notRegisteredBody")}
+            <Alert tone="info" title={t("partialPaysTitle")} className="border-t">
+              {t("partialPaysBody")}
             </Alert>
           )}
           {demolishedLand && (
@@ -214,7 +214,7 @@ export function TakePayment({
             </Alert>
           )}
 
-          {found && !partialLand && !demolishedLand && found.units.length > 0 && (
+          {found && !demolishedLand && found.units.length > 0 && (
             <div className="space-y-3 border-t pt-4">
               <div>
                 <p className="font-medium">
@@ -242,7 +242,7 @@ export function TakePayment({
           )}
 
           {/* A house, or a flats building's own open-ground bill (its flats are paid one by one above). */}
-          {found && !partialLand && !demolishedLand && (found.units.length === 0 || found.parcel.layout === "house" || (found.parcel.layout === "flats" && found.invoices.length > 0)) && (
+          {found && !demolishedLand && (found.units.length === 0 || found.parcel.layout === "house" || (found.parcel.layout === "flats" && found.invoices.length > 0)) && (
             <div className="space-y-4 border-t pt-4">
               <div>
                 <p className="font-medium">
@@ -251,7 +251,7 @@ export function TakePayment({
                 <p className="text-sm text-muted-foreground">{t("owedNow", { amount: usd(owed) })}</p>
               </div>
               {/* Just in case the desk can't take it: ask for the money on the payer's phone. */}
-              {found.invoices.length > 0 && !partialLand && !demolishedLand && (
+              {found.invoices.length > 0 && !demolishedLand && (
                 <PushPayment
                   key={found.parcel.id}
                   billId={v.invoiceId}

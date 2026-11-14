@@ -7,46 +7,27 @@ import { Checkbox } from "@dhulka/ui/form-controls";
 import { Alert, EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { toast } from "@dhulka/ui/toaster";
-import { BadgeCheck, Inbox, Printer, RefreshCw, Zap } from "lucide-react";
+import { Ban, ChevronDown, Inbox, Printer, RefreshCw, RotateCcw, Zap } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@dhulka/ui/dropdown-menu";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
-  type BulkIssueResult,
   cancelDocumentAction,
-  decideReprintAction,
-  issueBulkAction,
-  issueCertificateAction,
   printNowAction,
   reprintDirectAction,
   requestReissueAction,
   requestReprintAction,
 } from "@/app/[locale]/(staff)/documents/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { usePrintNow } from "@/components/documents/use-print-now";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
 import type { DocumentChange, DocumentRow, ReprintRow } from "@/lib/server/certificates";
 
-export function IssueCertificateButton({ parcelId, pun, size = "sm" }: { parcelId: string; pun: string; size?: "sm" | "default" }) {
-  const t = useTranslations("documents");
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Button size={size} onClick={() => setOpen(true)}>
-        <BadgeCheck aria-hidden />
-        {t("issue")}
-      </Button>
-      <FormDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={t("issueTitle")}
-        description={t("issueBody", { pun })}
-        confirmLabel={t("issue")}
-        submit={() => issueCertificateAction({ parcelId })}
-        onDone={(d) => toast.success(t("issued", { cards: (d as { id_cards: number }).id_cards }))}
-      />
-    </>
-  );
+/** A certificate ready to issue: issuing is approved on the Applications page (the one place for approvals). */
+export function IssueCertificateButton({ size = "sm" }: { parcelId?: string; pun?: string; size?: "sm" | "default" }) {
+  return <GoApprove tab="certificates" size={size} />;
 }
 
 type DocDialog = "reprint" | "reissue" | "direct" | "cancel";
@@ -58,7 +39,10 @@ export function DocumentActions({
   changes = [],
   pendingReason = null,
   printed = false,
+  reprintReady = null,
 }: {
+  /** The new copy from an approved reprint request, not printed yet: Reprint now prints it. */
+  reprintReady?: string | null;
   id: string;
   status: string;
   can: { reprint: boolean; cancel: boolean; direct?: boolean; print?: boolean };
@@ -74,6 +58,7 @@ export function DocumentActions({
   const locale = useLocale();
   const router = useRouter();
   const [printing, setPrinting] = useState(false);
+  const reprinting = usePrintNow();
   const [dialog, setDialog] = useState<null | DocDialog>(null);
   const [reason, setReason] = useState("");
   const pending = pendingReason !== null;
@@ -112,27 +97,45 @@ export function DocumentActions({
           {printing ? t("printNowSending") : t("printNow")}
         </Button>
       )}
-      {status === "valid" && can.reprint && !pending && (
-        <>
-          <Button size="sm" variant="outline" onClick={() => setDialog("reprint")}>
-            {t("requestReprint")}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setDialog("reissue")}>
-            <RefreshCw aria-hidden />
-            {t("reissue")}
-          </Button>
-        </>
-      )}
-      {status === "valid" && can.direct && (
-        <Button size="sm" variant="outline" onClick={() => setDialog("direct")}>
-          <Zap aria-hidden />
-          {t("directReprint")}
-        </Button>
-      )}
-      {status === "valid" && can.cancel && (
-        <Button size="sm" variant="destructive" onClick={() => setDialog("cancel")}>
-          {t("cancelDocument")}
-        </Button>
+      {/* Everything else in one menu. A reprint is asked for first; once approved, Reprint now prints the new copy. */}
+      {((status === "valid" && ((can.reprint && !pending && !reprintReady) || can.cancel)) || (reprintReady && can.print)) && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline">
+              {t("moreActions")}
+              <ChevronDown aria-hidden />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {reprintReady && can.print ? (
+              <DropdownMenuItem onSelect={() => void reprinting.print([reprintReady])}>
+                <Zap aria-hidden />
+                {t("reprintNow")}
+              </DropdownMenuItem>
+            ) : (
+              status === "valid" &&
+              can.reprint &&
+              !pending && (
+                <>
+                  <DropdownMenuItem onSelect={() => setDialog("reprint")}>
+                    <RotateCcw aria-hidden />
+                    {t("requestReprint")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setDialog("reissue")}>
+                    <RefreshCw aria-hidden />
+                    {t("reissue")}
+                  </DropdownMenuItem>
+                </>
+              )
+            )}
+            {status === "valid" && can.cancel && (
+              <DropdownMenuItem className="text-danger" onSelect={() => setDialog("cancel")}>
+                <Ban aria-hidden />
+                {t("cancelDocument")}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
       <FormDialog
         open={dialog !== null}
@@ -191,149 +194,66 @@ export function ChangeList({ changes }: { changes: DocumentChange[] }) {
   );
 }
 
-export function ReprintQueue({
-  rows,
-  me,
-  canDecide,
-  isSuperAdmin = false,
-  canCashier = false,
-}: {
-  rows: ReprintRow[];
-  me: string;
-  canDecide: boolean;
-  isSuperAdmin?: boolean;
-  canCashier?: boolean;
-}) {
+/** Reprint and reissue requests: a list to follow (they are approved on the Applications page). */
+export function ReprintQueue({ rows, me, canCashier = false }: { rows: ReprintRow[]; me: string; canCashier?: boolean }) {
   const t = useTranslations("documents");
-  const reprinting = usePrintNow();
-  const [target, setTarget] = useState<{ id: string; mode: "approve" | "reject" | "direct" } | null>(null);
-  const [note, setNote] = useState("");
   if (rows.length === 0) return <EmptyState icon={<Inbox />} title={t("noReprints")} description={t("noReprintsBody")} />;
-  const row = rows.find((r) => r.id === target?.id);
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("document")}</TableHead>
-            <TableHead>{t("requestKind")}</TableHead>
-            <TableHead>PUN</TableHead>
-            <TableHead>{t("reason")}</TableHead>
-            <TableHead>{t("fee")}</TableHead>
-            <TableHead>{t("statusLabel")}</TableHead>
-            {(canDecide || isSuperAdmin) && <TableHead />}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((r) => {
-            const feeOpen = r.fee_invoice !== null && r.fee_invoice.status !== "paid" && r.fee_invoice.status !== "cancelled";
-            const mine = r.requested_by === me;
-            return (
-              <TableRow key={r.id}>
-                <TableCell>
-                  <Link href={`/documents/${r.document?.id}`} className="hover:text-primary">
-                    <Mono>{r.document?.serial}</Mono>
-                  </Link>
-                </TableCell>
-                <TableCell className="text-sm">{t(`requestKinds.${r.kind}`)}</TableCell>
-                <TableCell>
-                  <Mono>{r.document?.parcel?.pun}</Mono>
-                </TableCell>
-                <TableCell className="max-w-xs text-sm">{r.reason}</TableCell>
-                <TableCell className="text-sm">
-                  {r.fee_invoice ? (
-                    <span className="inline-flex flex-wrap items-center gap-x-2">
-                      <Link href={`/invoices/${r.fee_invoice.id}`} className="underline">
-                        <Mono>{r.fee_invoice.number}</Mono> · {t(`feeStatus.${r.fee_invoice.status === "paid" ? "paid" : "unpaid"}`)}
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>{t("document")}</TableHead>
+          <TableHead>{t("requestKind")}</TableHead>
+          <TableHead>PUN</TableHead>
+          <TableHead>{t("reason")}</TableHead>
+          <TableHead>{t("fee")}</TableHead>
+          <TableHead>{t("statusLabel")}</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((r) => {
+          const feeOpen = r.fee_invoice !== null && r.fee_invoice.status !== "paid" && r.fee_invoice.status !== "cancelled";
+          return (
+            <TableRow key={r.id}>
+              <TableCell>
+                <Link href={`/documents/${r.document?.id}`} className="hover:text-primary">
+                  <Mono>{r.document?.serial}</Mono>
+                </Link>
+              </TableCell>
+              <TableCell className="text-sm">{t(`requestKinds.${r.kind}`)}</TableCell>
+              <TableCell>
+                <Mono>{r.document?.parcel?.pun}</Mono>
+              </TableCell>
+              <TableCell className="max-w-xs text-sm">{r.reason}</TableCell>
+              <TableCell className="text-sm">
+                {r.fee_invoice ? (
+                  <span className="inline-flex flex-wrap items-center gap-x-2">
+                    <Link href={`/invoices/${r.fee_invoice.id}`} className="underline">
+                      <Mono>{r.fee_invoice.number}</Mono> · {t(`feeStatus.${r.fee_invoice.status === "paid" ? "paid" : "unpaid"}`)}
+                    </Link>
+                    {feeOpen && r.status === "pending" && canCashier && (
+                      <Link href={`/cashier?find=${encodeURIComponent(r.fee_invoice.number)}`} className="text-xs text-primary underline">
+                        {t("takePayment")}
                       </Link>
-                      {feeOpen && r.status === "pending" && canCashier && (
-                        <Link href={`/cashier?find=${encodeURIComponent(r.fee_invoice.number)}`} className="text-xs text-primary underline">
-                          {t("takePayment")}
-                        </Link>
-                      )}
-                    </span>
-                  ) : r.kind === "correction" ? (
-                    <span className="text-muted-foreground">{t("noFee")}</span>
-                  ) : (
-                    "—"
-                  )}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {t(`decision.${r.status}`)}
-                  {r.status === "pending" && mine && !isSuperAdmin && <span className="block text-xs text-muted-foreground">{t("waitingOther")}</span>}
-                  {r.status === "pending" && feeOpen && !mine && canDecide && <span className="block text-xs text-status-pending">{t("waitingFee")}</span>}
-                </TableCell>
-                {(canDecide || isSuperAdmin) && (
-                  <TableCell className="text-end whitespace-nowrap">
-                    {r.status === "pending" && (
-                      <span className="inline-flex gap-1.5">
-                        {canDecide && !mine && (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => setTarget({ id: r.id, mode: "reject" })}>
-                              {t("reject")}
-                            </Button>
-                            <Button size="sm" disabled={feeOpen} onClick={() => setTarget({ id: r.id, mode: "approve" })}>
-                              <Printer aria-hidden />
-                              {t("approvePrint")}
-                            </Button>
-                          </>
-                        )}
-                        {isSuperAdmin && (
-                          <Button size="sm" variant="outline" onClick={() => setTarget({ id: r.id, mode: "direct" })}>
-                            <Zap aria-hidden />
-                            {t("directReprint")}
-                          </Button>
-                        )}
-                      </span>
                     )}
-                  </TableCell>
+                  </span>
+                ) : r.kind === "correction" ? (
+                  <span className="text-muted-foreground">{t("noFee")}</span>
+                ) : (
+                  "—"
                 )}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-      <FormDialog
-        open={target !== null}
-        onOpenChange={(o) => {
-          if (!o) {
-            setTarget(null);
-            setNote("");
-          }
-        }}
-        title={target?.mode === "approve" ? t("approveReprint") : target?.mode === "direct" ? t("directTitle") : t("rejectReprint")}
-        description={target?.mode === "approve" ? t("approveReprintBody") : target?.mode === "direct" ? t("directBodyPending") : ""}
-        confirmLabel={target?.mode === "approve" ? t("approvePrint") : target?.mode === "direct" ? t("directConfirm") : t("reject")}
-        destructive={target?.mode === "reject"}
-        successMessage={t("decided")}
-        submit={() =>
-          target!.mode === "direct"
-            ? reprintDirectAction({ id: row!.document!.id, reason: "" })
-            : decideReprintAction({ id: target!.id, approve: target!.mode === "approve", note })
-        }
-        onDone={(d) => {
-          // The new copy goes straight to the printer at this person's point of sale (no page opens).
-          const next = (d as { document_id?: string } | null)?.document_id;
-          if (next) void reprinting.print([next]);
-        }}
-      >
-        {target?.mode === "direct"
-          ? undefined
-          : (fe) => (
-              <Field id="note" label={target?.mode === "approve" ? t("noteOptional") : t("reason")} error={fe("note")} required={target?.mode === "reject"}>
-                <Textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
-              </Field>
-            )}
-      </FormDialog>
-    </>
+              </TableCell>
+              <TableCell className="text-sm">
+                {t(`decision.${r.status}`)}
+                {r.status === "pending" && r.requested_by === me && <span className="block text-xs text-muted-foreground">{t("waitingOther")}</span>}
+                {r.status === "pending" && feeOpen && r.requested_by !== me && <span className="block text-xs text-status-pending">{t("waitingFee")}</span>}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
-}
-
-/** A bulk failure ("CONFLICT: not_eligible:unpaid,no_owner") as readable text. */
-function failureText(t: (key: string) => string, te: { has: (key: string) => boolean; (key: string): string }, error: string) {
-  const detail = error.replace(/^[A-Z_]+:\s*/, "");
-  if (detail.startsWith("not_eligible:")) return detail.slice(13).split(",").map((b) => t(`blockers.${b}`)).join(" · ");
-  return te.has(`details.${detail}`) ? te(`details.${detail}`) : detail;
 }
 
 export interface IssueRow {
@@ -343,95 +263,35 @@ export interface IssueRow {
   blockers: string[];
 }
 
-/** "To issue": tick eligible parcels and issue their certificates (and owners' ID cards) together. */
-export function IssueQueue({ rows, canIssue }: { rows: IssueRow[]; canIssue: boolean }) {
+/** "To issue": the registered land waiting for a certificate, and what still stops it (issued from Applications). */
+export function IssueQueue({ rows }: { rows: IssueRow[] }) {
   const t = useTranslations("documents");
-  const te = useTranslations("errors");
   const format = useFormatter();
-  const eligible = rows.filter((r) => r.blockers.length === 0);
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [open, setOpen] = useState(false);
-  const [result, setResult] = useState<BulkIssueResult | null>(null);
-  const toggle = (id: string, on: boolean) => setPicked((p) => (on ? new Set(p).add(id) : new Set([...p].filter((x) => x !== id))));
-  const all = eligible.length > 0 && eligible.every((r) => picked.has(r.id));
   return (
-    <>
-      {canIssue && eligible.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5 text-sm">
-          <span className="text-muted-foreground">{t("selected", { count: picked.size })}</span>
-          <Button size="sm" className="ms-auto" disabled={picked.size === 0} onClick={() => setOpen(true)}>
-            <BadgeCheck aria-hidden />
-            {t("issueSelected", { count: picked.size })}
-          </Button>
-        </div>
-      )}
-      {result && result.failed.length > 0 && (
-        <Alert tone="warning" title={t("bulkIssueFailed", { count: result.failed.length })} className="m-3">
-          <ul className="mt-1 list-disc ps-5">
-            {result.failed.map((f) => (
-              <li key={f.parcel_id}>
-                <Mono>{f.pun}</Mono> — {failureText(t, te, f.error)}
-              </li>
-            ))}
-          </ul>
-        </Alert>
-      )}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {canIssue && (
-              <TableHead className="w-10">
-                <Checkbox
-                  aria-label={t("selectAll")}
-                  checked={all}
-                  disabled={eligible.length === 0}
-                  onCheckedChange={(v) => setPicked(v === true ? new Set(eligible.map((r) => r.id)) : new Set())}
-                />
-              </TableHead>
-            )}
-            <TableHead>PUN</TableHead>
-            <TableHead>{t("registered")}</TableHead>
-            <TableHead>{t("eligibility")}</TableHead>
-            <TableHead />
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>PUN</TableHead>
+          <TableHead>{t("registered")}</TableHead>
+          <TableHead>{t("eligibility")}</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((p) => (
+          <TableRow key={p.id}>
+            <TableCell>
+              <Link href={`/parcels/${p.id}`} className="hover:text-primary">
+                <Mono>{p.pun}</Mono>
+              </Link>
+            </TableCell>
+            <TableCell className="text-sm">{p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"}</TableCell>
+            <TableCell className="text-sm">
+              {p.blockers.length === 0 ? <span className="text-status-approved">{t("eligible")}</span> : p.blockers.map((b) => t(`blockers.${b}`)).join(" · ")}
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((p) => (
-            <TableRow key={p.id}>
-              {canIssue && (
-                <TableCell>
-                  {p.blockers.length === 0 && <Checkbox aria-label={p.pun} checked={picked.has(p.id)} onCheckedChange={(v) => toggle(p.id, v === true)} />}
-                </TableCell>
-              )}
-              <TableCell>
-                <Link href={`/parcels/${p.id}`} className="hover:text-primary">
-                  <Mono>{p.pun}</Mono>
-                </Link>
-              </TableCell>
-              <TableCell className="text-sm">{p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"}</TableCell>
-              <TableCell className="text-sm">
-                {p.blockers.length === 0 ? <span className="text-status-approved">{t("eligible")}</span> : p.blockers.map((b) => t(`blockers.${b}`)).join(" · ")}
-              </TableCell>
-              <TableCell className="text-end">{p.blockers.length === 0 && canIssue && <IssueCertificateButton parcelId={p.id} pun={p.pun} />}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <FormDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={t("issueSelectedTitle", { count: picked.size })}
-        description={t("issueSelectedBody")}
-        confirmLabel={t("issueSelected", { count: picked.size })}
-        submit={() => issueBulkAction({ parcelIds: [...picked] })}
-        onDone={(d) => {
-          const r = d as BulkIssueResult;
-          setResult(r);
-          setPicked(new Set());
-          if (r.issued > 0) toast.success(t("bulkIssued", { count: r.issued, cards: r.id_cards }));
-        }}
-      />
-    </>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

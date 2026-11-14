@@ -18,26 +18,6 @@ function field(err: unknown, map: Record<string, string>): never {
   throw err;
 }
 
-export const verifyPaymentsAction = defineAction(
-  "collections.verify",
-  z.object({
-    ids: z.array(z.uuid()).min(1).max(500),
-    note: z.string().trim().max(300).default(""),
-  }),
-  async ({ ids, note }, ctx) => {
-    try {
-      return done(
-        unwrap(
-          await ctx.supabase.rpc("payment_verify", { p_ids: ids, p_note: note || null }),
-          "verify",
-        ) as number,
-      );
-    } catch (err) {
-      field(err, { note_required: "note" });
-    }
-  },
-);
-
 export const disputePaymentAction = defineAction(
   "collections.dispute",
   z.object({ id: z.uuid(), reason: z.string().trim().min(5, "validation.reason").max(500) }),
@@ -90,26 +70,6 @@ export const requestCorrectionAction = defineAction(
   },
 );
 
-export const decideCorrectionAction = defineAction(
-  "collections.correction_decide",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().trim().max(500).default("") }),
-  async ({ id, approve, note }, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("payment_correction_decide", {
-          p_id: id,
-          p_approve: approve,
-          p_note: note || null,
-        }),
-        "decide correction",
-      );
-      return done(null);
-    } catch (err) {
-      field(err, { note_required: "note" });
-    }
-  },
-);
-
 const channelAmounts = z.partialRecord(
   z.enum(["cash", "evc_plus", "edahab", "zaad", "bank_transfer", "card", "other"]),
   z.coerce.number().min(0, "validation.amount").max(100_000_000),
@@ -138,26 +98,6 @@ export const submitReconAction = defineAction(
       );
     } catch (err) {
       field(err, { note_required: "note", actual_missing: "actual" });
-    }
-  },
-);
-
-export const decideReconAction = defineAction(
-  "collections.recon_decide",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().trim().max(1000).default("") }),
-  async ({ id, approve, note }, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("cashier_recon_decide", {
-          p_id: id,
-          p_approve: approve,
-          p_note: note || null,
-        }),
-        "decide reconciliation",
-      );
-      return done(null);
-    } catch (err) {
-      field(err, { note_required: "note" });
     }
   },
 );
@@ -348,26 +288,6 @@ export const submitBatchAction = defineAction(
   },
 );
 
-export const decideBatchAction = defineAction(
-  "collections.statement_decide",
-  z.object({ id: z.uuid(), approve: z.boolean(), note: z.string().trim().max(1000).default("") }),
-  async (v, ctx) => {
-    try {
-      unwrap(
-        await ctx.supabase.rpc("recon_batch_decide", {
-          p_batch: v.id,
-          p_approve: v.approve,
-          p_note: v.note || null,
-        }),
-        "decide batch",
-      );
-      return done(null);
-    } catch (err) {
-      field(err, { note_required: "note" });
-    }
-  },
-);
-
 export const deleteBatchAction = defineAction(
   "collections.statement_delete",
   z.object({ id: z.uuid() }),
@@ -377,16 +297,3 @@ export const deleteBatchAction = defineAction(
   },
 );
 
-/** Approve every waiting payment one cashier took at one point of sale in the period (never your own takings). */
-export const approvePosCashierAction = defineAction(
-  "collections.pos_approve",
-  z.object({ pos: z.uuid(), cashier: z.uuid(), from: z.iso.date(), to: z.iso.date(), district: z.uuid().nullable().default(null) }),
-  // For online payments shown under a district office, only that district's (district).
-  async (v, ctx) =>
-    done(
-      unwrap(
-        await ctx.supabase.rpc("pos_cashier_approve", { p_pos: v.pos, p_cashier: v.cashier, p_from: v.from, p_to: v.to, p_district: v.district }),
-        "approve point of sale",
-      ) as number,
-    ),
-);

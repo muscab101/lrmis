@@ -147,7 +147,6 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                 // A building's sizes are fixed once saved. A flat or house can be deleted until it's registered; land with money received can't.
                 update: viewer.can("parcels.update") && !holdsUnits,
                 lock: viewer.can("parcels.lock"),
-                register: viewer.can("parcels.approve"),
                 delete: (!p.parent_id || partial) && !hasMoney && (partial ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered")),
               }}
             />
@@ -205,9 +204,8 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
           <CardContent>
             <PartialRebill
               parcelId={p.id}
-              land={p.house_no ? `${t("houseNoShort")} ${fullHouseNo(p.neighbourhood?.code, p.house_no)}` : t("noPun")}
               check={billCheck}
-              can={{ rebill: viewer.can("parcels.update") && !p.locked_at, approve: viewer.can("parcels.approve") && !p.locked_at }}
+              can={{ rebill: viewer.can("parcels.update") && !p.locked_at }}
             />
           </CardContent>
         </Card>

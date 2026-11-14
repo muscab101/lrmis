@@ -62,9 +62,6 @@ export const createTransferAction = defineAction(
 );
 
 export const submitTransferAction = defineAction("transfers.submit", z.object({ id }), async (v, ctx) => rpc(ctx, "transfer_submit", { p_id: v.id }));
-export const decideTransferAction = defineAction("transfers.decide", z.object({ id, approve: z.boolean(), note }), async (v, ctx) =>
-  rpc(ctx, "transfer_decide", { p_id: v.id, p_approve: v.approve, p_note: v.note }),
-);
 export const cancelTransferAction = defineAction("transfers.cancel", z.object({ id, note }), async (v, ctx) => rpc(ctx, "transfer_cancel", { p_id: v.id, p_reason: v.note }));
 
 // ---- Parcel changes ----

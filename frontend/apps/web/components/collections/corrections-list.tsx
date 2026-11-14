@@ -1,14 +1,9 @@
 "use client";
 
 import { StatusBadge } from "@dhulka/ui/badge";
-import { Button } from "@dhulka/ui/button";
-import { Field } from "@dhulka/ui/field";
-import { Textarea } from "@dhulka/ui/input";
 import { Mono } from "@dhulka/ui/misc";
 import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
-import { decideCorrectionAction } from "@/app/[locale]/(staff)/collections/actions";
-import { FormDialog } from "@/components/forms/form-dialog";
+import { GoApprove } from "@/components/approvals/go-approve";
 import { Link } from "@/i18n/navigation";
 import type { CorrectionRow } from "@/lib/server/collections";
 
@@ -17,8 +12,6 @@ export function CorrectionsList({ rows, canDecide, me, showReceipt = true }: { r
   const t = useTranslations("collections.corrections");
   const tp = useTranslations("payments");
   const format = useFormatter();
-  const [deciding, setDeciding] = useState<{ row: CorrectionRow; approve: boolean } | null>(null);
-  const [note, setNote] = useState("");
   const dt = (s: string) => format.dateTime(new Date(s), { dateStyle: "medium", timeStyle: "short" });
   const value = (k: string, v: string | null | undefined) => {
     if (v === null || v === undefined || v === "") return "—";
@@ -64,34 +57,12 @@ export function CorrectionsList({ rows, canDecide, me, showReceipt = true }: { r
             </p>
             {canDecide && c.status === "pending" && c.requested_by !== me && (
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => setDeciding({ row: c, approve: true })}>
-                  {t("approve")}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setDeciding({ row: c, approve: false })}>
-                  {t("reject")}
-                </Button>
+                <GoApprove tab="accounting" />
               </div>
             )}
           </li>
         ))}
       </ul>
-      <FormDialog
-        open={deciding !== null}
-        onOpenChange={(o) => !o && setDeciding(null)}
-        title={deciding?.approve ? t("approveTitle", { number: deciding.row.number }) : t("rejectTitle", { number: deciding?.row.number ?? "" })}
-        description={deciding?.approve ? t("approveBody") : t("rejectBody")}
-        confirmLabel={deciding?.approve ? t("approve") : t("reject")}
-        destructive={deciding ? !deciding.approve : false}
-        submit={() => decideCorrectionAction({ id: deciding!.row.id, approve: deciding!.approve, note })}
-        successMessage={deciding?.approve ? t("approved") : t("rejected")}
-        onDone={() => setNote("")}
-      >
-        {(fe) => (
-          <Field id="decisionNote" label={deciding?.approve ? t("noteOptional") : t("noteRequired")} error={fe("note")} required={deciding ? !deciding.approve : false}>
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={500} />
-          </Field>
-        )}
-      </FormDialog>
     </>
   );
 }

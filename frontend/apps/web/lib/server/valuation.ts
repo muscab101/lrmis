@@ -147,13 +147,6 @@ export interface ExemptionRow {
   parcel: { id: string; pun: string | null } | null;
 }
 
-export async function listExemptions(status: "pending" | "any") {
-  const supabase = await createClient();
-  let req = supabase.from("exemptions").select("id, kind, pct, reason, valid_from, valid_to, status, requested_by, requested_at, decision_note, parcel:parcels(id, pun)");
-  if (status === "pending") req = req.eq("status", "pending");
-  return unwrap(await req.order("requested_at", { ascending: false }).limit(100), "exemptions") as unknown as ExemptionRow[];
-}
-
 export interface AppealRow {
   id: string;
   reason: string;
@@ -164,17 +157,6 @@ export interface AppealRow {
   decision_note: string | null;
   assessment: { id: string; number: string; year: number; total: number } | null;
   parcel: { id: string; pun: string | null } | null;
-}
-
-export async function listAppeals(status: "open" | "any") {
-  const supabase = await createClient();
-  let req = supabase
-    .from("appeals")
-    .select(
-      "id, reason, requested_total, status, filed_by, filed_at, decision_note, assessment:assessments!appeals_assessment_id_fkey(id, number, year, total), parcel:parcels(id, pun)",
-    );
-  if (status === "open") req = req.eq("status", "open");
-  return unwrap(await req.order("filed_at", { ascending: false }).limit(100), "appeals") as unknown as AppealRow[];
 }
 
 export async function valuationCounts(): Promise<{ assessments: number; exemptions_pending: number; appeals_open: number }> {
