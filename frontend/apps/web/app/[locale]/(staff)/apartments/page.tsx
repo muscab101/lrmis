@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Building2, Info } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
-import { tabClass } from "@/components/shell/tabs";
+import { segClass, segGroupClass } from "@/components/shell/tabs";
+import { ParcelsTabs } from "@/components/shell/section-tabs";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { listApartments } from "@/lib/server/apartments";
@@ -23,7 +24,8 @@ const KINDS = ["flats", "compound"] as const;
 export default async function ApartmentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "apartments.view");
+  const viewer = await requirePermission(locale, "apartments.view");
+  const tparcels = await getTranslations("parcels");
   const t = await getTranslations("apartments");
   const format = await getFormatter();
   const lang = await getLocale();
@@ -38,15 +40,9 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
 
   return (
     <>
-      {/* Apartment buildings / Compounds: under the title, as plain tabs. */}
-      <PageHeader title={t("title")} description={t("subtitle")}>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("title")}>
-          {KINDS.map((k) => (
-            <Link key={k} href={href(k, owing)} aria-current={kind === k ? "page" : undefined} className={tabClass(kind === k)}>
-              {t(`kinds.${k}`)}
-            </Link>
-          ))}
-        </nav>
+      {/* A tab of Parcels: Partial registration · Registered · Apartments. */}
+      <PageHeader title={tparcels("title")} description={t("subtitle")}>
+        <ParcelsTabs viewer={viewer} active="apartments" />
       </PageHeader>
       <Card className="overflow-hidden">
         {/* Search and "All / Still owing" (a dropdown): both apply at once. */}
@@ -57,7 +53,17 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
             <option value="">{t("all")}</option>
             <option value="1">{t("owing")}</option>
           </NativeSelect>
-          <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
+          {/* Apartment buildings / Compounds, on the search row's right. */}
+          <span className="ms-auto flex flex-wrap items-center gap-3">
+            <span className={segGroupClass} role="group" aria-label={t("title")}>
+              {KINDS.map((k) => (
+                <Link key={k} href={href(k, owing)} aria-current={kind === k ? "page" : undefined} className={segClass(kind === k)}>
+                  {t(`kinds.${k}`)}
+                </Link>
+              ))}
+            </span>
+            <span className="text-muted-foreground text-xs">{t("count", { count: rows.length })}</span>
+          </span>
         </AutoSubmitForm>
         {rows.length === 0 ? (
           <EmptyState icon={<Building2 />} title={t("emptyTitle")} description={t("emptyBody")} />

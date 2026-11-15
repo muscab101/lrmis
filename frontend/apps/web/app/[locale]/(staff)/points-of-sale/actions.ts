@@ -33,6 +33,7 @@ export const savePosAction = defineAction("pos.save", posSchema, async (v, ctx) 
     return { id };
   } catch (err) {
     if (err instanceof AppFailure && err.values?.detail === "pos_code_taken") throw new AppFailure("VALIDATION", undefined, { code: ["validation.pos_code_taken"] });
+    if (err instanceof AppFailure && err.values?.detail === "pos_district_taken") throw new AppFailure("VALIDATION", undefined, { districtId: ["validation.pos_district_taken"] });
     throw err;
   }
 });

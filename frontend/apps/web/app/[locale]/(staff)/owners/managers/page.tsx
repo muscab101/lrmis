@@ -8,6 +8,7 @@ import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { listManagers } from "@/lib/server/apartments";
+import { OwnersTabs } from "@/components/shell/section-tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("managers");
@@ -18,7 +19,8 @@ export async function generateMetadata() {
 export default async function ManagersPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "managers.view");
+  const viewer = await requirePermission(locale, "managers.view");
+  const to = await getTranslations("owners");
   const t = await getTranslations("managers");
   const format = await getFormatter();
   const lang = await getLocale();
@@ -29,7 +31,10 @@ export default async function ManagersPage({ params, searchParams }: { params: P
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")} />
+      {/* A tab of Owners: Partial registration · Registered · Managers. */}
+      <PageHeader title={to("title")} description={t("subtitle")}>
+        <OwnersTabs viewer={viewer} active="managers" />
+      </PageHeader>
       <Card className="overflow-hidden">
         <AutoSubmitForm className="flex flex-wrap items-center gap-3 border-b p-3">
           <Input name="q" defaultValue={q} placeholder={t("search")} aria-label={t("search")} className="max-w-md" />

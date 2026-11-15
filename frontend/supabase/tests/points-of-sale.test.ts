@@ -27,6 +27,10 @@ describe("points of sale (0062)", () => {
     await expect(asUser(db, admin, (tx) => tx.query(`select public.pos_save(null, $1)`, [p]))).rejects.toThrow(/^CONFLICT: pos_code_taken/);
     await asUser(db, admin, (tx) => tx.query(`select public.pos_save($1, $2)`, [id, JSON.stringify({ code: "HDN2", name: "Hodan market desk", district_id: hodan, active: false })]));
     expect(await scalar<boolean>(db, `select active from public.points_of_sale where id = $1`, [id])).toBe(false);
+    // One office cash desk per district: a second one is refused while the first is on.
+    await asUser(db, admin, (tx) => tx.query(`select public.pos_save(null, $1)`, [JSON.stringify({ code: "HDN9", name: "Hodan second", district_id: hodan })]));
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.pos_save(null, $1)`, [JSON.stringify({ code: "HDN8", name: "Hodan third", district_id: hodan })]))).rejects.toThrow(/^CONFLICT: pos_district_taken/);
+    await db.query(`delete from public.points_of_sale where code = 'HDN9'`);
   });
 
   it("a cashier's desk must be in their districts; a used desk is switched off, not deleted", async () => {

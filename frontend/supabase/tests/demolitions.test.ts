@@ -46,6 +46,8 @@ beforeAll(async () => {
   neighbourhood = await scalar<string>(db, `insert into public.neighbourhoods (sector_id, code, name_so, name_en, geom) values ($1,'012','Taleex','Taleh', extensions.st_multi(extensions.st_setsrid(extensions.st_geomfromgeojson($2), 4326))) returning id`, [sector, JSON.stringify(square(45.3, 2.04))]);
   await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('brick','Guri','Brick', 0.25), ('emptyland','Bannaan','Empty Land', 0.10)`);
   admin = await bootstrapSuperAdmin(db);
+  // These tests price flats by the building's own type: the Apartment / Upper Floors prices (0241) are switched off.
+  await db.query(`update public.property_grades set active = false where code in ('apartment', 'upper')`);
   surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [district]);
   registrar = await createStaff(db, admin, "registrar@gmail.com", ["registrar"], [district]);
   otherRegistrar = await createStaff(db, admin, "registrar2@gmail.com", ["registrar"], [otherDistrict]);

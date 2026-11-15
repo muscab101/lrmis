@@ -303,7 +303,7 @@ describe("collections, stage 5: dashboard", () => {
 describe("reports by point of sale, and the caller's scope", () => {
   it("money reports narrow to one point of sale", async () => {
     const pos = await scalar<string>(db, `select id from public.points_of_sale where code = 'HDN1'`);
-    const other = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDN2', 'Hodan market', $1, 'HDN2') returning id`, [hodan]);
+    const other = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix, kind) values ('HDN2', 'Hodan market', $1, 'HDN2', 'field') returning id`, [hodan]);
     const c = (p: string) => asUser(db, officer, (tx) => tx.query<{ total: string }>(`select * from public.report_collections(current_date, current_date, 'day', 'all', null, null, null, null, $1)`, [p]));
     expect(Number((await c(pos)).rows[0]!.total)).toBe(125);
     expect((await c(other)).rows).toHaveLength(0);

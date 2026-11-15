@@ -74,8 +74,6 @@ export async function listDuplicates(from: string, to: string) {
 }
 
 export type VerifyStatus = "pending" | "verified" | "reconciled" | "disputed";
-export const VERIFY_STATUSES: readonly VerifyStatus[] = ["pending", "verified", "reconciled", "disputed"];
-
 /** A payment's verification state, for its own page. */
 export async function paymentVerification(id: string) {
   const supabase = await createClient();

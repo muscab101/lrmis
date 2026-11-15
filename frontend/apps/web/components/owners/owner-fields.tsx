@@ -85,7 +85,7 @@ export function OwnerFields({
           required
           className="sm:col-span-2"
         >
-          <Input {...name("fullName")} />
+          <Input allow="letters" {...name("fullName")} />
         </Field>
         <Field id="o-phone" label={t("phone")} hint={t("phoneHint")} error={fe("phone")}>
           <Input
@@ -106,7 +106,7 @@ export function OwnerFields({
         {person ? (
           <>
             <Field id="o-mother" label={t("motherName")} error={fe("motherName")}>
-              <Input {...name("motherName")} />
+              <Input allow="letters" {...name("motherName")} />
             </Field>
             <Field id="o-gender" label={t("gender")} error={fe("gender")}>
               <NativeSelect
@@ -202,7 +202,7 @@ export function OwnerFields({
         {person && (
           <>
             <Field id="o-kin" label={t("nextOfKinName")} error={fe("nextOfKinName")}>
-              <Input {...name("nextOfKinName")} />
+              <Input allow="letters" {...name("nextOfKinName")} />
             </Field>
             <Field id="o-kinphone" label={t("nextOfKinPhone")} error={fe("nextOfKinPhone")}>
               <Input

@@ -339,13 +339,3 @@ export interface ParcelApplicationRow {
   site_check_surveyor: string | null;
 }
 
-/** The applications behind partial parcels, so their work (edit, site check, register, delete) runs from Parcels. */
-export async function applicationsByNumber(numbers: string[]) {
-  if (numbers.length === 0) return new Map<string, ParcelApplicationRow>();
-  const supabase = await createClient();
-  const res = await supabase
-    .from("applications")
-    .select("id, number, status, created_by, land_use, site_check_status, site_check_surveyor")
-    .in("number", numbers);
-  return new Map((unwrap(res, "applications") as ParcelApplicationRow[]).map((a) => [a.number, a]));
-}

@@ -109,15 +109,6 @@ export interface PermitRow {
   fee_invoice: { id: string; number: string; status: string } | null;
 }
 
-export async function listPermits(status: RequestStatus | "any") {
-  const supabase = await createClient();
-  let req = supabase
-    .from("permits")
-    .select("id, number, kind, status, description, floors, area_m2, applicant_name, conditions, valid_until, requested_by, requested_at, decision_note, parcel:parcels(id, pun), fee_invoice:invoices!permits_fee_invoice_id_fkey(id, number, status)");
-  if (status !== "any") req = req.eq("status", status);
-  return unwrap(await req.order("requested_at", { ascending: false }).limit(100), "permits") as unknown as PermitRow[];
-}
-
 export async function legalCounts() {
   const supabase = await createClient();
   const { data } = await supabase.rpc("legal_counts");

@@ -1,5 +1,6 @@
 "use client";
 
+import { SendToPrinter } from "@/components/printing/send-to-printer";
 import type { AppError } from "@dhulka/core/errors";
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
@@ -8,14 +9,14 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { Alert, Mono } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
-import { Printer, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { closeShiftAction, findParcelAction, openShiftAction, takePaymentAction } from "@/app/[locale]/(staff)/payments/actions";
 import { PushPayment } from "@/components/payments/push-payment";
 import { FormError } from "@/components/forms/form-error";
 import { FormDialog } from "@/components/forms/form-dialog";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import type { ShiftRow } from "@/lib/server/payments";
 
@@ -173,12 +174,7 @@ export function TakePayment({
           {receipt.discount > 0 && <span className="block">{t("discountApplied", { amount: usd(receipt.discount) })}</span>}
           {receipt.leftover > 0 && <span className="block">{t("creditLeft", { amount: usd(receipt.leftover) })}</span>}
           <span className="mt-2 flex gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`/payments/${receipt.id}/receipt`} target="_blank">
-                <Printer aria-hidden />
-                {t("printReceipt")}
-              </Link>
-            </Button>
+            <SendToPrinter kind="receipt" id={receipt.id} label={t("printReceipt")} />
           </span>
         </Alert>
       )}
@@ -310,7 +306,7 @@ export function TakePayment({
                   </Field>
                 )}
                 <Field id="payer" label={t("payerName")}>
-                  <Input value={v.payerName} onChange={(e) => setV({ ...v, payerName: e.target.value })} />
+                  <Input allow="letters" value={v.payerName} onChange={(e) => setV({ ...v, payerName: e.target.value })} />
                 </Field>
                 <Field id="phone" label={t("payerPhone")}>
                   <Input inputMode="tel" value={v.payerPhone} onChange={(e) => setV({ ...v, payerPhone: e.target.value })} />

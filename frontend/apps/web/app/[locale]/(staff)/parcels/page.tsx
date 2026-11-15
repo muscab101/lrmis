@@ -11,7 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_TABS, parcelStageCounts, REGISTERED_SPLITS, searchParcels } from "@/lib/server/parcels";
 import { fullHouseNo } from "@/lib/house-no";
-import { segClass, segGroupClass, TabCount, tabClass } from "@/components/shell/tabs";
+import { segClass, segGroupClass, TabCount } from "@/components/shell/tabs";
+import { ParcelsTabs } from "@/components/shell/section-tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("parcels");
@@ -45,18 +46,8 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
     <>
       {/* Partial / Registered: at the top, under the title. */}
       <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
-          {tabs.map((k) => (
-            <Link
-              key={k}
-              href={`/parcels?${new URLSearchParams({ stage: k, ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
-              aria-current={stage === k ? "page" : undefined}
-              className={tabClass(stage === k)}
-            >
-              {t(`stage_${k}`)} <TabCount n={counts[k]} />
-            </Link>
-          ))}
-        </nav>
+        {/* Partial registration · Registered · Apartments. */}
+        <ParcelsTabs viewer={viewer} active={stage} query={{ ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) }} />
       </PageHeader>
       <Card className="overflow-hidden">
         {split === "demolished" && (

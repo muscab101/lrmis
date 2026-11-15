@@ -169,9 +169,12 @@ describe("phone format from Supabase Auth", () => {
 });
 
 describe("only people on the register sign in", () => {
-  it("a phone on the register may get a code; an unknown one may not, and no owner record is made for it", async () => {
-    await db.query(`insert into public.parties (full_name, phone) values ('Known Owner', '+252615550555')`);
+  it("a phone of someone on the register who holds land may get a code; others may not, and no owner record is made", async () => {
     const known = (phone: string) => asService(db, (tx) => scalar<boolean>(tx, `select public.citizen_phone_registered($1)`, [phone]));
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone) values ('Known Owner', '+252615550555') returning id`);
+    // On the register but holding no land: not yet (0245).
+    expect(await known("+252615550555")).toBe(false);
+    await db.query(`insert into public.parcel_owners (parcel_id, party_id, role, share_pct) values ($1, $2, 'owner', 50)`, [parcel, owner]);
     expect(await known("+252615550555")).toBe(true);
     expect(await known("+252615550999")).toBe(false);
     const stranger = await createAuthUser(db, { phone: "+252615550999", fullName: "" });

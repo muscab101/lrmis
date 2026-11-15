@@ -159,12 +159,6 @@ export interface AppealRow {
   parcel: { id: string; pun: string | null } | null;
 }
 
-export async function valuationCounts(): Promise<{ assessments: number; exemptions_pending: number; appeals_open: number }> {
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("valuation_counts");
-  return (data as { assessments: number; exemptions_pending: number; appeals_open: number } | null) ?? { assessments: 0, exemptions_pending: 0, appeals_open: 0 };
-}
-
 export interface ParcelValuation {
   buildings: { id: string; units: number; floors: number; area_m2: number | null; use: string | null; note: string | null; grade: { id: string; code: string; name_so: string; name_en: string; amount: number } | null }[];
   assessments: (AssessmentRow & { breakdown: Breakdown; land_amount: number; buildings_amount: number; exemption_amount: number; service_charge: number })[];

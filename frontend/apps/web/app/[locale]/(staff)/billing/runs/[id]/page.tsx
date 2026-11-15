@@ -78,6 +78,7 @@ export default async function RunPage({
         description={run.note ?? undefined}
         actions={
           <RunActions
+            bills={run.status === "issued" ? run.invoice_count : (run.preview.count ?? 0)}
             id={run.id}
             status={run.status}
             isCreator={run.created_by === viewer.user.id}

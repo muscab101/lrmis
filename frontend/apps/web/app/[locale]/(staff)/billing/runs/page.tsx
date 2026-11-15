@@ -3,6 +3,7 @@ import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { FileStack } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { MissedBills } from "@/components/billing/missed-bills";
 import { PlaceFilter } from "@/components/billing/place-filter";
 import { RunActions } from "@/components/billing/run-actions";
 import { RunStatusBadge } from "@/components/billing/status";
@@ -43,7 +44,10 @@ export default async function BillingRunsPage({ params, searchParams }: { params
   return (
     <>
       {/* Runs are made by the system every 1 January; there is no button to start one. */}
-      <PageHeader title={t("runsTitle")} description={t("runsSubtitle")} />
+      <PageHeader title={t("runsTitle")} description={t("runsSubtitle")}>
+        {/* Land the automatic billing missed: check it and make runs for it. */}
+        <MissedBills canCreate={viewer.can("billing.create")} />
+      </PageHeader>
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         <KpiChip label={t("kpiWaiting")} value={format.number(counts.runs_waiting)} />
         <KpiChip label={t("kpiOpenInvoices")} value={format.number(counts.invoices_open)} />
@@ -97,6 +101,7 @@ export default async function BillingRunsPage({ params, searchParams }: { params
                   <TableCell>
                     <RunActions
                       compact
+                      bills={r.status === "issued" ? r.invoice_count : (r.preview.count ?? 0)}
                       id={r.id}
                       status={r.status}
                       isCreator={r.created_by === viewer.user.id}

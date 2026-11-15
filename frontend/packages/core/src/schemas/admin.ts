@@ -12,7 +12,7 @@ const districtScope = z.discriminatedUnion("mode", [
 export type DistrictScopeInput = z.infer<typeof districtScope>;
 
 const userBase = z.object({
-  fullName: z.string().trim().min(2, "validation.name").max(120, "validation.too_long"),
+  fullName: z.string().trim().min(2, "validation.name").max(120, "validation.too_long").regex(/^[\p{L}\p{M}\s'.-]+$/u, "validation.letters_only"),
   phone: optionalPhone,
   roleIds: z.array(uuid).min(1, "validation.role_required"),
   districts: districtScope,

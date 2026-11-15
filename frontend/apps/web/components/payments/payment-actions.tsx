@@ -4,12 +4,13 @@ import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
 import { Textarea } from "@dhulka/ui/input";
 import { Tooltip } from "@dhulka/ui/form-controls";
-import { Coins, Eye, Printer, Undo2 } from "lucide-react";
+import { Coins, Eye, Undo2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { applyCreditAction, requestReversalAction } from "@/app/[locale]/(staff)/payments/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link } from "@/i18n/navigation";
+import { SendToPrinter } from "@/components/printing/send-to-printer";
 
 /** A payment's keys. `compact`: icon buttons for a list row (View, Print receipt, Apply credit, Request reversal). */
 export function PaymentActions({
@@ -44,14 +45,7 @@ export function PaymentActions({
               </Link>
             </Button>,
           )}
-          {key(
-            t("printReceipt"),
-            <Button asChild variant="ghost" size="icon-sm">
-              <Link href={`/payments/${id}/receipt`} target="_blank" aria-label={t("printReceipt")}>
-                <Printer aria-hidden />
-              </Link>
-            </Button>,
-          )}
+          <SendToPrinter kind="receipt" id={id} label={t("printReceipt")} iconOnly />
           {showCredit &&
             key(
               t("applyCredit"),
@@ -69,12 +63,7 @@ export function PaymentActions({
         </>
       ) : (
         <>
-          <Button size="sm" variant="outline" asChild>
-            <Link href={`/payments/${id}/receipt`} target="_blank">
-              <Printer aria-hidden />
-              {t("printReceipt")}
-            </Link>
-          </Button>
+          <SendToPrinter kind="receipt" id={id} label={t("printReceipt")} />
           {showCredit && (
             <Button size="sm" variant="outline" onClick={() => setDialog("credit")}>
               {t("applyCredit")}

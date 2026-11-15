@@ -1,6 +1,7 @@
 import "server-only";
 import type { NextRequest } from "next/server";
 import type { InvoiceSheetData } from "@/components/billing/invoice-sheet";
+import type { ReceiptSheetData } from "@/components/payments/receipt-sheet";
 import type { banadirOutlines, DocumentDetail, WatermarkFacts } from "@/lib/server/certificates";
 import { PARTY_PHOTO_BUCKET } from "@/lib/server/party-photo";
 import { createAdminClient, createIsolatedClient } from "@/lib/supabase/admin";
@@ -21,6 +22,9 @@ export async function loadAgentJob(token: string) {
   if (!/^[0-9a-f]{64}$/.test(token)) return null;
   const { data } = await createIsolatedClient().rpc("agent_job_document", { p_token: token });
   if (!data) return null;
+  if ((data as { receipt?: unknown }).receipt) {
+    return { kind: "receipt" as const, receipt: (data as { receipt: ReceiptSheetData }).receipt };
+  }
   if ((data as { invoice?: unknown }).invoice) {
     return { kind: "invoice" as const, invoice: (data as { invoice: InvoiceSheetData & { pay_link: string | null } }).invoice };
   }

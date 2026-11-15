@@ -11,9 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { APP_PAGE_SIZE, queryParties } from "@/lib/server/applications";
 import { requirePermission } from "@/lib/server/auth";
 import { listDistricts } from "@/lib/server/users";
-import { createClient } from "@/lib/supabase/server";
 import { OwnersFilters } from "./owners-filters";
-import { TabCount, tabClass } from "@/components/shell/tabs";
+import { OwnersTabs } from "@/components/shell/section-tabs";
 
 export async function generateMetadata() {
   const t = await getTranslations("owners");
@@ -21,7 +20,6 @@ export async function generateMetadata() {
 }
 
 /** Two tabs: partial registration and registered (an old "all" link opens partial registration). */
-const STAGES = ["draft", "registered"] as const;
 
 export default async function OwnersPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
@@ -34,13 +32,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
   // Registered owners show only for roles allowed to see them (Admin → Roles: "See registered owners").
   const seesRegistered = viewer.can("owners.registered");
   const q = parsed.stage === "all" || (parsed.stage === "registered" && !seesRegistered) ? { ...parsed, stage: "draft" as const } : parsed;
-  const supabase = await createClient();
-  const count = (registered: boolean) => {
-    const req = supabase.from("parties").select("id", { count: "exact", head: true }).is("deleted_at", null);
-    return registered ? req.not("registered_at", "is", null) : req.is("registered_at", null);
-  };
-  const [{ rows, total }, districts, drafts, registered] = await Promise.all([queryParties(q), listDistricts(), count(false), count(true)]);
-  const counts = { draft: drafts.count ?? 0, registered: registered.count ?? 0, all: (drafts.count ?? 0) + (registered.count ?? 0) };
+  const [{ rows, total }, districts] = await Promise.all([queryParties(q), listDistricts()]);
   const pages = Math.max(1, Math.ceil(total / APP_PAGE_SIZE));
   const districtName = (id: string | null) => {
     const d = districts.find((x) => x.id === id);
@@ -60,18 +52,8 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
         title={t("title")}
         description={t(`stageBody_${q.stage}`)}
       >
-        <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
-          {STAGES.filter((k) => k !== "registered" || seesRegistered).map((k) => (
-            <Link
-              key={k}
-              href={stageHref(k)}
-              aria-current={q.stage === k ? "page" : undefined}
-              className={tabClass(q.stage === k)}
-            >
-              {t(`stage_${k}`)} <TabCount n={counts[k]} />
-            </Link>
-          ))}
-        </nav>
+        {/* Partial registration · Registered · Managers. */}
+        <OwnersTabs viewer={viewer} active={q.stage === "registered" ? "registered" : "draft"} kind={q.kind} />
       </PageHeader>
       <Card className="overflow-hidden">
         <OwnersFilters q={q.q} kind={q.kind} stage={q.stage} total={total} />

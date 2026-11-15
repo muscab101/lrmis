@@ -2,12 +2,12 @@
 
 import type { ComboOption } from "@dhulka/ui/combobox";
 import { Button } from "@dhulka/ui/button";
-import { Switch } from "@dhulka/ui/form-controls";
+import { Switch, Tooltip } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { Alert, EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { toast } from "@dhulka/ui/toaster";
-import { Scale } from "lucide-react";
+import { Eye, Pencil, Scale, Trash2 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { saveNeighbourhoodPricesAction } from "@/app/[locale]/(staff)/valuation/actions";
@@ -15,6 +15,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useErrorMessage } from "@/lib/client/errors";
 import type { Grade, PricedNeighbourhood } from "@/lib/server/valuation";
 import { NeighbourhoodPicker } from "./neighbourhood-picker";
+import { FormDialog } from "@/components/forms/form-dialog";
 
 /**
  * Rates: choose a neighbourhood and set its price per m² for each house type. Bills for land there use these prices;
@@ -47,6 +48,7 @@ export function RatesPanel({
   const [busy, setBusy] = useState(false);
   const [rebill, setRebill] = useState(true);
   const [problem, setProblem] = useState<string | null>(null);
+  const [clearing, setClearing] = useState<PricedNeighbourhood | null>(null);
   const changed = grades.some((g) => (values[g.id] ?? "") !== (prices[g.id] != null ? String(prices[g.id]) : ""));
 
   const save = async () => {
@@ -88,6 +90,7 @@ export function RatesPanel({
                 <TableHead>{t("neighbourhood")}</TableHead>
                 <TableHead className="text-end">{t("ownPrices")}</TableHead>
                 <TableHead className="text-end">{t("changed")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,6 +104,24 @@ export function RatesPanel({
                   </TableCell>
                   <TableCell className="text-end text-sm tabular-nums">{n.prices}</TableCell>
                   <TableCell className="text-muted-foreground text-end text-xs">{format.relativeTime(new Date(n.updated_at))}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-0.5">
+                      <Tooltip content={canEdit ? t("editPrices") : t("viewPrices")}>
+                        <Button asChild variant="ghost" size="icon-sm" className="text-primary">
+                          <Link href={`/valuation?tab=rates&n=${n.id}`} aria-label={canEdit ? t("editPrices") : t("viewPrices")}>
+                            {canEdit ? <Pencil aria-hidden /> : <Eye aria-hidden />}
+                          </Link>
+                        </Button>
+                      </Tooltip>
+                      {canEdit && (
+                        <Tooltip content={t("clearPrices")}>
+                          <Button variant="ghost" size="icon-sm" className="text-danger" aria-label={t("clearPrices")} onClick={() => setClearing(n)}>
+                            <Trash2 aria-hidden />
+                          </Button>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -167,6 +188,27 @@ export function RatesPanel({
           )}
         </div>
       )}
+      {/* Remove a neighbourhood's own prices: its land is billed at the normal prices again. */}
+      <FormDialog
+        open={clearing !== null}
+        onOpenChange={(o) => !o && setClearing(null)}
+        title={t("clearPricesTitle", { place: clearing ? name(clearing) : "" })}
+        description={t("clearPricesBody")}
+        confirmLabel={t("clearPrices")}
+        destructive
+        submit={() =>
+          saveNeighbourhoodPricesAction({
+            neighbourhoodId: clearing!.id,
+            prices: grades.map((g) => ({ gradeId: g.id, amount: null })),
+            rebillGradeIds: [],
+          })
+        }
+        onDone={() => {
+          toast.success(t("pricesCleared", { place: clearing ? name(clearing) : "" }));
+          setClearing(null);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

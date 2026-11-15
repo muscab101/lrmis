@@ -58,7 +58,7 @@ export function SetupForm() {
         <PasswordInput autoComplete="off" {...form.register("setupToken")} />
       </Field>
       <Field id="fullName" label={t("fullName")} error={vm(form.formState.errors.fullName?.message)} required>
-        <Input autoComplete="name" {...form.register("fullName")} />
+        <Input allow="letters" autoComplete="name" {...form.register("fullName")} />
       </Field>
       <Field id="email" label={ta("email")} error={vm(form.formState.errors.email?.message)} required>
         <Input type="email" autoComplete="username" {...form.register("email")} />

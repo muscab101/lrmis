@@ -34,6 +34,8 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04))],
   );
   admin = await bootstrapSuperAdmin(db);
+  // These tests price flats by the building's own type: the Apartment / Upper Floors prices (0241) are switched off.
+  await db.query(`update public.property_grades set active = false where code in ('apartment', 'upper')`);
   surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [district]);
 });
 
@@ -184,12 +186,11 @@ describe("changing land not registered yet", () => {
     const b = await unitId(r.parcel_id, "B");
     const before = (await taxBill(a))!;
     expect(Number(before.total)).toBe(40);
+    // A flat's new size re-bills the building by itself (0241): nothing is left for Re-bill to do.
     await edit(a, { own_m2: "100", unit_floor: "1" });
-    expect(Number((await taxBill(a))!.total)).toBe(40);
+    expect(Number((await taxBill(a))!.total)).toBe(50);
     const check = await asUser(db, admin, (tx) => scalar<{ differs: boolean; expected: { amount: number } }>(tx, `select public.parcel_bill_check($1)`, [a]));
-    expect(check.differs).toBe(true);
-    expect(Number(check.expected.amount)).toBe(50);
-    await rebill(a);
+    expect(check.differs).toBe(false);
     const after = (await taxBill(a))!;
     expect(after.id).toBe(before.id);
     expect(Number(after.total)).toBe(50);

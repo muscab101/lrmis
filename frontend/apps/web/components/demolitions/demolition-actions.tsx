@@ -192,7 +192,7 @@ export function RegisterAgainForm({
       {v.who === "new" && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="againName" label={t("ownerName")} error={fe("ownerName")} required>
-            <Input value={v.name} onChange={(e) => setV((s) => ({ ...s, name: e.target.value }))} />
+            <Input allow="letters" value={v.name} onChange={(e) => setV((s) => ({ ...s, name: e.target.value }))} />
           </Field>
           <Field id="againPhone" label={t("ownerPhone")} error={fe("ownerPhone")}>
             <Input

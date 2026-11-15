@@ -111,3 +111,31 @@ export const printerPosChoicesAction = defineAction(
   z.object({}),
   async () => printerPointsOfSale(),
 );
+
+/** The printers this person may send invoices and receipts to (theirs first). */
+export const myPrintersAction = defineAction("printers.mine", z.object({}), async (_v, ctx) =>
+  unwrap(await ctx.supabase.rpc("printer_choices", {}), "printer choices") as {
+    id: string;
+    code: string;
+    name: string;
+    location: string | null;
+    online: boolean;
+    pos_name: string | null;
+    mine: boolean;
+  }[],
+);
+
+/** Send an invoice or a receipt to the printer chosen. */
+export const sendToPrinterAction = defineAction(
+  "printers.send",
+  z.object({ kind: z.enum(["invoice", "receipt"]), id: z.uuid(), printerId: z.uuid(), locale: z.enum(["so", "en"]) }),
+  async (v, ctx) =>
+    unwrap(
+      await ctx.supabase.rpc(v.kind === "invoice" ? "invoice_send_to_printer" : "payment_send_to_printer", {
+        p_id: v.id,
+        p_printer: v.printerId,
+        p_locale: v.locale,
+      }),
+      "send to printer",
+    ) as { job: string; printer: string; online: boolean },
+);

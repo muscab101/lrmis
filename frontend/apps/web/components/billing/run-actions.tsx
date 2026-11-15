@@ -25,22 +25,28 @@ export function RunActions({
   can,
   isCreator,
   compact = false,
+  bills,
 }: {
   id: string;
   status: RunStatus;
   can: { create: boolean; approve: boolean; cancel: boolean };
   isCreator: boolean;
   compact?: boolean;
+  /** How many bills the run would make: a run with none has nothing to issue. */
+  bills?: number;
 }) {
   const t = useTranslations("billing");
   const format = useFormatter();
   const [step, setStep] = useState<Step | null>(null);
   const [reason, setReason] = useState("");
   const steps: Step[] = [];
-  if (["draft", "submitted", "approved"].includes(status)) steps.push("refresh");
+  const empty = bills === 0;
+  // A list row keeps it short: View, Issue now (when there is something to bill) and Cancel. Recalculate and Send for
+  // approval are on the run's own page.
+  if (!compact && ["draft", "submitted", "approved"].includes(status)) steps.push("refresh");
   // Bills out straight away, without waiting for approval.
-  if (["draft", "submitted", "approved"].includes(status) && can.create) steps.push("issueNow");
-  if (status === "draft" && can.create) steps.push("submit");
+  if (["draft", "submitted", "approved"].includes(status) && can.create && !empty) steps.push("issueNow");
+  if (!compact && status === "draft" && can.create && !empty) steps.push("submit");
   // Approving a run happens on the Applications page.
   if ((status === "approved" || status === "generating") && can.approve) steps.push("generate");
   if (["draft", "submitted", "approved"].includes(status) && (isCreator ? can.create : can.cancel)) steps.push("cancel");

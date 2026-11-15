@@ -327,6 +327,7 @@ export const addLandWithUnitsAction = defineAction(
     // Empty boxes arrive as not-a-number; the database says which one is wrong.
     floors: z.number().nullable().catch(null),
     footprintM2: z.number().nullable().catch(null),
+    managerPartyId: z.uuid().nullable().default(null),
     managerName: z.string().trim().max(200, "validation.too_long").default(""),
     managerPhone: optionalPhone,
     split: z.enum(["equal", "by_size"]),
@@ -365,6 +366,7 @@ export const addLandWithUnitsAction = defineAction(
             land_use: v.landUse,
             floors: v.floors,
             footprint_m2: v.footprintM2,
+            manager_party_id: v.managerPartyId,
             manager_name: v.managerName,
             manager_phone: v.managerPhone,
             shared_split: v.split,
@@ -546,28 +548,6 @@ export const confirmParcelSiteAction = defineAction(
     refresh();
     revalidatePath("/[locale]/surveys", "layout");
     return null;
-  },
-);
-
-/** A flats building's footprint and management: every flat's share (unit factor) and the open-ground bill follow. */
-export const buildingTaxSetupAction = defineAction(
-  "parcels.building_tax",
-  z.object({
-    id: z.uuid(),
-    footprintM2: z.number().positive().max(1_000_000).nullable(),
-    managerName: z.string().trim().max(200, "validation.too_long").default(""),
-    managerPhone: optionalPhone,
-  }),
-  async (v, ctx) => {
-    const out = unwrap(
-      await ctx.supabase.rpc("building_tax_setup", {
-        p_building: v.id,
-        p: { footprint_m2: v.footprintM2, manager_name: v.managerName, manager_phone: v.managerPhone },
-      }),
-      "building tax",
-    );
-    revalidatePath("/[locale]/parcels/[id]", "page");
-    return out as { footprint_m2: number | null; open_m2: number };
   },
 );
 

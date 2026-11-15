@@ -33,8 +33,6 @@ import {
   MonitorPlay,
   Inbox,
   ListTodo,
-  Building2,
-  UserCog,
 } from "lucide-react";
 
 export interface NavItem {
@@ -91,24 +89,9 @@ export const STAFF_NAV: NavGroup[] = [
     items: [
       { key: "yetToRegister", href: "/parcels/yet-to-register", icon: MapPinOff, permission: "parcels.yet_to_register" },
       { key: "surveys", href: "/surveys", icon: Ruler, permission: "surveys.view" },
-      // Owners opens its page; under it, the building managers.
-      {
-        key: "owners",
-        href: "/owners",
-        icon: Users,
-        permission: "owners.view",
-        children: [{ key: "managers", href: "/owners/managers", icon: UserCog, permission: "managers.view" }],
-      },
-      // Parcels opens its page; under it, Apartments (buildings with their flats or houses).
-      {
-        key: "parcels",
-        href: "/parcels",
-        icon: MapPinned,
-        permission: "parcels.view",
-        children: [
-          { key: "apartments", href: "/apartments", icon: Building2, permission: "apartments.view" },
-        ],
-      },
+      // Managers and Apartments are tabs on the Owners and Parcels pages; these items light up on them.
+      { key: "owners", href: "/owners", icon: Users, permission: "owners.view", also: ["/owners/managers"] },
+      { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view", also: ["/apartments"] },
       { key: "demolished", href: "/demolished", icon: Hammer, permission: "parcels.demolitions" },
     ],
   },

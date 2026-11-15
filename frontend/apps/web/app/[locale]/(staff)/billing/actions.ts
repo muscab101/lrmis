@@ -120,14 +120,29 @@ export const createMissingAction = defineAction("invoices.create_missing", z.obj
   done(unwrap(await ctx.supabase.rpc("invoice_missing_create", { p_parcels: parcelIds }), "create missing") as number),
 );
 
-/** Print an invoice now: straight to the added printer at this person's own point of sale (no page opens). */
-export const invoicePrintNowAction = defineAction(
-  "invoices.print_now",
-  z.object({ id: z.uuid(), locale: z.enum(["so", "en"]) }),
-  async (v, ctx) =>
-    unwrap(await ctx.supabase.rpc("invoice_print_now", { p_id: v.id, p_locale: v.locale }), "print invoice") as {
-      job: string;
-      printer: string;
-      online: boolean;
-    },
+export interface MissedYearly {
+  parcel_id: string;
+  pun: string | null;
+  house_no: string | null;
+  neighbourhood_code: string | null;
+  district_id: string;
+  district_so: string;
+  district_en: string;
+  anniversary: string;
+  year: number;
+  before_automatic: boolean;
+  owners: string | null;
+}
+
+/** Land whose yearly bill the automatic billing missed. */
+export const checkMissedYearlyAction = defineAction("billing.check_missed", z.object({}), async (_v, ctx) =>
+  unwrap(await ctx.supabase.rpc("billing_missed", {}), "check missed") as MissedYearly[],
+);
+
+/** Billing runs (one per district and year) for the chosen missed land; they then wait for approval. */
+export const createMissedYearlyAction = defineAction(
+  "billing.create_missed",
+  z.object({ parcelIds: z.array(z.uuid()).min(1).max(5000) }),
+  async ({ parcelIds }, ctx) =>
+    done(unwrap(await ctx.supabase.rpc("billing_missed_create", { p_parcels: parcelIds }), "create missed") as { id: string; number: string; land: number; bills: number }[]),
 );

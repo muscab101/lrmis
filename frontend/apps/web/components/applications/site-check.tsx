@@ -22,27 +22,6 @@ interface Props {
 
 const CLOSED = ["approved", "rejected", "cancelled"];
 
-/** The site-check mark (? pending, ✓ confirmed, ✗ not found) and its two actions. */
-export function SiteCheckMark({ status }: { status: SiteCheckStatus | null }) {
-  const t = useTranslations("applications.siteCheck");
-  if (!status) return null;
-  const Icon = status === "pending" ? CircleHelp : status === "confirmed" ? CircleCheck : CircleX;
-  return (
-    <Tooltip content={t(`mark_${status}`)}>
-      <span
-        role="img"
-        aria-label={t(`mark_${status}`)}
-        className={cn(
-          "inline-flex shrink-0",
-          status === "pending" ? "text-status-pending" : status === "confirmed" ? "text-status-approved" : "text-status-rejected",
-        )}
-      >
-        <Icon className="size-4" aria-hidden />
-      </span>
-    </Tooltip>
-  );
-}
-
 export function SiteCheckActions({ application: a, me, can, full = false }: Props) {
   const t = useTranslations("applications.siteCheck");
   const [dialog, setDialog] = useState<"request" | "confirm" | null>(null);

@@ -158,12 +158,12 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
           </Field>
         )}
         <Field id="fullName" label={kind === "organisation" ? t("orgName") : t("fullName")} error={vm(e.fullName?.message)} required className="sm:col-span-2">
-          <Input autoComplete="off" {...nameField("fullName")} />
+          <Input allow="letters" autoComplete="off" {...nameField("fullName")} />
         </Field>
         {kind === "person" && (
           <>
             <Field id="motherName" label={t("motherName")} hint={t("motherNameHint")} error={vm(e.motherName?.message)} required={mode === "staff"}>
-              <Input autoComplete="off" {...nameField("motherName")} />
+              <Input allow="letters" autoComplete="off" {...nameField("motherName")} />
             </Field>
             <Field id="gender" label={t("gender")} error={vm(e.gender?.message)} required={mode === "staff"}>
               <NativeSelect {...form.register("gender")}>
@@ -246,7 +246,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
         {mode === "staff" && kind === "person" && (
           <>
             <Field id="nextOfKinName" label={t("nextOfKinName")} error={vm(e.nextOfKinName?.message)} required>
-              <Input {...nameField("nextOfKinName")} />
+              <Input allow="letters" {...nameField("nextOfKinName")} />
             </Field>
             <Field id="nextOfKinPhone" label={t("nextOfKinPhone")} error={vm(e.nextOfKinPhone?.message)} required>
               <Input type="tel" {...form.register("nextOfKinPhone")} />

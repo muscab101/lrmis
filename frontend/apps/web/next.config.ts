@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import path from "node:path";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -38,6 +39,8 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // The monorepo root (frontend/): there is a stray lockfile higher up, so Next.js is told where the project is.
+  outputFileTracingRoot: path.join(__dirname, "../.."),
   // A separate build folder lets `next build` run while the dev server uses .next.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   reactStrictMode: true,

@@ -12,7 +12,6 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getLandUnits, getParcel, getParentLand, parcelsWithMoney } from "@/lib/server/parcels";
-import { BuildingTaxEdit } from "@/components/parcels/building-tax-edit";
 import { BuildingManagerAreas } from "@/components/parcels/building-manager-areas";
 import { buildingExtras } from "@/lib/server/apartments";
 import { listDistricts } from "@/lib/server/users";
@@ -278,13 +277,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                       })}
                     </p>
                   )}
-                  {viewer.can("parcels.update") && !archived && (
-                    <BuildingTaxEdit
-                      id={p.id}
-                      plotM2={p.area_m2 != null ? Number(p.area_m2) : null}
-                      current={{ footprint: p.footprint_m2 != null ? Number(p.footprint_m2) : null, managerName: p.manager_name, managerPhone: p.manager_phone }}
-                    />
-                  )}
+                  {/* The built part is the flats' m² added up (0241): nothing to type here any more. */}
                 </div>
               )}
               {/* Flats: the manager (a person, like an owner) and the extra areas (parking, playgrounds, …) on their bill. */}

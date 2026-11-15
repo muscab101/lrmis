@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
 
 let db: PGlite;
 let parcel: string;
@@ -80,5 +80,28 @@ describe("billing on each property's anniversary", () => {
     );
     expect(cert).not.toBeNull();
     expect(cert!.expires_at.slice(0, 10)).toBe(await scalar<string>(db, `select private.next_anniversary($1::date)::text`, [yearsAgo(1)]));
+  });
+});
+
+describe("missed yearly bills", () => {
+  it("land the automatic billing missed is listed, and a run made for it bills it", async () => {
+    const admin = await scalar<string>(db, `select user_id::text from public.profiles where email = 'boss@gmail.com'`);
+    const nbhd = await scalar<string>(db, `select id from public.neighbourhoods where code = '012'`);
+    const missed = await scalar<string>(
+      db,
+      `insert into public.parcels (pun, account_no, district_id, neighbourhood_id, land_use, area_m2, plot_width_m, plot_length_m, property_type, geom, status, registered_at, tax_anniversary)
+       values ('BN-HDN-012-000102', 'HDN0000102', $1, $2, 'residential', 100, 10, 10, 'anniv', extensions.st_setsrid(extensions.st_geomfromgeojson($3), 4326), 'registered', $4::date, $4::date) returning id`,
+      [hodan, nbhd, JSON.stringify(square(45.31, 2.04, 0.0001)), yearsAgo(2)],
+    );
+    const list = await asUser(db, admin, (tx) => scalar<{ parcel_id: string; before_automatic: boolean; year: number }[]>(tx, `select public.billing_missed()`));
+    // Its anniversary came today, but the daily job has not billed it (as if it had missed the day).
+    expect(list.find((x) => x.parcel_id === missed)?.year).toBe(new Date().getUTCFullYear());
+    // The parcel billed today by the automatic job is not missed.
+    expect(list.some((x) => x.parcel_id === parcel)).toBe(false);
+    const runs = await asUser(db, admin, (tx) => scalar<{ id: string; bills: number }[]>(tx, `select public.billing_missed_create($1::uuid[])`, [[missed]]));
+    expect(runs).toHaveLength(1);
+    expect(runs[0]!.bills).toBe(1);
+    expect(await scalar<string>(db, `select status::text from public.billing_runs where id = $1`, [runs[0]!.id])).toBe("draft");
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.billing_missed_create($1::uuid[])`, [[parcel]]))).rejects.toThrow(/^NOT_FOUND/);
   });
 });

@@ -10,7 +10,10 @@ export const dynamic = "force-dynamic";
 export default async function MfaPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  if (!(await getViewer())) return redirect({ href: "/login", locale });
+  const viewer = await getViewer();
+  if (!viewer) return redirect({ href: "/login", locale });
+  // Citizens sign in with an SMS code: no two-factor app for them.
+  if (viewer.profile.kind === "citizen") return redirect({ href: "/portal", locale });
   const t = await getTranslations("auth");
   return (
     <AuthCard title={t("mfaTitle")} description={t("mfaBody")}>

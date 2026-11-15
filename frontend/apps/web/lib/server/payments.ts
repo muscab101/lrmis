@@ -243,36 +243,6 @@ export interface ReconBatch {
   created_at: string;
 }
 
-export async function listReconBatches() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reconciliation_batches")
-    .select("id, number, provider, date_from, date_to, summary, created_at")
-    .order("created_at", { ascending: false })
-    .limit(30);
-  return (data ?? []) as ReconBatch[];
-}
-
-export async function reconLines(batchId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reconciliation_lines")
-    .select("id, provider_ref, amount, system_amount, line_date, status, payment_id")
-    .eq("batch_id", batchId)
-    .neq("status", "matched")
-    .order("status")
-    .limit(500);
-  return (data ?? []) as {
-    id: number;
-    provider_ref: string | null;
-    amount: number | null;
-    system_amount: number | null;
-    line_date: string | null;
-    status: string;
-    payment_id: string | null;
-  }[];
-}
-
 // ---- Accounting ----
 export async function trialBalance(from: string, to: string) {
   const supabase = await createClient();

@@ -143,7 +143,7 @@ export function UserForm({ mode, roles, myPermissions, rolePermissions, isSuperA
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <Field id="fullName" label={t("fullName")} error={vm(errors.fullName?.message)} required>
-            <Input autoComplete="off" {...form.register("fullName")} />
+            <Input allow="letters" autoComplete="off" {...form.register("fullName")} />
           </Field>
           <Field id="email" label={t("email")} hint={mode === "create" ? t("emailHint") : undefined} error={vm(errors.email?.message)} required>
             <Input type="email" autoComplete="off" disabled={mode === "edit"} {...form.register("email")} />

@@ -1,8 +1,9 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asService, asUser, bootstrapSuperAdmin, createAuthUser, createDb, scalar, square } from "./harness";
+import { as, asService, asUser, bootstrapSuperAdmin, createAuthUser, createDb, scalar, square, testPrinter } from "./harness";
 
 let db: PGlite;
+let admin: string;
 let citizen: string;
 let stranger: string;
 let part: string;
@@ -24,7 +25,7 @@ const start = (user: string, ids: string[]) =>
 
 beforeAll(async () => {
   db = await createDb();
-  await bootstrapSuperAdmin(db);
+  admin = await bootstrapSuperAdmin(db);
   await db.query(`update public.payment_providers set enabled = true where code = 'test'`);
   const region = await scalar<string>(db, `insert into public.regions (code, name_so, name_en) values ('BN','Banaadir','Banadir') returning id`);
   const hodan = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'HDN','Hodan','Hodan') returning id`, [region]);
@@ -81,5 +82,23 @@ describe("paying several bills together", () => {
     const event = { status: "succeeded", provider_ref: "tp-1", intent_id: intentId, amount: 42, currency: "USD" };
     const res = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'tog2', true, $1, '{}')`, [JSON.stringify(event)]));
     expect(res.result).toBe("already_recorded");
+  });
+});
+
+describe("a receipt goes to the printer chosen", () => {
+  it("staff choose a printer; the print program gets the receipt", async () => {
+    const pay = await scalar<{ id: string; receipt_no: string }>(db, `select row_to_json(p) from (select id, receipt_no from public.payments order by created_at limit 1) p`);
+    const { id: printer, key } = await testPrinter(db);
+    const sent = await asUser(db, admin, (tx) => scalar<{ printer: string }>(tx, `select public.payment_send_to_printer($1, $2)`, [pay.id, printer]));
+    expect(sent.printer).toBe("Office printer");
+    await expect(asUser(db, admin, (tx) => tx.query(`select public.payment_send_to_printer($1, $2)`, [pay.id, printer]))).rejects.toThrow(/^CONFLICT: already_queued/);
+    const claim = await as(db, "anon", {}, (tx) => scalar<{ job: { token: string; type: string; serial: string } }>(tx, `select public.agent_claim_job($1, '10.0.0.5')`, [key]));
+    expect(claim.job.type).toBe("receipt");
+    expect(claim.job.serial).toBe(pay.receipt_no);
+    const page = await as(db, "anon", {}, (tx) => scalar<{ receipt: { receipt_no: string; allocations: unknown[] } }>(tx, `select public.agent_job_document($1)`, [claim.job.token]));
+    expect(page.receipt.receipt_no).toBe(pay.receipt_no);
+    expect(page.receipt.allocations).toHaveLength(1);
+    const choices = await asUser(db, admin, (tx) => tx.query(`select * from public.printer_choices(null)`));
+    expect(choices.rows).toHaveLength(1);
   });
 });

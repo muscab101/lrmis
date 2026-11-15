@@ -34,7 +34,8 @@ beforeAll(async () => {
   officer = await createStaff(db, admin, "auditor@gmail.com", ["auditor"], [hodan]);
   const tax = await scalar<string>(db, `select id from public.fee_types where code = 'property_tax'`);
   pos = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDN1', 'Hodan office', $1, 'HDN1') returning id`, [hodan]);
-  await db.query(`insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDN2', 'Hodan market', $1, 'HDN2')`, [hodan]);
+  // A second desk in the district is a field desk (only one office cash desk per district, 0244).
+  await db.query(`insert into public.points_of_sale (code, name, district_id, receipt_prefix, kind) values ('HDN2', 'Hodan market', $1, 'HDN2', 'field')`, [hodan]);
   const shift = await asUser(db, cashier, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
   const shift2 = await asUser(db, cashier2, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
   for (let n = 1; n <= 3; n++) {

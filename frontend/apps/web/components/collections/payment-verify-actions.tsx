@@ -99,7 +99,7 @@ export function PaymentVerifyActions({ paymentId, status, current, can, correcti
             </Field>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field id="payerName" label={tp("payerName")}>
-                <Input value={c.payerName} onChange={(e) => setC({ ...c, payerName: e.target.value })} maxLength={120} />
+                <Input allow="letters" value={c.payerName} onChange={(e) => setC({ ...c, payerName: e.target.value })} maxLength={120} />
               </Field>
               <Field id="payerPhone" label={tp("payerPhone")}>
                 <Input value={c.payerPhone} onChange={(e) => setC({ ...c, payerPhone: e.target.value })} inputMode="tel" maxLength={20} />

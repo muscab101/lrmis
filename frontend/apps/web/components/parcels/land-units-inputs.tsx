@@ -66,7 +66,7 @@ export function LandUnitsInputs({
   landArea: number;
   value: UnitsValue;
   onChange: (v: UnitsValue) => void;
-  /** The owner just entered with the full owner form: they own the first unit. */
+  /** The owner just entered with the full owner form: a compound's first house, or a flats building's manager. */
   fixedOwner?: { full_name: string; phone: string | null } | null;
 }) {
   const t = useTranslations("parcels.landUnits");
@@ -111,21 +111,28 @@ export function LandUnitsInputs({
               onChange={(e) => onChange({ ...value, floors: e.target.value })}
             />
           </Field>
-          {/* The building's footprint: each flat's share of the built space, and the open ground billed to the management. */}
-          <Field
-            id="footprint"
-            label={t("footprint")}
-            hint={positive(value.footprint) > 0 && land > 0 ? t("openGround", { m2: m2(Math.max(land - positive(value.footprint), 0)) }) : t("footprintHint")}
-          >
-            <Input type="number" inputMode="decimal" min={0} value={value.footprint} onChange={(e) => onChange({ ...value, footprint: e.target.value })} />
-          </Field>
-          <Field id="manager-name" label={t("managerName")} hint={t("managerHint")}>
-            <Input value={value.managerName} maxLength={200} onChange={(e) => onChange({ ...value, managerName: e.target.value })} />
-          </Field>
-          <Field id="manager-phone" label={t("managerPhone")}>
-            <Input type="tel" inputMode="tel" value={value.managerPhone} onChange={(e) => onChange({ ...value, managerPhone: e.target.value })} />
-          </Field>
+          {/* The manager pays the rest of the plot: the owner just entered, or a person typed here. */}
+          {fixedOwner ? (
+            <Field id="manager-name" label={t("managerName")} hint={t("managerIsOwner")} className="sm:col-span-2">
+              <Input readOnly value={`${fixedOwner.full_name}${fixedOwner.phone ? ` · ${fixedOwner.phone}` : ""}`} />
+            </Field>
+          ) : (
+            <>
+              <Field id="manager-name" label={t("managerName")} hint={t("managerHint")}>
+                <Input allow="letters" value={value.managerName} maxLength={200} onChange={(e) => onChange({ ...value, managerName: e.target.value })} />
+              </Field>
+              <Field id="manager-phone" label={t("managerPhone")}>
+                <Input type="tel" inputMode="tel" value={value.managerPhone} onChange={(e) => onChange({ ...value, managerPhone: e.target.value })} />
+              </Field>
+            </>
+          )}
         </div>
+      )}
+      {/* Flats: their m² added up, and the rest of the plot (charged to the manager), as they are typed. */}
+      {flats && land > 0 && ownSum > 0 && (
+        <p className="bg-muted/40 rounded-md px-3 py-2 text-sm">
+          {t("flatsSummary", { land: m2(land), flats: m2(ownSum), rest: m2(Math.max(land - ownSum, 0)) })}
+        </p>
       )}
 
       <div className="space-y-3">
@@ -168,7 +175,7 @@ export function LandUnitsInputs({
                 onChange={(e) => setUnit(i, { own: e.target.value })}
               />
             </Field>
-            {i === 0 && fixedOwner ? (
+            {i === 0 && fixedOwner && !flats ? (
               <Field id="unit-owner-0" label={t("owner")} className="sm:col-span-2">
                 <Input readOnly value={fixedOwner.full_name} />
               </Field>
@@ -176,6 +183,7 @@ export function LandUnitsInputs({
               <>
                 <Field id={`unit-owner-${i}`} label={t("owner")} required className="sm:col-span-2">
                   <Input
+                    allow="letters"
                     value={u.ownerName}
                     autoComplete="off"
                     onChange={(e) => setUnit(i, { ownerName: e.target.value })}
@@ -192,6 +200,11 @@ export function LandUnitsInputs({
                 </Field>
               </>
             )}
+            {flats && u.floor.trim() !== "" && (
+              <p className="text-muted-foreground text-xs sm:col-span-6">
+                {Number(u.floor) === 0 ? t("floorBase") : t("floorUpper", { floor: u.floor })}
+              </p>
+            )}
             {!flats && parts && (
               <p className="text-muted-foreground text-xs sm:col-span-5">
                 {t("houseTotal", {
@@ -202,7 +215,7 @@ export function LandUnitsInputs({
               </p>
             )}
             {/* The owner from the owner form stays with the first row, so that row stays too. */}
-            {value.units.length > 2 && !(i === 0 && fixedOwner) && (
+            {value.units.length > 2 && !(i === 0 && fixedOwner && !flats) && (
               <div className="flex justify-end sm:col-span-6">
                 <Button
                   type="button"

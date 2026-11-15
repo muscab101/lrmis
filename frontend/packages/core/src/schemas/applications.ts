@@ -44,10 +44,15 @@ const phoneOrEmpty = z
   .pipe(z.union([z.literal(""), z.string().regex(/^\+[1-9]\d{7,14}$/, "validation.phone")]))
   .transform((v) => (v === "" ? null : v));
 
+/** A person's name: letters only (any alphabet), with spaces, apostrophes, dots and hyphens; no digits. */
+const LETTERS = /^[\p{L}\p{M}\s'.-]*$/u;
+
 const partyFields = z.object({
     kind: z.enum(PARTY_KINDS).default("person"),
-    fullName: z.string().trim().min(2, "validation.name").max(160, "validation.too_long").transform(capitalizeName),
-    motherName: optionalText(120).transform((v) => (v === null ? null : capitalizeName(v))),
+    fullName: z.string().trim().min(2, "validation.name").max(160, "validation.too_long").regex(LETTERS, "validation.letters_only").transform(capitalizeName),
+    motherName: optionalText(120)
+      .refine((v) => v === null || LETTERS.test(v), "validation.letters_only")
+      .transform((v) => (v === null ? null : capitalizeName(v))),
     gender: z.enum(["male", "female", ""]).default("").transform((v) => (v === "" ? null : v)),
     dateOfBirth: z
       .string()
@@ -68,7 +73,9 @@ const partyFields = z.object({
       .default(""),
     address: optionalText(300),
     orgRegistrationNo: optionalText(60),
-    nextOfKinName: optionalText(120).transform((v) => (v === null ? null : capitalizeName(v))),
+    nextOfKinName: optionalText(120)
+      .refine((v) => v === null || LETTERS.test(v), "validation.letters_only")
+      .transform((v) => (v === null ? null : capitalizeName(v))),
     nextOfKinPhone: phoneOrEmpty.default(""),
     districtId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),
     ownerTypeId: uuid.or(z.literal("")).default("").transform((v) => (v === "" ? null : v)),

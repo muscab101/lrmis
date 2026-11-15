@@ -52,7 +52,7 @@ export function ObjectionForm({ noticeId, signedIn }: { noticeId: string; signed
     >
       <FormError error={error && !error.fieldErrors ? error : null} />
       <Field id={`name-${noticeId}`} label={t("name")} error={fe("name")} required>
-        <Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} autoComplete="name" />
+        <Input allow="letters" value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} autoComplete="name" />
       </Field>
       <Field id={`phone-${noticeId}`} label={t("phone")} error={fe("phone")}>
         <Input inputMode="tel" placeholder="+252…" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} autoComplete="tel" />

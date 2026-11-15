@@ -288,7 +288,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   </legend>
                   <div className="grid items-start gap-3 sm:grid-cols-2">
                     <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>
-                      <Input value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
+                      <Input allow="letters" value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
                     </Field>
                     <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")}>
                       <Input type="tel" value={info.owner.phone} maxLength={30} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, phone: e.target.value } })} />

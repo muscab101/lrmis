@@ -1,10 +1,9 @@
 import "server-only";
-import { APPLICATION_STATUSES, type ApplicationsQuery, type ApplicationStatus, type ApplicationType, type LandUse, type PartiesQuery } from "@dhulka/core/schemas";
+import { type ApplicationStatus, type ApplicationType, type LandUse, type PartiesQuery } from "@dhulka/core/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 
 export const APP_PAGE_SIZE = 25;
-const CLOSED: ApplicationStatus[] = ["approved", "rejected", "cancelled"];
 
 export interface ApplicationListRow {
   id: string;
@@ -28,58 +27,6 @@ export type SiteCheckStatus = "pending" | "confirmed" | "not_found";
 
 function cleanTerm(q: string) {
   return q.replace(/[,()*%\\]/g, " ").trim();
-}
-
-export async function queryApplications(q: ApplicationsQuery, opts: { citizenOnly?: boolean; excludeNewRegistration?: boolean } = {}) {
-  const supabase = await createClient();
-  let req = supabase
-    .from("applications")
-    .select(
-      "id, number, type, status, channel, submitted_at, created_at, created_by, land_use, site_check_status, site_check_surveyor, district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en), applicant:parties!applications_applicant_party_id_fkey(full_name, phone)",
-      { count: "exact" },
-    );
-  if (q.status === "open") req = req.not("status", "in", `(${CLOSED.join(",")})`);
-  else if (q.status !== "any") req = req.eq("status", q.status);
-  if (q.type) req = req.eq("type", q.type);
-  if (opts.excludeNewRegistration) req = req.neq("type", "new_registration");
-  if (q.district) req = req.eq("district_id", q.district);
-  if (opts.citizenOnly) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    req = req.eq("citizen_user_id", user?.id ?? "00000000-0000-0000-0000-000000000000");
-  }
-  const term = cleanTerm(q.q);
-  if (term) {
-    if (/^app-?\d/i.test(term)) {
-      req = req.ilike("number", `${term}%`);
-    } else {
-      const { data: parties } = await supabase.rpc("search_parties", { p_q: term, p_limit: 50 });
-      const ids = ((parties ?? []) as { id: string }[]).map((p) => p.id);
-      req = req.in("applicant_party_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
-    }
-  }
-  const from = (q.page - 1) * APP_PAGE_SIZE;
-  const res = await req.order("created_at", { ascending: false }).range(from, from + APP_PAGE_SIZE - 1);
-  return { rows: unwrap(res, "applications") as unknown as ApplicationListRow[], total: res.count ?? 0 };
-}
-
-export async function applicationStatusCounts(): Promise<Partial<Record<ApplicationStatus, number>>> {
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("application_status_counts");
-  return Object.fromEntries(((data ?? []) as { status: ApplicationStatus; total: number }[]).map((r) => [r.status, Number(r.total)]));
-}
-
-/** Status counts without new land registrations (those are worked from Parcels → Partial registration). */
-export async function officeApplicationStatusCounts(): Promise<Partial<Record<ApplicationStatus, number>>> {
-  const supabase = await createClient();
-  const counts = await Promise.all(
-    APPLICATION_STATUSES.map(async (status) => {
-      const { count } = await supabase.from("applications").select("id", { count: "exact", head: true }).eq("status", status).neq("type", "new_registration");
-      return [status, count ?? 0] as const;
-    }),
-  );
-  return Object.fromEntries(counts.filter(([, n]) => n > 0));
 }
 
 export interface PartyRow {
@@ -169,81 +116,6 @@ export interface ApplicationStage {
     ends_at: string;
     objections: { id: string; objector_name: string; objector_phone: string | null; statement: string; status: string; filed_at: string; resolution_note: string | null; filed_by: string | null }[];
   } | null;
-}
-
-export async function getApplication(id: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
-  const supabase = await createClient();
-  const res = await supabase
-    .from("applications")
-    .select(
-      `id, number, type, status, channel, district_id, neighbourhood_id, pin, pin_accuracy_m, pin_method, pin_captured_at, pin_low_accuracy, plot_width_m, plot_length_m, address_note, plot_no, old_deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, land_use, site_check_status, site_check_surveyor, site_check_note, site_check_done_at,
-       applicant_party_id, citizen_user_id, submitted_at, decided_at, decision_note, created_at, created_by,
-       district:districts(id, code, name_so, name_en), neighbourhood:neighbourhoods(id, code, name_so, name_en),
-       application_parties(party_id, role, share_pct, party:parties(${PARTY_COLUMNS})),
-       application_documents(id, doc_type, file_name, mime_type, size_bytes, status, uploaded_at, deleted_at),
-       application_events(id, action, from_status, to_status, note, actor_id, at),
-       fee_status, fee_note, parcel_id, verified_by, verified_at`,
-    )
-    .eq("id", id)
-    .is("application_documents.deleted_at", null)
-    .maybeSingle();
-  const app = unwrap(res, "application") as unknown as ApplicationDetail | null;
-  if (!app) return null;
-  app.application_events.sort((a, b) => a.id - b.id);
-
-  const [checklist, nearby, docTypes, surveys, parcel, notices, cert, fee] = await Promise.all([
-    supabase.rpc("application_checklist", { p_id: id }),
-    supabase.rpc("application_nearby", { p_id: id, p_meters: 10 }),
-    supabase.from("document_types").select("code, name_so, name_en, required_for, sort").order("sort"),
-    supabase
-      .from("surveys")
-      .select("id, status, surveyor_id, due_date, area_m2, submitted_at, surveyor:profiles!surveys_surveyor_id_fkey(full_name)")
-      .eq("application_id", id)
-      .order("assigned_at", { ascending: false }),
-    app.parcel_id
-      ? supabase.from("parcels").select("id, pun, account_no, status, area_m2, land_use, geom").eq("id", app.parcel_id).maybeSingle()
-      : Promise.resolve({ data: null }),
-    supabase
-      .from("public_notices")
-      .select("id, status, starts_at, ends_at, objections(id, objector_name, objector_phone, statement, status, filed_at, resolution_note, filed_by)")
-      .eq("application_id", id)
-      .order("starts_at", { ascending: false })
-      .limit(1),
-    app.parcel_id
-      ? supabase.from("issued_documents").select("id, serial").eq("parcel_id", app.parcel_id).eq("type", "certificate").eq("status", "valid").limit(1).maybeSingle()
-      : Promise.resolve({ data: null }),
-    supabase.rpc("application_fee", { p_app: id }),
-  ]);
-  const stage: ApplicationStage = {
-    surveys: (surveys.data ?? []) as unknown as ApplicationStage["surveys"],
-    parcel: (parcel.data ?? null) as ApplicationStage["parcel"],
-    notice: ((notices.data ?? [])[0] ?? null) as ApplicationStage["notice"],
-    certificate: (cert.data ?? null) as ApplicationStage["certificate"],
-  };
-  return {
-    app,
-    stage,
-    /** The fee invoices raised on submit (property bill, registration fee), with pay links. */
-    fee: (fee.data ?? null) as {
-      id: string;
-      number: string;
-      total: number;
-      balance: number;
-      status: string;
-      pay_link: string | null;
-      total_all?: number;
-      balance_all?: number;
-      /** Each fee invoice: the tax bill and the service charge. */
-      invoices?: { id: string; number: string; fee_code: string; name_so: string; name_en: string; total: number; balance: number; status: string; pay_link: string | null }[];
-      /** What the size and type cost now, and whether the invoices differ (Re-bill). */
-      expected?: { tax: number; service: number; tax_line: string | null; needs_size: boolean };
-      needs_rebill?: boolean;
-    } | null,
-    checklist: (checklist.data ?? []) as { code: string; value?: string | number }[],
-    nearby: (nearby.data ?? []) as { id: string; number: string; status: ApplicationStatus; distance_m: number }[],
-    docTypes: (docTypes.data ?? []) as { code: string; name_so: string; name_en: string; required_for: ApplicationType[] }[],
-  };
 }
 
 export async function queryParties(q: PartiesQuery) {

@@ -537,7 +537,9 @@
     "transfer_type": "Dooro nooc wareejin oo shidan.",
     "transfer_type_taken": "Horay ayaa nooc wareejin magacan leh u jiray.",
     "account_code": "Isticmaal kood akoon oo 4 god ah.",
-    "phone_not_registered": "Lambarkan kuma diiwaangashana LRMIS. Marka hore iska diiwaangeli xafiiska LRMIS ee degmadaada, kadibna halkan ka gal."
+    "phone_not_registered": "Lambarkan dhul kuma diiwaangashana LRMIS. Marka hore iska diiwaangeli xafiiska LRMIS ee degmadaada, kadibna halkan ka gal.",
+    "pos_district_taken": "Degmadan horey ayay u leedahay miis lacag qaadasho. Degmo kasta hal miis xafiis: beddel kan ay leedahay, ama marka hore dami.",
+    "letters_only": "Isticmaal xarfo kaliya (lambaro ma aha)."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -2680,7 +2682,11 @@
       "editBuildingBody": "Baaxadda dhismuhu fadhiyo waxay u qaybisaa baaxadda la dhisay guryaha (unit factor); dhulka bannaan biilkiisa waxaa bixisa maamulka.",
       "saveBuilding": "Kaydi oo dib u biil",
       "buildingSaved": "Waa la kaydiyay; guryaha iyo dhulka bannaan dib ayaa loo biilay.",
-      "missingFloors": "{count, plural, =1 {Dabaqa {list} weli guri laguma diiwaangelin.} other {Dabaqyada {list} weli guryo laguma diiwaangelin.}} Ku dar, ama hubi tirada dabaqyada."
+      "missingFloors": "{count, plural, =1 {Dabaqa {list} weli guri laguma diiwaangelin.} other {Dabaqyada {list} weli guryo laguma diiwaangelin.}} Ku dar, ama hubi tirada dabaqyada.",
+      "managerIsOwner": "Milkiilaha aad gelisay waa maamulaha dhismaha: isaga ayaa bixinaya inta dhulka ka hartay.",
+      "flatsSummary": "Dhulka {land} · guryaha {flats} · inta hartay {rest}, waxaa bixinaya maamulaha qiimaha dhulka bannaan.",
+      "floorBase": "Dabaqa hoose: qiimaha Apartment ee m²-kiiba.",
+      "floorUpper": "Dabaqa {floor}: qiimaha Upper Floors ee m²-kiiba."
     },
     "fieldLand": {
       "layout": "Nooca dhulka",
@@ -3067,7 +3073,14 @@
     },
     "rebillUnpaid": "Sidoo kale cusbooneysii biilasha aan la bixin ee halkan",
     "rebillUnpaidHint": "Biilasha furan ee dhulka nooca guriga la beddelay waxay u guurayaan qiimaha cusub. Biil weligiis lagama dhigo wixii horay loo bixiyay ka hooseeya. Dami: biilasha cusub oo keliya.",
-    "pricesSavedRebilled": "Qiimayaasha {place} waa la kaydiyay. {changed, plural, =0 {Biil ma beddelmin} other {# biil ayaa beddelmay}}{paidMore, plural, =0 {} other {; # horay ayaa wax badan loo bixiyay, sidoodii ayay ahaadeen}}."
+    "pricesSavedRebilled": "Qiimayaasha {place} waa la kaydiyay. {changed, plural, =0 {Biil ma beddelmin} other {# biil ayaa beddelmay}}{paidMore, plural, =0 {} other {; # horay ayaa wax badan loo bixiyay, sidoodii ayay ahaadeen}}.",
+    "editPrices": "Beddel qiimayaasha",
+    "viewPrices": "Arag qiimayaasha",
+    "clearPrices": "Ka saar qiimayaasha gaarka ah",
+    "clearPricesTitle": "Ka saar qiimayaasha gaarka ah ee {place}?",
+    "clearPricesBody": "Dhulka halkaas waxaa mar kale lagu biilayaa qiimayaasha caadiga ah. Biilasha hore loo sameeyay sidooda ayay ku harayaan.",
+    "pricesCleared": "{place} wuxuu mar kale isticmaalayaa qiimayaasha caadiga ah.",
+    "actions": "Ficillada"
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",
@@ -3358,7 +3371,21 @@
     },
     "noBatchesHere": "Dufcado kuma jiraan goobtan.",
     "viewBatch": "Arag liiska xaafaddan",
-    "backToRun": "Ku noqo wareegga"
+    "backToRun": "Ku noqo wareegga",
+    "missed": {
+      "check": "Biilasha sanadlaha ah ee la seegay",
+      "checkFailed": "Hubintu ma shaqayn. Mar kale isku day.",
+      "title": "Biilasha sanadlaha ah ee la seegay",
+      "none": "Waxba lama seegin: hanti kasta oo sanad-guuradeedu timid waxay leedahay biilkeeda sanadlaha ah.",
+      "body": "{count, plural, one {# hanti ayaa gaartay} other {# hanti ayaa gaaray}} sanad-guuradooda iyagoo aan biil sanadle ah lahayn. Calaamadee kuwa la biilayo: wareeg biil ayaa loo samaynayaa degmo iyo sanad kasta, kadibna sida caadiga ah ayaa loo ansixinayaa oo loo bixinayaa.",
+      "create": "{count, plural, one {Samee wareeg # hanti} other {Samee wareegyo # hanti}}",
+      "close": "Xir",
+      "chooseAll": "Dooro dhammaan",
+      "yearDue": "Sanadka {year}",
+      "beforeAutomatic": "ka hor biilasha tooska ah",
+      "note": "Wareegyada waxaa loo sameeyaa qabyo ahaan: ka fur liiska si aad u hubiso biilasha, u ansixiso oo u bixiso.",
+      "done": "{count, plural, one {Wareegga {list} waa la sameeyay} other {# wareeg ayaa la sameeyay: {list}}}. Hoos ka ansixi oo bixi."
+    }
   },
   "pay": {
     "title": "Bixi biilkaaga",
@@ -4344,7 +4371,9 @@
     "moreActions": "Wax kale",
     "reprintNow": "Hadda dib u daabac",
     "lockedTitle": "{serial}: shahaadadan waad daabici kartaa",
-    "lockedBody": "Arkidda shahaadooyinka waa laga xiray adiga. Riix Hadda daabac si loogu diro printer-ka miiskaaga."
+    "lockedBody": "Arkidda shahaadooyinka waa laga xiray adiga. Riix Hadda daabac si loogu diro printer-ka miiskaaga.",
+    "printerOnline": "shidan",
+    "cancelPrint": "Jooji"
   },
   "verify": {
     "title": "Hubi shahaado",

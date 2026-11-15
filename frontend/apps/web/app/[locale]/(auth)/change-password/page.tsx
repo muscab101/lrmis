@@ -12,6 +12,8 @@ export default async function ChangePasswordPage({ params }: { params: Promise<{
   setRequestLocale(locale);
   const viewer = await getViewer();
   if (!viewer) return redirect({ href: "/login", locale });
+  // Citizens sign in with an SMS code: they have no password to change.
+  if (viewer.profile.kind === "citizen") return redirect({ href: "/portal", locale });
   const t = await getTranslations("auth");
   const forced = viewer.profile.must_change_password;
   return (

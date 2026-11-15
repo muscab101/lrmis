@@ -78,7 +78,6 @@ export interface InvoiceRow {
   fee_type: { code: string; name_so: string; name_en: string } | null;
 }
 
-
 /** A row of the Invoices table: the invoice plus the land's account and receipt numbers and the owner's phone. */
 export interface InvoiceListRow extends InvoiceRow {
   created_at: string;
@@ -98,18 +97,6 @@ export type InvoiceFilter = "open" | "overdue" | "paid" | "cancelled" | "any";
 
 export const INVOICE_LANDS = ["registered", "partial", "demolished"] as const;
 export type InvoiceLand = (typeof INVOICE_LANDS)[number];
-
-/** How many bills, and what is still owed, for registered land, land in partial registration and demolished land. */
-export async function invoicesByLand() {
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("invoices_by_land");
-  const rows = (data ?? []) as { land: InvoiceLand; invoices: number; owed: number }[];
-  const of = (land: InvoiceLand) => {
-    const r = rows.find((x) => x.land === land);
-    return { invoices: Number(r?.invoices ?? 0), owed: Number(r?.owed ?? 0) };
-  };
-  return { registered: of("registered"), partial: of("partial"), demolished: of("demolished") };
-}
 
 export async function listInvoices(opts: {
   filter: InvoiceFilter;

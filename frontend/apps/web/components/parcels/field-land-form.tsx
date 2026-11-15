@@ -239,17 +239,20 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             propertyType: f.grade,
             landUse: f.landUse,
             floors: layout === "flats" ? num(unitsValue.floors) : null,
-            footprintM2: layout === "flats" ? num(unitsValue.footprint) : null,
-            managerName: layout === "flats" ? unitsValue.managerName : "",
-            managerPhone: layout === "flats" ? unitsValue.managerPhone : "",
+            // Flats: the rest of the plot is worked out from the flats; the owner entered is the building's manager.
+            footprintM2: null,
+            managerPartyId: layout === "flats" ? (owner?.id ?? null) : null,
+            managerName: layout === "flats" && !owner ? unitsValue.managerName : "",
+            managerPhone: layout === "flats" && !owner ? unitsValue.managerPhone : "",
             split: unitsValue.split,
             units: unitsValue.units.map((u, i) => ({
               no: u.no,
               floor: layout === "flats" ? num(u.floor) : null,
               ownM2: num(u.own),
-              ownerId: i === 0 ? (owner?.id ?? null) : null,
-              ownerName: i === 0 && owner ? "" : u.ownerName,
-              ownerPhone: i === 0 && owner ? "" : u.ownerPhone,
+              // A compound's first house belongs to the owner entered; every flat has its own owner.
+              ownerId: i === 0 && layout === "compound" ? (owner?.id ?? null) : null,
+              ownerName: i === 0 && layout === "compound" && owner ? "" : u.ownerName,
+              ownerPhone: i === 0 && layout === "compound" && owner ? "" : u.ownerPhone,
             })),
             spaces:
               layout === "compound"
@@ -487,7 +490,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="ownerName" label={t("ownerName")} error={fe("ownerName")} required>
-            <Input value={f.ownerName} onChange={set("ownerName")} autoComplete="off" />
+            <Input allow="letters" value={f.ownerName} onChange={set("ownerName")} autoComplete="off" />
           </Field>
           <Field
             id="ownerPhone"

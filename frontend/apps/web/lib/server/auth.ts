@@ -83,7 +83,8 @@ export async function requireStaff(locale: string): Promise<Viewer> {
   const viewer = await getViewer();
   if (!viewer) redirect({ href: "/login", locale });
   const v = viewer as Viewer;
-  if (v.profile.kind !== "staff") redirect({ href: "/my-properties", locale });
+  // Citizens have their own pages (the portal).
+  if (v.profile.kind !== "staff") redirect({ href: "/portal", locale });
   // A super admin testing this account doesn't set its password or do its 2FA.
   if (v.testing) return v;
   if (v.profile.must_change_password || v.profile.status === "invited")

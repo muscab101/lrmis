@@ -537,7 +537,9 @@
     "transfer_type": "Choose a transfer type that is switched on.",
     "transfer_type_taken": "There's already a transfer type with this name.",
     "account_code": "Use a 4-digit account code.",
-    "phone_not_registered": "This phone number is not registered in LRMIS. Please register first at your district's LRMIS office, then sign in here."
+    "phone_not_registered": "This phone number has no land registered in LRMIS. Please register first at your district's LRMIS office, then sign in here.",
+    "pos_district_taken": "This district already has a cash desk. One office cash desk per district: change the one it has, or switch it off first.",
+    "letters_only": "Use letters only (no numbers)."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -2680,7 +2682,11 @@
       "editBuildingBody": "The footprint shares the built space among the flats (unit factor); the open ground is billed to the management.",
       "saveBuilding": "Save and re-bill",
       "buildingSaved": "Saved; the flats and the open ground are billed again.",
-      "missingFloors": "{count, plural, =1 {Floor {list} has no flats yet.} other {Floors {list} have no flats yet.}} Add them, or check the number of floors."
+      "missingFloors": "{count, plural, =1 {Floor {list} has no flats yet.} other {Floors {list} have no flats yet.}} Add them, or check the number of floors.",
+      "managerIsOwner": "The owner you entered is the building's manager: they pay the rest of the plot.",
+      "flatsSummary": "Plot {land} · flats {flats} · rest of the plot {rest}, charged to the manager at the open-ground price.",
+      "floorBase": "Ground floor: Apartment price per m².",
+      "floorUpper": "Floor {floor}: Upper Floors price per m²."
     },
     "fieldLand": {
       "layout": "Type of land",
@@ -3067,7 +3073,14 @@
     },
     "rebillUnpaid": "Also update unpaid bills here",
     "rebillUnpaidHint": "Open bills of land with a changed house type move to the new price. A bill is never set below what was already paid. Off: only new bills use it.",
-    "pricesSavedRebilled": "Prices for {place} saved. {changed, plural, =0 {No bill changed} one {# bill changed} other {# bills changed}}{paidMore, plural, =0 {} other {; # already paid more, left as they were}}."
+    "pricesSavedRebilled": "Prices for {place} saved. {changed, plural, =0 {No bill changed} one {# bill changed} other {# bills changed}}{paidMore, plural, =0 {} other {; # already paid more, left as they were}}.",
+    "editPrices": "Edit prices",
+    "viewPrices": "See prices",
+    "clearPrices": "Remove own prices",
+    "clearPricesTitle": "Remove {place}'s own prices?",
+    "clearPricesBody": "Land there is billed at the normal prices again. Bills already made stay as they are.",
+    "pricesCleared": "{place} uses the normal prices again.",
+    "actions": "Actions"
   },
   "billing": {
     "runsTitle": "Billing runs",
@@ -3358,7 +3371,21 @@
     },
     "noBatchesHere": "No batches in this place.",
     "viewBatch": "View this neighbourhood's list",
-    "backToRun": "Back to the run"
+    "backToRun": "Back to the run",
+    "missed": {
+      "check": "Missed yearly bills",
+      "checkFailed": "The check didn't work. Try again.",
+      "title": "Missed yearly bills",
+      "none": "Nothing missed: every property whose anniversary has come has its yearly bill.",
+      "body": "{count, plural, one {# property has} other {# properties have}} reached their anniversary without a yearly bill. Tick the ones to bill: a billing run is made for each district and year, then approved and issued as usual.",
+      "create": "{count, plural, one {Make a run for # property} other {Make runs for # properties}}",
+      "close": "Close",
+      "chooseAll": "Choose all",
+      "yearDue": "Year {year}",
+      "beforeAutomatic": "before automatic billing",
+      "note": "Runs are made as drafts: open them in the list to check the bills, approve and issue.",
+      "done": "{count, plural, one {Run {list} made} other {# runs made: {list}}}. Approve and issue them below."
+    }
   },
   "pay": {
     "title": "Pay your invoice",
@@ -4344,7 +4371,9 @@
     "moreActions": "More",
     "reprintNow": "Reprint now",
     "lockedTitle": "{serial}: you can print this certificate",
-    "lockedBody": "Viewing certificates is turned off for you. Use Print now to send it to your desk's printer."
+    "lockedBody": "Viewing certificates is turned off for you. Use Print now to send it to your desk's printer.",
+    "printerOnline": "on",
+    "cancelPrint": "Cancel"
   },
   "verify": {
     "title": "Verify a certificate",

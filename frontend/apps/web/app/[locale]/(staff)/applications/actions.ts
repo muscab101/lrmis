@@ -1,19 +1,10 @@
 "use server";
 
-import {
-  DOCUMENT_MAX_BYTES,
-  DOCUMENT_MIME_TYPES,
-  ownerSchema,
-  partySchema,
-} from "@dhulka/core/schemas";
+import { ownerSchema, partySchema } from "@dhulka/core/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
-import { log } from "@/lib/server/log";
 import { partyErrors, partyPayload } from "@/lib/server/party-payload";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-const BUCKET = "application-documents";
 
 /** Parcels or open applications within a few metres of a point (possible double registration). */
 export const nearbyPinsAction = defineAction(
@@ -26,46 +17,6 @@ export const nearbyPinsAction = defineAction(
       applications?: { number: string; metres: number }[];
     },
 );
-
-function safeFileName(name: string) {
-  return name.normalize("NFKD").replace(/[^\w.-]+/g, "_").slice(-80) || "file";
-}
-
-/** Upload to the private bucket (server only), then register it; the upload is removed if registering fails. */
-export async function uploadDocumentAction(form: FormData) {
-  const handler = defineAction(
-    "applications.upload",
-    z.object({ applicationId: z.uuid(), docType: z.string().regex(/^[a-z_]+$/) }),
-    async ({ applicationId, docType }, ctx) => {
-      const file = form.get("file");
-      if (!(file instanceof File) || file.size === 0) throw new AppFailure("VALIDATION", undefined, { file: ["validation.required"] });
-      if (file.size > DOCUMENT_MAX_BYTES) throw new AppFailure("VALIDATION", undefined, { file: ["validation.file_too_big"] });
-      if (!(DOCUMENT_MIME_TYPES as readonly string[]).includes(file.type)) {
-        throw new AppFailure("VALIDATION", undefined, { file: ["validation.file_type"] });
-      }
-      const path = `${applicationId}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
-      const admin = await createAdminClient();
-      const up = await admin.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
-      if (up.error) throw new Error(`storage upload: ${up.error.message}`);
-      const reg = await ctx.supabase.rpc("application_add_document", {
-        p_id: applicationId,
-        p_doc_type: docType,
-        p_storage_path: path,
-        p_file_name: file.name,
-        p_mime: file.type,
-        p_size: file.size,
-      });
-      if (reg.error) {
-        const rm = await admin.storage.from(BUCKET).remove([path]);
-        if (rm.error) log("error", "applications.upload_cleanup_failed", { requestId: ctx.requestId, path });
-        unwrap(reg, "register document");
-      }
-      revalidatePath("/[locale]/applications/[id]", "page");
-      return null;
-    },
-  );
-  return handler({ applicationId: String(form.get("applicationId") ?? ""), docType: String(form.get("docType") ?? "") });
-}
 
 // ---------------------------------------------------------------------------
 // Owners (parties)
