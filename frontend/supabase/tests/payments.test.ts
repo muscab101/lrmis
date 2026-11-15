@@ -68,6 +68,8 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
   admin = await bootstrapSuperAdmin(db);
+  // The early-payment discount is off by default (0247); these tests switch it on to check how it works.
+  await db.query(`update public.settings set value = to_jsonb(5) where key = 'billing.early_discount_pct'`);
   valuer = await createStaff(db, admin, "valuer@gmail.com", ["valuation_officer"], [hodan]);
   biller = await createStaff(db, admin, "biller@gmail.com", ["billing_officer"], [hodan]);
   finance = await createStaff(db, admin, "finance@gmail.com", ["finance_manager"], "all");
