@@ -1,5 +1,6 @@
 import type { PermissionKey } from "@dhulka/core/permissions";
 import {
+  ScanSearch,
   Activity,
   Stamp,
   BadgeCheck,
@@ -65,7 +66,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
       { key: "map", href: "/map", icon: Map, permission: "map.view" },
       // Every unfinished piece of work in one place (its own page, apart from the dashboard).
-      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
+      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "incomplete.view" },
       // Everything waiting for this person's approval, in one place.
       {
         key: "applications",
@@ -82,7 +83,7 @@ export const STAFF_NAV: NavGroup[] = [
           "accounting.approve",
         ],
       },
-      { key: "chat", href: "/chat", icon: MessagesSquare },
+      { key: "chat", href: "/chat", icon: MessagesSquare, permission: "chat.view" },
     ],
   },
   {
@@ -96,7 +97,7 @@ export const STAFF_NAV: NavGroup[] = [
         href: "/owners",
         icon: Users,
         permission: "owners.view",
-        children: [{ key: "managers", href: "/owners/managers", icon: UserCog, permission: "owners.view" }],
+        children: [{ key: "managers", href: "/owners/managers", icon: UserCog, permission: "managers.view" }],
       },
       // Parcels opens its page; under it, Apartments (buildings with their flats or houses).
       {
@@ -105,7 +106,7 @@ export const STAFF_NAV: NavGroup[] = [
         icon: MapPinned,
         permission: "parcels.view",
         children: [
-          { key: "apartments", href: "/apartments", icon: Building2, permission: "parcels.view" },
+          { key: "apartments", href: "/apartments", icon: Building2, permission: "apartments.view" },
         ],
       },
       { key: "demolished", href: "/demolished", icon: Hammer, permission: "parcels.demolitions" },
@@ -120,7 +121,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "payments", href: "/payments", icon: Banknote, permission: "payments.view" },
       { key: "collections", href: "/collections", icon: ShieldCheck, permission: "reconciliation.view" },
       { key: "cashier", href: "/cashier", icon: Wallet, permission: "cashier.view" },
-      { key: "pointsOfSale", href: "/points-of-sale", icon: Store, permission: "payments.view" },
+      { key: "pointsOfSale", href: "/points-of-sale", icon: Store, permission: "points_of_sale.view" },
       { key: "accounting", href: "/accounting", icon: Landmark, permission: "accounting.view" },
     ],
   },
@@ -130,6 +131,8 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "transfers", href: "/transfers", icon: ArrowRightLeft, permission: "transfers.view" },
       { key: "certificates", href: "/documents/print", icon: BadgeCheck, permission: "certificates.view" },
       { key: "idCards", href: "/documents/cards", icon: IdCard, permission: "certificates.id_cards" },
+      // Every staff member can check a certificate or ID card someone shows them.
+      { key: "verify", href: "/documents/verify", icon: ScanSearch, permission: "verify.view" },
       { key: "addPrinter", href: "/printers", icon: Printer, permission: "certificates.printers" },
     ],
   },
@@ -137,7 +140,7 @@ export const STAFF_NAV: NavGroup[] = [
     key: "insight",
     items: [
       { key: "reports", href: "/reports", icon: BarChart3, permission: "reports.view" },
-      { key: "assistant", href: "/assistant", icon: Sparkles, permission: "dashboard.view" },
+      { key: "assistant", href: "/assistant", icon: Sparkles, permission: "assistant.view" },
       { key: "messages", href: "/messages", icon: MessageSquare, permission: "messages.view" },
       { key: "locations", href: "/locations", icon: MapPinned, permission: "locations.view" },
     ],

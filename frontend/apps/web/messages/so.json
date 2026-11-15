@@ -103,7 +103,8 @@
       "signatureStamp": "Saxiixa iyo shaabadda",
       "apartments": "Guryaha dabaqyada",
       "parcelsAll": "Dhammaan dhulalka",
-      "managers": "Maamulayaasha"
+      "managers": "Maamulayaasha",
+      "verify": "Hubi"
     }
   },
   "status": {
@@ -1428,7 +1429,14 @@
       "parcels_partial": "Dhulka — Qayb ahaan",
       "parcels_registered": "Dhulka — La diiwaangeliyay",
       "owners_partial": "Milkiilayaasha — Qayb ahaan",
-      "owners_registered": "Milkiilayaasha — La diiwaangeliyay"
+      "owners_registered": "Milkiilayaasha — La diiwaangeliyay",
+      "incomplete": "Aan dhammaystirnayn",
+      "apartments": "Guryaha dabaqyada",
+      "managers": "Maamulayaasha dhismaha",
+      "points_of_sale": "Goobaha lacag bixinta",
+      "verify": "Hubi",
+      "chat": "Wada-hadalka shaqaalaha",
+      "assistant": "Kaaliyaha AI"
     },
     "specials": {
       "payments_refund": "Celin",
@@ -4353,7 +4361,23 @@
     "cancelledOn": "La joojiyay",
     "privacy": "Faahfaahin shakhsi ah ma jirto halkan. Diiwaanka oo dhan, booqo xafiiska dhulka.",
     "checkAnother": "Hubi koodh kale",
-    "expiredBody": "Shahaadadan waxay ahayd sanadka canshuurta {year}. Weydiiso shahaadada sanadkan."
+    "expiredBody": "Shahaadadan waxay ahayd sanadka canshuurta {year}. Weydiiso shahaadada sanadkan.",
+    "codeLength": "Koodku waa 12 xaraf iyo lambar, tusaale ABCD-EFGH-JKMN.",
+    "tooMany": "Hubin badan ayaa la sameeyay. Fadlan sug daqiiqad kadibna isku day.",
+    "scan": "Iskaan QR",
+    "stopScan": "Jooji",
+    "scanHint": "Kaamirada u jeedi QR-ka dukumentiga.",
+    "cameraFailed": "Kaamirada lama furi karin. Koodka gacanta ku qor.",
+    "cancelledBody": "Dukumentigan waa la joojiyay, lama aqbali karo.",
+    "whereTitle": "Xaggee koodku ku yaal?",
+    "whereBody": "Waxaa lagu daabacay QR-ka agtiisa ee shahaadada lahaanshaha ama kaarka aqoonsiga hantida. Waxaad sidoo kale QR-ka ku iskaan gareyn kartaa kaamirada taleefankaaga.",
+    "meaningTitle": "Waxa jawaabtu ka dhigan tahay",
+    "meaning": {
+      "valid": "dukumentigu waa run oo wuu shaqaynayaa.",
+      "expired": "wuu ahaa run, laakiin sanadkiisii wuu dhammaaday. Milkiilaha weydii kan hadda.",
+      "cancelled": "xafiiska dhulka ayaa joojiyay. Ha aqbalin."
+    },
+    "portalBody": "Hubi shahaado lahaansho ama kaarka aqoonsiga hantida, tusaale ka hor intaadan dhul iibsan. Qor koodka QR-ka agtiisa ku yaal, ama iskaan garee QR-ka."
   },
   "legal": {
     "transfersTitle": "Wareejinta",
@@ -5153,7 +5177,8 @@
     "home": "Hoyga",
     "bills": "Biilasha & bixinta",
     "track": "La soco",
-    "assistant": "Kaaliyaha caawinta"
+    "assistant": "Kaaliyaha caawinta",
+    "verify": "Hubi"
   },
   "portalBills": {
     "title": "Biilasha & bixinta",

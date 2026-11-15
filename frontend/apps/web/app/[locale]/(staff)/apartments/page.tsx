@@ -23,7 +23,7 @@ const KINDS = ["flats", "compound"] as const;
 export default async function ApartmentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "parcels.view");
+  await requirePermission(locale, "apartments.view");
   const t = await getTranslations("apartments");
   const format = await getFormatter();
   const lang = await getLocale();

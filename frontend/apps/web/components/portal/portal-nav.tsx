@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, Home, MapPinned, Sparkles } from "lucide-react";
+import { CreditCard, Home, MapPinned, ScanSearch, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -8,6 +8,7 @@ const ITEMS = [
   { key: "home", href: "/portal", icon: Home },
   { key: "bills", href: "/portal/bills", icon: CreditCard },
   { key: "track", href: "/portal/track", icon: MapPinned },
+  { key: "verify", href: "/portal/verify", icon: ScanSearch },
   { key: "assistant", href: "/portal/assistant", icon: Sparkles },
 ] as const;
 

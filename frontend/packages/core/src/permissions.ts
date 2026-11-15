@@ -71,6 +71,16 @@ export const SPECIAL_PERMISSIONS = [
   "owners.registered",
   "owners.delete_registered",
   "messages.broadcast",
+  // Parts of the system with their own powers (only the actions they use).
+  "apartments.view",
+  "apartments.update",
+  "managers.view",
+  "incomplete.view",
+  "points_of_sale.view",
+  "points_of_sale.update",
+  "chat.view",
+  "assistant.view",
+  "verify.view",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

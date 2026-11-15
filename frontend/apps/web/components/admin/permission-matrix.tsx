@@ -46,6 +46,24 @@ const ROWS: Row[] = MODULES.filter((m) => m !== "disputes" && m !== "permits").f
   ];
 });
 
+/**
+ * Parts of the system that have only some of the actions (their own powers since 0240), each placed after the row it
+ * belongs with.
+ */
+const PARTS: { id: string; after: string; cells: Partial<Record<Action, string>> }[] = [
+  { id: "incomplete", after: "dashboard", cells: { view: "incomplete.view" } },
+  { id: "apartments", after: "parcels_registered", cells: { view: "apartments.view", update: "apartments.update" } },
+  { id: "managers", after: "owners_registered", cells: { view: "managers.view" } },
+  { id: "points_of_sale", after: "cashier", cells: { view: "points_of_sale.view", update: "points_of_sale.update" } },
+  { id: "verify", after: "certificates", cells: { view: "verify.view" } },
+  { id: "chat", after: "messages", cells: { view: "chat.view" } },
+  { id: "assistant", after: "reports", cells: { view: "assistant.view" } },
+];
+for (const p of PARTS) {
+  const at = ROWS.findIndex((r) => r.id === p.after);
+  ROWS.splice(at < 0 ? ROWS.length : at + 1, 0, { id: p.id, cells: p.cells, specials: [] });
+}
+
 /** Rows = parts of the system, columns = actions, plus each row's extra powers. */
 export function PermissionMatrix({ value, onChange, grantable, readOnly = false }: Props) {
   const t = useTranslations("permissions");

@@ -2,7 +2,7 @@ import { PageHeader } from "@dhulka/ui/misc";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AssistantChat } from "@/components/reports/assistant-chat";
 import { isAssistantAdmin } from "@/lib/server/assistant";
-import { requireStaff } from "@/lib/server/auth";
+import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
@@ -10,11 +10,11 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-/** Every staff member gets the help assistant; administrators get the admin one. */
+/** The help assistant (power: Assistant → View); administrators get the admin one. */
 export default async function AssistantPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requireStaff(locale);
+  const viewer = await requirePermission(locale, "assistant.view");
   const admin = await isAssistantAdmin(await createClient(), viewer.user.id, viewer.isSuperAdmin);
   const namespace = admin ? "adminAssistant" : "assistantPage";
   const t = await getTranslations(namespace);

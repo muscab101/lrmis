@@ -18,7 +18,7 @@ export async function generateMetadata() {
 export default async function ManagersPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "owners.view");
+  await requirePermission(locale, "managers.view");
   const t = await getTranslations("managers");
   const format = await getFormatter();
   const lang = await getLocale();

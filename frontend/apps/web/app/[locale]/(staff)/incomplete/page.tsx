@@ -56,7 +56,7 @@ const ICONS: Record<IncompleteGroup["key"], React.ReactNode> = {
 export default async function IncompletePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "dashboard.view");
+  const viewer = await requirePermission(locale, "incomplete.view");
   const t = await getTranslations("incomplete");
   const tp = await getTranslations("parcels");
   const tb = await getTranslations("billing");

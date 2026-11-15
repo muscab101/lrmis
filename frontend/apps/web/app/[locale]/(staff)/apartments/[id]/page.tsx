@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ApartmentPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "parcels.view");
+  await requirePermission(locale, "apartments.view");
   const t = await getTranslations("apartments");
   const format = await getFormatter();
   const lang = await getLocale();

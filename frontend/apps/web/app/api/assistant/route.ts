@@ -25,7 +25,7 @@ const body = z.object({
 export async function POST(request: NextRequest) {
   const viewer = await getViewer();
   if (!viewer) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
-  if (viewer.profile.kind !== "staff" || viewer.profile.status !== "active") return NextResponse.json({ code: "PERMISSION_DENIED" }, { status: 403 });
+  if (viewer.profile.kind !== "staff" || viewer.profile.status !== "active" || !viewer.can("assistant.view")) return NextResponse.json({ code: "PERMISSION_DENIED" }, { status: 403 });
   if (!assistantConfigured()) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
   const parsed = body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ code: "VALIDATION" }, { status: 400 });

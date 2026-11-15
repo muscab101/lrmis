@@ -294,7 +294,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                   manager={extras.manager}
                   legacyName={extras.legacyName}
                   areas={extras.areas}
-                  canEdit={(viewer.can("parcels.update") || viewer.can("valuation.update")) && !archived}
+                  canEdit={(viewer.can("apartments.update") || viewer.can("parcels.update") || viewer.can("valuation.update")) && !archived}
                   newOwner={ownerDistricts ? { districts: ownerDistricts, districtId: ownerDistricts.find((d) => d.code === p.district?.code)?.id ?? null } : null}
                 />
               )}

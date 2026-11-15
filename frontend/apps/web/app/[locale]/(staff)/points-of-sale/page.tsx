@@ -17,7 +17,7 @@ export async function generateMetadata() {
 export default async function PointsOfSalePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const viewer = await requirePermission(locale, "payments.view");
+  const viewer = await requirePermission(locale, "points_of_sale.view");
   const t = await getTranslations("admin.pos");
   const supabase = await createClient();
   const [{ data: rows }, districts, { data: cashiers }] = await Promise.all([
@@ -25,7 +25,7 @@ export default async function PointsOfSalePage({ params }: { params: Promise<{ l
     listDistricts(),
     supabase.from("profiles").select("full_name, email, point_of_sale_id").eq("kind", "staff").is("deleted_at", null).not("point_of_sale_id", "is", null),
   ]);
-  const canEdit = viewer.can("settings.update");
+  const canEdit = viewer.can("points_of_sale.update") || viewer.can("settings.update");
   const districtName = new Map(districts.map((d) => [d.id, locale === "so" ? d.name_so : d.name_en]));
   const staffAt = new Map<string, string[]>();
   for (const c of cashiers ?? []) {

@@ -103,7 +103,8 @@
       "signatureStamp": "Signature and stamp",
       "apartments": "Apartments",
       "parcelsAll": "All parcels",
-      "managers": "Managers"
+      "managers": "Managers",
+      "verify": "Verify"
     }
   },
   "status": {
@@ -1428,7 +1429,14 @@
       "parcels_partial": "Parcels — Partial",
       "parcels_registered": "Parcels — Registered",
       "owners_partial": "Owners — Partial",
-      "owners_registered": "Owners — Registered"
+      "owners_registered": "Owners — Registered",
+      "incomplete": "Incomplete",
+      "apartments": "Apartments",
+      "managers": "Building managers",
+      "points_of_sale": "Points of sale",
+      "verify": "Verify",
+      "chat": "Staff chat",
+      "assistant": "Assistant"
     },
     "specials": {
       "payments_refund": "Refund",
@@ -4353,7 +4361,23 @@
     "cancelledOn": "Cancelled on",
     "privacy": "Only non-personal details are shown. For the full record, visit the land office.",
     "checkAnother": "Check another code",
-    "expiredBody": "This certificate was for tax year {year}. Ask for this year's certificate."
+    "expiredBody": "This certificate was for tax year {year}. Ask for this year's certificate.",
+    "codeLength": "The code has 12 letters and numbers, e.g. ABCD-EFGH-JKMN.",
+    "tooMany": "Too many checks. Please wait a minute and try again.",
+    "scan": "Scan QR",
+    "stopScan": "Stop",
+    "scanHint": "Point the camera at the QR code on the document.",
+    "cameraFailed": "The camera could not be opened. Type the code instead.",
+    "cancelledBody": "This document was cancelled and must not be accepted.",
+    "whereTitle": "Where is the code?",
+    "whereBody": "It is printed next to the QR code on the title certificate or the property ID card. You can also scan the QR code with your phone camera.",
+    "meaningTitle": "What the answer means",
+    "meaning": {
+      "valid": "the document is real and in force.",
+      "expired": "it was real, but its year is over. Ask the owner for the current one.",
+      "cancelled": "it was withdrawn by the land office. Do not accept it."
+    },
+    "portalBody": "Check a title certificate or property ID card, for example before you buy land. Type the code next to its QR code, or scan the QR."
   },
   "legal": {
     "transfersTitle": "Transfers",
@@ -5153,7 +5177,8 @@
     "home": "Home",
     "bills": "Bills & pay",
     "track": "Track",
-    "assistant": "Help assistant"
+    "assistant": "Help assistant",
+    "verify": "Verify"
   },
   "portalBills": {
     "title": "Bills & pay",
