@@ -535,7 +535,8 @@
     "warning_message": "Write a warning between 3 and 300 letters.",
     "transfer_type": "Choose a transfer type that is switched on.",
     "transfer_type_taken": "There's already a transfer type with this name.",
-    "account_code": "Use a 4-digit account code."
+    "account_code": "Use a 4-digit account code.",
+    "phone_not_registered": "This phone number is not registered in LRMIS. Please register first at your district's LRMIS office, then sign in here."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -552,7 +553,7 @@
     "areYouCitizen": "Property owner or citizen?",
     "citizenLoginLink": "Sign in with your phone",
     "citizenLoginTitle": "Sign in with your phone",
-    "citizenLoginBody": "We'll send a 6-digit code by SMS. No password needed.",
+    "citizenLoginBody": "For owners registered in LRMIS: use the phone number on your record. We'll send a 6-digit code by SMS. No password needed.",
     "phone": "Mobile number",
     "phoneHint": "International format, e.g. +252 61 123 4567",
     "sendCode": "Send code",

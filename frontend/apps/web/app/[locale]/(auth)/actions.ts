@@ -21,7 +21,7 @@ import { log } from "@/lib/server/log";
 import { requestContext } from "@/lib/server/request";
 import { createAdminClient, createIsolatedClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { checkCode, citizenLoginToken, issueCode } from "@/lib/server/citizen-otp";
+import { checkCode, citizenLoginToken, issueCode, phoneOnRegister } from "@/lib/server/citizen-otp";
 
 async function recordLogin(
   email: string | null,
@@ -215,6 +215,8 @@ export const otpRequestAction = defineAction(
   "auth.otp_request",
   otpRequestSchema.extend({ locale: z.enum(["so", "en"]).default("so") }),
   async (input) => {
+    // Only people on the land register: anyone else is asked to register at an LRMIS office first (no code is sent).
+    if (!(await phoneOnRegister(input.phone))) throw new AppFailure("VALIDATION", undefined, { phone: ["validation.phone_not_registered"] });
     const ctx = await requestContext();
     const res = await issueCode(input.phone, ctx.ip, input.locale);
     if (!res.ok) {
@@ -235,6 +237,7 @@ export const otpVerifyAction = defineAction(
       await recordLogin(input.phone, null, "otp", false, "invalid");
       throw new AppFailure("VALIDATION", undefined, { token: ["validation.otp_wrong"] });
     }
+    if (!(await phoneOnRegister(input.phone))) throw new AppFailure("VALIDATION", undefined, { token: ["validation.phone_not_registered"] });
     const login = await citizenLoginToken(input.phone);
     if ("error" in login) {
       await recordLogin(input.phone, null, "otp", false, login.error);

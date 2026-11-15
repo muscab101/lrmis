@@ -535,7 +535,8 @@
     "warning_message": "Qor digniin u dhaxaysa 3 iyo 300 xaraf.",
     "transfer_type": "Dooro nooc wareejin oo shidan.",
     "transfer_type_taken": "Horay ayaa nooc wareejin magacan leh u jiray.",
-    "account_code": "Isticmaal kood akoon oo 4 god ah."
+    "account_code": "Isticmaal kood akoon oo 4 god ah.",
+    "phone_not_registered": "Lambarkan kuma diiwaangashana LRMIS. Marka hore iska diiwaangeli xafiiska LRMIS ee degmadaada, kadibna halkan ka gal."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -552,7 +553,7 @@
     "areYouCitizen": "Ma tahay milkiile ama muwaadin?",
     "citizenLoginLink": "Ku gal telefoonkaaga",
     "citizenLoginTitle": "Ku gal telefoonkaaga",
-    "citizenLoginBody": "Waxaan kuu soo diri doonnaa koodh 6 god ah oo SMS ah. Furaha sirta looma baahna.",
+    "citizenLoginBody": "Milkiilayaasha ku diiwaangashan LRMIS: isticmaal lambarka taleefanka ee diiwaankaaga. Waxaan kuu soo diraynaa kood 6 god ah SMS ahaan. Furaha sirta looma baahna.",
     "phone": "Lambarka mobilka",
     "phoneHint": "Qaab caalami ah, tusaale +252 61 123 4567",
     "sendCode": "Soo dir koodhka",

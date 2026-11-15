@@ -16,7 +16,8 @@ import { signOutAction } from "@/app/[locale]/(auth)/actions";
 import { ProfilePhotoDialog } from "@/components/shell/profile-photo-dialog";
 import { useRouter } from "@/i18n/navigation";
 
-export function UserMenu({ name, email, photo = null }: { name: string; email: string | null; photo?: string | null }) {
+/** The account menu. Citizens sign in with an SMS code, so they have no password or two-factor settings. */
+export function UserMenu({ name, email, photo = null, citizen = false }: { name: string; email: string | null; photo?: string | null; citizen?: boolean }) {
   const t = useTranslations("common");
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -30,21 +31,25 @@ export function UserMenu({ name, email, photo = null }: { name: string; email: s
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="text-foreground">
           <div className="truncate text-sm font-semibold">{name}</div>
-          <div className="truncate text-xs font-normal text-muted-foreground">{email}</div>
+          {email && email !== name && <div className="truncate text-xs font-normal text-muted-foreground">{email}</div>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => setPhotoOpen(true)}>
           <Camera />
           {t("profilePhoto")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => router.push("/change-password")}>
-          <KeyRound />
-          {t("changePassword")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => router.push("/mfa")}>
-          <ShieldCheck />
-          {t("twoFactor")}
-        </DropdownMenuItem>
+        {!citizen && (
+          <>
+            <DropdownMenuItem onSelect={() => router.push("/change-password")}>
+              <KeyRound />
+              {t("changePassword")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => router.push("/mfa")}>
+              <ShieldCheck />
+              {t("twoFactor")}
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           destructive
@@ -52,7 +57,7 @@ export function UserMenu({ name, email, photo = null }: { name: string; email: s
           onSelect={() =>
             start(async () => {
               await signOutAction();
-              router.replace("/login");
+              router.replace(citizen ? "/citizen/login" : "/login");
               router.refresh();
             })
           }

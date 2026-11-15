@@ -167,3 +167,16 @@ describe("phone format from Supabase Auth", () => {
     expect(await scalar<string>(db, `select phone from public.profiles where user_id = $1`, [id])).toBe("+252615550444");
   });
 });
+
+describe("only people on the register sign in", () => {
+  it("a phone on the register may get a code; an unknown one may not, and no owner record is made for it", async () => {
+    await db.query(`insert into public.parties (full_name, phone) values ('Known Owner', '+252615550555')`);
+    const known = (phone: string) => asService(db, (tx) => scalar<boolean>(tx, `select public.citizen_phone_registered($1)`, [phone]));
+    expect(await known("+252615550555")).toBe(true);
+    expect(await known("+252615550999")).toBe(false);
+    const stranger = await createAuthUser(db, { phone: "+252615550999", fullName: "" });
+    expect(await asUser(db, stranger, (tx) => scalar<string | null>(tx, `select public.my_party()`), "aal1")).toBeNull();
+    expect(await scalar<number>(db, `select count(*)::int from public.parties where phone = '+252615550999'`)).toBe(0);
+    await expect(asUser(db, stranger, (tx) => tx.query(`select public.citizen_phone_registered('+252615550555')`), "aal1")).rejects.toThrow(/permission denied/);
+  });
+});

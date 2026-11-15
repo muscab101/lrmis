@@ -39,6 +39,14 @@ export async function issueCode(phone: string, ip: string | null, lang: "so" | "
   return sent.ok ? { ok: true } : { ok: false, reason: "send_failed" };
 }
 
+/** The phone belongs to someone on the land register: only they can use the citizen portal. */
+export async function phoneOnRegister(phone: string) {
+  const admin = await createAdminClient();
+  const { data, error } = await admin.rpc("citizen_phone_registered", { p_phone: phone });
+  if (error) throw new Error(`register check: ${error.message}`);
+  return data === true;
+}
+
 export async function checkCode(phone: string, code: string) {
   const admin = await createAdminClient();
   const { data } = await admin.rpc("citizen_otp_consume", { p_phone: phone, p_hash: hash(phone, code) });

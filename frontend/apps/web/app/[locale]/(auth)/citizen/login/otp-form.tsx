@@ -31,7 +31,8 @@ export function OtpForm() {
     const res = await otpRequestAction({ ...values, locale: locale === "en" ? "en" : "so" });
     if (!res.ok) {
       applyFieldErrors(res.error, request.setError);
-      return setError(res.error);
+      // A field message (for example "register first") says it all; the box is for other errors.
+      return setError(res.error.fieldErrors ? null : res.error);
     }
     const normalised = otpRequestSchema.parse(values).phone;
     setPhone(normalised);
