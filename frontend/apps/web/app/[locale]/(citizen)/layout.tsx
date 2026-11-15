@@ -39,7 +39,7 @@ export default async function CitizenLayout({ children, params }: { children: Re
             <UserMenu citizen name={me?.full_name || viewer.profile.full_name || viewer.profile.phone || ""} email={viewer.profile.phone} photo={await profilePhotoUrl(viewer.profile.avatar_path)} />
           </div>
         </div>
-        <PortalNav />
+        <PortalNav verify={viewer.can("verify.view")} />
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
     </div>

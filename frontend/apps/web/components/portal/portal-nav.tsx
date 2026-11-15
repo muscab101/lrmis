@@ -12,13 +12,14 @@ const ITEMS = [
   { key: "assistant", href: "/portal/assistant", icon: Sparkles },
 ] as const;
 
-export function PortalNav() {
+/** `verify`: the citizen has the Verify power (Admin → Roles → Citizen). */
+export function PortalNav({ verify = true }: { verify?: boolean }) {
   const t = useTranslations("portalNav");
   const path = usePathname();
   const active = (href: string) => (href === "/portal" ? path === "/portal" || path.startsWith("/portal/parcels") : path.startsWith(href) || (href === "/portal/bills" && path.startsWith("/portal/pay")));
   return (
     <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4" aria-label={t("label")}>
-      {ITEMS.map(({ key, href, icon: Icon }) => (
+      {ITEMS.filter((i) => i.key !== "verify" || verify).map(({ key, href, icon: Icon }) => (
         <Link
           key={key}
           href={href}

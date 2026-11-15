@@ -89,16 +89,17 @@ export function PermissionMatrix({ value, onChange, grantable, readOnly = false 
   const label = (r: Row) => t(`modules.${r.id}`);
 
   return (
-    <div className="relative overflow-x-auto rounded-md border">
+    // Scrolls inside its own box so the header (actions and their tick boxes) stays in view.
+    <div className="relative max-h-[calc(100dvh-9rem)] overflow-auto rounded-md border">
       <table className="w-full min-w-[860px] text-sm">
         <caption className="sr-only">{t("caption")}</caption>
-        <thead className="bg-muted/50">
+        <thead className="sticky top-0 z-20">
           <tr className="border-b">
-            <th scope="col" className="bg-muted/50 text-muted-foreground sticky start-0 px-3 py-2 text-start text-xs font-medium">
+            <th scope="col" className="bg-card-solid text-muted-foreground sticky start-0 z-10 px-3 py-2 text-start text-xs font-medium shadow-[inset_0_-1px_0_var(--border)]">
               {t("module")}
             </th>
             {ACTIONS.map((a) => (
-              <th key={a} scope="col" className="text-muted-foreground px-2 py-2 text-center text-xs font-medium">
+              <th key={a} scope="col" className="bg-card-solid text-muted-foreground px-2 py-2 text-center text-xs font-medium shadow-[inset_0_-1px_0_var(--border)]">
                 <div className="flex flex-col items-center gap-1.5">
                   {t(`actions.${a}`)}
                   {!readOnly && (
@@ -111,7 +112,7 @@ export function PermissionMatrix({ value, onChange, grantable, readOnly = false 
                 </div>
               </th>
             ))}
-            <th scope="col" className="text-muted-foreground px-3 py-2 text-start text-xs font-medium">
+            <th scope="col" className="bg-card-solid text-muted-foreground px-3 py-2 text-start text-xs font-medium shadow-[inset_0_-1px_0_var(--border)]">
               {t("special")}
             </th>
           </tr>
