@@ -65,6 +65,53 @@ export const startPaymentAction = defineAction(
   { public: true },
 );
 
+/**
+ * Portal: one online payment for several of the citizen's bills (the yearly tax and registration bills, …). Each
+ * bill gets its own receipt when the money arrives.
+ */
+export const startBillsPaymentAction = defineAction(
+  "pay.start_many",
+  z.object({
+    invoiceIds: z.array(z.uuid()).min(1).max(20),
+    provider: z.string().min(2).max(20),
+    phone: startSchema.shape.phone,
+    locale: z.enum(["so", "en"]),
+  }),
+  async (v, ctx) => {
+    const provider = getProvider(v.provider);
+    if (!provider || !provider.configured()) throw new AppFailure("VALIDATION", undefined, { provider: ["validation.provider"] });
+    let intent: { intent_id: string; amount: number; currency: string; invoice_number: string; pun: string | null };
+    try {
+      intent = unwrap(
+        await ctx.supabase.rpc("payment_intent_create_many", { p_invoices: v.invoiceIds, p_provider: v.provider, p_phone: v.phone || null }),
+        "intent",
+      ) as typeof intent;
+    } catch (err) {
+      if (err instanceof AppFailure && err.values?.detail === "phone") throw new AppFailure("VALIDATION", undefined, { phone: ["validation.phone_so"] });
+      throw err;
+    }
+    const origin = (await headers()).get("origin");
+    const site = origin && /^http:\/\/localhost:\d+$/.test(origin) ? origin : (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000");
+    const result = await provider.createCheckout({
+      intentId: intent.intent_id,
+      invoiceNumber: intent.invoice_number,
+      pun: intent.pun,
+      amount: Number(intent.amount),
+      currency: intent.currency,
+      phone: v.phone,
+      returnUrl: `${site}/${v.locale}/portal/pay-bills/${v.invoiceIds.join(",")}`,
+    });
+    const admin = await createAdminClient();
+    await admin.rpc("payment_intent_set_checkout", { p_id: intent.intent_id, p_provider_ref: result.providerRef, p_checkout_url: result.kind === "redirect" ? result.url : "" });
+    if (result.kind === "redirect") return { intentId: intent.intent_id, redirect: result.url };
+    if (result.kind === "completed") {
+      const out = await ingestEvent(v.provider, result.event, true, { source: "api", event: result.event });
+      log("info", "pay.completed", { requestId: ctx.requestId, provider: v.provider, result: out.result });
+    }
+    return { intentId: intent.intent_id, redirect: null as string | null };
+  },
+);
+
 export const intentStatusAction = defineAction(
   "pay.status",
   z.object({ intentId: z.uuid() }),

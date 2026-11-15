@@ -6,6 +6,7 @@ import { Banknote } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import {
   BankPaymentButton,
+  BankAccountForm,
   ProviderToggles,
   ReversalQueue,
   ShiftApprovals,
@@ -22,6 +23,7 @@ import {
   paymentsCounts,
 } from "@/lib/server/payments";
 import { getProvider } from "@/lib/server/providers";
+import { bankAccountForEdit } from "@/lib/server/bank-account";
 import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
@@ -93,11 +95,14 @@ export default async function PaymentsPage({
       providers.map((p) => [p.code, getProvider(p.code)?.configured() as boolean | undefined]),
     );
     body = (
-      <ProviderToggles
-        providers={providers}
-        configured={configured}
-        canEdit={viewer.can("settings.update")}
-      />
+      <>
+        <ProviderToggles
+          providers={providers}
+          configured={configured}
+          canEdit={viewer.can("settings.update")}
+        />
+        <BankAccountForm initial={await bankAccountForEdit()} canEdit={viewer.can("settings.update")} />
+      </>
     );
   } else {
     const rows = await listPayments({ status: "any", q: (sp.q ?? "").slice(0, 40) });

@@ -5,6 +5,7 @@ import { Home } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { Link } from "@/i18n/navigation";
+import { fullHouseNo } from "@/lib/house-no";
 import { citizenOverview } from "@/lib/server/portal";
 
 export default async function TrackPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -32,7 +33,10 @@ export default async function TrackPage({ params }: { params: Promise<{ locale: 
                     {p.demolished ? <StatusBadge tone="rejected">{tp("demolishedBadge")}</StatusBadge> : <ParcelStatusBadge status={p.status as "registered"} />}
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {p.district ? (lang === "so" ? p.district.name_so : p.district.name_en) : ""} ·{" "}
+                    {[p.district ? (lang === "so" ? p.district.name_so : p.district.name_en) : "", fullHouseNo(p.neighbourhood ? (lang === "so" ? p.neighbourhood.name_so : p.neighbourhood.name_en) : null, p.house_no)]
+                      .filter(Boolean)
+                      .join(" · ")}{" "}
+                    ·{" "}
                     {p.documents.some((d) => d.type === "certificate") ? t("titleIssued") : t("noTitleYet")}
                     {/* Demolished land's bills wait for the district office; all other land can pay. */}
                     {Number(p.balance) > 0 && !p.demolished && ` · ${t("owes", { amount: format.number(Number(p.balance), { style: "currency", currency: "USD" }) })}`}

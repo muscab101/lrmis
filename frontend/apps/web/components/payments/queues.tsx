@@ -13,12 +13,14 @@ import { useState } from "react";
 import {
   matchPaymentAction,
   recordBankPaymentAction,
+  bankAccountSetAction,
   toggleProviderAction,
 } from "@/app/[locale]/(staff)/payments/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { GoApprove } from "@/components/approvals/go-approve";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { PaymentRow, ReversalRow, ShiftRow } from "@/lib/server/payments";
+import type { BankAccount } from "@/lib/server/bank-account";
 
 const usdFmt = (format: ReturnType<typeof useFormatter>) => (n: number | null) =>
   n == null ? "—" : format.number(Number(n), { style: "currency", currency: "USD" });
@@ -358,5 +360,46 @@ export function BankPaymentButton() {
         )}
       </FormDialog>
     </>
+  );
+}
+
+/** The bank account citizens pay into by transfer; they write their PUN as the reference. */
+export function BankAccountForm({ initial, canEdit }: { initial: BankAccount; canEdit: boolean }) {
+  const t = useTranslations("payments");
+  const router = useRouter();
+  const [v, setV] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const fields: (keyof BankAccount)[] = ["bank", "account_name", "account_no", "branch", "swift"];
+  return (
+    <form
+      className="space-y-3 border-t p-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        const res = await bankAccountSetAction(v);
+        setBusy(false);
+        if (res.ok) {
+          toast.success(t("bankAccountSaved"));
+          router.refresh();
+        } else toast.error(t("actionFailed"));
+      }}
+    >
+      <div>
+        <p className="font-medium">{t("bankAccountTitle")}</p>
+        <p className="text-muted-foreground text-xs">{t("bankAccountBody")}</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {fields.map((k) => (
+          <Field key={k} id={`bank-${k}`} label={t(`bankField_${k}`)}>
+            <Input value={v[k]} disabled={!canEdit} onChange={(e) => setV({ ...v, [k]: e.target.value })} />
+          </Field>
+        ))}
+      </div>
+      {canEdit && (
+        <Button type="submit" size="sm" loading={busy}>
+          {t("bankAccountSave")}
+        </Button>
+      )}
+    </form>
   );
 }

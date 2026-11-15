@@ -1,9 +1,8 @@
-import { Button } from "@dhulka/ui/button";
 import { Card, CardContent } from "@dhulka/ui/card";
-import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
+import { EmptyState, KpiChip, PageHeader } from "@dhulka/ui/misc";
 import { CreditCard } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { BillsPicker } from "@/components/portal/bills-picker";
 import { citizenOverview } from "@/lib/server/portal";
 
 export default async function BillsPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -38,49 +37,28 @@ export default async function BillsPage({ params }: { params: Promise<{ locale: 
           <EmptyState icon={<CreditCard />} title={t("none")} description={t("noneBody")} />
         </Card>
       ) : (
-        <ul className="space-y-3">
-          {bills.map((b) => {
+        <BillsPicker
+          bills={bills.map((b) => {
             const late = Number(b.balance) > 0 && b.due_date < today;
-            return (
-              <li key={b.id}>
-                <Card>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-5">
-                    <div className="min-w-0">
-                      <p className="font-medium">
-                        {lang === "so" ? b.fee_so : b.fee_en} {b.period}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <Mono>{b.number}</Mono> ·{" "}
-                        <Link href={`/portal/parcels/${b.parcelId}`} className="hover:text-primary">
-                          <Mono>{b.pun ?? "—"}</Mono>
-                        </Link>
-                      </p>
-                      <p className={`text-xs ${late ? "text-status-rejected" : "text-muted-foreground"}`}>
-                        {Number(b.balance) > 0 ? (late ? t("lateSince", { date: format.dateTime(new Date(b.due_date), { dateStyle: "medium" }) }) : t("dueOn", { date: format.dateTime(new Date(b.due_date), { dateStyle: "medium" }) })) : t("paidInFull")}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-end">
-                        <p className="text-xl font-semibold tabular-nums">{usd(b.balance)}</p>
-                        {Number(b.balance) < Number(b.total) && <p className="text-xs text-muted-foreground">{t("ofTotal", { total: usd(b.total) })}</p>}
-                      </div>
-                      {Number(b.balance) > 0 && b.token && b.payable && (
-                        <Button asChild>
-                          <Link href={`/portal/pay/${b.token}`}>{t("pay")}</Link>
-                        </Button>
-                      )}
-                    </div>
-                    {Number(b.balance) > 0 && !b.payable && (
-                      <p className="bg-status-pending/10 text-status-pending w-full rounded-md px-3 py-2 text-xs">
-                        {tp(b.demolished ? "demolishedNotice" : "partialNotice", { district: b.district ? (lang === "so" ? b.district.name_so : b.district.name_en) : "" })}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </li>
-            );
+            const due = format.dateTime(new Date(b.due_date), { dateStyle: "medium" });
+            return {
+              id: b.id,
+              title: `${lang === "so" ? b.fee_so : b.fee_en} ${b.period}`,
+              number: b.number,
+              pun: b.pun,
+              parcelId: b.parcelId,
+              balance: Number(b.balance),
+              total: Number(b.total),
+              dueText: Number(b.balance) > 0 ? (late ? t("lateSince", { date: due }) : t("dueOn", { date: due })) : t("paidInFull"),
+              late,
+              payable: Number(b.balance) > 0 && b.payable,
+              notice:
+                Number(b.balance) > 0 && !b.payable
+                  ? tp(b.demolished ? "demolishedNotice" : "partialNotice", { district: b.district ? (lang === "so" ? b.district.name_so : b.district.name_en) : "" })
+                  : null,
+            };
           })}
-        </ul>
+        />
       )}
       <Card className="mt-8">
         <CardContent className="pt-5 text-sm text-muted-foreground">

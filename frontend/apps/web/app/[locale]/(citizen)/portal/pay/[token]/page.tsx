@@ -5,6 +5,7 @@ import { PayForm } from "@/app/[locale]/(public)/pay/[token]/pay-form";
 import { Link } from "@/i18n/navigation";
 import { log } from "@/lib/server/log";
 import { availableOnlineProviders, confirmReturnedIntent } from "@/lib/server/providers";
+import { bankAccount } from "@/lib/server/bank-account";
 import { createClient } from "@/lib/supabase/server";
 
 interface Pub {
@@ -71,7 +72,13 @@ export default async function PortalPayPage({ params, searchParams }: { params: 
                 {t("demolishedBody")}
               </Alert>
             ) : (
-              <PayForm token={token} providers={providers} initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null} />
+              <PayForm
+                    token={token}
+                    providers={providers}
+                    initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null}
+                    transfers={[{ reference: inv.pun ?? inv.number, amount: usd(inv.balance) }]}
+                    bank={await bankAccount()}
+                  />
             )}
           </CardContent>
         </Card>

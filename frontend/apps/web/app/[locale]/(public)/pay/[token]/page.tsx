@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { log } from "@/lib/server/log";
 import { availableOnlineProviders, confirmReturnedIntent } from "@/lib/server/providers";
+import { bankAccount } from "@/lib/server/bank-account";
 import { PayForm } from "./pay-form";
 
 export async function generateMetadata() {
@@ -87,7 +88,13 @@ export default async function PayPage({ params, searchParams }: { params: Promis
                 </Alert>
               ) : (
                 <>
-                  <PayForm token={token} providers={providers} initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null} />
+                  <PayForm
+                    token={token}
+                    providers={providers}
+                    initialIntent={intent && /^[0-9a-f-]{36}$/i.test(intent) ? intent : null}
+                    transfers={[{ reference: inv.pun ?? inv.number, amount: usd(inv.balance) }]}
+                    bank={await bankAccount()}
+                  />
                   <Alert tone="info" title={t("howToPay")}>
                     {t("howToPayBody", { pun: inv.pun ?? inv.number })}
                   </Alert>

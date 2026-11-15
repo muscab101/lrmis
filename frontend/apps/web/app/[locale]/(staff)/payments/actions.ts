@@ -229,6 +229,24 @@ export const toggleProviderAction = defineAction(
   },
 );
 
+/** The bank account citizens transfer to (shown on the pay page). */
+export const bankAccountSetAction = defineAction(
+  "payments.bank_account",
+  z.object({
+    bank: z.string().trim().max(80),
+    account_name: z.string().trim().max(120),
+    account_no: z.string().trim().max(60),
+    branch: z.string().trim().max(80),
+    swift: z.string().trim().max(20),
+  }),
+  async (v, ctx) => {
+    unwrap(await ctx.supabase.rpc("payment_bank_account_set", { p: v }), "bank account");
+    revalidatePath("/[locale]/pay/[token]", "page");
+    revalidatePath("/[locale]/portal/pay/[token]", "page");
+    return done(null);
+  },
+);
+
 // ---- Accounting ----
 export const setFxRateAction = defineAction(
   "accounting.fx",
