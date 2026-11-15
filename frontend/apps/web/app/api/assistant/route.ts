@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { visibleNav } from "@/components/shell/nav";
+import { flatNavItems, visibleNav } from "@/components/shell/nav";
 import { askAssistant, assistantConfigured, isAssistantAdmin, type StaffContext } from "@/lib/server/assistant";
 import { withinBudget } from "@/lib/server/assistant-budget";
 import { chatMessages, saveTurn } from "@/lib/server/assistant-chats";
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       ? "all districts"
       : ((districtsRes.data ?? []) as unknown as { districts: { name_en: string } }[]).map((d) => d.districts.name_en).join(", ") || "none",
     desk: (deskRes.data as { name: string } | null)?.name ?? null,
-    pages: visibleNav(viewer.can).flatMap((g) => g.items.map((i) => tn(`items.${i.key}`))),
+    pages: flatNavItems(visibleNav(viewer.can)).map((i) => tn(`items.${i.key}`)),
   };
 
   // A saved chat brings its own history; the Reports panel isn't saved.

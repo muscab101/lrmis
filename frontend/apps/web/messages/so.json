@@ -100,7 +100,10 @@
       "incomplete": "Aan dhammaystirnayn",
       "addPrinter": "Ku dar daabace",
       "chat": "Wada-hadalka shaqaalaha",
-      "signatureStamp": "Saxiixa iyo shaabadda"
+      "signatureStamp": "Saxiixa iyo shaabadda",
+      "apartments": "Guryaha dabaqyada",
+      "parcelsAll": "Dhammaan dhulalka",
+      "managers": "Maamulayaasha"
     }
   },
   "status": {
@@ -1591,8 +1594,7 @@
         "create": "Samee doorar cusub.",
         "update": "Beddel ogolaanshaha door oo u wareeji isticmaalayaashiisa.",
         "delete": "Tirtir doorar."
-      },
-      "certificates.design": "Beddel muuqaalka shahaadooyinka: midabka, cinwaannada, calaamadda biyaha, shaabadaha amniga iyo qoraal hoose."
+      }
     }
   },
   "design": {
@@ -1950,7 +1952,8 @@
       "owner": "Milkiile",
       "co_owner": "Milkiile wadaag",
       "agent": "Wakiil",
-      "heir": "Dhaxle"
+      "heir": "Dhaxle",
+      "manager": "Maamule"
     },
     "tabs": {
       "open": "Furan",
@@ -2745,6 +2748,41 @@
       "approveFirst": "Biilku weli wuxuu muujinayaa cabbirkii ama noocii hore: marka hore dib u biil haddii uu isbeddeli lahaa.",
       "done": "Biilka waa la cusboonaysiiyay",
       "registersWhenPaid": "Marka biilashiisa la bixiyo, dhulka iyo milkiilayaashiisa si toos ah ayaa loo diiwaangelinayaa."
+    },
+    "nextTaxBill": "Biilka cashuurta ee xiga",
+    "buildingExtras": {
+      "manager": "Maamulaha",
+      "chooseManager": "Dooro maamule",
+      "changeManager": "Beddel maamulaha",
+      "noManager": "Weli maamule ma jiro.",
+      "legacy": "Waxaa lagu qoray “{name}”, weli qof ma aha: dooro maamulaha si loogu xiro.",
+      "managerHint": "Maamuluhu wuxuu bixiyaa biilka dhismahan: dhulka banaan iyo meelaha dheeraadka ah.",
+      "areas": "Meelaha dheeraadka ah",
+      "addArea": "Ku dar meel",
+      "editArea": "Beddel meesha",
+      "noAreas": "Meelo dheeraad ah ma jiraan.",
+      "areasTotal": "Meelaha dheeraadka sannadkii",
+      "areasHint": "Meel kasta: m² × qiimaheeda m² kasta, biilka dhismaha, dhulka banaan dushiisa.",
+      "chooseBody": "Raadi qofka, ama diiwaangeli mid cusub. Waxaa loogu darayaa dhismaha maamule ahaan.",
+      "saveManager": "Kaydi maamulaha",
+      "managerSaved": "Maamulaha waa la kaydiyay",
+      "searchPerson": "Magac, taleefan ama aqoonsi…",
+      "newPerson": "Qof cusub",
+      "newPersonSave": "Kaydi qofka",
+      "areaBody": "Cabbirkeeda iyo qiimaha m² kasta ayaa lagu darayaa biilka dhismaha.",
+      "areaName": "Magaca",
+      "areaM2": "Cabbirka (m²)",
+      "priceM2": "Qiimaha m² kasta (USD)",
+      "areaAmount": "Sannadkii",
+      "areaSaved": "Meesha waa la kaydiyay",
+      "areaRemoved": "Meesha waa la saaray",
+      "removeTitle": "Ka saar {name}?",
+      "removeBody": "Waxay ka baxaysaa biilka dhismaha ee aan la bixin.",
+      "suggest": {
+        "parking": "Baarkin",
+        "playground": "Garoon ciyaareed",
+        "garden": "Beer"
+      }
     }
   },
   "notices": {
@@ -3008,7 +3046,7 @@
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",
-    "runsSubtitle": "1da Janaayo kasta nidaamku wuxuu si toos ah u sameeyaa oo soo saaraa orodka canshuurta dhulka ee degmo kasta. Fur orod si aad u aragto biilashiisa oo xaafad-xaafad loo qaybiyay.",
+    "runsSubtitle": "Nidaamku hanti kasta wuxuu u biilaa si toos ah sannad-guuradeeda: maalin kasta wuxuu helaa hantida sannadkoodu dhammaaday, shahaadadooda wuu joojiyaa, biilka cashuurta sannadkaasna wuu sameeyaa. Marka biilka la bixiyo, shahaado cusub si toos ah ayay u timaadaa. Wareeg biil cusub u isticmaal kayd ahaan.",
     "newRun": "Biil-wareeg cusub",
     "newRunBody": "Dooro sannadka, khidmadda iyo degmooyinka. Horudhac leh tirada, wadarta iyo waxyaabaha ka reeban ayaa la arkayaa ka hor inta aan wax la biilin.",
     "preview": "Samee oo horudhac",
@@ -3022,7 +3060,7 @@
     "kpiOpenInvoices": "Biilal furan",
     "kpiOutstanding": "Lacagta lagu leeyahay",
     "noRuns": "Weli biil-wareeg ma jiro",
-    "noRunsBody": "Orodyada ugu horreeya waxaa si toos ah loo sameeyaa 1da Janaayo.",
+    "noRunsBody": "Biilasha waxay si toos ah u samaysmaan sannad-guurada hanti kasta. Wareegyada sidaas lagu sameeyay halkan ayay ka muuqdaan.",
     "number": "Lambar",
     "period": "Muddo",
     "invoices": "Biilal",
@@ -3048,7 +3086,7 @@
       "submitDone": "Waxaa loo gudbiyay ansixinta.",
       "approve": "Ansixi",
       "approveTitle": "Ma la ansixinayaa biil-wareegan?",
-      "approveBody": "Gurigu wuxuu noqonayaa kayd: waa la arki karaa oo keliya, lacag, wareejin, qaybin iyo biil cusub midna ma jiro. Xogtiisii asalka ahayd waxay gelaysaa kaydka, biilashiisa aan la bixinna waa la xirayaa.",
+      "approveBody": "Wareeggu waa la ansixinayaa sida horudhaca u yahay. Kadib riix Samee biilasha si biilasha loo sameeyo oo milkiilayaasha loogu diro SMS.",
       "approveDone": "Wareegga waa la ansixiyay.",
       "generate": "Samee biilasha",
       "generateTitle": "Ma la samaynayaa biilasha?",
@@ -3271,7 +3309,7 @@
     "placeNeighbourhoods": "Xaafadaha",
     "noPlaces": "Halkan waxba ma jiraan.",
     "madeBy": "La sameeyay",
-    "automatic": "Si toos ah 1da Janaayo",
+    "automatic": "Si toos ah, sannad-guurada hantida",
     "batchesTitle": "Dufcado",
     "batchesBody": "Dhulka orodkan, dufcad kasta waa xaafad. Fur dufcad si aad u aragto biilasheeda.",
     "batchPlace": "Xaafad",
@@ -3293,7 +3331,9 @@
       "n": "Xaafad",
       "all": "Dhammaan"
     },
-    "noBatchesHere": "Dufcado kuma jiraan goobtan."
+    "noBatchesHere": "Dufcado kuma jiraan goobtan.",
+    "viewBatch": "Arag liiska xaafaddan",
+    "backToRun": "Ku noqo wareegga"
   },
   "pay": {
     "title": "Bixi biilkaaga",
@@ -4335,7 +4375,8 @@
     "roles": {
       "owner": "Milkiile",
       "co_owner": "Milkiile wadaag",
-      "heir": "Dhaxle"
+      "heir": "Dhaxle",
+      "manager": "Maamule"
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -5638,7 +5679,8 @@
       "byDistrict": "Degmo ahaan",
       "started": "Xaafadaha la bilaabay (50-ka ugu sarreeya)",
       "district": "Degmo",
-      "neighbourhood": "Xaafad"
+      "neighbourhood": "Xaafad",
+      "showTables": "Ku eeg degmo iyo xaafad"
     },
     "groups": {
       "demolitions": "Dumis la oggolaanayo",
@@ -6701,5 +6743,58 @@
     "district": "Degmada",
     "goApprove": "Ka ansixi Codsiyada",
     "needsSomeoneElse": "Qof kale ayaa ansixinaya"
+  },
+  "apartments": {
+    "title": "Guryaha dabaqyada",
+    "subtitle": "Dhismayaasha dabaqyada iyo xeryaha degmooyinkaaga: guryahooda, inta la diiwaangeliyay, iyo inta weli lagu leeyahay.",
+    "kinds": {
+      "flats": "Dhismayaasha dabaqyada",
+      "compound": "Xeryo"
+    },
+    "all": "Dhammaan",
+    "owing": "Weli lagu leeyahay",
+    "owingLabel": "Lacag",
+    "search": "PUN, lambarka dhismaha, maamulaha…",
+    "building": "Dhismaha",
+    "place": "Goobta",
+    "flats": "Guryaha",
+    "houses": "Guryaha",
+    "registered": "La diiwaangeliyay",
+    "partial": "Weli lama diiwaangelin",
+    "owed": "Weli lagu leeyahay",
+    "paid": "La bixiyay",
+    "manager": "Maamulaha",
+    "buildingNo": "Dhismaha {no}",
+    "floorCount": "{count, plural, =1 {1 dabaq} other {# dabaq}}",
+    "emptyTitle": "Halkan dhismayaal ma jiraan",
+    "emptyBody": "Dhismayaasha dabaqyada iyo xeryaha degmooyinkaaga halkan ayay ka muuqdaan.",
+    "openLand": "Fur dhulka",
+    "managerLine": "Maamulaha: {name} {phone}",
+    "floor": "Dabaqa",
+    "flat": "Guri",
+    "house": "Guri",
+    "owner": "Milkiilaha",
+    "size": "Cabbirka",
+    "status": "Xaaladda",
+    "ground": "Dabaqa hoose",
+    "floorN": "Dabaqa {n}",
+    "emptyFloor": "Weli guri lagama darin dabaqan",
+    "noUnits": "Weli guryo lama darin",
+    "count": "{count, plural, =1 {1 dhisme} other {# dhisme}}",
+    "actions": "Ficilada",
+    "viewFlats": "Arag guryaha"
+  },
+  "managers": {
+    "title": "Maamulayaasha",
+    "subtitle": "Maamulayaasha dhismayaasha dabaqyada: cidda dhisme kasta maamusha oo bixisa biilka dhulka banaan, iyo inta biilashaas weli lagu leeyahay.",
+    "search": "Magac, taleefan ama PUN…",
+    "count": "{count, plural, =1 {1 maamule} other {# maamule}}",
+    "manager": "Maamulaha",
+    "phone": "Taleefanka",
+    "buildings": "Dhismayaasha",
+    "owed": "Weli lagu leeyahay",
+    "paid": "La bixiyay",
+    "emptyTitle": "Weli maamulayaal ma jiraan",
+    "emptyBody": "Maamule ka dooro bogga dhismaha dabaqyada (sanduuqa Maamulaha)."
   }
 }

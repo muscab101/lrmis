@@ -43,6 +43,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
 
   return (
     <>
+      {/* Partial / Registered: at the top, under the title. */}
       <PageHeader title={t("title")} description={t(`stageBody_${stage}`)}>
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
           {tabs.map((k) => (
@@ -57,31 +58,17 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
           ))}
         </nav>
       </PageHeader>
-      {stage === "registered" && (
-        <div className={`${segGroupClass} mb-3`} role="group" aria-label={t("paySplit")}>
-          {REGISTERED_SPLITS.map((k) => (
-            <Link
-              key={k}
-              href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
-              aria-current={split === k ? "page" : undefined}
-              className={segClass(split === k)}
-            >
-              {t(`split_${k}`)} <TabCount n={k === "all" ? counts.registered : counts[k]} />
-            </Link>
-          ))}
-        </div>
-      )}
-      {split === "demolished" && (
-        <p className="text-muted-foreground mb-3 text-sm">
-          {t("demolishedHint")}{" "}
-          {viewer.can("parcels.demolitions") && (
-            <Link href="/demolished" className="text-foreground font-medium underline">
-              {t("demolishedOpenArchive")}
-            </Link>
-          )}
-        </p>
-      )}
       <Card className="overflow-hidden">
+        {split === "demolished" && (
+          <p className="text-muted-foreground border-b px-3 py-2 text-sm">
+            {t("demolishedHint")}{" "}
+            {viewer.can("parcels.demolitions") && (
+              <Link href="/demolished" className="text-foreground font-medium underline">
+                {t("demolishedOpenArchive")}
+              </Link>
+            )}
+          </p>
+        )}
         <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
           <input type="hidden" name="stage" value={stage} />
           {stage === "registered" && split !== "all" && <input type="hidden" name="pay" value={split} />}
@@ -92,7 +79,24 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
             </Link>
           )}
           <Input name="q" defaultValue={q} placeholder={t("searchPlaceholderMore")} aria-label={t("searchPlaceholderMore")} className="max-w-md" />
-          <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
+          {/* Registered land: Paid / Not paid / Demolished, on the search row's right. */}
+          <span className="ms-auto flex flex-wrap items-center gap-3">
+            {stage === "registered" && (
+              <span className={segGroupClass} role="group" aria-label={t("paySplit")}>
+                {REGISTERED_SPLITS.map((k) => (
+                  <Link
+                    key={k}
+                    href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
+                    aria-current={split === k ? "page" : undefined}
+                    className={segClass(split === k)}
+                  >
+                    {t(`split_${k}`)} <TabCount n={k === "all" ? counts.registered : counts[k]} />
+                  </Link>
+                ))}
+              </span>
+            )}
+            <span className="text-muted-foreground text-xs">{t("count", { count: rows.length })}</span>
+          </span>
         </form>
         {rows.length === 0 ? (
           <EmptyState

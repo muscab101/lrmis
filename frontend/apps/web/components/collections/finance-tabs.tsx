@@ -226,7 +226,7 @@ export async function StatementsTab({
             href={`/collections?tab=statements${s ? `&status=${s}` : ""}`}
             className={cn(
               "rounded-full border px-3 py-1",
-              status === s ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted",
+              status === s ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-muted",
             )}
           >
             {s ? t(`statements.status.${s}`) : t("status.all")}

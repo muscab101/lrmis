@@ -1,3 +1,4 @@
+import { zebraRows } from "@dhulka/ui/table";
 import { StatusBadge } from "@dhulka/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
@@ -12,6 +13,9 @@ import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getLandUnits, getParcel, getParentLand, parcelsWithMoney } from "@/lib/server/parcels";
 import { BuildingTaxEdit } from "@/components/parcels/building-tax-edit";
+import { BuildingManagerAreas } from "@/components/parcels/building-manager-areas";
+import { buildingExtras } from "@/lib/server/apartments";
+import { listDistricts } from "@/lib/server/users";
 import { missingFloors } from "@/lib/land-units";
 import { openDemolitionOf } from "@/lib/server/demolitions";
 import { MarkDemolished } from "@/components/demolitions/mark-demolished";
@@ -32,6 +36,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   // Partial land has no PUN yet: name it by its house number.
   const t = await getTranslations("parcels");
   return { title: p.pun ?? (p.house_no ? `${t("houseNoShort")} ${fullHouseNo(p.neighbourhood?.code, p.house_no)}` : t("noPun")) };
+}
+
+/** The next anniversary of a date, after today (the yearly tax bill day). */
+function nextAnniversary(anchor: string) {
+  const a = new Date(`${anchor}T00:00:00Z`);
+  const today = new Date();
+  const d = new Date(a);
+  d.setUTCFullYear(Math.max(a.getUTCFullYear() + 1, today.getUTCFullYear()));
+  while (d <= today) d.setUTCFullYear(d.getUTCFullYear() + 1);
+  return d;
 }
 
 export default async function ParcelPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -72,6 +86,10 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const waiting = demolitions.find((x) => x.status === "pending");
   const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
   const hasMoney = (await parcelsWithMoney([p.id])).has(p.id);
+  // A flats building: its manager and extra areas; new people can be registered from here by staff who add owners.
+  const [extras, ownerDistricts] = p.layout === "flats"
+    ? await Promise.all([buildingExtras(p.id), viewer.can("owners.create") ? listDistricts() : Promise.resolve(null)])
+    : [null, null];
   // Partial land whose bill no longer matches its size and type (after an edit): Re-bill and Approve.
   const billCheck = partial && p.layout === "house" && p.building_state !== "demolished"
     ? (((await (await createClient()).rpc("parcel_bill_check", { p_parcel: p.id })).data ?? null) as BillCheck)
@@ -114,6 +132,10 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
     ...(p.flat_no && parent?.layout !== "compound" ? [[t("flatNo"), p.flat_no] as [string, string]] : []),
     [ta("oldDeedNo"), p.deed_no ?? "—"],
     [t("registeredOn"), p.registered_at ? format.dateTime(new Date(p.registered_at), { dateStyle: "medium" }) : "—"],
+    // Registered land: the next yearly tax bill (its certificate ends the same day).
+    ...(p.status === "registered" && p.tax_anniversary && p.building_state !== "demolished"
+      ? [[t("nextTaxBill"), format.dateTime(nextAnniversary(p.tax_anniversary), { dateStyle: "medium" })] as [string, React.ReactNode]]
+      : []),
   ];
 
   return (
@@ -265,6 +287,17 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                   )}
                 </div>
               )}
+              {/* Flats: the manager (a person, like an owner) and the extra areas (parking, playgrounds, …) on their bill. */}
+              {p.layout === "flats" && extras && (
+                <BuildingManagerAreas
+                  buildingId={p.id}
+                  manager={extras.manager}
+                  legacyName={extras.legacyName}
+                  areas={extras.areas}
+                  canEdit={(viewer.can("parcels.update") || viewer.can("valuation.update")) && !archived}
+                  newOwner={ownerDistricts ? { districts: ownerDistricts, districtId: ownerDistricts.find((d) => d.code === p.district?.code)?.id ?? null } : null}
+                />
+              )}
               <table className="w-full text-sm">
                 <thead className="text-xs text-muted-foreground">
                   <tr className="border-b text-start">
@@ -287,7 +320,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                     <th className="py-2 text-end font-medium">{tu("owes")}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className={`divide-y ${zebraRows}`}>
                   {land.units.map((u) => (
                     <tr key={u.id}>
                       <td className="py-2 pe-3">

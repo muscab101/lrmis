@@ -100,7 +100,10 @@
       "incomplete": "Incomplete",
       "addPrinter": "Add printer",
       "chat": "Staff chat",
-      "signatureStamp": "Signature and stamp"
+      "signatureStamp": "Signature and stamp",
+      "apartments": "Apartments",
+      "parcelsAll": "All parcels",
+      "managers": "Managers"
     }
   },
   "status": {
@@ -1591,8 +1594,7 @@
         "create": "Create new roles.",
         "update": "Change a role's permissions and move its users.",
         "delete": "Delete roles."
-      },
-      "certificates.design": "Change how certificates look: colour, titles, watermark, security seals and a footer note."
+      }
     }
   },
   "design": {
@@ -1950,7 +1952,8 @@
       "owner": "Owner",
       "co_owner": "Co-owner",
       "agent": "Agent",
-      "heir": "Heir"
+      "heir": "Heir",
+      "manager": "Manager"
     },
     "tabs": {
       "open": "Open",
@@ -2745,6 +2748,41 @@
       "approveFirst": "The bill still shows the old size or type: re-bill it first if it should change.",
       "done": "Bill updated",
       "registersWhenPaid": "Once its bills are paid, the land and its owners are registered by themselves."
+    },
+    "nextTaxBill": "Next tax bill",
+    "buildingExtras": {
+      "manager": "Manager",
+      "chooseManager": "Choose manager",
+      "changeManager": "Change manager",
+      "noManager": "No manager yet.",
+      "legacy": "Written as “{name}”, not yet a person: choose the manager to link them.",
+      "managerHint": "The manager pays this building's bill: its open ground and its extra areas.",
+      "areas": "Extra areas",
+      "addArea": "Add area",
+      "editArea": "Change area",
+      "noAreas": "No extra areas.",
+      "areasTotal": "Extra areas a year",
+      "areasHint": "Each area: m² × its price per m², on the building's bill, on top of the open ground.",
+      "chooseBody": "Search for the person, or register a new one. They are added to the building as its manager.",
+      "saveManager": "Save manager",
+      "managerSaved": "Manager saved",
+      "searchPerson": "Name, phone or ID…",
+      "newPerson": "New person",
+      "newPersonSave": "Save person",
+      "areaBody": "Its size and price per m² are charged on the building's bill.",
+      "areaName": "Name",
+      "areaM2": "Size (m²)",
+      "priceM2": "Price per m² (USD)",
+      "areaAmount": "A year",
+      "areaSaved": "Area saved",
+      "areaRemoved": "Area removed",
+      "removeTitle": "Remove {name}?",
+      "removeBody": "It comes off the building's unpaid bill.",
+      "suggest": {
+        "parking": "Parking",
+        "playground": "Playground",
+        "garden": "Garden"
+      }
     }
   },
   "notices": {
@@ -3008,7 +3046,7 @@
   },
   "billing": {
     "runsTitle": "Billing runs",
-    "runsSubtitle": "Every 1 January the system makes and issues each district's property tax run by itself. Open a run to see its bills in batches by neighbourhood.",
+    "runsSubtitle": "The system bills each property by itself on its own anniversary: every day it finds the properties whose year is up, ends their certificate and makes that year's tax bill. When the bill is paid, a new certificate comes by itself. Use New billing run as a backup.",
     "newRun": "New billing run",
     "newRunBody": "Choose the year, the fee and the districts. A preview with counts, totals and exceptions follows before anything is billed.",
     "preview": "Create and preview",
@@ -3022,7 +3060,7 @@
     "kpiOpenInvoices": "Open invoices",
     "kpiOutstanding": "Outstanding",
     "noRuns": "No billing runs yet",
-    "noRunsBody": "The first runs are made automatically on 1 January.",
+    "noRunsBody": "Bills are made by themselves on each property's anniversary. Runs made that way show here too.",
     "number": "Number",
     "period": "Period",
     "invoices": "Invoices",
@@ -3048,7 +3086,7 @@
       "submitDone": "Submitted for approval.",
       "approve": "Approve",
       "approveTitle": "Approve this billing run?",
-      "approveBody": "The house becomes an archive: it can only be viewed, with no payments, transfers, dividing or new bills. Its original details go into the archive, and its unpaid bills are frozen.",
+      "approveBody": "The run is approved as previewed. Then press Generate invoices to create the bills and text the owners.",
       "approveDone": "Run approved.",
       "generate": "Generate invoices",
       "generateTitle": "Generate the invoices?",
@@ -3271,7 +3309,7 @@
     "placeNeighbourhoods": "Neighbourhoods",
     "noPlaces": "None here.",
     "madeBy": "Made",
-    "automatic": "Automatically on 1 January",
+    "automatic": "Automatically, on the properties' anniversary",
     "batchesTitle": "Batches",
     "batchesBody": "The run's land, one batch per neighbourhood. Open a batch to see its bills.",
     "batchPlace": "Neighbourhood",
@@ -3293,7 +3331,9 @@
       "n": "Neighbourhood",
       "all": "All"
     },
-    "noBatchesHere": "No batches in this place."
+    "noBatchesHere": "No batches in this place.",
+    "viewBatch": "View this neighbourhood's list",
+    "backToRun": "Back to the run"
   },
   "pay": {
     "title": "Pay your invoice",
@@ -4335,7 +4375,8 @@
     "roles": {
       "owner": "Owner",
       "co_owner": "Co-owner",
-      "heir": "Heir"
+      "heir": "Heir",
+      "manager": "Manager"
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -5638,7 +5679,8 @@
       "byDistrict": "By district",
       "started": "Neighbourhoods started (top 50)",
       "district": "District",
-      "neighbourhood": "Neighbourhood"
+      "neighbourhood": "Neighbourhood",
+      "showTables": "Show by district and neighbourhood"
     },
     "groups": {
       "demolitions": "Demolitions to approve",
@@ -6701,5 +6743,58 @@
     "district": "District",
     "goApprove": "Approve on Applications",
     "needsSomeoneElse": "Needs another person"
+  },
+  "apartments": {
+    "title": "Apartments",
+    "subtitle": "Apartment buildings and compounds in your districts: their flats or houses, how many are registered, and what they still owe.",
+    "kinds": {
+      "flats": "Apartment buildings",
+      "compound": "Compounds"
+    },
+    "all": "All",
+    "owing": "Still owing",
+    "owingLabel": "Money",
+    "search": "PUN, building no., manager…",
+    "building": "Building",
+    "place": "Place",
+    "flats": "Flats",
+    "houses": "Houses",
+    "registered": "Registered",
+    "partial": "Not registered yet",
+    "owed": "Still owed",
+    "paid": "Paid",
+    "manager": "Manager",
+    "buildingNo": "Building {no}",
+    "floorCount": "{count, plural, =1 {1 floor} other {# floors}}",
+    "emptyTitle": "No buildings here",
+    "emptyBody": "Apartment buildings and compounds added in your districts show here.",
+    "openLand": "Open the land",
+    "managerLine": "Manager: {name} {phone}",
+    "floor": "Floor",
+    "flat": "Flat",
+    "house": "House",
+    "owner": "Owner",
+    "size": "Size",
+    "status": "Status",
+    "ground": "Ground floor",
+    "floorN": "Floor {n}",
+    "emptyFloor": "No flats on this floor yet",
+    "noUnits": "No flats or houses added yet",
+    "count": "{count, plural, =1 {1 building} other {# buildings}}",
+    "actions": "Actions",
+    "viewFlats": "See the flats"
+  },
+  "managers": {
+    "title": "Managers",
+    "subtitle": "The managers of apartment buildings: who looks after each building and pays its open-ground bill, and what those bills still owe.",
+    "search": "Name, phone or PUN…",
+    "count": "{count, plural, =1 {1 manager} other {# managers}}",
+    "manager": "Manager",
+    "phone": "Phone",
+    "buildings": "Buildings",
+    "owed": "Still owed",
+    "paid": "Paid",
+    "emptyTitle": "No managers yet",
+    "emptyBody": "Choose a manager on an apartment building's page (the building's Manager box)."
   }
 }

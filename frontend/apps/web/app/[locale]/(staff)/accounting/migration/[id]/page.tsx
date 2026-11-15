@@ -2,7 +2,7 @@ import { StatusBadge } from "@dhulka/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { cn } from "@dhulka/ui/lib/cn";
 import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, zebraRows } from "@dhulka/ui/table";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -335,7 +335,7 @@ export default async function MigrationPage({
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className={`divide-y ${zebraRows}`}>
                     {sample.map((r, i) => (
                       <tr key={i}>
                         {open.columns.map((c) => (
@@ -549,7 +549,7 @@ export default async function MigrationPage({
                 <Link
                   key={x ?? "all"}
                   href={href(8, `${x ? `&show=${x}` : ""}${kind ? `&kind=${kind}` : ""}`)}
-                  className={`rounded-full border px-3 py-1 ${show === x ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted"}`}
+                  className={`rounded-full border px-3 py-1 ${show === x ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-muted"}`}
                 >
                   {x ? t(`itemStatus.${x}`) : t("all")}
                 </Link>
@@ -559,7 +559,7 @@ export default async function MigrationPage({
                 <Link
                   key={x ?? "both"}
                   href={href(8, `${show ? `&show=${show}` : ""}${x ? `&kind=${x}` : ""}`)}
-                  className={`rounded-full border px-3 py-1 ${kind === x ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted"}`}
+                  className={`rounded-full border px-3 py-1 ${kind === x ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-muted"}`}
                 >
                   {x ? t(`entity.${x}`) : t("allKinds")}
                 </Link>

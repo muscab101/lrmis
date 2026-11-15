@@ -208,7 +208,7 @@ export function MapWorkspace({
                   key={b}
                   type="button"
                   onClick={() => updatePrefs({ ...prefs, base: b })}
-                  className={cn("rounded-sm px-2 py-1.5 text-xs font-medium", prefs.base === b ? "bg-ink text-ink-foreground" : "hover:bg-muted")}
+                  className={cn("rounded-sm px-2 py-1.5 text-xs font-medium", prefs.base === b ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
                   aria-pressed={prefs.base === b}
                 >
                   {t(`base_${b}`)}
@@ -456,7 +456,7 @@ export function MapWorkspace({
       )}
 
       {!extent && (
-        <div className="absolute inset-x-3 top-16 z-10 mx-auto max-w-md rounded-md border border-s-[3px] border-s-warning bg-card-solid px-4 py-3 text-sm shadow-sm">
+        <div className="absolute inset-x-3 top-16 z-10 mx-auto max-w-md rounded-md border bg-card-solid px-4 py-3 text-sm shadow-sm">
           {t("noBoundaries")}
         </div>
       )}

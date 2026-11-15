@@ -42,10 +42,6 @@ export async function PointOfSaleTab({
   const locale = await getLocale();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const district = (p: { district_so: string | null; district_en: string | null }) => (locale === "so" ? p.district_so : p.district_en) ?? "";
-  const ways = (ch: Record<string, number>) =>
-    CHANNEL_ORDER.filter((c) => Number(ch[c] ?? 0) > 0)
-      .map((c) => `${t(`channels.${c}`)} ${usd(Number(ch[c]))}`)
-      .join(" · ");
 
   const typeName = (b: { code: string; name_so: string; name_en: string }) => (locale === "so" ? b.name_so : b.name_en);
   const choices = await collectionsPosChoices();
@@ -362,7 +358,6 @@ export async function PointOfSaleTab({
                             {rowName(c)}
                           </Link>
                           {c.online && c.cashier && <span className="text-muted-foreground block text-xs">{t("pos.recordedBy", { name: c.cashier })}</span>}
-                          {ways(c.channels) && <span className="text-muted-foreground block text-xs">{ways(c.channels)}</span>}
                         </TableCell>
                         <TableCell className="text-end text-sm tabular-nums">{c.payments}</TableCell>
                         {p.bill_types.map((b) => {

@@ -1,4 +1,5 @@
 "use client";
+import { zebraRows } from "@dhulka/ui/table";
 
 import { ACTIONS, MODULES, specialPermissionsFor, type Action } from "@dhulka/core/permissions";
 import { Checkbox } from "@dhulka/ui/form-controls";
@@ -97,7 +98,7 @@ export function PermissionMatrix({ value, onChange, grantable, readOnly = false 
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className={zebraRows}>
           {ROWS.map((r) => (
             <tr key={r.id} className={cn("hover:bg-muted/30 border-b last:border-0", r.id.endsWith("_partial") && "border-dashed")}>
               <th scope="row" className="bg-card sticky start-0 px-3 py-2 text-start font-medium">

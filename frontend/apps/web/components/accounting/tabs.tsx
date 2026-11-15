@@ -458,7 +458,7 @@ export async function MovementsTab({
             href={`/accounting?tab=${tab}${s ? `&status=${s}` : ""}`}
             className={cn(
               "rounded-full border px-3 py-1",
-              status === s ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted",
+              status === s ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-muted",
             )}
           >
             {s ? t(`movement.status.${s}`) : t("movement.all")}

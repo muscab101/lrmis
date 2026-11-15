@@ -29,8 +29,6 @@ import { ApprovalActions } from "@/components/approvals/approval-actions";
 import { DistrictSelect } from "@/components/approvals/district-select";
 import { segClass, segGroupClass } from "@/components/shell/tabs";
 
-/** A tab here: the app's blue when chosen. */
-const tabClass = (active: boolean) => cn(segClass(active), active && "bg-primary text-primary-foreground");
 import { Link } from "@/i18n/navigation";
 import { requireStaff } from "@/lib/server/auth";
 import {
@@ -144,7 +142,7 @@ export default async function ApplicationsPage({ params, searchParams }: { param
 
       {/* One tab per part of the system (same look as the type tabs): what waits there; the oldest shows on hover. */}
       <nav className={cn(segGroupClass, "mb-4 max-w-full overflow-x-auto")} aria-label={t("title")}>
-        <Link href={href(null)} className={tabClass(group === null)} aria-current={group === null ? "page" : undefined}>
+        <Link href={href(null)} className={segClass(group === null)} aria-current={group === null ? "page" : undefined}>
           {t("groups.all")}
           <span className="opacity-70 tabular-nums">{items.length}</span>
         </Link>
@@ -158,7 +156,7 @@ export default async function ApplicationsPage({ params, searchParams }: { param
               href={href(g)}
               aria-current={group === g ? "page" : undefined}
               title={list.length === 0 ? t("tileNone") : t("tileOldest", { days: oldest })}
-              className={tabClass(group === g)}
+              className={segClass(group === g)}
             >
               <Icon className="size-3.5" aria-hidden />
               {t(`groups.${g}`)}

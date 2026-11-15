@@ -1,5 +1,7 @@
 "use client";
 
+import { zebraRows } from "@dhulka/ui/table";
+
 import { Button } from "@dhulka/ui/button";
 import { ConfirmDialog } from "@dhulka/ui/dialog";
 import { Field } from "@dhulka/ui/field";
@@ -248,7 +250,7 @@ export function ColumnMapping({
                   <th className="px-3 py-2 text-start font-medium">{t("comesOut")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className={`divide-y ${zebraRows}`}>
                 {FIELDS[entity].map((f) => {
                   const m = map[entity]?.[f.field] ?? { col: null };
                   const rows = samples[entity] ?? [];
@@ -387,7 +389,7 @@ export function IdMapping({
                 <th className="px-3 py-2 text-start font-medium">{t("newAccount")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className={`divide-y ${zebraRows}`}>
               {accountKeys.map((a) => {
                 const v = accts[a.key] ?? { code: "", create: false };
                 return (

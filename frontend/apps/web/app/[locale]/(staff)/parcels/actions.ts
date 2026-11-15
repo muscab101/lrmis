@@ -591,3 +591,42 @@ export const rebillParcelAction = defineAction("parcels.rebill", z.object({ id: 
   revalidatePath("/[locale]/cashier", "page");
   return out;
 });
+
+/** Set an apartment building's manager: a person (like an owner) who pays the building's ground and extra-area bill. */
+export const buildingManagerSetAction = defineAction("parcels.building_manager", z.object({ buildingId: z.uuid(), partyId: z.uuid() }), async (v, ctx) => {
+  const out = unwrap(await ctx.supabase.rpc("building_manager_set", { p_building: v.buildingId, p_party: v.partyId }), "building manager");
+  refresh();
+  revalidatePath("/[locale]/owners", "layout");
+  revalidatePath("/[locale]/apartments", "layout");
+  return out;
+});
+
+/** Add or change an extra area of an apartment building (parking, playground, …): m² × price per m², on the manager's bill. */
+export const buildingAreaSaveAction = defineAction(
+  "parcels.building_area",
+  z.object({
+    id: z.uuid().nullable(),
+    buildingId: z.uuid(),
+    name: z.string().trim().min(2, "validation.required").max(60, "validation.too_long"),
+    areaM2: z.number().positive("validation.amount").max(1_000_000, "validation.amount"),
+    priceM2: z.number().min(0, "validation.amount").max(100_000, "validation.amount"),
+  }),
+  async (v, ctx) => {
+    const id = unwrap(
+      await ctx.supabase.rpc("building_area_save", { p_id: v.id, p_building: v.buildingId, p: { name: v.name, area_m2: v.areaM2, price_m2: v.priceM2 } }),
+      "building area",
+    ) as string;
+    refresh();
+    revalidatePath("/[locale]/invoices", "layout");
+    revalidatePath("/[locale]/apartments", "layout");
+    return id;
+  },
+);
+
+export const buildingAreaRemoveAction = defineAction("parcels.building_area_remove", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("building_area_remove", { p_id: id }), "remove building area");
+  refresh();
+  revalidatePath("/[locale]/invoices", "layout");
+  revalidatePath("/[locale]/apartments", "layout");
+  return null;
+});

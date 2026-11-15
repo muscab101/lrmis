@@ -164,7 +164,28 @@ export default async function DemolishedPage({
           ]}
           query={{ d: sp.d, s: sp.s, k: sp.k, n: sp.n }}
         />
-        <AutoSubmitForm className="flex flex-wrap items-end gap-2">
+      </div>
+
+      {tab === "pending" && canApprove && rows.length > 1 && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+          <span>{t("allWaiting", { count: rows.length })}</span>
+          <DecideDemolition ids={rows.map((r) => r.id)} />
+        </div>
+      )}
+
+      {tab === "archive" && canApprove && open.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <span>
+            {t("undoAllLine", { count: open.length })}
+            {!sp.n && <span className="text-muted-foreground"> · {t("undoAllHint")}</span>}
+          </span>
+          <UndoAllDemolitions ids={open.map((r) => r.id)} />
+        </div>
+      )}
+
+      <Card className="overflow-hidden">
+        {/* Search and dates: the table's own top row. */}
+        <AutoSubmitForm className="flex flex-wrap items-end gap-3 border-b p-3">
           <input type="hidden" name="tab" value={tab} />
           {(["d", "s", "k", "n"] as const).map(
             (k) => sp[k] && <input key={k} type="hidden" name={k} value={sp[k]} />,
@@ -187,26 +208,6 @@ export default async function DemolishedPage({
             <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9 w-40" />
           </label>
         </AutoSubmitForm>
-      </div>
-
-      {tab === "pending" && canApprove && rows.length > 1 && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-          <span>{t("allWaiting", { count: rows.length })}</span>
-          <DecideDemolition ids={rows.map((r) => r.id)} />
-        </div>
-      )}
-
-      {tab === "archive" && canApprove && open.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <span>
-            {t("undoAllLine", { count: open.length })}
-            {!sp.n && <span className="text-muted-foreground"> · {t("undoAllHint")}</span>}
-          </span>
-          <UndoAllDemolitions ids={open.map((r) => r.id)} />
-        </div>
-      )}
-
-      <Card className="overflow-hidden">
         {rows.length === 0 ? (
           <EmptyState icon={<Hammer />} title={t("none")} description={t(`noneBody_${tab}`)} />
         ) : (

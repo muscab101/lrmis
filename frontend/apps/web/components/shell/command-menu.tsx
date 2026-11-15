@@ -49,6 +49,7 @@ export function CommandMenu({ groups }: { groups: NavGroup[] }) {
               {groups.map((g) => (
                 <CommandGroup key={g.key} heading={t(`groups.${g.key}`)}>
                   {g.items
+                    .flatMap((i) => [i, ...(i.children ?? [])])
                     .filter((i) => i.phase === undefined)
                     .map((i) => (
                       <CommandItem

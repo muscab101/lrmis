@@ -90,9 +90,15 @@ const INFO = new Set(["shift_open", "taken_today", "collected_today", "entries_m
  * Dashboard → My work: one panel per job the user does (from their powers, so it follows their role and anything given
  * to them), their own job first. Each count opens the list behind it.
  */
-export async function MyWork({ panels, roleKeys }: { panels: WorkPanel[]; roleKeys: string[] }) {
+export async function MyWork({ panels, roleKeys, waitingOnly = false }: { panels: WorkPanel[]; roleKeys: string[]; /** Only what waits: no zero or plain-information lines, no job with nothing waiting. */ waitingOnly?: boolean }) {
   const t = await getTranslations("dashboard.work");
   const format = await getFormatter();
+  // A panel whose counts were all taken away (e.g. Valuation) is not shown.
+  panels = waitingOnly
+    ? panels
+        .map((p) => ({ ...p, items: p.items.filter((x) => !HIDDEN.has(x.key) && !INFO.has(x.key) && Number(x.n) > 0) }))
+        .filter((p) => p.items.length > 0)
+    : panels.filter((p) => p.items.some((x) => !HIDDEN.has(x.key)) || p.panel === "accounting");
   if (panels.length === 0) return null;
   const first = roleKeys.map((k) => ROLE_FIRST[k]).filter(Boolean);
   const ordered = [...panels].sort((a, b) => {
@@ -135,7 +141,7 @@ export async function MyWork({ panels, roleKeys }: { panels: WorkPanel[]; roleKe
                     </Link>
                   </li>
                 ))}
-                {p.panel === "accounting" && (
+                {p.panel === "accounting" && !waitingOnly && (
                   <li className="text-muted-foreground flex justify-between py-2">
                     <span>{t("thisMonth")}</span>
                     <span className="font-semibold">{p.month_open ? t("open") : t("locked")}</span>

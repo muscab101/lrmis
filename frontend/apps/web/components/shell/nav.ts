@@ -31,6 +31,9 @@ import {
   MessagesSquare,
   MonitorPlay,
   Inbox,
+  ListTodo,
+  Building2,
+  UserCog,
 } from "lucide-react";
 
 export interface NavItem {
@@ -45,6 +48,8 @@ export interface NavItem {
   also?: string[];
   /** Delivery phase that builds the page (§13). Items without it exist now. */
   phase?: number;
+  /** Sub-items shown under the item (which still opens its own page). */
+  children?: NavItem[];
 }
 
 export interface NavGroup {
@@ -58,6 +63,9 @@ export const STAFF_NAV: NavGroup[] = [
     key: "overview",
     items: [
       { key: "dashboard", href: "/dashboard", icon: LayoutDashboard, permission: "dashboard.view" },
+      { key: "map", href: "/map", icon: Map, permission: "map.view" },
+      // Every unfinished piece of work in one place (its own page, apart from the dashboard).
+      { key: "incomplete", href: "/incomplete", icon: ListTodo, permission: "dashboard.view" },
       // Everything waiting for this person's approval, in one place.
       {
         key: "applications",
@@ -74,7 +82,6 @@ export const STAFF_NAV: NavGroup[] = [
           "accounting.approve",
         ],
       },
-      { key: "map", href: "/map", icon: Map, permission: "map.view" },
       { key: "chat", href: "/chat", icon: MessagesSquare },
     ],
   },
@@ -83,8 +90,24 @@ export const STAFF_NAV: NavGroup[] = [
     items: [
       { key: "yetToRegister", href: "/parcels/yet-to-register", icon: MapPinOff, permission: "parcels.yet_to_register" },
       { key: "surveys", href: "/surveys", icon: Ruler, permission: "surveys.view" },
-      { key: "owners", href: "/owners", icon: Users, permission: "owners.view" },
-      { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view" },
+      // Owners opens its page; under it, the building managers.
+      {
+        key: "owners",
+        href: "/owners",
+        icon: Users,
+        permission: "owners.view",
+        children: [{ key: "managers", href: "/owners/managers", icon: UserCog, permission: "owners.view" }],
+      },
+      // Parcels opens its page; under it, Apartments (buildings with their flats or houses).
+      {
+        key: "parcels",
+        href: "/parcels",
+        icon: MapPinned,
+        permission: "parcels.view",
+        children: [
+          { key: "apartments", href: "/apartments", icon: Building2, permission: "parcels.view" },
+        ],
+      },
       { key: "demolished", href: "/demolished", icon: Hammer, permission: "parcels.demolitions" },
     ],
   },
@@ -135,8 +158,18 @@ export const STAFF_NAV: NavGroup[] = [
 ];
 
 export function visibleNav(can: (p: PermissionKey) => boolean): NavGroup[] {
-  return STAFF_NAV.map((g) => ({ ...g, items: g.items
-      .filter((i) => (i.anyOf ? i.anyOf.some(can) : !i.permission || can(i.permission))) })).filter(
-    (g) => g.items.length > 0,
-  );
+  const allowed = (i: NavItem) => (i.anyOf ? i.anyOf.some(can) : !i.permission || can(i.permission));
+  return STAFF_NAV.map((g) => ({
+    ...g,
+    items: g.items
+      .filter(allowed)
+      .map((i) => (i.children ? { ...i, children: i.children.filter(allowed) } : i))
+      // A dropdown with nothing in it is left out.
+      .filter((i) => !i.children || i.children.length > 0),
+  })).filter((g) => g.items.length > 0);
+}
+
+/** Every page in the menu, sub-items included (for search and the assistant). */
+export function flatNavItems(groups: NavGroup[]): NavItem[] {
+  return groups.flatMap((g) => g.items.flatMap((i) => [i, ...(i.children ?? [])]));
 }

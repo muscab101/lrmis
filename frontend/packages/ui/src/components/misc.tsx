@@ -121,17 +121,11 @@ export function Alert({
   children?: React.ReactNode;
   className?: string;
 }) {
-  const toneClass = {
-    info: "border-s-info",
-    success: "border-s-success",
-    warning: "border-s-warning",
-    danger: "border-s-danger",
-  }[tone];
   const titleClass = { info: "text-info", success: "text-success", warning: "text-warning", danger: "text-danger" }[tone];
   return (
     <div
       role={tone === "danger" ? "alert" : "status"}
-      className={cn("rounded-md border border-s-[3px] bg-card px-4 py-3 text-sm", toneClass, className)}
+      className={cn("rounded-md border bg-card px-4 py-3 text-sm", className)}
     >
       {title && <p className={cn("font-semibold", titleClass)}>{title}</p>}
       {children && <div className={cn("text-foreground/75", title && "mt-0.5")}>{children}</div>}

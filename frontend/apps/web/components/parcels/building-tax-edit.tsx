@@ -9,7 +9,7 @@ import { useState } from "react";
 import { buildingTaxSetupAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 
-/** A flats building's footprint and management; saving works out every flat's share and the open-ground bill again. */
+/** A flats building's footprint; saving works out every flat's share and the open-ground bill again. */
 export function BuildingTaxEdit({
   id,
   plotM2,
@@ -22,8 +22,9 @@ export function BuildingTaxEdit({
   const t = useTranslations("parcels.landUnits");
   const [open, setOpen] = useState(false);
   const [footprint, setFootprint] = useState(current.footprint != null ? String(current.footprint) : "");
-  const [name, setName] = useState(current.managerName ?? "");
-  const [phone, setPhone] = useState(current.managerPhone ?? "");
+  // The manager is chosen as a person (Manager, below); saving the footprint keeps them as they are.
+  const name = current.managerName ?? "";
+  const phone = current.managerPhone ?? "";
   const foot = Number(footprint);
   return (
     <>
@@ -51,12 +52,6 @@ export function BuildingTaxEdit({
               error={fe("footprintM2")}
             >
               <Input type="number" inputMode="decimal" min={0} value={footprint} onChange={(e) => setFootprint(e.target.value)} />
-            </Field>
-            <Field id="manager-name" label={t("managerName")} hint={t("managerHint")} error={fe("managerName")}>
-              <Input value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />
-            </Field>
-            <Field id="manager-phone" label={t("managerPhone")} error={fe("managerPhone")}>
-              <Input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
             </Field>
           </>
         )}

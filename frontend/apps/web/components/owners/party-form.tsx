@@ -133,7 +133,7 @@ export function PartyForm({ party, mode = "staff", districtId, districts, onSave
       {mode === "staff" && (
         <div role="radiogroup" aria-label={t("kind")} className="grid grid-cols-2 gap-1 rounded-md border p-1 text-sm">
           {(["person", "organisation"] as const).map((k) => (
-            <label key={k} className={`cursor-pointer rounded-sm px-3 py-1.5 text-center ${kind === k ? "bg-ink text-ink-foreground" : "hover:bg-muted"}`}>
+            <label key={k} className={`cursor-pointer rounded-sm px-3 py-1.5 text-center ${kind === k ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
               <input type="radio" value={k} className="sr-only" {...form.register("kind")} />
               {t(`kind_${k}`)}
             </label>

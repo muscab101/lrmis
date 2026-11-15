@@ -1,7 +1,7 @@
 import { Card } from "@dhulka/ui/card";
 import { Input } from "@dhulka/ui/input";
 import { Mono, PageHeader } from "@dhulka/ui/misc";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, zebraRows } from "@dhulka/ui/table";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import {
   AccountButton,
@@ -135,7 +135,7 @@ export default async function AccountingPage({
           <Link
             key={q.key}
             href={`/accounting?tab=${tab}&from=${q.from}&to=${iso(now)}${tab === "ledger" && sp.account ? `&account=${sp.account}` : ""}`}
-            className={`rounded-full border px-3 py-1 text-xs ${from === q.from && to === iso(now) ? "bg-ink text-ink-foreground border-transparent" : "hover:bg-muted"}`}
+            className={`rounded-full border px-3 py-1 text-xs ${from === q.from && to === iso(now) ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-muted"}`}
           >
             {t(`quick.${q.key}`)}
           </Link>
@@ -263,7 +263,7 @@ export default async function AccountingPage({
                 </span>
               </div>
               <table className="mt-1 w-full text-xs">
-                <tbody>
+                <tbody className={zebraRows}>
                   {e.journal_lines.map((l) => (
                     <tr key={l.id}>
                       <td className={`py-0.5 ${Number(l.credit) > 0 ? "ps-6" : ""}`}>
