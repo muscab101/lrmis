@@ -172,7 +172,7 @@ export default async function OwnerPage({ params }: { params: Promise<{ locale: 
                     </TableCell>
                     <TableCell className="text-sm">
                       {ta(`roles.${l.role}`)}
-                      {l.share_pct ? ` · ${l.share_pct}%` : ""}
+                      {l.share_pct && Number(l.share_pct) < 100 ? ` · ${Number(l.share_pct)}%` : ""}
                     </TableCell>
                     <TableCell>
                       <ApplicationStatusBadge status={l.application!.status} />

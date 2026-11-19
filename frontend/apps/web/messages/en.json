@@ -340,7 +340,12 @@
       "colour": "Choose a colour like #1f45b8.",
       "too_long": "Some text is too long.",
       "no_desk_printer": "There is no printer at your point of sale or in this district yet. Add one on the Printers page.",
-      "open_to_decide": "Open it to decide this one."
+      "open_to_decide": "Open it to decide this one.",
+      "nothing_to_remap": "There is no plot here left to remap.",
+      "not_a_surveyor": "Choose a surveyor who works in this district and records locations.",
+      "remap_building": "A flat is remapped with its building: remap the building.",
+      "remap_not_standing": "Demolished or archived land can't be remapped.",
+      "remap_not_assigned": "No remapping is open for this land."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -539,7 +544,8 @@
     "account_code": "Use a 4-digit account code.",
     "phone_not_registered": "This phone number has no land registered in LRMIS. Please register first at your district's LRMIS office, then sign in here.",
     "pos_district_taken": "This district already has a cash desk. One office cash desk per district: change the one it has, or switch it off first.",
-    "letters_only": "Use letters only (no numbers)."
+    "letters_only": "Use letters only (no numbers).",
+    "remapSurveyor": "Choose a surveyor who works in this district and records locations."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -963,7 +969,8 @@
         "runs_open": "Billing runs not issued",
         "not_printed": "Certificates never printed"
       }
-    }
+    },
+    "updatedAt": "Live · updated {time}"
   },
   "admin": {
     "users": {
@@ -1700,7 +1707,7 @@
     "kind": "Type",
     "zoomTo": "Zoom to",
     "openInLocations": "Open in Locations",
-    "noBoundaries": "No boundaries are mapped yet. Import them under Locations → Boundary.",
+    "noBoundaries": "No borders are drawn yet. Press the pen button on the right to draw a district's border.",
     "layer_districts": "Districts",
     "layer_sections": "Sections",
     "layer_sectors": "Sectors",
@@ -1741,11 +1748,35 @@
     "account": "Account no.",
     "status": "Status",
     "pinPaid": "House paid",
-    "pinOwing": "House owes a bill",
+    "pinOwing": "House owes a bill, or not registered yet",
     "bills": "Bills",
     "billsPaid": "Paid",
     "billsOwing": "Owes {amount}",
-    "pinPartial": "Not registered yet"
+    "pinPartial": "Not registered yet",
+    "measure": "Measure",
+    "measureDistance": "Measure distance",
+    "measureArea": "Measure area",
+    "measureClear": "Clear",
+    "measureHint_line": "Click on the map to add points; double-click to finish. Drag a point to move it.",
+    "measureHint_area": "Click around the area; click the first point (or double-click) to close it. Drag a point to move it.",
+    "measureHint_edit": "Drag the points to move the border. Click a line's middle dot to add a point, right-click a point to remove it. Then save.",
+    "distance": "Distance",
+    "perimeter": "Edge length",
+    "editBoundary": "Edit boundary",
+    "saveBoundary": "Save boundary",
+    "boundarySaved": "{name}: boundary saved",
+    "editNoBoundary": "This place has no boundary to edit yet. Add one in Locations.",
+    "editFailed": "The boundary could not be saved.",
+    "drawBorder": "Draw a border",
+    "drawBorderHint": "Pick the district (or one of its sections), then click around it on the map. Click the first point to close it; you can draw more than one part. Drag points to fix it, then save.",
+    "measureHint_draw": "This place has no border yet. Click around it on the map; click the first point to close it. Then drag points to fix it and save.",
+    "wholeDistrict": "The whole district",
+    "startDrawing": "Start drawing",
+    "choose": "Choose…",
+    "addPart": "Add a part",
+    "undo": "Undo",
+    "redo": "Redo",
+    "clearAll": "Clear all"
   },
   "locations": {
     "title": "Locations",
@@ -2350,6 +2381,7 @@
     "tabs": {
       "open": "Open",
       "assigned": "Assigned",
+      "remapping": "Remapping",
       "in_progress": "In progress",
       "overlap_review": "Overlap review",
       "returned": "Returned",
@@ -2491,7 +2523,24 @@
     "noSiteChecksBody": "Applications marked ? appear here until the surveyor records the visit.",
     "requested": "Requested",
     "applicant": "Applicant",
-    "note": "Note"
+    "note": "Note",
+    "actionReview": "Review the survey",
+    "actionReassign": "Give to another surveyor",
+    "submitRowBody": "The boundary is checked for overlaps and sent to the land officer.",
+    "reassignTitle": "Give this survey to another surveyor?",
+    "reassignBody": "The new surveyor gets it with what is saved so far, and a message.",
+    "reassigned": "Survey given to the new surveyor.",
+    "reassignFailed": "Couldn't load the surveyors. Try again.",
+    "noOtherSurveyor": "No other surveyor works in this district.",
+    "chooseSurveyor": "Choose a surveyor",
+    "surveyorWithTasks": "{name} ({count, plural, =0 {no open tasks} one {# open task} other {# open tasks}})",
+    "remapEmptyTitle": "Nothing to remap",
+    "remapEmptyBody": "Land given to a surveyor to remap shows here. Give it out from the land's page with Assign remapping.",
+    "remapGuessed": "Placed by guess",
+    "remapNow": "Remap now",
+    "remapOpen": "Open",
+    "remapAllJobs": "← All remapping",
+    "remapLeft": "{count, plural, one {# plot to remap} other {# plots to remap}}"
   },
   "parcels": {
     "title": "Parcels",
@@ -2686,7 +2735,12 @@
       "managerIsOwner": "The owner you entered is the building's manager: they pay the rest of the plot.",
       "flatsSummary": "Plot {land} · flats {flats} · rest of the plot {rest}, charged to the manager at the open-ground price.",
       "floorBase": "Ground floor: Apartment price per m².",
-      "floorUpper": "Floor {floor}: Upper Floors price per m²."
+      "floorUpper": "Floor {floor}: Upper Floors price per m².",
+      "flatWidth": "Width (m)",
+      "flatLength": "Length (m)",
+      "plotM2": "Plot",
+      "flatsM2": "Flats",
+      "restM2": "Rest of the plot (manager pays)"
     },
     "fieldLand": {
       "layout": "Type of land",
@@ -2757,7 +2811,7 @@
     "demolishedLabel": "Demolished",
     "demolishedHint": "Land whose house was demolished. It's kept as an archive and can only be viewed.",
     "demolishedOpenArchive": "Open the full archive",
-    "split_all": "All",
+    "split_all": "Any type",
     "split_paid": "Paid",
     "split_owing": "Not paid",
     "paySplit": "Bills",
@@ -2814,6 +2868,54 @@
         "playground": "Playground",
         "garden": "Garden"
       }
+    },
+    "actionRegister": "Move to registered",
+    "registerTitle": "Move {pun} to registered?",
+    "registerBody": "The land gets its PUN and account number now, its owners are registered and it moves to the Registered tab. Its bills stay as they are.",
+    "registeredDone": "Moved to registered",
+    "actionRemap": "Remap",
+    "remap": {
+      "title": "Remap on the map",
+      "help": "The orange shape is a copy of the land as it is now (blue). Drag it to where the land really is and move its corners to fit, or draw it again. Only the drawing changes.",
+      "moveCopy": "Move the shape",
+      "drawNew": "Draw again",
+      "startAgain": "Start again",
+      "guessTitle": "This land was put on the map by guess",
+      "guessBody": "It was brought in without a location and placed near its sector. Find the real plot on the satellite map and move the shape there. Saving also ticks its site check.",
+      "recorded": "Recorded size",
+      "drawn": "Drawn on the map",
+      "sizeStays": "The recorded size and the bills stay as they are. To change the size, use Correct boundary.",
+      "reason": "Reason",
+      "reasonHint": "For example: placed at the real plot after the site visit",
+      "save": "Save the new place",
+      "saved": "Land remapped (moved {moved} m)",
+      "myLocation": "My location",
+      "moveHere": "Move the shape here",
+      "accuracy": "GPS within about {m} m",
+      "noGps": "This device can't share its location.",
+      "gpsDenied": "Location is blocked. Allow it for this site in the browser, then try again.",
+      "gpsFailed": "Couldn't get your location. Go outside or try again."
+    },
+    "remapJob": {
+      "assign": "Assign remapping",
+      "reassign": "Change surveyor",
+      "cancel": "Call off remapping",
+      "remapNow": "Remap now",
+      "assignTitle": "Give this land to a surveyor to remap?",
+      "assignBody": "The surveyor sees it on their Surveys page under Remapping, goes to the land and puts it where it really is on the map.",
+      "surveyor": "Surveyor",
+      "choose": "Choose a surveyor",
+      "loading": "Loading surveyors…",
+      "noSurveyors": "No surveyor who captures locations works in this district.",
+      "openJobs": "{count, plural, =0 {free} one {# to remap} other {# to remap}}",
+      "note": "Note for the surveyor (optional)",
+      "assigned": "Remapping given to the surveyor",
+      "cancelTitle": "Call off the remapping?",
+      "cancelBody": "It goes off the surveyor's list. The land stays where it is on the map.",
+      "cancelled": "Remapping called off",
+      "bannerTitle": "Waiting to be remapped",
+      "bannerWith": "With {name}",
+      "bannerSince": "since {date}"
     }
   },
   "notices": {
@@ -3661,7 +3763,7 @@
     "takeAgain": "Yes, take it again",
     "dontTake": "Don't take it",
     "push": {
-      "button": "Push payment",
+      "button": "Send payment request",
       "sent": "Request for {amount} sent to {phone}.",
       "waiting": "Waiting for the payer to approve on their phone…",
       "paid": "Paid. Receipt {receipt}.",
@@ -3672,7 +3774,9 @@
       "simulateNo": "Simulate decline (test)",
       "notConnected": "Mobile money isn't connected yet",
       "needPhone": "Enter the payer's phone first.",
-      "onlyAfterProblem": "Only for a bill whose payment was reversed, not approved, or failed online."
+      "onlyAfterProblem": "Only for a bill whose payment was reversed, not approved, or failed online.",
+      "typeReference": "Paid already? Type the reference",
+      "sendInstead": "Send a payment request instead"
     },
     "partialPaysTitle": "This land isn't registered yet",
     "partialPaysBody": "Its bills can be paid now. Once they are all paid, the land and its owners are registered by themselves.",
@@ -5020,6 +5124,55 @@
       "certificate_ready": "Certificate ready",
       "payment_receipt": "Payment receipt",
       "application_status": "Application update"
+    },
+    "detailLabel": "How much to show",
+    "detailLess": "Less data",
+    "detailMore": "More data",
+    "summary": {
+      "subtitle": "The main figures for the period: money in and out, bills, land and owners.",
+      "money": "Money",
+      "moneyIn": "Money in",
+      "payments": "{n} payments received",
+      "moneyOut": "Money out",
+      "moneyOutSub": "Expenses in the books",
+      "left": "Left over",
+      "leftSub": "Money in minus money out",
+      "billed": "Billed",
+      "billsIssued": "{n} bills · {paid} paid",
+      "owed": "Still owed",
+      "outstanding": "Outstanding",
+      "outstandingSub": "All unpaid bills, up to today",
+      "overdue": "Overdue",
+      "overdueSub": "Unpaid after the due date",
+      "land": "Land",
+      "registered": "Registered",
+      "registeredNew": "{n} registered in this period",
+      "partial": "Not registered yet",
+      "partialSub": "Partial registration",
+      "toCheck": "Location to check",
+      "toCheckSub": "Waiting for a surveyor's site check",
+      "demolished": "Demolished",
+      "people": "Owners and documents",
+      "owners": "Owners with land",
+      "ownersNew": "{n} added in this period",
+      "certificates": "Certificates issued",
+      "transfers": "Transfers approved",
+      "inPeriod": "In this period",
+      "note": "Money in is what was received in the period; money out is the expenses recorded in Accounting. Land and owners are counted as they are today. Press More data for the full reports, by district, desk and day.",
+      "show": "Show",
+      "showGroup": "Overview",
+      "moneyOutDistrictOnly": "Expenses are kept per district",
+      "topics": {
+        "all": "Main figures",
+        "money": "Money",
+        "owed": "Still owed",
+        "land": "Land",
+        "people": "Owners and documents"
+      },
+      "lines": "Lines in the report",
+      "linesSub": "For the dates and place chosen",
+      "listOnly": "This report is a list with nothing to add up. Open the full report to read it.",
+      "openFull": "Open the full report →"
     }
   },
   "messages": {
@@ -5300,7 +5453,7 @@
     "tab_zones": "Assigned zones",
     "body_zones": "Pick a neighbourhood, see its capacity and give it to a surveyor. The surveyor finds it under Surveys → Zones and adds each house.",
     "assign": {
-      "title": "Assign a zone to a surveyor",
+      "title": "Assign a zone or remapping to a surveyor",
       "district": "District",
       "section": "Section",
       "sector": "Sector",
@@ -5319,7 +5472,18 @@
       "note": "Note for the surveyor",
       "submit": "Assign zone",
       "assigned": "Zone assigned. The surveyor has been notified.",
-      "noCapacity": "Set this neighbourhood's capacity in Locations first."
+      "noCapacity": "Set this neighbourhood's capacity in Locations first.",
+      "job": "Job",
+      "jobZone": "Survey zone",
+      "jobRemap": "Remapping",
+      "remapHelp": "The land of the neighbourhood that is already in the system goes to one surveyor, who puts each plot where it really is on the map. It shows on their Surveys page under Remapping.",
+      "remapTotal": "Plots to remap",
+      "remapGuessed": "Placed by guess",
+      "remapAlready": "Already with a surveyor",
+      "remapOnlyGuessed": "Only the plots placed by guess",
+      "remapNothing": "No plot here can be remapped (none, or all already with a surveyor, locked or demolished).",
+      "remapSubmit": "{count, plural, =0 {Assign remapping} one {Assign remapping (# plot)} other {Assign remapping (# plots)}}",
+      "remapAssigned": "{count, plural, one {# plot given to the surveyor to remap.} other {# plots given to the surveyor to remap.}} They have been notified."
     },
     "zones": {
       "empty": "No zones assigned",
@@ -5373,7 +5537,26 @@
       "backToZone": "Back to zone {zone}"
     },
     "assignZone": "Assign zone",
-    "subtitle": "Give neighbourhoods to surveyors, follow their zones, and see where land is still waiting."
+    "assignRemap": "Assign remapping",
+    "subtitle": "Give neighbourhoods to surveyors, follow their zones, and see where land is still waiting.",
+    "remapZones": {
+      "empty": "No remapping given out",
+      "emptyBody": "Neighbourhoods or plots given to a surveyor to remap appear here with their progress. Give them out with the box above (Remapping).",
+      "neighbourhood": "Neighbourhood",
+      "surveyor": "Surveyor",
+      "progress": "Plots remapped",
+      "left": "Still to remap",
+      "guessed": "Placed by guess",
+      "assigned": "Assigned",
+      "actions": "Actions",
+      "you": "You",
+      "count": "{done} of {total}",
+      "finished": "Finished",
+      "open": "Open",
+      "showDone": "Show finished remapping too",
+      "hideDone": "Show open remapping only",
+      "remapNow": "Remap now"
+    }
   },
   "idCards": {
     "title": "ID cards",

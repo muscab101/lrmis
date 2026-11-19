@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
-import { GeometryPreview } from "@/components/map/geometry-preview";
+import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { TransferActions } from "@/components/legal/transfer-actions";
 import { Link } from "@/i18n/navigation";
@@ -64,7 +64,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
             </Link>
             <span className="text-xs text-muted-foreground">
               {ta(`roles.${o.role}`)}
-              {o.share_pct != null && ` · ${o.share_pct}%`}
+              {o.share_pct != null && Number(o.share_pct) < 100 && ` · ${Number(o.share_pct)}%`}
             </span>
           </li>
         ))}
@@ -172,7 +172,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
                 </dl>
               </CardContent>
             </Card>
-            <GeometryPreview geometry={land.geom} className="h-72 md:h-full" pin />
+            <GeometryPreview geometry={land.geom} className="h-72 md:h-full" pin pinState={land.building_state === "demolished" ? "demolished" : ["draft", "surveyed", "verified"].includes(land.status) ? "partial" : "paid"} />
             <div className="md:col-span-2">
               <TransferHistory parcelId={land.id} currentId={tr.id} />
             </div>

@@ -6,10 +6,10 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect, Tooltip } from "@dhulka/ui/form-controls";
 import { LAND_USES } from "@dhulka/core/schemas";
 import { Input, Textarea } from "@dhulka/ui/input";
-import { Ellipsis, Info, Lock, LockOpen, MapPin, Pencil, Trash2, UserRound } from "lucide-react";
+import { BadgeCheck, Ellipsis, Info, Lock, LockOpen, MapPin, Pencil, Trash2, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { type BillCheck, deleteParcelAction, lockParcelAction, parcelBillCheckAction, parcelEditInfoAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
+import { type BillCheck, deleteParcelAction, lockParcelAction, parcelBillCheckAction, parcelEditInfoAction, registerParcelAction, unlockParcelAction, updateParcelDetailsAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { OwnerFields } from "@/components/owners/owner-fields";
 import { HouseNoSelect } from "@/components/parcels/house-no-select";
@@ -26,6 +26,8 @@ export interface ParcelRowAbilities {
   lock: boolean;
   /** Delete this land: partial land with parcels.delete, registered land with parcels.delete_registered. */
   delete?: boolean;
+  /** Move partial land with an owner to registered now (parcels.approve). */
+  register?: boolean;
 }
 
 interface ParcelBits {
@@ -43,7 +45,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const t = useTranslations("parcels");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [dialog, setDialog] = useState<"edit" | "lock" | "unlock" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"edit" | "lock" | "unlock" | "delete" | "register" | null>(null);
   const [v, setV] = useState({ houseNo: parcel.house_no ?? "", govtReceiptNo: parcel.govt_receipt_no ?? "", plotNo: parcel.plot_no ?? "" });
   const [reason, setReason] = useState("");
   const ta = useTranslations("applications");
@@ -70,6 +72,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
   const locked = !!parcel.locked_at;
   const partial = parcel.status === "draft" || parcel.status === "surveyed" || parcel.status === "verified";
   const canDelete = !!can.delete && !locked;
+  const canRegister = !!can.register && partial && !locked;
   const name = parcel.pun ?? t("noPun");
   const keys = onDetail ? "flex" : "hidden sm:flex";
   const close = (o: boolean) => {
@@ -98,6 +101,12 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
               <DropdownMenuItem onSelect={() => setDialog("edit")}>
                 <Pencil aria-hidden />
                 {tc("edit")}
+              </DropdownMenuItem>
+            )}
+            {canRegister && (
+              <DropdownMenuItem onSelect={() => setDialog("register")}>
+                <BadgeCheck aria-hidden />
+                {t("actionRegister")}
               </DropdownMenuItem>
             )}
             {canDelete && (
@@ -130,6 +139,13 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             <Link href={`/parcels/${parcel.id}`} aria-label={t("actionView")}>
               <Info aria-hidden />
             </Link>
+          </Button>,
+        )}
+      {canRegister &&
+        key(
+          t("actionRegister"),
+          <Button variant="ghost" size="icon-sm" className={`text-primary ${keys}`} aria-label={t("actionRegister")} onClick={() => setDialog("register")}>
+            <BadgeCheck aria-hidden />
           </Button>,
         )}
       {canDelete &&
@@ -309,6 +325,16 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
           can={{ rebill: can.update }}
         />
       )}
+      <FormDialog
+        open={dialog === "register"}
+        onOpenChange={close}
+        title={t("registerTitle", { pun: name })}
+        description={t("registerBody")}
+        confirmLabel={t("actionRegister")}
+        successMessage={t("registeredDone")}
+        submit={() => registerParcelAction({ parcelId: parcel.id })}
+        onDone={() => router.refresh()}
+      />
       <FormDialog
         open={dialog === "delete"}
         onOpenChange={close}

@@ -11,7 +11,8 @@ import { requirePermission } from "@/lib/server/auth";
 import { ZoneAssigner } from "@/components/parcels/zone-assigner";
 import { ZoneTable } from "@/components/parcels/zone-table";
 import { neighbourhoodStatus } from "@/lib/server/parcels";
-import { listZones, zonePlaces } from "@/lib/server/zones";
+import { listRemapZones, listZones, zonePlaces } from "@/lib/server/zones";
+import { RemapZoneTable } from "@/components/parcels/remap-zone-table";
 import { listDistricts } from "@/lib/server/users";
 import { createClient } from "@/lib/supabase/server";
 import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
@@ -60,12 +61,16 @@ export default async function YetToRegisterPage({
   const districts = all.filter((d) => allowed.has(d.id));
   const district = districts.some((d) => d.id === sp.district) ? sp.district! : "";
   const canAssign = viewer.can("surveys.approve");
-  const [status, zones, places] = await Promise.all([
+  // The Zones tab shows survey zones (new land), or with job=remap the remapping given out and how it goes.
+  const remapView = sp.job === "remap";
+  const [status, zones, remapZones, places] = await Promise.all([
     neighbourhoodStatus(district || null),
     seesZones ? listZones(!canAssign, sp.closed === "1" ? "any" : "open") : Promise.resolve([]),
+    seesZones && remapView ? listRemapZones(!canAssign, sp.closed === "1") : Promise.resolve([]),
     canAssign ? zonePlaces(districts.map((d) => d.id)) : Promise.resolve(null),
   ]);
   const shownZones = district ? zones.filter((z) => z.district_id === district) : zones;
+  const shownRemaps = district ? remapZones.filter((z) => z.district_id === district) : remapZones;
   const openZoneBy = new Map(
     zones.filter((z) => z.status === "open").map((z) => [z.neighbourhood_id, z.surveyor ?? ""]),
   );
@@ -87,13 +92,13 @@ export default async function YetToRegisterPage({
   const page = Math.min(Math.max(Number(sp.page) || 1, 1), pages);
   const rows = allRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const counts: Record<Tab, number> = {
-    zones: shownZones.filter((z) => z.status === "open").length,
+    zones: remapView ? shownRemaps.filter((z) => z.done < z.total).length : shownZones.filter((z) => z.status === "open").length,
     waiting: waiting.length,
     not_started: notStarted.length,
   };
   const name = (o: { name_so: string; name_en: string }) => (lang === "so" ? o.name_so : o.name_en);
   const href = (k: Tab) =>
-    `/parcels/yet-to-register?${new URLSearchParams({ tab: k, ...(district ? { district } : {}) })}`;
+    `/parcels/yet-to-register?${new URLSearchParams({ tab: k, ...(district ? { district } : {}), ...(remapView ? { job: "remap" } : {}) })}`;
   const n = (v: number) => format.number(v);
 
   return (
@@ -124,6 +129,7 @@ export default async function YetToRegisterPage({
           <CardContent>
             <ZoneAssigner
               key={sp.assign ?? ""}
+              initialJob={sp.job === "remap" ? "remap" : "zone"}
               districts={districts}
               sections={places.sections}
               sectors={places.sectors}
@@ -140,6 +146,7 @@ export default async function YetToRegisterPage({
         {districts.length > 1 && (
           <AutoSubmitForm className="flex flex-wrap items-center gap-3 border-b p-3">
             <input type="hidden" name="tab" value={tab} />
+            {remapView && <input type="hidden" name="job" value="remap" />}
             <NativeSelect
               name="district"
               defaultValue={district}
@@ -156,17 +163,28 @@ export default async function YetToRegisterPage({
           </AutoSubmitForm>
         )}
         {tab === "zones" && (
-          <div className="border-b px-3 py-2 text-xs">
+          <div className="border-b px-3 py-2 text-end text-xs">
             <Link
-              href={`/parcels/yet-to-register?${new URLSearchParams({ tab: "zones", ...(district ? { district } : {}), ...(sp.closed === "1" ? {} : { closed: "1" }) })}`}
+              href={`/parcels/yet-to-register?${new URLSearchParams({ tab: "zones", ...(district ? { district } : {}), ...(sp.closed === "1" ? {} : { closed: "1" }), ...(remapView ? { job: "remap" } : {}) })}`}
               className="text-primary underline"
             >
-              {sp.closed === "1" ? t("zones.hideClosed") : t("zones.showClosed")}
+              {sp.closed === "1" ? t(remapView ? "remapZones.hideDone" : "zones.hideClosed") : t(remapView ? "remapZones.showDone" : "zones.showClosed")}
             </Link>
           </div>
         )}
         {tab === "zones" ? (
-          <ZoneTable rows={shownZones} me={viewer.user.id} />
+          // The table follows the assign box's choice: Survey zone shows the new-land zones, Remapping the remapping given out.
+          remapView ? (
+            <RemapZoneTable
+              rows={shownRemaps}
+              me={viewer.user.id}
+              canRemapAny={viewer.can("applications.capture_location") && viewer.can("parcels.update")}
+              canRemapOwn={viewer.can("applications.capture_location")}
+              back={`/parcels/yet-to-register?${new URLSearchParams({ tab: "zones", job: "remap", ...(district ? { district } : {}) })}`}
+            />
+          ) : (
+            <ZoneTable rows={shownZones} me={viewer.user.id} />
+          )
         ) : rows.length === 0 ? (
           <EmptyState
             icon={<MapPinOff />}
@@ -220,6 +238,14 @@ export default async function YetToRegisterPage({
                           className="text-primary underline"
                         >
                           {t("assignZone")}
+                        </Link>
+                      )}
+                      {canAssign && r.registered > 0 && (
+                        <Link
+                          href={`/parcels/yet-to-register?${new URLSearchParams({ tab, ...(district ? { district } : {}), ...(page > 1 ? { page: String(page) } : {}), assign: r.id, job: "remap" })}#assign`}
+                          className="text-primary underline"
+                        >
+                          {t("assignRemap")}
                         </Link>
                       )}
                       {r.partial + r.registered > 0 && (

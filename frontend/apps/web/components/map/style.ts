@@ -15,6 +15,9 @@ export const LAYER_MINZOOM: Record<BoundaryLayer, number> = {
 };
 
 const INK = "#0d1b2e";
+const PIN_PAID_COLOUR = "#1d4ed8";
+const PIN_OWING_COLOUR = "#dc2626";
+const PIN_PARTIAL_COLOUR = "#d97706";
 const FLAG = "#4189dd";
 const TEAL = "#0e8f8e";
 
@@ -112,6 +115,17 @@ export const PARCEL_COLOURS: Record<string, string> = {
   disputed: "#c62828",
 };
 
+/** A land shape's colour, the same as its pin: grey when demolished, blue when paid, red while it owes —
+ * land not registered yet is red too (its first bills are still unpaid). Only these three colours. */
+const PARCEL_FILL = [
+  "case",
+  ["boolean", ["get", "demolished"], false],
+  DEMOLISHED_COLOUR,
+  ["==", ["get", "status"], "registered"],
+  ["case", ["boolean", ["get", "owing"], false], PIN_OWING_COLOUR, PIN_PAID_COLOUR],
+  PIN_OWING_COLOUR,
+];
+
 export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?: boolean; pinsOnly?: boolean } = {}): StyleSpecification {
   const key = process.env.NEXT_PUBLIC_MAPTILER_KEY;
   // Set to "on" next to MAPBOX_ACCESS_TOKEN: streets and satellite pictures come from Mapbox (through our server).
@@ -119,7 +133,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
   const nameField = locale === "so" ? "name_so" : "name_en";
   const vector = (layer: BoundaryLayer) => ({
     type: "vector" as const,
-    tiles: [`${origin}/api/tiles/${layer}/{z}/{x}/{y}`],
+    // v=2: borders drawn again on 2026-11-17; a new version makes browsers drop the old pictures.
+    tiles: [`${origin}/api/tiles/${layer}/{z}/{x}/{y}?v=2`],
     minzoom: LAYER_MINZOOM[layer],
     maxzoom: 16,
     // Feature ids are UUID strings: promote them so hover/selection state works.
@@ -259,7 +274,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               source: "parcels",
               "source-layer": "parcels",
               paint: {
-                "fill-color": ["case", ["boolean", ["get", "demolished"], false], DEMOLISHED_COLOUR, ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"]],
+                "fill-color": PARCEL_FILL,
                 "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.45, 0.28],
               },
             },
@@ -268,7 +283,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
               type: "line",
               source: "parcels",
               "source-layer": "parcels",
-              paint: { "line-color": ["case", ["boolean", ["get", "demolished"], false], DEMOLISHED_COLOUR, ["match", ["get", "status"], ...Object.entries(PARCEL_COLOURS).flat(), "#5d6573"]], "line-width": 1.5 },
+              paint: { "line-color": PARCEL_FILL, "line-width": 1.5 },
             },
             {
               id: "parcels-label",
@@ -283,8 +298,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         : []),
       ...(opts.parcels
         ? ([
-            // A pin on every house: blue when nothing is owed, red when a bill is unpaid, orange while the land is still
-            // partial (not registered), grey when demolished (DhulkaMap draws them when the style asks).
+            // A pin on every house, in three colours: blue when nothing is owed, red when a bill is unpaid (land not
+            // registered yet too), grey when demolished (DhulkaMap draws them when the style asks).
             {
               id: "parcel-pins",
               type: "symbol",
@@ -296,7 +311,7 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
                   ["boolean", ["get", "demolished"], false],
                   "house-pin-demolished",
                   ["boolean", ["get", "partial"], false],
-                  "house-pin-partial",
+                  "house-pin-owing",
                   ["boolean", ["get", "owing"], false],
                   "house-pin-owing",
                   "house-pin-paid",
@@ -376,10 +391,14 @@ export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
 };
 
 /** The colours of the house pins. */
-export const PIN_PAID = "#1d4ed8";
-export const PIN_OWING = "#dc2626";
+export const PIN_PAID = PIN_PAID_COLOUR;
+export const PIN_OWING = PIN_OWING_COLOUR;
 /** Land still partial (not registered yet). */
-export const PIN_PARTIAL = "#d97706";
+export const PIN_PARTIAL = PIN_PARTIAL_COLOUR;
+
+/** What a house's pin shows, on every map. */
+export type PinState = "paid" | "owing" | "demolished" | "partial";
+export const PIN_COLOURS: Record<PinState, string> = { paid: PIN_PAID_COLOUR, owing: PIN_OWING_COLOUR, demolished: DEMOLISHED_COLOUR, partial: PIN_OWING_COLOUR };
 
 export const LEGEND: { layer: BoundaryLayer; swatch: string; kind: "line" | "fill" | "dashed" | "dot" }[] = [
   { layer: "districts", swatch: C.districts, kind: "fill" },

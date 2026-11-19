@@ -4,7 +4,7 @@ import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } fr
 
 // The owner's apartment rule: a 600 m² plot (20 × 30 m) with three flats of 100 m² (300 m² of flats). Ground-floor
 // flats pay the Apartment price ($2 per m² here), upper-floor flats the Upper Floors price ($1), and the manager pays the
-// rest of the plot (300 m²) at the Open ground price ($0.50).
+// rest of the plot (300 m²) at the Empty Land price ($0.50).
 let db: PGlite;
 let admin: string;
 let surveyor: string;
@@ -41,7 +41,7 @@ beforeAll(async () => {
   await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('tower','Dabaq','Tower', 1) on conflict (code) do update set amount = 1`);
   await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('apartment','Guri dabaq','Apartment', 2) on conflict (code) do update set amount = 2, active = true`);
   await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('upper','Dabaqyada sare','Upper Floors', 1) on conflict (code) do update set amount = 1, active = true`);
-  await db.query(`update public.property_grades set amount = 0.5 where code = 'open_ground'`);
+  await db.query(`update public.property_grades set amount = 0.5, active = true where code = 'warehouse'`);
 });
 
 const create = (p: Record<string, unknown>) =>

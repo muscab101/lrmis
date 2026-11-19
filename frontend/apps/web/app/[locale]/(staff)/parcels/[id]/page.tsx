@@ -5,8 +5,9 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { ParcelRowActions } from "@/components/parcels/parcel-row-actions";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { GeometryPreview } from "@/components/map/geometry-preview";
+import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
+import { RemapAssignButtons } from "@/components/parcels/remap-assign-buttons";
 import { SiteCheckButtons } from "@/components/parcels/site-check-buttons";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -60,41 +61,53 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
   const [p, propertyTypes] = await Promise.all([getParcel(id), listPropertyTypes()]);
   if (!p) notFound();
   const partial = p.status === "draft" || p.status === "surveyed" || p.status === "verified";
-  // Registered land with bills: paid in full, or what's still owed.
-  const owed = await (async () => {
-    if (partial || !viewer.can("invoices.view")) return null;
-    const supabase = await createClient();
-    // A building owes what its units owe, and demolished units' old bills still count.
-    const { data: kids } = await supabase.from("parcels").select("id").eq("parent_id", p.id).is("deleted_at", null);
-    const ids = [p.id, ...((kids ?? []) as { id: string }[]).map((k) => k.id)];
-    const { data } = await supabase.from("invoices").select("balance, status").in("parcel_id", ids).neq("status", "cancelled");
-    const rows = (data ?? []) as { balance: number; status: string }[];
-    return rows.length ? rows.reduce((s, i) => s + Number(i.balance), 0) : null;
-  })();
   const showValuation = viewer.can("valuation.view");
-  const [valuation, grades] = showValuation ? await Promise.all([getParcelValuation(p.id), listGrades()]) : [null, []];
-  const owners = p.parcel_owners.filter((o) => !o.valid_to);
-  const tu = await getTranslations("parcels.landUnits");
   const holdsUnits = p.layout !== "house";
-  const [land, parent] = await Promise.all([holdsUnits ? getLandUnits(p.id) : null, p.parent_id ? getParentLand(p.parent_id) : null]);
-  const money = (n: number) => format.number(n, { style: "currency", currency: "USD" });
-  const td = await getTranslations("demolitions");
-  const tr = await getTranslations("parcels.rebill");
   const canSeeDemolitions = viewer.can("parcels.demolitions");
-  const demolitions = canSeeDemolitions ? await openDemolitionOf(p.id) : [];
+  // Everything else the page shows depends only on the land itself, so it is all asked for at once (one wait, not ten).
+  const [owed, [valuation, grades], [land, parent], demolitions, withMoney, [extras, ownerDistricts], billCheck, tu, td, tr, tj, remapWith] = await Promise.all([
+    // Registered land with bills: paid in full, or what's still owed.
+    (async () => {
+      if (partial || !viewer.can("invoices.view")) return null;
+      const supabase = await createClient();
+      // A building owes what its units owe, and demolished units' old bills still count.
+      const { data: kids } = await supabase.from("parcels").select("id").eq("parent_id", p.id).is("deleted_at", null);
+      const ids = [p.id, ...((kids ?? []) as { id: string }[]).map((k) => k.id)];
+      const { data } = await supabase.from("invoices").select("balance, status").in("parcel_id", ids).neq("status", "cancelled");
+      const rows = (data ?? []) as { balance: number; status: string }[];
+      return rows.length ? rows.reduce((s, i) => s + Number(i.balance), 0) : null;
+    })(),
+    showValuation ? Promise.all([getParcelValuation(p.id), listGrades()]) : Promise.resolve([null, []] as const),
+    Promise.all([holdsUnits ? getLandUnits(p.id) : null, p.parent_id ? getParentLand(p.parent_id) : null]),
+    canSeeDemolitions ? openDemolitionOf(p.id) : Promise.resolve([] as Awaited<ReturnType<typeof openDemolitionOf>>),
+    parcelsWithMoney([p.id]),
+    // A flats building: its manager and extra areas; new people can be registered from here by staff who add owners.
+    p.layout === "flats"
+      ? Promise.all([buildingExtras(p.id), viewer.can("owners.create") ? listDistricts() : Promise.resolve(null)])
+      : Promise.resolve([null, null] as const),
+    // Partial land whose bill no longer matches its size and type (after an edit): Re-bill and Approve.
+    partial && p.layout === "house" && p.building_state !== "demolished"
+      ? createClient().then(async (s) => ((await s.rpc("parcel_bill_check", { p_parcel: p.id })).data ?? null) as BillCheck)
+      : Promise.resolve(null),
+    getTranslations("parcels.landUnits"),
+    getTranslations("demolitions"),
+    getTranslations("parcels.rebill"),
+    getTranslations("parcels.remapJob"),
+    // The surveyor an open remapping is with.
+    p.remap_status === "assigned" && p.remap_surveyor
+      ? createClient().then(async (s) => ((await s.from("profiles").select("full_name").eq("user_id", p.remap_surveyor!).maybeSingle()).data as { full_name: string } | null)?.full_name ?? null)
+      : Promise.resolve(null),
+  ]);
+  const owners = p.parcel_owners.filter((o) => !o.valid_to);
+  const money = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const waiting = demolitions.find((x) => x.status === "pending");
   const underDemolition = demolitions.find((x) => x.status === "approved" && !x.rebuilt_at);
-  const hasMoney = (await parcelsWithMoney([p.id])).has(p.id);
-  // A flats building: its manager and extra areas; new people can be registered from here by staff who add owners.
-  const [extras, ownerDistricts] = p.layout === "flats"
-    ? await Promise.all([buildingExtras(p.id), viewer.can("owners.create") ? listDistricts() : Promise.resolve(null)])
-    : [null, null];
-  // Partial land whose bill no longer matches its size and type (after an edit): Re-bill and Approve.
-  const billCheck = partial && p.layout === "house" && p.building_state !== "demolished"
-    ? (((await (await createClient()).rpc("parcel_bill_check", { p_parcel: p.id })).data ?? null) as BillCheck)
-    : null;
+  const hasMoney = withMoney.has(p.id);
   // Demolished land is an archive: it can be seen, nothing else.
   const archived = p.building_state === "demolished";
+  // Remapping: standing land that is drawn and not a flat (a flat goes with its building), not locked.
+  const remappable = !archived && !p.parent_id && !p.locked_at && p.status !== "archived" && !!p.geom;
+  const remapOpen = p.remap_status === "assigned";
   const canMark =
     (viewer.can("parcels.demolish") || viewer.can("parcels.demolish_approve")) &&
     p.status === "registered" && p.building_state === "standing" && !p.locked_at && !waiting && parent?.layout !== "flats";
@@ -160,6 +173,12 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
               canRequest={!archived && p.site_check_status !== "pending" && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
               canAnswer={!archived && p.site_check_status === "pending" && ((p.site_check_surveyor === viewer.user.id && viewer.can("surveys.update")) || viewer.can("surveys.approve"))}
             />
+            <RemapAssignButtons
+              parcelId={p.id}
+              canAssign={remappable && (viewer.can("parcels.update") || viewer.can("parcels.approve") || viewer.can("surveys.approve"))}
+              assignedTo={remapOpen ? p.remap_surveyor : null}
+              canRemap={remappable && remapOpen && p.remap_surveyor === viewer.user.id && viewer.can("applications.capture_location")}
+            />
             {canMark && <MarkDemolished canApprove={viewer.can("parcels.demolish_approve")} preset={{ id: p.id, pun: p.pun }} size="sm" />}
             <ParcelRowActions
               parcel={p}
@@ -189,6 +208,17 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             p.site_check_note,
             p.site_check_status === "pending" && p.site_check_requested_at && t("siteCheck.since", { date: format.dateTime(new Date(p.site_check_requested_at), { dateStyle: "medium" }) }),
             p.site_check_done_at && t("siteCheck.on", { date: format.dateTime(new Date(p.site_check_done_at), { dateStyle: "medium" }) }),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Alert>
+      )}
+      {remapOpen && (
+        <Alert tone="info" className="mb-5" title={tj("bannerTitle")}>
+          {[
+            remapWith && tj("bannerWith", { name: remapWith }),
+            p.remap_requested_at && tj("bannerSince", { date: format.dateTime(new Date(p.remap_requested_at), { dateStyle: "medium" }) }),
+            p.remap_note,
           ]
             .filter(Boolean)
             .join(" · ")}
@@ -244,7 +274,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </dl>
           </CardContent>
         </Card>
-        <GeometryPreview geometry={p.geom} className="h-72 md:h-full" pin />
+        <GeometryPreview geometry={p.geom} className="h-72 md:h-full" pin pinState={archived ? "demolished" : partial ? "partial" : (owed ?? 0) > 0 ? "owing" : "paid"} />
         {land && (
           <Card className="md:col-span-2">
             <CardHeader>
@@ -374,7 +404,7 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                     </Link>
                     <span className="text-xs text-muted-foreground">
                       {ta(`roles.${o.role}`)}
-                      {o.share_pct != null && ` · ${o.share_pct}%`}
+                      {o.share_pct != null && Number(o.share_pct) < 100 && ` · ${Number(o.share_pct)}%`}
                     </span>
                   </li>
                 ))}
@@ -393,7 +423,13 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
                   <span className="font-medium">{t.has(`events.${h.action}`) ? t(`events.${h.action}`) : h.action}</span>
                   {(h.detail?.transferKind || h.detail?.changeKind) && (
                     <span className="ms-1.5 rounded-sm bg-muted px-1.5 py-0.5 text-xs">
-                      {h.detail.transferKind ? tl(`transferKinds.${h.detail.transferKind}`) : tl(`changeKinds.${h.detail.changeKind}`)}
+                      {h.detail.transferType
+                        ? lang === "so"
+                          ? h.detail.transferType.name_so
+                          : h.detail.transferType.name_en
+                        : h.detail.transferKind
+                          ? tl(`transferKinds.${h.detail.transferKind}`)
+                          : tl(`changeKinds.${h.detail.changeKind}`)}
                     </span>
                   )}
                   {h.detail?.number && <Mono className="ms-1.5 text-xs">{h.detail.number}</Mono>}

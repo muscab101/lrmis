@@ -128,16 +128,16 @@ function selectProblem(table: string, select: string): string | null {
 
 type Filter = { column?: unknown; op?: unknown; value?: unknown };
 
-const PARTIAL = "(draft,surveyed,verified)";
-
 async function findLand(supabase: SupabaseClient, input: Record<string, unknown>): Promise<unknown> {
   const limit = Math.min(Math.max(Number(input.limit) || 25, 1), 100);
-  let q = supabase.rpc("search_parcels", { p_q: String(input.search ?? "").replace(/[%\\]/g, " ").trim(), p_limit: 1000 }, { count: "exact" });
   const stage = String(input.stage ?? "all");
-  if (stage === "partial") q = q.in("status", ["draft", "surveyed", "verified"]);
-  if (stage === "registered" || stage === "paid" || stage === "owing") q = q.not("status", "in", PARTIAL);
-  if (stage === "paid") q = q.lte("balance", 0);
-  if (stage === "owing") q = q.gt("balance", 0);
+  // The stage is chosen inside the search (before its row limit), so the count covers all land, not the newest few.
+  const pStage = stage === "partial" ? "draft" : ["registered", "paid", "owing"].includes(stage) ? stage : null;
+  let q = supabase.rpc(
+    "search_parcels",
+    { p_q: String(input.search ?? "").replace(/[%\\]/g, " ").trim(), p_limit: 5000, p_stage: pStage },
+    { count: "exact" },
+  );
   if (typeof input.district === "string" && input.district.trim()) q = q.ilike("district_en", `%${input.district.trim().replace(/[%\\]/g, "")}%`);
   const { data, error, count } = await q
     .select("pun, house_no, status, owners, district_en, neighbourhood_en, invoice, balance, locked_at, created_at")

@@ -8,6 +8,7 @@ import { ApplicationStatusBadge } from "@/components/applications/status-badge";
 import { AssistantCard } from "@/components/dashboard/assistant-card";
 import { segClass, segGroupClass } from "@/components/shell/tabs";
 import { Gauge, SplitBars, WeekdayBars } from "@/components/dashboard/mini-charts";
+import { LiveRefresh } from "@/components/dashboard/live-refresh";
 import { DeltaPill, StatCard, change } from "@/components/dashboard/stat-card";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Link } from "@/i18n/navigation";
@@ -86,6 +87,9 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{t("greeting", { name: firstName })}</h1>
           <p className="text-muted-foreground mt-0.5 text-sm">{t("periodSubtitle", { range: rangeLabel })}</p>
+          <div className="mt-1.5">
+            <LiveRefresh label={t("updatedAt", { time: format.dateTime(new Date(), { hour: "2-digit", minute: "2-digit", second: "2-digit" }) })} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <nav className={segGroupClass} aria-label={t("periodLabel")}>

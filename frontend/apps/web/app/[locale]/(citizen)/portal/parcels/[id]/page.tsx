@@ -4,7 +4,7 @@ import { Alert, Mono, PageHeader } from "@dhulka/ui/misc";
 import { BadgeCheck, CalendarClock, Eye } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { GeometryPreview } from "@/components/map/geometry-preview";
+import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { Link } from "@/i18n/navigation";
 import { fullHouseNo } from "@/lib/house-no";
 import { citizenOverview } from "@/lib/server/portal";
@@ -77,7 +77,7 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
             </dl>
           </CardContent>
         </Card>
-        {p.geom && <GeometryPreview geometry={p.geom} className="h-64" pin />}
+        {p.geom && <GeometryPreview geometry={p.geom} className="h-64" pin pinState={Number(p.balance) > 0 ? "owing" : "paid"} />}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">{t("bills")}</CardTitle>

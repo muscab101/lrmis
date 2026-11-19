@@ -24,6 +24,8 @@ interface AppShellProps {
   permissions: string[];
   user: { id: string; name: string; email: string | null; photo: string | null };
   env: "development" | "staging" | "production";
+  /** Staff activity recording is on (Settings: security.staff_recording). */
+  recording: boolean;
   /** The user's name while a super admin is testing this account. */
   testingAs?: string | null;
   children: ReactNode;
@@ -31,7 +33,7 @@ interface AppShellProps {
 
 const COLLAPSE_KEY = "dhulka.sidebar.collapsed";
 
-export function AppShell({ permissions, user, env, testingAs, children }: AppShellProps) {
+export function AppShell({ permissions, user, env, testingAs, recording, children }: AppShellProps) {
   const groups = useMemo(() => {
     const allowed = new Set(permissions);
     return visibleNav((p) => allowed.has(p));
@@ -93,7 +95,7 @@ export function AppShell({ permissions, user, env, testingAs, children }: AppShe
             <EnvBadge env={env} />
           </div>
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-            <WorkRecorder userId={user.id} />
+            {recording && <WorkRecorder userId={user.id} />}
             <LocaleSwitch />
             <ThemeToggle />
             <NotificationsBell userId={user.id} />

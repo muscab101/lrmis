@@ -209,3 +209,26 @@ export const updateSurveyDetailsAction = defineAction(
     return null;
   },
 );
+
+/** Surveyors who can take this survey (in its district), fewest open tasks first. */
+export const surveyCandidatesAction = defineAction("surveys.candidates", z.object({ applicationId: z.uuid() }), async ({ applicationId }, ctx) =>
+  unwrap(await ctx.supabase.rpc("survey_candidates", { p_application_id: applicationId }), "survey candidates") as {
+    user_id: string;
+    full_name: string;
+    open_tasks: number;
+  }[],
+);
+
+/** Give a survey to another surveyor (and optionally a new due date). */
+export const reassignSurveyAction = defineAction(
+  "surveys.reassign",
+  z.object({ applicationId: z.uuid(), surveyorId: z.uuid("validation.required"), due: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/).default("") }),
+  async (v, ctx) => {
+    const id = unwrap(
+      await ctx.supabase.rpc("survey_assign", { p_application_id: v.applicationId, p_surveyor_id: v.surveyorId, p_due: v.due || null }),
+      "reassign survey",
+    ) as string;
+    revalidatePath("/[locale]/surveys", "layout");
+    return { id };
+  },
+);

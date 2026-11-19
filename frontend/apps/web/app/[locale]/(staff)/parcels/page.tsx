@@ -11,7 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { PARCEL_TABS, parcelStageCounts, REGISTERED_SPLITS, searchParcels } from "@/lib/server/parcels";
 import { fullHouseNo } from "@/lib/house-no";
-import { segClass, segGroupClass, TabCount } from "@/components/shell/tabs";
+import { NativeSelect } from "@dhulka/ui/form-controls";
+import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
 import { ParcelsTabs } from "@/components/shell/section-tabs";
 
 export async function generateMetadata() {
@@ -40,6 +41,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
   const can = { update: viewer.can("parcels.update"), lock: viewer.can("parcels.lock") };
   // Delete: partial land with parcels.delete; registered (real) land only with parcels.delete_registered.
   const canDelete = (status: string) => (partial(status) ? viewer.can("parcels.delete") : viewer.can("parcels.delete_registered"));
+  const canRegister = viewer.can("parcels.approve");
   const showInvoices = viewer.can("invoices.view");
 
   return (
@@ -60,35 +62,29 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
             )}
           </p>
         )}
-        <form className="flex flex-wrap items-center gap-3 border-b p-3" role="search">
+        <AutoSubmitForm className="flex flex-wrap items-center gap-3 border-b p-3">
           <input type="hidden" name="stage" value={stage} />
-          {stage === "registered" && split !== "all" && <input type="hidden" name="pay" value={split} />}
           {nbhdId && <input type="hidden" name="nbhd" value={nbhdId} />}
           {nbhdId && (
             <Link href={`/parcels?stage=${stage}`} className="text-muted-foreground text-xs underline">
               {t("clearNeighbourhood")}
             </Link>
           )}
-          <Input name="q" defaultValue={q} placeholder={t("searchPlaceholderMore")} aria-label={t("searchPlaceholderMore")} className="max-w-md" />
-          {/* Registered land: Paid / Not paid / Demolished, on the search row's right. */}
-          <span className="ms-auto flex flex-wrap items-center gap-3">
-            {stage === "registered" && (
-              <span className={segGroupClass} role="group" aria-label={t("paySplit")}>
+          <Input name="q" defaultValue={q} placeholder={t("searchPlaceholderMore")} aria-label={t("searchPlaceholderMore")} className="max-w-xs" />
+          {/* Registered land: Any type / Paid / Not paid / Demolished, next to the search (as on Owners). */}
+          {stage === "registered" && (
+            <div className="w-44">
+              <NativeSelect name="pay" defaultValue={split === "all" ? "" : split} aria-label={t("paySplit")}>
                 {REGISTERED_SPLITS.map((k) => (
-                  <Link
-                    key={k}
-                    href={`/parcels?${new URLSearchParams({ stage: "registered", ...(k !== "all" ? { pay: k } : {}), ...(q ? { q } : {}), ...(nbhdId ? { nbhd: nbhdId } : {}) })}`}
-                    aria-current={split === k ? "page" : undefined}
-                    className={segClass(split === k)}
-                  >
-                    {t(`split_${k}`)} <TabCount n={k === "all" ? counts.registered : counts[k]} />
-                  </Link>
+                  <option key={k} value={k === "all" ? "" : k}>
+                    {k === "all" ? t("split_all") : `${t(`split_${k}`)} (${format.number(counts[k])})`}
+                  </option>
                 ))}
-              </span>
-            )}
-            <span className="text-muted-foreground text-xs">{t("count", { count: rows.length })}</span>
-          </span>
-        </form>
+              </NativeSelect>
+            </div>
+          )}
+          <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: rows.length })}</span>
+        </AutoSubmitForm>
         {rows.length === 0 ? (
           <EmptyState
             icon={<MapPinned />}
@@ -164,7 +160,7 @@ export default async function ParcelsPage({ params, searchParams }: { params: Pr
                     {/* Partial land: View, Update, Delete, and Move to registered once it has an owner; locking is on its own page. Registered land can't be deleted once money was received, and a registered flat goes with its building. */}
                     <ParcelRowActions
                       parcel={p}
-                      can={p.building_state === "demolished" ? { update: false, lock: false } : partial(p.status) ? { update: can.update, lock: false, delete: canDelete(p.status) } : { ...can, delete: !p.parent_id && !p.has_money && canDelete(p.status) }}
+                      can={p.building_state === "demolished" ? { update: false, lock: false } : partial(p.status) ? { update: can.update, lock: false, delete: canDelete(p.status), register: canRegister && !!p.owners } : { ...can, delete: !p.parent_id && !p.has_money && canDelete(p.status) }}
                     />
                   </TableCell>
                 </TableRow>

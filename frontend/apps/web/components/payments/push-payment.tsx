@@ -11,9 +11,9 @@ import { pushPaymentAction, pushPaymentStatusAction } from "@/app/[locale]/(staf
 import { useErrorMessage } from "@/lib/client/errors";
 
 /**
- * Cashier: "Push payment", for a bill whose money went wrong (a payment reversed or not approved, or an online payment that
- * failed). One tap asks for the bill's amount on the payer's phone (the phone on the form); they approve it with their
- * PIN. The result shows under the button.
+ * Cashier: "Send payment request" for mobile money (EVC Plus, ZAAD, eDahab, Sahal). One tap asks for the bill's amount on
+ * the payer's phone (the phone on the form); they approve it with their PIN, and the payment and receipt are recorded
+ * when the provider confirms, like an owner paying online. The result shows under the button.
  */
 export function PushPayment({
   billId,
@@ -78,7 +78,7 @@ export function PushPayment({
         <Smartphone aria-hidden />
         {t("button")}
       </Button>
-      {!allowed && !waiting && <p className="text-muted-foreground text-xs">{t("onlyAfterProblem")}</p>}
+
       {waiting && (
         <p className={`text-xs ${result ? (result.ok ? "text-status-approved" : "text-status-rejected") : "text-muted-foreground"}`}>
           {result ? result.text : `${waiting.text} ${t("waiting")}`}

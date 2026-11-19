@@ -122,7 +122,7 @@ export async function SurveyFileCards({
                   </div>
                   <div className="text-muted-foreground text-xs">
                     {[
-                      `${ta(`roles.${role}`)}${share_pct ? ` · ${share_pct}%` : ""}`,
+                      `${ta(`roles.${role}`)}${share_pct && Number(share_pct) < 100 ? ` · ${Number(share_pct)}%` : ""}`,
                       party!.mother_name && `${to("motherName")}: ${party!.mother_name}`,
                     ]
                       .filter(Boolean)

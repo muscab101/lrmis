@@ -610,3 +610,54 @@ export const buildingAreaRemoveAction = defineAction("parcels.building_area_remo
   revalidatePath("/[locale]/apartments", "layout");
   return null;
 });
+
+const polygon = z.object({
+  type: z.literal("Polygon"),
+  coordinates: z.array(z.array(z.tuple([z.number(), z.number()])).min(4)).min(1),
+});
+
+/** Remap: put land already in the system where it really is on the map (the drawing only; size and bills stay). */
+export const remapParcelAction = defineAction(
+  "parcels.remap",
+  z.object({ id: z.uuid(), geom: polygon, reason }),
+  async ({ id, geom, reason: why }, ctx) => {
+    let out: { drawn_m2: number; recorded_m2: number; moved_m: number };
+    try {
+      out = unwrap(await ctx.supabase.rpc("parcel_remap", { p_id: id, p_geom: geom, p_reason: why }), "remap") as typeof out;
+    } catch (e) {
+      reasonError(e);
+    }
+    refresh();
+    revalidatePath("/[locale]/map", "page");
+    revalidatePath("/[locale]/surveys", "layout");
+    revalidatePath("/[locale]/incomplete", "page");
+    return out;
+  },
+);
+
+/** Surveyors who can remap this land (its district, they capture locations), least busy first. */
+export const remapCandidatesAction = defineAction("parcels.remap_candidates", z.object({ id: z.uuid() }), async ({ id }, ctx) =>
+  (unwrap(await ctx.supabase.rpc("parcel_remap_candidates", { p_id: id }), "remap candidates") as { user_id: string; full_name: string; open_remaps: number }[]).map(
+    (s) => ({ ...s, open_remaps: Number(s.open_remaps) }),
+  ),
+);
+
+/** Give the remapping of this land to a surveyor; it shows on their Surveys page under Remapping. */
+export const assignRemapAction = defineAction(
+  "parcels.remap_assign",
+  z.object({ id: z.uuid(), surveyorId: z.uuid("validation.surveyor"), note: text(400) }),
+  async ({ id, surveyorId, note }, ctx) => {
+    unwrap(await ctx.supabase.rpc("parcel_remap_assign", { p_id: id, p_surveyor: surveyorId, p_note: note || null }), "assign remap");
+    refresh();
+    revalidatePath("/[locale]/surveys", "layout");
+    return null;
+  },
+);
+
+/** Call the remapping off. */
+export const cancelRemapAction = defineAction("parcels.remap_cancel", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("parcel_remap_cancel", { p_id: id }), "cancel remap");
+  refresh();
+  revalidatePath("/[locale]/surveys", "layout");
+  return null;
+});

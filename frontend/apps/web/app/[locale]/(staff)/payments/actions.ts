@@ -377,9 +377,6 @@ export const pushPaymentAction = defineAction(
   }),
   async (input, ctx) => {
     const v = { ...input, phone: input.phone.replace(/[\s()-]/g, "") };
-    // Only a bill whose money went wrong (reversed, not approved, or a failed online payment) can be pushed.
-    const allowed = unwrap(await ctx.supabase.rpc("invoices_push_allowed", { p_ids: [v.invoiceId] }), "push allowed") as string[];
-    if (!allowed.includes(v.invoiceId)) throw new AppFailure("CONFLICT", { detail: "push_not_needed" });
     const provider = getProvider(v.provider);
     if (!provider || !provider.configured()) throw new AppFailure("VALIDATION", undefined, { provider: ["validation.provider"] });
     let intent: { intent_id: string; amount: number; currency: string; invoice_number: string; pun: string | null };

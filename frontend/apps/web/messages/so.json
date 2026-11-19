@@ -340,7 +340,12 @@
       "colour": "Dooro midab sida #1f45b8.",
       "too_long": "Qoraal ayaa aad u dheer.",
       "no_desk_printer": "Goobta lacag-qabashadaada ama degmadan weli printer ma leh. Mid ku dar bogga Daabacayaasha.",
-      "open_to_decide": "Fur si aad go'aankan u gaarto."
+      "open_to_decide": "Fur si aad go'aankan u gaarto.",
+      "nothing_to_remap": "Halkan dhul dib loo sawiro kama harin.",
+      "not_a_surveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha.",
+      "remap_building": "Guri dabaq ah waxaa lagu sawiraa dhismihiisa: dib u sawir dhismaha.",
+      "remap_not_standing": "Dhul la dumiyay ama kaydsan dib looma sawiri karo.",
+      "remap_not_assigned": "Dhulkan dib-u-sawir furan uma jiro."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -539,7 +544,8 @@
     "account_code": "Isticmaal kood akoon oo 4 god ah.",
     "phone_not_registered": "Lambarkan dhul kuma diiwaangashana LRMIS. Marka hore iska diiwaangeli xafiiska LRMIS ee degmadaada, kadibna halkan ka gal.",
     "pos_district_taken": "Degmadan horey ayay u leedahay miis lacag qaadasho. Degmo kasta hal miis xafiis: beddel kan ay leedahay, ama marka hore dami.",
-    "letters_only": "Isticmaal xarfo kaliya (lambaro ma aha)."
+    "letters_only": "Isticmaal xarfo kaliya (lambaro ma aha).",
+    "remapSurveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -963,7 +969,8 @@
         "runs_open": "Biilasho aan la soo saarin",
         "not_printed": "Shahaado aan weligood la daabicin"
       }
-    }
+    },
+    "updatedAt": "Toos · la cusboonaysiiyay {time}"
   },
   "admin": {
     "users": {
@@ -1700,7 +1707,7 @@
     "kind": "Nooc",
     "zoomTo": "U dhowee",
     "openInLocations": "Ka fur Goobaha",
-    "noBoundaries": "Wali xuduud lama sawirin. Ka soo geli Goobaha → Xuduud.",
+    "noBoundaries": "Weli xad lama sawirin. Riix badhanka qalinka ee dhanka midig si aad u sawirto xadka degmada.",
     "layer_districts": "Degmooyinka",
     "layer_sections": "Qaybaha",
     "layer_sectors": "Kaabaha",
@@ -1741,11 +1748,35 @@
     "account": "Lambarka akoonka",
     "status": "Xaalad",
     "pinPaid": "Guriga wuu bixiyay",
-    "pinOwing": "Guriga biil baa lagu leeyahay",
+    "pinOwing": "Guri biil lagu leeyahay, ama aan weli la diiwaangelin",
     "bills": "Biilasha",
     "billsPaid": "La bixiyay",
     "billsOwing": "Waxaa lagu leeyahay {amount}",
-    "pinPartial": "Weli lama diiwaangelin"
+    "pinPartial": "Weli lama diiwaangelin",
+    "measure": "Cabbir",
+    "measureDistance": "Cabbir masaafo",
+    "measureArea": "Cabbir baaxad",
+    "measureClear": "Tirtir",
+    "measureHint_line": "Khariidadda guji si aad dhibco ugu darto; laba jeer guji si aad u dhammeyso. Dhibic jiid si aad u dhaqaajiso.",
+    "measureHint_area": "Ku wareeg goobta adigoo gujinaya; guji dhibicda koowaad (ama laba jeer guji) si aad u xirto. Dhibic jiid si aad u dhaqaajiso.",
+    "measureHint_edit": "Dhibcaha jiid si aad xadka u dhaqaajiso. Guji dhibicda dhexe ee xariiqda si aad dhibic ugu darto, midig-guji dhibic si aad u tirtirto. Kadib kaydi.",
+    "distance": "Masaafo",
+    "perimeter": "Dhererka xadka",
+    "editBoundary": "Wax ka beddel xadka",
+    "saveBoundary": "Kaydi xadka",
+    "boundarySaved": "{name}: xadka waa la kaydiyay",
+    "editNoBoundary": "Goobtan weli xad looma sameyn. Ku dar Goobaha.",
+    "editFailed": "Xadka lama kaydin karin.",
+    "drawBorder": "Sawir xad",
+    "drawBorderHint": "Dooro degmada (ama mid ka mid ah qaybaheeda), kadib ku wareeg khariidadda adigoo gujinaya. Guji dhibicda koowaad si aad u xirto; waxaad sawiri kartaa in ka badan hal qayb. Dhibcaha jiid si aad u saxdo, kadib kaydi.",
+    "measureHint_draw": "Goobtan weli xad ma leh. Ku wareeg khariidadda adigoo gujinaya; guji dhibicda koowaad si aad u xirto. Kadib dhibcaha jiid si aad u saxdo oo kaydi.",
+    "wholeDistrict": "Degmada oo dhan",
+    "startDrawing": "Bilow sawirka",
+    "choose": "Dooro…",
+    "addPart": "Ku dar qayb",
+    "undo": "Dib u celi",
+    "redo": "Soo celi",
+    "clearAll": "Tirtir dhammaan"
   },
   "locations": {
     "title": "Goobaha",
@@ -2350,6 +2381,7 @@
     "tabs": {
       "open": "Furan",
       "assigned": "La xilsaaray",
+      "remapping": "Dib-u-sawir",
       "in_progress": "Socda",
       "overlap_review": "Isdul-fuul",
       "returned": "La celiyay",
@@ -2491,7 +2523,24 @@
     "noSiteChecksBody": "Codsiyada lagu calaamadeeyey ? halkan ayay ku jiraan ilaa sahamiyuhu qoro booqashada.",
     "requested": "La codsaday",
     "applicant": "Codsade",
-    "note": "Qoraal"
+    "note": "Qoraal",
+    "actionReview": "Dib u eeg sahanka",
+    "actionReassign": "Sii sahamiye kale",
+    "submitRowBody": "Xadka waa la hubinayaa inuusan ku dul fadhiyin mid kale, kadibna waxaa loo dirayaa sarkaalka dhulka.",
+    "reassignTitle": "Sahankan ma siinaysaa sahamiye kale?",
+    "reassignBody": "Sahamiyaha cusub wuxuu helayaa waxa ilaa hadda la kaydiyay, iyo fariin.",
+    "reassigned": "Sahanka waxaa la siiyay sahamiyaha cusub.",
+    "reassignFailed": "Sahamiyayaasha lama soo rarin karin. Mar kale isku day.",
+    "noOtherSurveyor": "Sahamiye kale kama shaqeeyo degmadan.",
+    "chooseSurveyor": "Dooro sahamiye",
+    "surveyorWithTasks": "{name} ({count, plural, =0 {hawl furan ma leh} one {# hawl furan} other {# hawlood oo furan}})",
+    "remapEmptyTitle": "Wax dib loo sawiro ma jiro",
+    "remapEmptyBody": "Dhulka sahamiye loo diray si dib loogu sawiro halkan ayuu ka muuqdaa. Ka dir bogga dhulka adigoo isticmaalaya U dir dib-u-sawir.",
+    "remapGuessed": "Qiyaas lagu dhigay",
+    "remapNow": "Dib u sawir hadda",
+    "remapOpen": "Fur",
+    "remapAllJobs": "← Dib-u-sawirka oo dhan",
+    "remapLeft": "{count, plural, one {# dhul dib loo sawirayo} other {# dhul dib loo sawirayo}}"
   },
   "parcels": {
     "title": "Dhulal",
@@ -2686,7 +2735,12 @@
       "managerIsOwner": "Milkiilaha aad gelisay waa maamulaha dhismaha: isaga ayaa bixinaya inta dhulka ka hartay.",
       "flatsSummary": "Dhulka {land} · guryaha {flats} · inta hartay {rest}, waxaa bixinaya maamulaha qiimaha dhulka bannaan.",
       "floorBase": "Dabaqa hoose: qiimaha Apartment ee m²-kiiba.",
-      "floorUpper": "Dabaqa {floor}: qiimaha Upper Floors ee m²-kiiba."
+      "floorUpper": "Dabaqa {floor}: qiimaha Upper Floors ee m²-kiiba.",
+      "flatWidth": "Ballac (m)",
+      "flatLength": "Dherer (m)",
+      "plotM2": "Dhulka",
+      "flatsM2": "Guryaha",
+      "restM2": "Inta hartay (maamulaha ayaa bixiya)"
     },
     "fieldLand": {
       "layout": "Nooca dhulka",
@@ -2757,7 +2811,7 @@
     "demolishedLabel": "La dumiyay",
     "demolishedHint": "Dhul gurigiisii la dumiyay. Waxaa loo hayaa kayd ahaan, waana la arki karaa oo keliya.",
     "demolishedOpenArchive": "Fur kaydka oo dhan",
-    "split_all": "Dhammaan",
+    "split_all": "Nooc kasta",
     "split_paid": "La bixiyay",
     "split_owing": "Aan la bixin",
     "paySplit": "Biilasha",
@@ -2814,6 +2868,54 @@
         "playground": "Garoon ciyaareed",
         "garden": "Beer"
       }
+    },
+    "actionRegister": "U wareeji diiwaangashan",
+    "registerTitle": "Ma u wareejinaysaa {pun} diiwaangashan?",
+    "registerBody": "Dhulku hadda wuxuu helayaa PUN iyo lambarka akoonka, milkiilayaashiisa waa la diiwaangelinayaa, wuxuuna u guurayaa qaybta Diiwaangashan. Biilashiisu sidooda ayay ahaanayaan.",
+    "registeredDone": "Waa loo wareejiyay diiwaangashan",
+    "actionRemap": "Dib u sawir",
+    "remap": {
+      "title": "Dib ugu sawir khariidadda",
+      "help": "Qaabka oranjada ahi waa nuqul dhulka sida uu hadda yahay (buluug). U jiid meesha dhulku dhab ahaan yaallo oo geesaha ku hagaaji, ama dib u sawir. Sawirka kaliya ayaa isbeddelaya.",
+      "moveCopy": "Dhaqaaji qaabka",
+      "drawNew": "Dib u sawir",
+      "startAgain": "Ka bilow mar kale",
+      "guessTitle": "Dhulkan khariidadda waxaa lagu dhigay qiyaas",
+      "guessBody": "Waxaa la keenay goob la'aan, waxaana la dhigay meel u dhow qaybtiisa. Ka hel dhulka dhabta ah khariidadda dayax-gacmeedka oo qaabka halkaas u dhaqaaji. Kaydintu waxay sidoo kale xaqiijinaysaa hubinta goobta.",
+      "recorded": "Cabbirka diiwaanka",
+      "drawn": "Waxa khariidadda lagu sawiray",
+      "sizeStays": "Cabbirka diiwaanka iyo biilasha sidooda ayay ahaanayaan. Si aad cabbirka u beddesho, isticmaal Sax xuduudda.",
+      "reason": "Sababta",
+      "reasonHint": "Tusaale: la dhigay dhulka dhabta ah kadib booqashada goobta",
+      "save": "Kaydi goobta cusub",
+      "saved": "Dhulka dib ayaa loo sawiray ({moved} m ayuu dhaqaaqay)",
+      "myLocation": "Goobtayda",
+      "moveHere": "Qaabka halkan keen",
+      "accuracy": "GPS-ku waa qiyaas {m} m",
+      "noGps": "Qalabkani ma wadaagi karo goobtiisa.",
+      "gpsDenied": "Goobta waa la xannibay. U oggolow boggan browser-ka, kadibna isku day mar kale.",
+      "gpsFailed": "Goobtaada lama helin. Bannaanka u bax ama isku day mar kale."
+    },
+    "remapJob": {
+      "assign": "U dir dib-u-sawir",
+      "reassign": "Beddel sahamiyaha",
+      "cancel": "Jooji dib-u-sawirka",
+      "remapNow": "Dib u sawir hadda",
+      "assignTitle": "Dhulkan ma u dirtaa sahamiye si uu dib ugu sawiro?",
+      "assignBody": "Sahamiyuhu wuxuu ku arkayaa bogga Sahaminta, qaybta Dib-u-sawir, wuu tagayaa dhulka wuxuuna khariidadda ku dhigayaa meesha uu runtii yaal.",
+      "surveyor": "Sahamiye",
+      "choose": "Dooro sahamiye",
+      "loading": "Sahamiyayaasha waa la soo rarayaa…",
+      "noSurveyors": "Degmadan ma jiro sahamiye qaada goobaha.",
+      "openJobs": "{count, plural, =0 {bannaan} one {# dib-u-sawir} other {# dib-u-sawir}}",
+      "note": "Qoraal sahamiyaha (ikhtiyaari)",
+      "assigned": "Dib-u-sawirka waxaa la siiyay sahamiyaha",
+      "cancelTitle": "Ma joojinaysaa dib-u-sawirka?",
+      "cancelBody": "Waa laga saarayaa liiska sahamiyaha. Dhulku khariidadda meeshiisa ayuu ku sii jirayaa.",
+      "cancelled": "Dib-u-sawirka waa la joojiyay",
+      "bannerTitle": "Wuxuu sugayaa dib-u-sawir",
+      "bannerWith": "Waxaa haya {name}",
+      "bannerSince": "tan iyo {date}"
     }
   },
   "notices": {
@@ -3661,7 +3763,7 @@
     "takeAgain": "Haa, mar kale qaado",
     "dontTake": "Ha qaadin",
     "push": {
-      "button": "Codsi lacag-bixin",
+      "button": "Dir codsi lacag bixin",
       "sent": "Codsi {amount} ah ayaa loo diray {phone}.",
       "waiting": "Waxaa la sugayaa in bixiyuhu ku ansixiyo taleefankiisa…",
       "paid": "Waa la bixiyay. Rasiid {receipt}.",
@@ -3672,7 +3774,9 @@
       "simulateNo": "Ku tijaabi diidmo (test)",
       "notConnected": "Lacagta mobilka weli lama xirin",
       "needPhone": "Marka hore geli taleefanka bixiyaha.",
-      "onlyAfterProblem": "Kaliya biil lacag-bixintiisa dib loo celiyay, aan la ansixin, ama online ku guul-darraysatay."
+      "onlyAfterProblem": "Kaliya biil lacag-bixintiisa dib loo celiyay, aan la ansixin, ama online ku guul-darraysatay.",
+      "typeReference": "Horey ma u bixiyay? Qor tixraaca",
+      "sendInstead": "Taa beddelkeed dir codsi lacag bixin"
     },
     "partialPaysTitle": "Dhulkan weli lama diiwaangelin",
     "partialPaysBody": "Biilashiisa hadda waa la bixin karaa. Marka dhammaan la bixiyo, dhulka iyo milkiilayaashiisa si toos ah ayaa loo diiwaangelinayaa.",
@@ -5020,6 +5124,55 @@
       "certificate_ready": "Shahaadadu waa diyaar",
       "payment_receipt": "Rasiidka lacagta",
       "application_status": "Warka codsiga"
+    },
+    "detailLabel": "Inta la muujinayo",
+    "detailLess": "Xog kooban",
+    "detailMore": "Xog badan",
+    "summary": {
+      "subtitle": "Tirooyinka muhiimka ah ee muddada: lacagta soo gashay iyo tan baxday, biilasha, dhulka iyo milkiilayaasha.",
+      "money": "Lacag",
+      "moneyIn": "Lacagta soo gashay",
+      "payments": "{n} lacag-bixin ayaa la helay",
+      "moneyOut": "Lacagta baxday",
+      "moneyOutSub": "Kharashyada buugaagta",
+      "left": "Inta hartay",
+      "leftSub": "Lacagta soo gashay oo laga jaray tan baxday",
+      "billed": "Biilasha la sameeyay",
+      "billsIssued": "{n} biil · {paid} la bixiyay",
+      "owed": "Lacagta lagu leeyahay",
+      "outstanding": "Haraaga",
+      "outstandingSub": "Dhammaan biilasha aan la bixin, ilaa maanta",
+      "overdue": "Waqtigii ka dhaafay",
+      "overdueSub": "Aan la bixin kadib taariikhda bixinta",
+      "land": "Dhulka",
+      "registered": "La diiwaangeliyay",
+      "registeredNew": "{n} ayaa la diiwaangeliyay muddadan",
+      "partial": "Weli lama diiwaangelin",
+      "partialSub": "Diiwaangelin qayb ah",
+      "toCheck": "Goobta in la hubiyo",
+      "toCheckSub": "Sugaya hubinta sahamiyaha",
+      "demolished": "La dumiyay",
+      "people": "Milkiilayaasha iyo dukumiintiyada",
+      "owners": "Milkiilayaasha dhulka leh",
+      "ownersNew": "{n} ayaa lagu daray muddadan",
+      "certificates": "Shahaadooyinka la bixiyay",
+      "transfers": "Wareejimaha la oggolaaday",
+      "inPeriod": "Muddadan",
+      "note": "Lacagta soo gashay waa inta la helay muddada; lacagta baxday waa kharashyada lagu qoray Xisaabaadka. Dhulka iyo milkiilayaasha waxaa loo tiriyaa sida ay maanta yihiin. Riix Xog badan si aad u aragto warbixinnada oo dhan, degmo, miis iyo maalin.",
+      "show": "Muuji",
+      "showGroup": "Guud ahaan",
+      "moneyOutDistrictOnly": "Kharashyada waxaa lagu hayaa degmo ahaan",
+      "topics": {
+        "all": "Tirooyinka muhiimka ah",
+        "money": "Lacag",
+        "owed": "Lacagta lagu leeyahay",
+        "land": "Dhulka",
+        "people": "Milkiilayaasha iyo dukumiintiyada"
+      },
+      "lines": "Safafka warbixinta",
+      "linesSub": "Taariikhaha iyo goobta la doortay",
+      "listOnly": "Warbixintan waa liis aan wax la isku daro lahayn. Fur warbixinta oo dhan si aad u akhrido.",
+      "openFull": "Fur warbixinta oo dhan →"
     }
   },
   "messages": {
@@ -5300,7 +5453,7 @@
     "tab_zones": "Aagagga la xilsaaray",
     "body_zones": "Dooro xaafad, eeg awoodeeda oo u dhiib sahamiye. Sahamiyuhu wuxuu ka helayaa Sahannada → Aagagga, wuxuuna ku darayaa guri kasta.",
     "assign": {
-      "title": "Aag u xilsaar sahamiye",
+      "title": "U dir sahamiye aag ama dib-u-sawir",
       "district": "Degmo",
       "section": "Qayb",
       "sector": "Waax",
@@ -5319,7 +5472,18 @@
       "note": "Qoraal sahamiyaha",
       "submit": "Xilsaar aagga",
       "assigned": "Aagga waa la xilsaaray. Sahamiyaha waa la ogeysiiyay.",
-      "noCapacity": "Marka hore ku dhig awoodda xaafaddan gudaha Goobaha."
+      "noCapacity": "Marka hore ku dhig awoodda xaafaddan gudaha Goobaha.",
+      "job": "Shaqada",
+      "jobZone": "Aag sahan",
+      "jobRemap": "Dib-u-sawir",
+      "remapHelp": "Dhulka xaafadda ee horey nidaamka ugu jiray waxaa loo dirayaa hal sahamiye, oo khariidadda ku dhigaya dhul kasta meesha uu runtii yaal. Wuxuu ka muuqanayaa bogga Sahaminta, qaybta Dib-u-sawir.",
+      "remapTotal": "Dhul dib loo sawirayo",
+      "remapGuessed": "Qiyaas lagu dhigay",
+      "remapAlready": "Horey sahamiye u haya",
+      "remapOnlyGuessed": "Kaliya dhulka qiyaasta lagu dhigay",
+      "remapNothing": "Halkan ma jiro dhul dib loo sawiri karo (ma jiro, ama dhammaan sahamiye ayaa haya, waa xiran yihiin ama waa la dumiyay).",
+      "remapSubmit": "{count, plural, =0 {U dir dib-u-sawir} one {U dir dib-u-sawir (# dhul)} other {U dir dib-u-sawir (# dhul)}}",
+      "remapAssigned": "{count, plural, one {# dhul ayaa sahamiyaha loo diray.} other {# dhul ayaa sahamiyaha loo diray.}} Waa la ogeysiiyay."
     },
     "zones": {
       "empty": "Aag lama xilsaarin",
@@ -5373,7 +5537,26 @@
       "backToZone": "Ku noqo aagga {zone}"
     },
     "assignZone": "Xilsaar aag",
-    "subtitle": "Sahamiyeyaasha u qoondee xaafadaha, la soco aagaggooda, oo arag halka dhul weli sugayo."
+    "assignRemap": "U dir dib-u-sawir",
+    "subtitle": "Sahamiyeyaasha u qoondee xaafadaha, la soco aagaggooda, oo arag halka dhul weli sugayo.",
+    "remapZones": {
+      "empty": "Dib-u-sawir lama bixin",
+      "emptyBody": "Xaafadaha ama dhulka sahamiye loo diray si dib loogu sawiro halkan ayay ka muuqdaan iyo horumarkooda. Ku bixi sanduuqa sare (Dib-u-sawir).",
+      "neighbourhood": "Xaafad",
+      "surveyor": "Sahamiye",
+      "progress": "Dhul dib loo sawiray",
+      "left": "Wali dib loo sawirayo",
+      "guessed": "Qiyaas lagu dhigay",
+      "assigned": "La diray",
+      "actions": "Ficillo",
+      "you": "Adiga",
+      "count": "{done} ka mid ah {total}",
+      "finished": "Dhammaaday",
+      "open": "Fur",
+      "showDone": "Sidoo kale muuji dib-u-sawirka dhammaaday",
+      "hideDone": "Muuji dib-u-sawirka furan oo keliya",
+      "remapNow": "Dib u sawir hadda"
+    }
   },
   "idCards": {
     "title": "Kaararka aqoonsiga",

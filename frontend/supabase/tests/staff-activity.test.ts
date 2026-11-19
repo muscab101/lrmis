@@ -21,6 +21,20 @@ beforeAll(async () => {
   const hodan = await scalar<string>(db, `insert into public.districts (region_id, code, name_so, name_en) values ($1,'HDN','Hodan','Hodan') returning id`, [region]);
   amina = await createStaff(db, admin, "amina@gmail.com", ["print_officer"], [hodan]);
   bashir = await createStaff(db, admin, "bashir@gmail.com", ["cashier"], [hodan]);
+  // Recording is switched off on the live system (0259); these checks are about recording when it is on.
+  await db.query(`update public.settings set value = 'true'::jsonb where key = 'security.staff_recording'`);
+});
+
+describe("recording switched off (0259)", () => {
+  it("keeps nothing, and the staff screen is told not to record", async () => {
+    await db.query(`update public.settings set value = 'false'::jsonb where key = 'security.staff_recording'`);
+    const OFF = "44444444-4444-4444-8444-444444444444";
+    expect(await asUser(db, amina, (tx) => scalar<boolean>(tx, `select public.recording_save($1, 0, null, 0, '[]')`, [OFF]))).toBe(false);
+    expect(await scalar<number>(db, `select count(*)::int from public.staff_recordings where id = $1`, [OFF])).toBe(0);
+    expect(await asUser(db, amina, (tx) => scalar<boolean>(tx, `select public.staff_recording_on()`))).toBe(false);
+    await db.query(`update public.settings set value = 'true'::jsonb where key = 'security.staff_recording'`);
+    expect(await asUser(db, amina, (tx) => scalar<boolean>(tx, `select public.staff_recording_on()`))).toBe(true);
+  });
 });
 
 describe("test login", () => {

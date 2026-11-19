@@ -14,7 +14,7 @@ import { polygon as turfPolygon } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
 import { length as turfLength } from "@turf/length";
 import { ArrowRight, Camera, Check, Footprints, Layers, Loader2, MousePointer2, PenLine, Trash2, Undo2, Upload } from "lucide-react";
-import type { Map as MlMap } from "maplibre-gl";
+import maplibregl, { type Map as MlMap } from "maplibre-gl";
 import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode, type GeoJSONStoreFeatures } from "terra-draw";
@@ -28,6 +28,7 @@ import {
 } from "@/app/[locale]/(staff)/surveys/actions";
 import { FormError } from "@/components/forms/form-error";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
+import { pinElement } from "@/components/map/geometry-preview";
 import { useRouter } from "@/i18n/navigation";
 import { useValidationMessage } from "@/lib/client/errors";
 import type { SurveyDetail } from "@/lib/server/surveys";
@@ -222,19 +223,29 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
     }
   }, [polygon]);
 
-  // Frame the work: the drawn parcel, else the neighbourhood, else the pin (once the map has loaded).
+  // Frame the work: the drawn parcel, else the neighbourhood, else the pin (once the map has loaded). A pin marks the
+  // survey's place — the application's pin, else the middle of the drawn land — and the map is centred on it.
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
+    let marker: maplibregl.Marker | null = null;
     const frame = () => {
       if (cancelled) return;
+      const map = mapRef.current?.getMap();
+      const ring = survey.geom?.coordinates[0];
+      const point: [number, number] | null =
+        survey.application?.pin?.coordinates ??
+        (ring ? [(Math.min(...ring.map((c) => c[0]!)) + Math.max(...ring.map((c) => c[0]!))) / 2, (Math.min(...ring.map((c) => c[1]!)) + Math.max(...ring.map((c) => c[1]!))) / 2] : null);
+      if (map && point) marker = new maplibregl.Marker({ element: pinElement("partial"), anchor: "bottom" }).setLngLat(point).addTo(map);
       if (outline) mapRef.current?.setHighlight(outline.geometry);
       if (survey.geom) {
         const ring = survey.geom.coordinates[0]!;
         const xs = ring.map((c) => c[0]!);
         const ys = ring.map((c) => c[1]!);
         mapRef.current?.fitBounds([Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], 20);
-      } else if (survey.application?.pin) mapRef.current?.flyTo(survey.application.pin.coordinates, 18);
+        // The drawn land fills the view with the pin in the middle.
+        if (point && map) map.once("moveend", () => !cancelled && map.easeTo({ center: point, duration: 300 }));
+      } else if (point) mapRef.current?.flyTo(point, 18);
       else if (outline) mapRef.current?.fitBounds(outline.bbox, 18);
     };
     const wait = () => {
@@ -251,6 +262,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      marker?.remove();
     };
   }, [outline, survey.geom, survey.application?.pin]);
 

@@ -53,6 +53,10 @@ const nextConfig: NextConfig = {
     // Document uploads go through server actions (10 MB files + form overhead).
     serverActions: { bodySizeLimit: "11mb" },
   },
+  // Browsers ask for /favicon.ico on every page: give them the app's icon.
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon.png" }];
+  },
   async headers() {
     return [
       {

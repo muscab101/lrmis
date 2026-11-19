@@ -85,10 +85,7 @@ export default async function OwnersPage({ params, searchParams }: { params: Pro
                     <Link href={`/owners/${p.id}`} className="hover:text-primary font-medium">
                       {p.full_name}
                     </Link>
-                    <div className="text-muted-foreground text-xs">
-                      {[p.mother_name, p.kind === "organisation" ? t("kind_organisation") : null].filter(Boolean).join(" · ")}
-                      <span className="sm:hidden">{p.phone ? ` ${p.phone}` : ""}</span>
-                    </div>
+                    {p.phone && <div className="text-muted-foreground text-xs sm:hidden">{p.phone}</div>}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {p.phone ? (

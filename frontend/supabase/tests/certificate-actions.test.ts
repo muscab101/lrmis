@@ -100,7 +100,7 @@ describe("certificate actions", () => {
 
     const changes = await asUser(db, registrar, (tx) => scalar<{ field: string; before: string; after: string }[]>(tx, `select public.document_changes($1)`, [cert]));
     expect(changes.map((c) => c.field).sort()).toEqual(["area_m2", "owners"]);
-    expect(changes.find((c) => c.field === "owners")!.after).toBe("Faadumo Cali (100%)");
+    expect(changes.find((c) => c.field === "owners")!.after).toBe("Faadumo Cali");
 
     const req = await asUser(db, registrar, (tx) => scalar<{ request_id: string }>(tx, `select public.reissue_request($1, 'Owner changed after transfer')`, [cert]));
     expect(await scalar<string>(db, `select kind from public.reprint_requests where id = $1`, [req.request_id])).toBe("correction");

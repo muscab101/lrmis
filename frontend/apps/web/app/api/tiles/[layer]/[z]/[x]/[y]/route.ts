@@ -33,19 +33,20 @@ export async function GET(
       "content-type": "application/json",
     },
     body: JSON.stringify({ p_layer: layer, p_z: zi, p_x: xi, p_y: yi }),
-    next: { revalidate: 60 },
+    // Always read the boundaries fresh, so a border drawn or removed shows on the next load.
+    cache: "no-store",
   });
   if (!res.ok) return new NextResponse(null, { status: 502 });
 
   // PostgREST returns bytea as a JSON string of hex ("\\x1a2b…").
   const hex = (await res.json()) as string | null;
   const body = Buffer.from((hex ?? "").replace(/^\\x/, ""), "hex");
-  if (body.byteLength === 0) return new NextResponse(null, { status: 204, headers: { "cache-control": "public, max-age=60" } });
+  if (body.byteLength === 0) return new NextResponse(null, { status: 204, headers: { "cache-control": "no-cache" } });
   return new NextResponse(body, {
     headers: {
       "content-type": "application/vnd.mapbox-vector-tile",
-      // Short: an edited boundary shows within a minute or two (a long stale window kept old borders for an hour).
-      "cache-control": "public, max-age=60, s-maxage=120, stale-while-revalidate=60",
+      // No keeping: a border drawn or removed on the map shows straight away.
+      "cache-control": "no-cache",
     },
   });
 }

@@ -34,7 +34,7 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
   registrar = await createStaff(db, admin, "registrar@gmail.com", ["registrar"], [hodan]);
-  await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('open_ground','Dhul banaan','Open ground', 1) on conflict (code) do update set amount = 1, active = true`);
+  await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('warehouse','Dhul banaan','Empty Land', 1) on conflict (code) do update set amount = 1, active = true`);
   // A flats building: 20 × 20 m plot, 300 m² footprint → 100 m² open ground at $1 = $100.
   building = await scalar<string>(
     db,

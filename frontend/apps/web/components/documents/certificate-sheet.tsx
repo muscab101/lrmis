@@ -270,7 +270,7 @@ export async function CertificateSheet({
                     : "—"}
                 </td>
                 <td className="py-1.5 text-end">
-                  {o.share_pct != null ? `${Number(o.share_pct)}%` : "—"}
+                  {o.share_pct != null && Number(o.share_pct) < 100 ? `${Number(o.share_pct)}%` : "—"}
                 </td>
               </tr>
             ))}

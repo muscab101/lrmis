@@ -122,17 +122,6 @@ export interface AssessmentRow {
   parcel: { id: string; pun: string | null } | null;
 }
 
-export async function listAssessments(opts: { year: number | null; q: string; status: "issued" | "any" }) {
-  const supabase = await createClient();
-  let req = supabase.from("assessments").select("id, number, year, total, status, created_at, override_note, parcel:parcels(id, pun)");
-  if (opts.year) req = req.eq("year", opts.year);
-  if (opts.status === "issued") req = req.eq("status", "issued");
-  const term = opts.q.replace(/[,()*%\\]/g, " ").trim();
-  if (term) req = req.ilike("number", `%${term}%`);
-  const res = await req.order("created_at", { ascending: false }).limit(100);
-  return unwrap(res, "assessments") as unknown as AssessmentRow[];
-}
-
 export interface ExemptionRow {
   id: string;
   kind: string;

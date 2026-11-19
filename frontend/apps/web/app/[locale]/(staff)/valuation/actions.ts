@@ -194,26 +194,11 @@ export const assessParcelAction = defineAction("valuation.assess", z.object({ pa
   done(unwrap(await ctx.supabase.rpc("assess_parcel", { p_parcel: v.parcelId, p_year: v.year }), "assess") as { assessment_id: string; total: number }),
 );
 
-export const assessNeighbourhoodAction = defineAction(
-  "valuation.assess_neighbourhood",
-  z.object({ neighbourhoodId: z.uuid("validation.required"), year }),
-  async (v, ctx) =>
-    done(unwrap(await ctx.supabase.rpc("assess_neighbourhood", { p_neighbourhood: v.neighbourhoodId, p_year: v.year }), "assess nbhd") as { assessed: number; skipped: number }),
-);
-
 // --- Edit and delete on the Valuation tabs ---------------------------------
 
 /** Delete a grade nobody uses; one used by land or buildings is switched off. */
 export const deleteGradeAction = defineAction("valuation.delete_grade", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
   const result = unwrap(await ctx.supabase.rpc("valuation_delete_grade", { p_id: id }), "delete grade") as "deleted" | "hidden";
   return done({ result });
-});
-
-/** Change a rate no assessment was made with yet. */
-
-/** Delete the live assessment (no invoice, no appeal); the one it replaced is live again. */
-export const deleteAssessmentAction = defineAction("valuation.delete_assessment", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
-  unwrap(await ctx.supabase.rpc("assessment_delete", { p_id: id }), "delete assessment");
-  return done(null);
 });
 

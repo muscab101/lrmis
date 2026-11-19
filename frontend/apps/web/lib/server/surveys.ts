@@ -204,3 +204,41 @@ export async function queryParcelSiteChecks(mine: boolean) {
   const res = await req.order("site_check_requested_at", { ascending: true }).limit(100);
   return unwrap(res, "parcel site checks") as unknown as ParcelSiteCheckRow[];
 }
+
+export interface RemapJobRow {
+  id: string;
+  pun: string | null;
+  house_no: string | null;
+  geom_provisional: boolean;
+  remap_surveyor: string;
+  remap_requested_at: string;
+  remap_note: string | null;
+  district: { name_so: string; name_en: string } | null;
+  neighbourhood: { name_so: string; name_en: string } | null;
+  /** The surveyor's name. */
+  surveyor: string | null;
+}
+
+/** Land given to a surveyor to remap and not remapped yet: the viewer's own, or all of them (survey supervisors). */
+export async function queryRemapJobs(mine: boolean, neighbourhoodId?: string, surveyorId?: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let req = supabase
+    .from("parcels")
+    .select("id, pun, house_no, geom_provisional, remap_surveyor, remap_requested_at, remap_note, district:districts(name_so, name_en), neighbourhood:neighbourhoods(name_so, name_en)")
+    .eq("remap_status", "assigned")
+    .is("deleted_at", null);
+  if (mine) req = req.eq("remap_surveyor", user?.id ?? "");
+  if (neighbourhoodId) req = req.eq("neighbourhood_id", neighbourhoodId);
+  if (surveyorId) req = req.eq("remap_surveyor", surveyorId);
+  const rows = unwrap(await req.order("remap_requested_at", { ascending: true }).limit(200), "remap jobs") as unknown as Omit<RemapJobRow, "surveyor">[];
+  const ids = [...new Set(rows.map((r) => r.remap_surveyor))];
+  const names = new Map<string, string>();
+  if (ids.length) {
+    const { data } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
+    for (const p of (data ?? []) as { user_id: string; full_name: string }[]) names.set(p.user_id, p.full_name);
+  }
+  return rows.map((r) => ({ ...r, surveyor: names.get(r.remap_surveyor) ?? null })) as RemapJobRow[];
+}

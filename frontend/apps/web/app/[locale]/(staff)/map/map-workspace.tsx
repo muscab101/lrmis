@@ -6,15 +6,17 @@ import { Checkbox, NativeSelect } from "@dhulka/ui/form-controls";
 import { cn } from "@dhulka/ui/lib/cn";
 import { Mono } from "@dhulka/ui/misc";
 import type { FilterSpecification, MapGeoJSONFeature } from "maplibre-gl";
-import { Layers, MapPin, MapPinned, X } from "lucide-react";
+import { Layers, MapPin, MapPinned, PencilRuler, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DhulkaMap, type DhulkaMapHandle, type MapView } from "@/components/map/dhulka-map";
-import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_OWING, PIN_PARTIAL, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
+import { DEMOLISHED_COLOUR, districtColourFor, LAYER_MINZOOM, LEGEND, PIN_COLOURS, PIN_OWING, PIN_PAID, type BaseMap, type BoundaryLayer } from "@/components/map/style";
 import { Link } from "@/i18n/navigation";
 import { getGeometryAction, neighbourhoodLandBboxAction, searchNeighbourhoodsAction } from "../locations/actions";
 import { parcelSummaryAction } from "../parcels/actions";
 import { fullHouseNo } from "@/lib/house-no";
+import { HouseCallout } from "./house-callout";
+import { type EditTarget, formatArea, formatLength, MapTools, measureShape } from "./map-tools";
 
 // v2: new defaults (satellite, districts and parcels only) apply once to everyone, then each choice is remembered.
 const PREFS_KEY = "dhulka.map.prefs.v2";
@@ -50,12 +52,20 @@ export function MapWorkspace({
   const mapRef = useRef<DhulkaMapHandle>(null);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [selected, setSelected] = useState<{ layer: string; props: Record<string, unknown> } | null>(null);
+  const [selected, setSelected] = useState<{ layer: string; props: Record<string, unknown>; at?: [number, number] } | null>(null);
   const [cursor, setCursor] = useState<{ lng: number; lat: number } | null>(null);
   const [zoom, setZoom] = useState(initialView?.zoom ?? 12);
   const [search, setSearch] = useState<ComboOption[]>([]);
   const [showParcels, setShowParcels] = useState(true);
   const [buildingFilter, setBuildingFilter] = useState<"all" | "active" | "demolished">("all");
+  // Measuring or editing a boundary: map clicks draw instead of opening details.
+  const [edit, setEdit] = useState<EditTarget | null>(null);
+  const toolActive = useRef(false);
+  const onToolActive = useCallback((on: boolean) => {
+    toolActive.current = on;
+    if (on) setSelected(null);
+  }, []);
+  const endEdit = useCallback(() => setEdit(null), []);
 
   useEffect(() => {
     const m = mapRef.current?.getMap();
@@ -108,10 +118,13 @@ export function MapWorkspace({
   const onFeatureClick = useCallback(
     (f: MapGeoJSONFeature | null, lngLat: { lng: number; lat: number }) => {
       setCursor(lngLat);
+      if (toolActive.current) return;
       const raw = f?.sourceLayer ?? f?.layer.id;
       // A house pin and the parcel shape open the same details.
       const layer = raw === "parcel_pins" ? "parcels" : raw;
-      setSelected(f && layer ? { layer, props: f.properties } : null);
+      // A house's box points at its pin (or where its shape was clicked).
+      const at: [number, number] = f?.geometry.type === "Point" ? (f.geometry.coordinates as [number, number]) : [lngLat.lng, lngLat.lat];
+      setSelected(f && layer ? { layer, props: f.properties, at } : null);
     },
     [],
   );
@@ -162,6 +175,34 @@ export function MapWorkspace({
     };
   }, [parcelId]);
 
+  // The size of a clicked district, section, sector or neighbourhood, worked out from its boundary.
+  const AREA_LEVELS = ["districts", "sections", "sectors", "neighbourhoods"];
+  const areaKey = selected && AREA_LEVELS.includes(selected.layer) ? `${selected.layer}:${String(selected.props.id)}` : null;
+  const [size, setSize] = useState<{ m2: number; km: number } | null | "loading">(null);
+  useEffect(() => {
+    if (!areaKey) return setSize(null);
+    const [level, id] = areaKey.split(":") as ["districts", string];
+    setSize("loading");
+    let live = true;
+    void getGeometryAction({ level, id }).then((r) => live && setSize(r.ok && r.data ? measureShape(r.data.geometry) : null));
+    return () => {
+      live = false;
+    };
+  }, [areaKey]);
+  const selectedColour = (layer: string, p: Record<string, unknown>) =>
+    layer === "districts" ? districtColourFor(String(p.name_so ?? ""), String(p.name_en ?? "")) : LEGEND.find((l) => l.layer === layer)?.swatch ?? "#2563eb";
+
+  // A house's details sit in a box beside its pin, joined by a line in the pin's colour.
+  const houseAt = selected?.layer === "parcels" ? selected.at : undefined;
+  const houseColour = (() => {
+    const p = selected?.props ?? {};
+    if (p.demolished === true || (summary && summary !== "loading" && summary.building_state === "demolished")) return PIN_COLOURS.demolished;
+    if (p.partial === true || ["draft", "surveyed", "verified"].includes(String(p.status ?? ""))) return PIN_COLOURS.partial;
+    const owes = summary && summary !== "loading" ? summary.owed > 0 : p.owing === true;
+    return owes ? PIN_COLOURS.owing : PIN_COLOURS.paid;
+  })();
+  const houseMap = houseAt ? mapRef.current?.getMap() : undefined;
+
   const name = (p: Record<string, unknown>) => String((locale === "so" ? p.name_so : p.name_en) || p.name_so || "");
 
   return (
@@ -199,6 +240,7 @@ export function MapWorkspace({
         <Button variant="outline" size="icon" className="bg-card-solid shadow-sm" onClick={() => setPanelOpen((o) => !o)} aria-expanded={panelOpen} aria-label={t("layers")}>
           <Layers aria-hidden />
         </Button>
+        <MapTools mapRef={mapRef} edit={edit} onEditStart={setEdit} onEditEnd={endEdit} onActiveChange={onToolActive} canDraw={canEditLocations} districts={districts} />
         {panelOpen && (
           <div className="w-64 rounded-md border bg-card-solid p-4 shadow-sm">
             <div className="label-caps mb-2 text-muted-foreground">{t("baseMap")}</div>
@@ -260,10 +302,6 @@ export function MapWorkspace({
                       <Swatch colour={PIN_OWING} kind="dot" />
                       {t("pinOwing")}
                     </li>
-                    <li className="flex items-center gap-2">
-                      <Swatch colour={PIN_PARTIAL} kind="dot" />
-                      {t("pinPartial")}
-                    </li>
                   </ul>
                 </li>
               )}
@@ -280,8 +318,8 @@ export function MapWorkspace({
                       <li key={d.id}>
                         <button
                           type="button"
-                          disabled={!d.has_geom}
-                          onClick={() => void zoomTo("districts", d.id, colour)}
+                          disabled={!d.has_geom && !canEditLocations}
+                          onClick={() => (d.has_geom ? void zoomTo("districts", d.id, colour) : setEdit({ level: "districts", id: d.id, name: name(d), colour }))}
                           className="flex w-full items-center gap-2.5 rounded-sm px-1 py-1 text-start text-sm hover:bg-muted disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent"
                         >
                           <span className="size-3 shrink-0 rounded-sm border" style={{ background: colour, borderColor: colour }} aria-hidden />
@@ -299,8 +337,18 @@ export function MapWorkspace({
       </div>
 
       {/* Selected feature */}
-      {selected && (
-        <aside className="absolute inset-x-3 bottom-12 z-10 rounded-md border bg-card-solid p-4 shadow-sm sm:start-auto sm:end-3 sm:w-80" aria-live="polite">
+      {selected &&
+        ((body: React.ReactNode) =>
+          houseAt && houseMap ? (
+            <HouseCallout map={houseMap} at={houseAt} colour={houseColour}>
+              {body}
+            </HouseCallout>
+          ) : (
+            <aside className="absolute inset-x-3 bottom-12 z-10 rounded-md border bg-card-solid p-4 shadow-sm sm:start-auto sm:end-3 sm:w-80" aria-live="polite">
+              {body}
+            </aside>
+          ))(
+        <>
           <div className="mb-3 flex items-start justify-between gap-2">
             <div>
               <div className="label-caps text-flag">{t(`layer_${selected.layer as BoundaryLayer}`)}</div>
@@ -349,6 +397,30 @@ export function MapWorkspace({
               </>
             )}
           </dl>
+          {areaKey && (
+            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+              <dt className="text-muted-foreground">{t("area")}</dt>
+              <dd className="font-medium tabular-nums">{size === "loading" ? tc("loading") : size ? formatArea(size.m2) : t("noBoundary")}</dd>
+              {size && size !== "loading" && (
+                <>
+                  <dt className="text-muted-foreground">{t("perimeter")}</dt>
+                  <dd className="tabular-nums">{formatLength(size.km)}</dd>
+                </>
+              )}
+            </dl>
+          )}
+          {areaKey && canEditLocations && size && size !== "loading" && (
+            <div className="mt-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setEdit({ level: selected.layer as EditTarget["level"], id: String(selected.props.id), name: name(selected.props), colour: selectedColour(selected.layer, selected.props) })}
+              >
+                <PencilRuler aria-hidden />
+                {t("editBoundary")}
+              </Button>
+            </div>
+          )}
           {selected.layer === "parcels" && (
             <div className="mt-1 space-y-3 text-sm">
               <p>
@@ -445,8 +517,8 @@ export function MapWorkspace({
               )}
             </div>
           )}
-        </aside>
-      )}
+        </>,
+        )}
 
       {/* Coordinates */}
       {cursor && (
@@ -455,7 +527,7 @@ export function MapWorkspace({
         </div>
       )}
 
-      {!extent && (
+      {!extent && !houseAt && (
         <div className="absolute inset-x-3 top-16 z-10 mx-auto max-w-md rounded-md border bg-card-solid px-4 py-3 text-sm shadow-sm">
           {t("noBoundaries")}
         </div>

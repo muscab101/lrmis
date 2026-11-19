@@ -1,0 +1,2 @@
+# The old rows hold owners' names and phone numbers: never commit them. Make them again with convert_dump.py.
+02_legacy_data.sql

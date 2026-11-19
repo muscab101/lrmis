@@ -847,6 +847,60 @@ export interface AccountRow {
   net: number;
 }
 
+/** Reports → "Less data": the period's key figures. */
+export interface ReportSummary {
+  land_registered: number;
+  land_registered_new: number;
+  land_partial: number;
+  land_demolished: number;
+  land_to_check: number;
+  owners: number;
+  owners_new: number;
+  bills_issued: number;
+  billed: number;
+  bills_paid: number;
+  outstanding: number;
+  overdue: number;
+  payments: number;
+  collected: number;
+  certificates: number;
+  transfers: number;
+  /** From the books (report_income_expense), for the same period and place. */
+  income: number;
+  expenses: number;
+  cash_in: number;
+  cash_out: number;
+}
+
+export async function reportSummary(
+  from: string,
+  to: string,
+  place: { district: string | null; section: string | null; sector: string | null; neighbourhood: string | null },
+): Promise<ReportSummary> {
+  const supabase = await createClient();
+  const district = place.district;
+  const [counts, books] = await Promise.all([
+    supabase.rpc("report_summary", {
+      p_from: from,
+      p_to: to,
+      p_district: district,
+      p_section: place.section,
+      p_sector: place.sector,
+      p_neighbourhood: place.neighbourhood,
+    }),
+    supabase.rpc("report_income_expense", { p_from: from, p_to: to, p_district: district }),
+  ]);
+  const rows = unwrap(books, "report") as IncomeRow[];
+  const sum = (k: keyof IncomeRow) => rows.reduce((s, r) => s + Number(r[k]), 0);
+  return {
+    ...(unwrap(counts, "report summary") as Omit<ReportSummary, "income" | "expenses" | "cash_in" | "cash_out">),
+    income: sum("income"),
+    expenses: sum("expenses"),
+    cash_in: sum("cash_in"),
+    cash_out: sum("cash_out"),
+  };
+}
+
 export async function accountTotals(from: string, to: string, client?: SupabaseClient) {
   const supabase = client ?? (await createClient());
   return unwrap(

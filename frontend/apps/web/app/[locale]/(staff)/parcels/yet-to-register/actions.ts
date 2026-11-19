@@ -43,3 +43,38 @@ export const closeZoneAction = defineAction("surveys.zone_close", z.object({ id:
   refresh();
   return null;
 });
+
+/** What a neighbourhood has to remap: all the plots, those placed by guess, those already given out. */
+export const neighbourhoodRemapSummaryAction = defineAction("parcels.remap_summary", z.object({ neighbourhoodId: z.uuid() }), async ({ neighbourhoodId }, ctx) => {
+  const rows = unwrap(await ctx.supabase.rpc("neighbourhood_remap_summary", { p_neighbourhood: neighbourhoodId }), "remap summary") as { total: number; guessed: number; assigned: number }[];
+  const r = rows[0];
+  return { total: Number(r?.total ?? 0), guessed: Number(r?.guessed ?? 0), assigned: Number(r?.assigned ?? 0) };
+});
+
+/** Give the remapping of a whole neighbourhood (or only its plots placed by guess) to one surveyor. */
+export const assignNeighbourhoodRemapAction = defineAction(
+  "parcels.remap_assign_neighbourhood",
+  z.object({
+    neighbourhoodId: z.uuid("validation.neighbourhood"),
+    surveyorId: z.uuid("validation.surveyor"),
+    note: z.string().trim().max(400, "validation.too_long").default(""),
+    onlyGuessed: z.boolean().default(false),
+  }),
+  async (v, ctx) => {
+    try {
+      const count = Number(
+        unwrap(
+          await ctx.supabase.rpc("neighbourhood_remap_assign", { p_neighbourhood: v.neighbourhoodId, p_surveyor: v.surveyorId, p_note: v.note || null, p_only_guessed: v.onlyGuessed }),
+          "assign neighbourhood remap",
+        ),
+      );
+      refresh();
+      return { count };
+    } catch (err) {
+      if (err instanceof AppFailure && err.code === "VALIDATION" && String(err.values?.detail ?? "") === "not_a_surveyor") {
+        throw new AppFailure("VALIDATION", err.values, { surveyorId: ["validation.remapSurveyor"] });
+      }
+      throw err;
+    }
+  },
+);

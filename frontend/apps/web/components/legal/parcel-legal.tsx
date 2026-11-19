@@ -8,7 +8,7 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert, Mono } from "@dhulka/ui/misc";
 import { Scissors } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import {
@@ -36,6 +36,7 @@ const USES = ["residential", "commercial", "mixed", "state", "agricultural", "ot
 
 export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
   const t = useTranslations("legal");
+  const locale = useLocale();
   const ts = useTranslations("stage");
   const tc = useTranslations("common");
   const format = useFormatter();
@@ -112,7 +113,7 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
           {(x) => (
             <li key={x.id} className="flex justify-between gap-2 py-2">
               <Link href={`/transfers/${x.id}`} className="hover:text-primary">
-                <Mono>{x.number}</Mono> · {t(`transferKinds.${x.kind}`)}
+                <Mono>{x.number}</Mono> · {x.type ? (locale === "so" ? x.type.name_so : x.type.name_en) : t(`transferKinds.${x.kind}`)}
               </Link>
               <span className="text-xs">{t(`status.${x.status}`)}</span>
             </li>

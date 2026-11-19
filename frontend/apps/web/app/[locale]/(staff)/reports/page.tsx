@@ -11,6 +11,14 @@ import { AssistantPanel } from "@/components/reports/assistant-panel";
 import { BarChart } from "@/components/reports/bar-chart";
 import { GroupedBars } from "@/components/reports/charts";
 import { ReportPicker } from "@/components/reports/report-picker";
+import {
+  DetailSwitch,
+  ReportTotalsView,
+  SUMMARY_TOPICS,
+  SummaryView,
+  summaryTopic,
+  type SummaryTopic,
+} from "@/components/reports/summary-view";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table";
@@ -108,6 +116,93 @@ export default async function ReportsPage({
   const sector = places.sectors.find((x) => x.id === a.sector && x.parent === section)?.id ?? "";
   const nbhd =
     places.neighbourhoods.find((x) => x.id === a.neighbourhood && x.parent === sector)?.id ?? "";
+  // The place filter only shows the lists for the current choice (each choice reloads the page): the sections of the
+  // chosen district, the sectors of the chosen section, the neighbourhoods of the chosen sector. Sending all ~5,300
+  // neighbourhoods made every Reports page about 1 MB heavier.
+  const areaPlaces = {
+    sections: places.sections.filter((x) => x.parent === district),
+    sectors: places.sectors.filter((x) => x.parent === section),
+    neighbourhoods: places.neighbourhoods.filter((x) => x.parent === sector),
+  };
+  // "Less data": the period's key figures only; "More data" (default): the chosen report in full. Both keep the
+  // period and the place when switching.
+  const detail = sp.d === "less" ? "less" : "more";
+  const placeParams = {
+    ...(district ? { district } : {}),
+    ...(section ? { section } : {}),
+    ...(sector ? { sector } : {}),
+    ...(nbhd ? { nbhd } : {}),
+  };
+  const topic = summaryTopic(sp.show);
+  // The overview is asked for by name (show=…); otherwise Less data shows a report's totals, Revenue by default.
+  const lessHref = (show: SummaryTopic = topic) =>
+    `/reports?${new URLSearchParams({ d: "less", show, from, to, ...placeParams }).toString()}`;
+  const lessReportHref = (r: ReportName) =>
+    `/reports?${new URLSearchParams({ d: "less", r, from, to, ...placeParams }).toString()}`;
+  if (detail === "less") {
+    const lessReport = sp.show ? null : report;
+    const moreHref = `/reports?${new URLSearchParams({ r: report, from, to, ...placeParams }).toString()}`;
+    // The same files as "More data" (all lines), for the chosen period and place.
+    const exportQs = lessReport
+      ? new URLSearchParams({
+          lang,
+          ...(!SNAPSHOT_REPORTS.includes(lessReport) ? { from, to } : {}),
+          ...(DISTRICT_REPORTS.includes(lessReport) || AREA_REPORTS.includes(lessReport)
+            ? { ...(district ? { district } : {}) }
+            : {}),
+          ...(AREA_REPORTS.includes(lessReport)
+            ? { ...(section ? { section } : {}), ...(sector ? { sector } : {}), ...(nbhd ? { nbhd } : {}) }
+            : {}),
+          ...(POS_REPORTS.includes(lessReport) ? { pos: "all" } : {}),
+        }).toString()
+      : "";
+    return (
+      <>
+        <PageHeader
+          title={t("title")}
+          description={t("summary.subtitle")}
+          actions={<DetailSwitch detail="less" lessHref={lessReport ? lessReportHref(lessReport) : lessHref()} moreHref={moreHref} />}
+        >
+          <ReportPicker
+            label={t("report")}
+            current={lessReport ?? `overview:${topic}`}
+            groups={[
+              {
+                label: t("summary.showGroup"),
+                reports: SUMMARY_TOPICS.map((k) => ({ value: `overview:${k}`, label: t(`summary.topics.${k}`), href: lessHref(k) })),
+              },
+              ...groups.map((g) => ({
+                label: t(`groups.${g.key}`),
+                reports: g.reports.map((r) => ({ value: r, label: t(`names.${r}`), href: lessReportHref(r) })),
+              })),
+            ]}
+          />
+        </PageHeader>
+        {lessReport ? (
+          <ReportTotalsView
+            report={lessReport}
+            from={from}
+            to={to}
+            withRange={!SNAPSHOT_REPORTS.includes(lessReport)}
+            place={{ district, section, sector, nbhd }}
+            districts={districts}
+            places={areaPlaces}
+            moreHref={moreHref}
+            exportHref={viewer.can("reports.export") ? `/api/exports/reports/${lessReport}?${exportQs}` : null}
+          />
+        ) : (
+          <SummaryView
+            from={from}
+            to={to}
+            topic={topic}
+            place={{ district, section, sector, nbhd }}
+            districts={districts}
+            places={areaPlaces}
+          />
+        )}
+      </>
+    );
+  }
   const kind = parcelKind(sp.kind);
   // Payments: by way of paying and by fee type.
   const method = report === "payments" ? paymentMethod(sp.method) : null;
@@ -668,7 +763,11 @@ export default async function ReportsPage({
 
   return (
     <>
-      <PageHeader title={t("title")} description={t("subtitle")}>
+      <PageHeader
+        title={t("title")}
+        description={t("subtitle")}
+        actions={<DetailSwitch detail="more" lessHref={lessReportHref(report)} moreHref={reportHref(report)} />}
+      >
         <ReportPicker
           label={t("report")}
           current={report}
@@ -702,9 +801,9 @@ export default async function ReportsPage({
               <AreaFilter
                 key={`${district}/${section}/${sector}/${nbhd}`}
                 districts={districts}
-                sections={places.sections}
-                sectors={places.sectors}
-                neighbourhoods={places.neighbourhoods}
+                sections={areaPlaces.sections}
+                sectors={areaPlaces.sectors}
+                neighbourhoods={areaPlaces.neighbourhoods}
                 initial={{ district, section, sector, nbhd }}
               />
             )}

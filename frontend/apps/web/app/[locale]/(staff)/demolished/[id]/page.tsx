@@ -7,7 +7,7 @@ import { Home, MapPinned } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { DecideDemolition, RestoreDemolition } from "@/components/demolitions/demolition-actions";
-import { GeometryPreview } from "@/components/map/geometry-preview";
+import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { getDemolition } from "@/lib/server/demolitions";
@@ -155,7 +155,7 @@ export default async function DemolitionPage({
           <CardContent>{dl(place)}</CardContent>
         </Card>
         <div className="space-y-2">
-          <GeometryPreview geometry={s.geom} className="h-72 md:h-[calc(100%-1.75rem)]" pin />
+          <GeometryPreview geometry={s.geom} className="h-72 md:h-[calc(100%-1.75rem)]" pin pinState="demolished" />
           <Link
             href={`/map`}
             className="text-muted-foreground hover:text-primary flex items-center gap-1.5 text-xs"

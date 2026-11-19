@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
@@ -58,17 +59,13 @@ export async function searchParcels(q: string, stage: ParcelStage = "all", neigh
   const supabase = await createClient();
   // An old PUN typed off paper (BN34KRWJXL0107) finds the land by its PUN today.
   const term = /^\s*BN[\w-]{4,}\s*$/i.test(q) ? normalizePun(q) : q;
-  let req = supabase.rpc("search_parcels", { p_q: term.replace(/[%\\]/g, " ").trim(), p_limit: 1000 });
-  if (neighbourhoodId) {
-    const { data } = await supabase.from("parcels").select("id").eq("neighbourhood_id", neighbourhoodId).is("deleted_at", null).limit(1000);
-    const ids = ((data ?? []) as { id: string }[]).map((p) => p.id);
-    req = req.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
-  }
-  if (stage === "draft") req = req.in("status", ["draft", "surveyed", "verified"]);
-  if (stage === "registered" || stage === "paid" || stage === "owing" || stage === "demolished") req = req.not("status", "in", PARTIAL);
-  if (stage === "demolished") req = req.eq("building_state", "demolished");
-  if (stage === "paid") req = req.lte("balance", 0);
-  if (stage === "owing") req = req.gt("balance", 0);
+  // The tab and the neighbourhood are chosen inside the search, before it keeps the 100 newest.
+  const req = supabase.rpc("search_parcels", {
+    p_q: term.replace(/[%\\]/g, " ").trim(),
+    p_limit: 100,
+    p_stage: stage === "all" ? null : stage,
+    p_neighbourhood: neighbourhoodId,
+  });
   const res = await req.limit(100);
   // Newest first; the flats of one building, saved together, in order.
   const rows = (unwrap(res, "parcels") as ParcelListRow[]).sort((a, b) => b.created_at.localeCompare(a.created_at) || (a.pun ?? "").localeCompare(b.pun ?? "", undefined, { numeric: true }));
@@ -130,6 +127,8 @@ export interface ParcelDetail {
   /** The day each year its tax bill comes and its certificate ends. */
   tax_anniversary: string | null;
   geom: GeoJSON.Polygon;
+  /** Put on the map by guess (no survey yet): shown as a small square, to be remapped. */
+  geom_provisional: boolean;
   application_id: string | null;
   application: { id: string; number: string } | null;
   /** Check if it exists: pending while a surveyor goes; confirmed or not_found once answered. */
@@ -138,6 +137,11 @@ export interface ParcelDetail {
   site_check_requested_at: string | null;
   site_check_done_at: string | null;
   site_check_note: string | null;
+  /** Remapping given to a surveyor: assigned until they remap it, then done. */
+  remap_status: "assigned" | "done" | null;
+  remap_surveyor: string | null;
+  remap_requested_at: string | null;
+  remap_note: string | null;
   district: { code: string; name_so: string; name_en: string } | null;
   neighbourhood: { code: string; name_so: string; name_en: string } | null;
   parcel_owners: { id: string; role: string; share_pct: number | null; valid_from: string; valid_to: string | null; party: PartyRow }[];
@@ -147,6 +151,8 @@ export interface ParcelDetail {
 /** What a history line was about: the transfer or parcel change behind it, who it went from and to, and other PUNs. */
 export interface HistoryDetail {
   transferKind?: string;
+  /** The transfer's type as named in Valuation → Transfer types. */
+  transferType?: { name_so: string; name_en: string };
   changeKind?: string;
   number?: string;
   from?: string[];
@@ -157,14 +163,15 @@ export interface HistoryDetail {
 }
 type HistoryEntry = { id: number; action: string; note: string | null; data?: Record<string, unknown>; at: string; detail?: HistoryDetail };
 
-export async function getParcel(id: string) {
+async function loadParcel(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const supabase = await createClient();
   const res = await supabase
     .from("parcels")
     .select(
-      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, footprint_m2, manager_name, manager_phone, unit_factor, shared_split, building_state, building_no, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, tax_anniversary, geom, application_id,
+      `id, pun, account_no, status, land_use, ownership, developed, layout, floors, footprint_m2, manager_name, manager_phone, unit_factor, shared_split, building_state, building_no, parent_id, unit_no, unit_floor, own_m2, shared_m2, area_m2, perimeter_m, plot_no, deed_no, govt_file_no, house_no, flat_no, govt_receipt_no, property_type, locked_at, lock_reason, registered_at, tax_anniversary, geom, geom_provisional, application_id,
        site_check_status, site_check_surveyor, site_check_requested_at, site_check_done_at, site_check_note,
+       remap_status, remap_surveyor, remap_requested_at, remap_note,
        application:applications!parcels_application_id_fkey(id, number),
        district:districts(code, name_so, name_en), neighbourhood:neighbourhoods(code, name_so, name_en),
        parcel_owners(id, role, share_pct, valid_from, valid_to, party:parties(${PARTY_COLUMNS})),
@@ -181,6 +188,9 @@ export async function getParcel(id: string) {
   return parcel;
 }
 
+
+/** One land with its owners and history. Loaded once per request (the page title and the page share it). */
+export const getParcel = cache(loadParcel);
 export interface LandUnit {
   id: string;
   pun: string | null;
@@ -244,13 +254,15 @@ async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>
     if (Array.isArray(d.new_parcels)) for (const p of d.new_parcels) if (str(p)) parcelIds.add(p as string);
   }
   const [transfers, changes, byNumber, parcels] = await Promise.all([
-    transferIds.size ? supabase.from("transfers").select("id, number, kind, from_owners, to_owners").in("id", [...transferIds]) : null,
+    transferIds.size ? supabase.from("transfers").select("id, number, kind, from_owners, to_owners, type:transfer_types(name_so, name_en)").in("id", [...transferIds]) : null,
     changeIds.size ? supabase.from("parcel_changes").select("id, number, kind").in("id", [...changeIds]) : null,
     changeNumbers.size ? supabase.from("parcel_changes").select("id, number, kind").in("number", [...changeNumbers]) : null,
     parcelIds.size ? supabase.from("parcels").select("id, pun").in("id", [...parcelIds]) : null,
   ]);
   type Owner = { full_name?: string };
-  const tr = new Map(((transfers?.data ?? []) as { id: string; number: string; kind: string; from_owners: Owner[]; to_owners: Owner[] }[]).map((x) => [x.id, x]));
+  const tr = new Map(
+    ((transfers?.data ?? []) as unknown as { id: string; number: string; kind: string; from_owners: Owner[]; to_owners: Owner[]; type: { name_so: string; name_en: string } | null }[]).map((x) => [x.id, x]),
+  );
   const ch = new Map(((changes?.data ?? []) as { id: string; number: string; kind: string }[]).map((x) => [x.id, x]));
   const chNo = new Map(((byNumber?.data ?? []) as { id: string; number: string; kind: string }[]).map((x) => [x.number, x]));
   const pun = new Map(((parcels?.data ?? []) as { id: string; pun: string | null }[]).map((x) => [x.id, x.pun]));
@@ -261,6 +273,7 @@ async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>
     const t = str(d.transfer_id) ? tr.get(str(d.transfer_id)!) : undefined;
     if (t) {
       detail.transferKind = t.kind;
+      if (t.type) detail.transferType = t.type;
       detail.number = t.number;
       if (h.action === "transferred") {
         detail.from = names(d.from ?? t.from_owners);
@@ -291,10 +304,10 @@ export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> 
   const [draft, registered, owingRows, demolished] = await Promise.all([
     base().in("status", ["draft", "surveyed", "verified"]),
     base().not("status", "in", PARTIAL),
-    supabase.rpc("search_parcels", { p_q: "", p_limit: 5000 }).not("status", "in", PARTIAL).gt("balance", 0).select("id"),
+    supabase.rpc("parcel_owing_count"),
     supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("building_state", "demolished").neq("status", "archived"),
   ]);
-  const owing = ((owingRows.data ?? []) as unknown[]).length;
+  const owing = Number(owingRows.data ?? 0);
   const reg = registered.count ?? 0;
   return { draft: draft.count ?? 0, registered: reg, paid: Math.max(reg - owing, 0), owing, demolished: demolished.count ?? 0, all: (draft.count ?? 0) + reg };
 }

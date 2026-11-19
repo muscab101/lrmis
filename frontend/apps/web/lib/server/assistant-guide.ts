@@ -6,137 +6,164 @@ import "server-only";
  */
 
 export const SYSTEM_OVERVIEW = `
-LRMIS (Land Registry & Revenue Management Information System) is the land register and property tax system of the
-Banadir Regional Administration (Mogadishu). It records who owns which land, measures it, values it, bills the
-yearly property tax and fees, collects the money at district cashiers and online, issues title certificates and
-property ID cards, and handles transfers, disputes and permits.
+LRMIS (Land Registration & Management Information System) is the land register and property tax system of the
+Banadir Regional Administration (Mogadishu). It records who owns which land, measures it, prices it, bills the yearly
+property tax and fees, collects the money at district cash desks and online, issues title certificates and property ID
+cards, and handles transfers and demolitions. It works in Somali and English.
 
-Places: Region → District (e.g. Hodan, Wadajir, Karaan) → Section → Sector → Neighbourhood → Street. Every parcel
-sits in a neighbourhood. Staff are given one or more districts (or all districts) and only see land, owners, bills
-and figures for those districts. Cashiers are also tied to one cash desk (point of sale) and only see that desk.
+Places: Region → District (20 districts, e.g. Hodan, Wadajir, Kaaraan) → Section → Sector → Neighbourhood. Every
+parcel sits in a neighbourhood and has a house number there (e.g. KRWJXL01 12). Staff are given one or more districts
+(or all) and only see land, owners, bills and figures for those districts.
 
 Key words:
-- PUN: the parcel's unique number, given when the land is registered (e.g. 34KRWJXL0107).
-- Partial registration: land that has been added but is not registered yet (draft, surveyed or verified).
+- PUN: the parcel's unique number, given when the land is registered.
+- Partial registration: land added but not registered yet (draft, surveyed or verified).
 - Registered: land with a PUN on the official register.
 - Account number: given with the PUN; bills are raised against it.
-- Assessment: the yearly property tax worked out for a parcel.
+- Tax anniversary: the day each year a registered property gets its new tax bill and its certificate ends.
+- Powers: what a person may do. Roles give powers; a single user can get an extra power or lose one.
 `.trim();
 
 export const STAFF_GUIDE = `
-THE MENU (staff only see the pages their role allows):
-Overview: Dashboard (today's figures and work waiting for you), Map.
-Land: Yet to register, Surveys, Owners, Parcels.
+THE MENU (each person only sees the pages their powers allow):
+Overview: Dashboard, Map, Incomplete, Applications, Staff chat.
+Land: Yet to register, Surveys, Owners (tabs: Partial registration, Registered, Managers), Parcels (tabs: Partial
+registration, Registered, Apartments), Demolished.
 Revenue: Valuation, Billing runs, Invoices, Payments, Collections, Cashier, Points of sale, Accounting.
-Legal & documents: Transfers, Disputes, Permits, Certificates, ID cards.
-Insight: Reports, AI assistant, Messages, Locations.
-Administration: Users, Roles, Permissions, Login history, Audit log, Settings, System health.
+Legal & documents: Transfers, Certificates, ID cards, Verify, Add printer.
+Insight: Reports, Assistant, Messages, Locations.
+Administration: Users, Roles, Activity, Login history, Audit, Signature and stamp, Settings, Health.
 
-HOW LAND GETS REGISTERED (start to finish):
-1. Yet to register shows neighbourhoods with land not registered yet ("Waiting") and neighbourhoods where nothing is
-   registered ("Not started"). A supervisor picks a neighbourhood and gives it to a surveyor as a zone (Zones tab).
-2. The surveyor opens Surveys → Zones, presses Open on their zone, and inside the zone uses Add owner and Add land for
-   each house. When the zone is finished they press Mark done (or Cancel). Land already added stays in Parcels.
-3. New land appears under Parcels → Partial registration; new owners under Owners → Partial (draft).
-4. On Parcels → Partial registration each row has actions: View, Edit, Register, Delete. Inside View there is
-   "Check if it exists": a surveyor of the district (the least busy) is sent to confirm the house is really there.
-   Land marked not found can't be registered until it is checked again and found.
-5. The Registrar (or a Land officer) presses Register. It gives the land its PUN and account number, raises its tax bill and service charge, and moves its owners to
-   the register too. The district's cashiers are told the land owes money.
-6. The cashier collects the payment. When the bills are paid in full the system approves the land by itself: the
-   title certificate and the owners' ID cards are issued, and the registrar and print officers are notified.
-7. Print officers print them from Certificates (print queue) and ID cards.
+DAILY PAGES:
+- Dashboard: today's figures for your districts, by your job.
+- Incomplete: everything still unfinished (owners in draft, land yet to register, open zones), each with a link.
+- Applications: requests waiting for a decision (land changes, demolitions, transfers, certificates, accounting,
+  messages), one tab per kind. Approvals need a second person: nobody approves their own work.
+- Staff chat: one-to-one and group chat with photos and videos. Assistant: this assistant.
 
-PARCELS PAGE: two tabs, Partial registration and Registered. Inside Registered there is a filter All / Paid / Not paid.
-Columns: Date created, PUN, Invoice, Neighbourhood, House no, Owner, Status (Registered plus Paid or "$X owing").
-Surveyors and data entry clerks add land; the Registrar registers it. Only people with "See registered land" see the Registered tab; only admins can delete registered land (and land with
-money paid can't be deleted at all). Locking a parcel (e.g. for a court case) stops all changes; bills still work.
-Edit changes office details only; boundary and owners change through a data correction or a transfer.
+ADDING LAND (Surveys → a zone → Add owner / Add land, or from an owner's page):
+1. Enter the plot's width and length (the whole plot), the house type and the use.
+2. Choose the kind:
+   - Normal house: bill = plot m² × the house type's price.
+   - Flats building: the storeys, then each flat with its floor, width × length (its m² is worked out) and its owner.
+     The owner entered first becomes the building's MANAGER. Billing: a ground-floor flat × the "Apartment" price,
+     a flat on floor 1, 2, 3 … × the "Upper Floors" price; the rest of the plot (plot − all flats' m²) × the
+     "Empty Land" price, paid by the manager. Extra areas (parking, playgrounds) can be added later on the building's
+     page, each at its own price per m², also paid by the manager.
+   - Shared compound: several houses on one plot; shared spaces are named and the shared m² is split equally or by size.
+3. Prices come from Valuation → House types; a neighbourhood's own prices (Valuation → Rates) win where set.
+4. The first bills (property bill + service charge) are made at once. When EVERY bill of partial land is paid, the
+   land registers by itself: it gets its PUN, its owners are registered and its certificate is issued. There is no
+   separate Register button or approval for this.
+Changing a flat's size or floor re-bills the building straight away; bills already paid are never lowered.
+Names take letters only and number boxes take digits only.
 
-OWNERS PAGE: Partial and Registered tabs, like Parcels. Check name, ID document and phone before registering an owner
-(registering needs an ID document or a phone number). One person, one record: the form warns about duplicates.
-An owner who still holds land can't be deleted. Only admins delete registered owners. Owners can have a photo.
+PARCELS: tabs Partial registration, Registered and Apartments. Inside Registered: All / Paid / Not paid / Demolished.
+A property's page shows owners, bills, documents, history, the map, the next tax bill date and (for flats) the manager
+and extra areas. Locking a property (e.g. for a court case) stops changes; bills still work. Demolished land is kept
+as an archive (Demolished page: Archive, Pending, Closed) and can be registered again after rebuilding.
+Apartments tab: every flats building or compound with its flats, how many are registered and what it owes; a
+building's page lists its flats floor by floor.
 
-SURVEYS: survey tasks (measure the plot, draw the boundary by walking the corners with GPS or clicking the map,
-submit). Boundaries that overlap neighbours go to a GIS officer for overlap review. Tabs include Open, Zones and
-Site checks (the "check if it exists" visits).
+OWNERS: tabs Partial registration, Registered and Managers (building managers with the buildings they pay for). One
+person, one record: the form warns about duplicates. An owner who still holds land can't be deleted.
 
-VALUATION: property grades (house types) with a yearly price per m², neighbourhood rates, assessments, exemptions
-(mosques, schools, hardship — a second officer approves) and appeals. A house's tax = its area in m² × the price of its
-grade; without a neighbourhood rate the default rate from Settings is used. A whole neighbourhood can be assessed at once.
+VALUATION (6 tabs): Price check (work out a bill), Rates (a neighbourhood's own price per house type; edit or remove
+them), House types (Apartment, Upper Floors, Empty Land, Villa, …, each with a price per m²), Fee types, Transfer types
+(the choices on the transfer form, each with its stamp duty; switch them on or off here), Owner types.
 
-BILLING RUNS: bill a year's property tax (or another recurring fee) for chosen districts: start a run → preview with
-counts, totals and exceptions → submit → finance approves (you can't approve your own run) → generate invoices
-(owners get an SMS; already-billed parcels are skipped). One-off fees (certificate, reprint) are billed from a parcel.
+BILLING (automatic every year):
+- Each registered property has a tax anniversary (its first certificate day). Every day at 03:00 the system finds the
+  properties whose anniversary has come: their certificate ends and the year's tax bill is made, due in 60 days, and
+  the owner gets an SMS. When it is paid in full, a new certificate is issued by itself, valid to the next anniversary.
+- Billing runs: the automatic runs appear here. "Missed yearly bills" lists land the automatic billing skipped; tick
+  them to make runs. A run can also be made by hand; it is checked, approved by a second person and issued.
+  List rows only offer View, Issue now (when the run has bills) and Cancel; the rest is on the run's own page.
+- There is no early-payment discount (the setting is 0%).
+INVOICES: columns Transaction date, Date due, PUN, Account number, Phone, Invoice number, Amount, Status. Print sends
+the bill to a printer you choose. Corrections use a credit note; only bills with no payments can be cancelled.
 
-INVOICES: corrections are made with a credit note (a second person decides). Only invoices with no payments can be
-cancelled. Payment plans split a debt into monthly instalments and stop late penalties.
+CASHIER: the shift opens by itself when you have one desk (with several desks you pick one). Find the bill by PUN,
+invoice or application number, then:
+- Cash: enter the amount and press Take payment.
+- Mobile money (EVC Plus, ZAAD, eDahab, Sahal): check the payer's phone and press "Send payment request". The bill's
+  amount appears on their phone; they approve with their PIN and the receipt is recorded by itself. If they already
+  paid by SMS, press "Paid already? Type the reference" and take it by hand.
+- Bank transfer or cheque: with its reference.
+Print the receipt to a printer you choose (no new tab). Close the shift at the end of the day with the cash count.
+Each district has one office cash desk (Points of sale). Wrong amounts can't be edited: request a reversal.
+PAYMENTS: tabs Payments, Unmatched, Reversals, Shifts, Providers. Providers holds the city's bank account shown to
+citizens for transfers. COLLECTIONS: verify each payment against the wallet or bank statement, evidence, duplicates,
+corrections and daily reconciliation. ACCOUNTING: the double-entry books, posted automatically.
 
-CASHIER: open a shift at your desk, take payments (cash, EVC Plus, eDahab, ZAAD, bank transfer, card), print the
-receipt, and close the shift with a cash count. "To collect" lists registered land in your desk's district that still
-owes money. Wrong amounts can't be edited: request a reversal and take the payment again.
+TRANSFERS (sale, gift, inheritance, court order — the types come from Valuation → Transfer types): open the
+property's Legal card, start a transfer with the new owners, submit (the stamp duty bill is made and the record is
+locked); once the duty is paid a second officer approves.
 
-COLLECTIONS (finance): check every payment against the cash count or the wallet/bank statement (Verify or Dispute),
-attach evidence (photo/PDF of receipt or SMS), find duplicates, request corrections (a Finance Manager approves),
-and reconcile each day (finance officer prepares, Finance Manager approves; then payments can't be corrected).
+CERTIFICATES and ID CARDS: issued by themselves when land registers and every year after the tax is paid. Print sends
+them to a registered desk printer you choose (Add printer sets printers up per district). A reprint needs a reason,
+a reprint fee and a second officer. VERIFY: type the 12-character code or scan the QR; the answer pops up: Valid,
+Expired or Cancelled, with the property and owners.
 
-ACCOUNTING: a double-entry ledger posted automatically from invoices and payments.
+REPORTS: 24 reports in 6 groups (Daily collections and cash; Bills and income; Land and field work; Transfers;
+Certificates; Staff and messages), filtered by place and dates, downloaded as PDF or Excel. MESSAGES: SMS and
+WhatsApp to owners. LOCATIONS: districts, sections, sectors and neighbourhoods with their boundaries.
 
-TRANSFERS (ownership changes by sale, gift, inheritance or court order): search the PUN, open the parcel's Legal card,
-start a transfer (declared value, new owners with shares adding to 100 %), submit — this raises the stamp duty
-invoice and locks the record. Once the duty is paid a second officer approves. The Legal card also holds liens, court
-orders, change of use, merge/subdivide, data corrections, boundary corrections and permit applications.
+ADMINISTRATION: Users (roles, districts, a cashier's desk, and a Powers tab to give or take single powers),
+Roles (the powers grid: Dashboard, Incomplete, Map, Applications, Parcels, Apartments, Owners, Managers, Surveys,
+Valuation, Billing, Invoices, Payments, Cashier, Points of sale, Collections, Accounting, Transfers, Certificates,
+Verify, Messages, Staff chat, Reports, Assistant, Locations, Settings, Audit, Users, Roles), Activity (recorded work
+sessions, live view), Login history, Audit (every change, can't be edited), Signature and stamp, Settings, Health.
+Staff sign in with email, password and a two-step code from an authenticator app.
 
-DISPUTES: an open dispute blocks transfers, subdivision and certificates until closed. The person who recorded an item
-can't close it. PERMITS: applied for from the Legal card; a permit can only be approved once its fee is paid.
-
-CERTIFICATES and ID CARDS: issue, print, reprint (with a reason and a reprint fee, then a second officer approves; the new
-document gets a new serial) and cancel. Anyone can verify a certificate with its 12-character code.
-
-REPORTS: figures for your districts, filtered by District → Section → Sector → Neighbourhood, chosen from a dropdown;
-download as PDF or Excel. MESSAGES: SMS/WhatsApp sent to owners. LOCATIONS: districts, sections, sectors,
-neighbourhoods, streets and their boundaries.
-
-ADMINISTRATION: Users (create staff, give roles and districts, set a cashier's desk), Roles and Permissions (each role
-is a set of permissions; a user can hold several roles), Login history, Audit log (who changed what — can't be edited),
-Settings, System health.
-
-GENERAL RULES: almost every approval needs a second person (you can't approve your own work). Every delete asks for a
-reason and stays in the history. If a button is missing, your role doesn't have that permission — ask an administrator.
+GENERAL RULES: approvals need a second person. Every delete asks for a reason and stays in the history. If a button is
+missing, your powers don't include it — ask an administrator.
 `.trim();
 
 export const ADMIN_GUIDE = `
-ROLES IN THE SYSTEM and what each is for: Registrar (registers land and owners), Land officer, Surveyor (zones, site
-checks, boundaries), GIS officer (map, overlap review), Front desk clerk, Data entry clerk, Valuation officer,
-Billing officer, Cashier (one desk), Revenue collector, Auditor (read-only finance), Accountant, Finance manager
-(approves runs, corrections, reconciliations), Legal officer, Planning officer (permits), Inspector, Print officer
-(certificates and ID cards), Customer service, Executive (reports), IT support, Admin, Citizen.
+ROLES IN THE SYSTEM (24): Super Admin, Admin, Registrar / District Manager, Land Officer, Surveyor, GIS Officer,
+Front-desk Clerk, Data Entry Clerk, Valuation Officer, Billing Officer, Cashier / Collector, Revenue / Tax Collector,
+Collections Officer, Accountant, Finance Manager, Auditor, Legal Officer, Planning Officer, Inspector, Print Officer,
+Customer Service, Director / Governor, IT Support, Citizen. Each role is a set of powers (233 in all); a user can get an
+extra power or lose one on their own Powers tab without changing the role.
 
-HOW DISTRICTS WORK: each staff member is given districts (or all districts). Their lists, reports and the assistant's
-figures only cover those districts. Each district has cash desks (points of sale); a cashier is tied to one desk and
-"To collect" follows the desk's district. Registered land that owes money is sent to the cashiers of its district.
+HOW DISTRICTS WORK: each staff member covers chosen districts (or all). Their lists, reports and the assistant's
+figures only cover those districts. Each district has one office cash desk; a cashier with one desk works there.
+
+WHAT IS STILL NEEDED TO GO LIVE: WaafiPay keys (mobile money to real phones), an SMS provider, the city's bank account
+(Payments → Providers) and the card webhook secret, desk printers for the districts without one, and leaked-password
+protection switched on.
 
 BENEFITS OF THE SYSTEM (use when asked why it matters or to explain it to leaders):
-- One official register: every parcel has a PUN, a boundary on the map and its owners — fewer double sales and
-  land disputes.
-- More revenue: every registered house is assessed and billed every year; Not paid lists and arrears reports show
-  exactly who owes, by district and neighbourhood.
+- One official register: every parcel has a PUN, a boundary on the map and its owners — fewer double sales and disputes.
+- More revenue: every registered property is billed on its own anniversary each year, automatically; Missed yearly
+  bills catches any that slipped; Not paid lists and arrears reports show exactly who owes.
+- Fair apartment billing: each flat pays by its floor, and the building's manager pays for the open land.
 - Transparency and less fraud: every payment has a receipt and a reference, duplicates are detected, each day is
   reconciled against cash and wallet statements, and the audit log keeps every change.
 - Second-person approval on money and ownership changes.
-- Easy payment for citizens: mobile money (EVC Plus, ZAAD, eDahab), bank, card or a district cashier; SMS bills.
-- Faster services: certificates and ID cards are issued automatically when the bills are paid.
-- Data for planning: reports by district, section, sector and neighbourhood; Yet to register shows where surveyors go next.
+- Easy payment: mobile money request to the payer's phone, card, bank transfer or a district cash desk.
+- Faster services: land registers itself and certificates are issued automatically once the bills are paid; anyone can
+  check a certificate by its QR code.
+- Data for planning: reports by district, section, sector and neighbourhood; Yet to register shows where to survey next.
 `.trim();
 
 export const CITIZEN_GUIDE = `
-THE CITIZEN PORTAL: Home (your land, what you owe, receipts, messages), Bills & pay (every bill; pay with mobile money),
-Track (the state of your houses and whether the title is issued), and each land's own page (details, bills, documents).
-You can't apply online: registration is done by the district office and its surveyors.
+WHO CAN USE THE PORTAL: owners whose phone is on the land register and who hold land. You sign in with your phone and a
+6-digit SMS code — there is no password. A phone that is not registered with land is asked to register first at the
+district's LRMIS office.
 
-How it works for you: your land is registered by the district office → it gets a PUN → its tax bill is raised → you
-pay (EVC Plus, ZAAD, eDahab or Sahal with your PUN as the reference, at a district cashier, or online on Bills & pay) →
-once everything is paid the title certificate and your ID card are issued automatically → collect them at the district
-office. Late payment can bring penalties; ask the district office about a payment plan if you can't pay at once.
-A certificate can be checked by anyone with its 12-character verification code.
+THE PORTAL: My land (each property with its house number, what is owed, the next tax bill date, your receipts and
+messages), Bills (every bill: tick the ones to pay and pay them together, or one by one), Track (where each property
+stands), Verify (check a certificate, when your role allows) and Assistant. Each property has its own page with bills,
+documents and receipts; each receipt can be opened and printed.
+
+HOW TO PAY: on Bills or a property's page press Pay. Choose mobile money (EVC Plus, ZAAD, Sahal or eDahab — approve the
+request on your phone with your PIN), card, or bank transfer (the city's bank details are shown; write your PUN as the
+reference). Paying several bills together makes one payment, and each bill gets its own receipt.
+
+HOW IT WORKS FOR YOU: the district office registers your land → its bills are made → you pay → when everything is paid
+your land registers by itself (it gets its PUN) and your certificate is issued → every year on your property's
+anniversary a new tax bill comes; once it is paid a new certificate is issued. Anyone can check a certificate with its
+QR code or 12-character code on the Verify page.
 `.trim();

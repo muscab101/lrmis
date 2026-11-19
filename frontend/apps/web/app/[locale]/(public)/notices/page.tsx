@@ -3,7 +3,7 @@ import { Card, CardContent } from "@dhulka/ui/card";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Megaphone } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
-import { GeometryPreview } from "@/components/map/geometry-preview";
+import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { LocaleSwitch } from "@/components/shell/locale-switch";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Link } from "@/i18n/navigation";

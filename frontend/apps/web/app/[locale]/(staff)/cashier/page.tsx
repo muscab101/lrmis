@@ -10,6 +10,7 @@ import { requirePermission } from "@/lib/server/auth";
 import { housesToCollect } from "@/lib/server/collect";
 import { listPayments, listPointsOfSale, myOpenShift } from "@/lib/server/payments";
 import { availableOnlineProviders } from "@/lib/server/providers";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
   const t = await getTranslations("payments");
@@ -28,7 +29,21 @@ export default async function CashierPage({
   const viewer = await requirePermission(locale, "cashier.view");
   const t = await getTranslations("payments");
   const format = await getFormatter();
-  const shift = await myOpenShift();
+  let shift = await myOpenShift();
+  // No shift to open by hand: with one desk to work at (their own, or the only one they can use), it opens by itself.
+  if (!shift && viewer.can("cashier.create")) {
+    const desks = await listPointsOfSale({
+      id: viewer.user.id,
+      allDistricts: viewer.profile.all_districts,
+      posId: viewer.profile.point_of_sale_id ?? null,
+    });
+    const desk = viewer.profile.point_of_sale_id && desks.some((d) => d.id === viewer.profile.point_of_sale_id) ? viewer.profile.point_of_sale_id : desks.length === 1 ? desks[0]!.id : null;
+    if (desk) {
+      const supabase = await createClient();
+      const { error } = await supabase.rpc("shift_open", { p_pos: desk, p_float: 0 });
+      if (!error) shift = await myOpenShift();
+    }
+  }
   const find = ((await searchParams).find ?? "").slice(0, 40);
   // Every registered house in the district that still owes: the cashier collects from this list, only while a shift is open.
   const houses = shift ? await housesToCollect() : [];

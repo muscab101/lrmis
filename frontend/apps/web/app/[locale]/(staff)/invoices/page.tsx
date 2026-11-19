@@ -7,13 +7,12 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  Banknote,
   ChevronDown,
   Eye,
   Filter,
   Receipt,
 } from "lucide-react";
-import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { NumberPager } from "@/components/admin/number-pager";
 import { InvoiceTools } from "@/components/billing/invoice-tools";
 import { InvoicePrintNow } from "@/components/billing/invoice-print-now";
@@ -52,9 +51,7 @@ export default async function InvoicesPage({
   const viewer = await requirePermission(locale, "invoices.view");
   const t = await getTranslations("billing");
   const format = await getFormatter();
-  const lang = await getLocale();
   const sp = await searchParams;
-  const canCollect = viewer.can("cashier.view");
   const canPrint = viewer.can("invoices.print");
   const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
   const page = Math.max(1, Number(sp.page) || 1);
@@ -107,7 +104,6 @@ export default async function InvoicesPage({
     };
     const day = (d: string) =>
       format.dateTime(new Date(`${d.slice(0, 10)}T00:00:00`), { dateStyle: "medium" });
-    const when = (d: string) => format.dateTime(new Date(d), { timeStyle: "short" });
     const money = (n: number) =>
       format.number(Number(n), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const Sort = ({
@@ -250,17 +246,14 @@ export default async function InvoicesPage({
                   <Sort by="due_date">{t("table.dateDue")}</Sort>
                 </TableHead>
                 <TableHead>{t("table.pun")}</TableHead>
+                <TableHead>{t("table.accountNo")}</TableHead>
+                <TableHead>{t("table.telephone")}</TableHead>
                 <TableHead>
                   <Sort by="number">{t("table.reference")}</Sort>
                 </TableHead>
                 <TableHead className="text-end">
                   <Sort by="total" end>
                     {t("table.amount")}
-                  </Sort>
-                </TableHead>
-                <TableHead className="text-end">
-                  <Sort by="paid" end>
-                    {t("paid")}
                   </Sort>
                 </TableHead>
                 <TableHead>{t("statusLabel")}</TableHead>
@@ -271,12 +264,7 @@ export default async function InvoicesPage({
               {rows.map((i) => (
                 <TableRow key={i.id}>
                   <TableCell className="whitespace-nowrap text-sm">{day(i.issue_date)}</TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
-                    {day(i.due_date)}
-                    <span className="text-muted-foreground block text-xs">
-                      {when(i.created_at)}
-                    </span>
-                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">{day(i.due_date)}</TableCell>
                   <TableCell>
                     {i.parcel ? (
                       <Link href={`/parcels/${i.parcel.id}`} className="hover:text-primary">
@@ -285,26 +273,17 @@ export default async function InvoicesPage({
                     ) : (
                       "—"
                     )}
-                    {/* The account and phone sit under the PUN, so the actions fit without scrolling. */}
-                    {i.account_no && <Mono className="text-muted-foreground block text-xs">{i.account_no}</Mono>}
-                    {i.phone && (
-                      <span dir="ltr" className="text-muted-foreground block text-xs tabular-nums">
-                        {i.phone}
-                      </span>
-                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">{i.account_no ? <Mono className="whitespace-nowrap">{i.account_no}</Mono> : "—"}</TableCell>
+                  <TableCell className="text-sm whitespace-nowrap tabular-nums" dir="ltr">
+                    {i.phone ?? "—"}
                   </TableCell>
                   <TableCell>
                     <Link href={`/invoices/${i.id}`} className="hover:text-primary">
-                      <Mono>{i.number}</Mono>
+                      <Mono className="whitespace-nowrap">{i.number}</Mono>
                     </Link>
-                    <span className="text-muted-foreground block text-xs">
-                      {i.fee_type ? (lang === "so" ? i.fee_type.name_so : i.fee_type.name_en) : ""}
-                    </span>
                   </TableCell>
                   <TableCell className="text-end text-sm tabular-nums">{money(i.total)}</TableCell>
-                  <TableCell className="text-end text-sm font-medium tabular-nums">
-                    {money(i.paid)}
-                  </TableCell>
                   <TableCell>
                     <InvoiceStatusBadge status={i.status} dueDate={i.due_date} />
                     {i.demolished_land ? (
@@ -325,26 +304,6 @@ export default async function InvoicesPage({
                         </Link>
                       </Button>
                       {i.status !== "cancelled" && canPrint && <InvoicePrintNow id={i.id} iconOnly />}
-                      {/* Only registered land's bills can be paid. */}
-                      {canCollect &&
-                        !i.demolished_land &&
-                        Number(i.balance) > 0 &&
-                        (i.status === "issued" || i.status === "partially_paid") && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-status-approved"
-                            asChild
-                          >
-                            <Link
-                              href={`/cashier?find=${encodeURIComponent(i.number)}`}
-                              aria-label={t("takePayment")}
-                              title={t("takePayment")}
-                            >
-                              <Banknote aria-hidden />
-                            </Link>
-                          </Button>
-                        )}
                     </div>
                   </TableCell>
                 </TableRow>

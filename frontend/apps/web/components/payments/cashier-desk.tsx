@@ -91,12 +91,19 @@ export function TakePayment({
   const [v, setV] = useState({ invoiceId: "", amount: "", currency: "USD" as "USD" | "SOS", how: "cash" as How, payerName: "", payerPhone: "", reference: "" });
   const [askDuplicate, setAskDuplicate] = useState(false);
   const needsRef = v.how !== "cash" && v.how !== "cheque";
+  // A wallet (EVC Plus, ZAAD, eDahab, Sahal): send a payment request to the payer's phone, unless the cashier types
+  // the reference of a payment already made.
+  const isWallet = (WALLET_HOWS as readonly string[]).includes(v.how);
+  const [typeRef, setTypeRef] = useState(false);
   const [receipt, setReceipt] = useState<{ id: string; no: string; leftover: number; discount: number } | null>(null);
   const [closing, setClosing] = useState(false);
   const fe = (k: string) => vm(error?.fieldErrors?.[k]?.[0]);
   const owed = found?.invoices.reduce((s, i) => s + Number(i.balance), 0) ?? 0;
   const demolishedLand = found?.parcel.building_state === "demolished";
   const partialLand = !!found && !demolishedLand && ["draft", "surveyed", "verified"].includes(found.parcel.status);
+  const requesting = isWallet && !typeRef && pushProviders.length > 0 && !!found && found.invoices.length > 0;
+  // The bill asked for: the one chosen, else the oldest still open.
+  const requestBill = v.invoiceId || found?.invoices[0]?.id || "";
 
   async function find(term = pun) {
     setPun(term);
@@ -246,16 +253,6 @@ export function TakePayment({
                 </p>
                 <p className="text-sm text-muted-foreground">{t("owedNow", { amount: usd(owed) })}</p>
               </div>
-              {/* Just in case the desk can't take it: ask for the money on the payer's phone. */}
-              {found.invoices.length > 0 && !demolishedLand && (
-                <PushPayment
-                  key={found.parcel.id}
-                  billId={v.invoiceId}
-                  allowed={found.invoices.some((b) => b.id === v.invoiceId && b.push_ok)}
-                  phone={v.payerPhone}
-                  providers={pushProviders}
-                />
-              )}
               {found.invoices.length > 0 && (
                 <ul className="divide-y rounded-md border text-sm">
                   {found.invoices.map((i) => (
@@ -272,15 +269,20 @@ export function TakePayment({
                 </ul>
               )}
               <div className="grid gap-3 sm:grid-cols-3">
-                <Field id="amount" label={t("amount")} error={fe("amount")} required>
-                  <Input type="number" min={0} step="0.01" value={v.amount} onChange={(e) => setV({ ...v, amount: e.target.value })} />
-                </Field>
-                <Field id="currency" label={t("currency")} error={fe("currency")}>
-                  <NativeSelect value={v.currency} onChange={(e) => setV({ ...v, currency: e.target.value as "USD" | "SOS" })}>
-                    <option value="USD">USD</option>
-                    <option value="SOS">SOS</option>
-                  </NativeSelect>
-                </Field>
+                {/* A payment request is for the bill's whole amount, in dollars: nothing to type. */}
+                {!requesting && (
+                  <>
+                    <Field id="amount" label={t("amount")} error={fe("amount")} required>
+                      <Input type="number" min={0} step="0.01" value={v.amount} onChange={(e) => setV({ ...v, amount: e.target.value })} />
+                    </Field>
+                    <Field id="currency" label={t("currency")} error={fe("currency")}>
+                      <NativeSelect value={v.currency} onChange={(e) => setV({ ...v, currency: e.target.value as "USD" | "SOS" })}>
+                        <option value="USD">USD</option>
+                        <option value="SOS">SOS</option>
+                      </NativeSelect>
+                    </Field>
+                  </>
+                )}
                 <Field id="method" label={t("method")} error={fe("wallet")}>
                   <NativeSelect value={v.how} onChange={(e) => setV({ ...v, how: e.target.value as How })}>
                     <option value="cash">{t("methods.cash")}</option>
@@ -311,9 +313,11 @@ export function TakePayment({
                 <Field id="phone" label={t("payerPhone")}>
                   <Input inputMode="tel" value={v.payerPhone} onChange={(e) => setV({ ...v, payerPhone: e.target.value })} />
                 </Field>
-                <Field id="ref" label={needsRef ? t("transactionRef") : t("referenceOptional")} hint={needsRef ? t("transactionRefHint") : undefined} error={fe("reference")} required={needsRef}>
-                  <Input value={v.reference} onChange={(e) => setV({ ...v, reference: e.target.value })} className="font-mono" autoComplete="off" />
-                </Field>
+                {!requesting && (
+                  <Field id="ref" label={needsRef ? t("transactionRef") : t("referenceOptional")} hint={needsRef ? t("transactionRefHint") : undefined} error={fe("reference")} required={needsRef}>
+                    <Input value={v.reference} onChange={(e) => setV({ ...v, reference: e.target.value })} className="font-mono" autoComplete="off" />
+                  </Field>
+                )}
               </div>
               {askDuplicate && (
                 <Alert tone="warning" title={t("possibleDuplicate")}>
@@ -328,11 +332,33 @@ export function TakePayment({
                   </span>
                 </Alert>
               )}
-              <div className="flex justify-end">
-                <Button loading={busy} onClick={() => void pay()}>
-                  {t("takePayment")}
-                </Button>
-              </div>
+              {requesting ? (
+                // Mobile money: the bill's amount is requested on the payer's phone; they approve it with their PIN and the
+                // receipt comes by itself (like an owner paying online).
+                <div className="flex flex-wrap items-start justify-between gap-3 rounded-md border bg-muted/30 p-3">
+                  <PushPayment
+                    key={`${found.parcel.id}-${requestBill}`}
+                    billId={requestBill}
+                    allowed
+                    phone={v.payerPhone}
+                    providers={pushProviders}
+                  />
+                  <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => setTypeRef(true)}>
+                    {t("push.typeReference")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex justify-end gap-3">
+                  {isWallet && typeRef && pushProviders.length > 0 && (
+                    <Button type="button" variant="link" size="sm" onClick={() => setTypeRef(false)}>
+                      {t("push.sendInstead")}
+                    </Button>
+                  )}
+                  <Button loading={busy} onClick={() => void pay()}>
+                    {t("takePayment")}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
