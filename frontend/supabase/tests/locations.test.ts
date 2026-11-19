@@ -53,6 +53,12 @@ describe("hierarchy", () => {
 });
 
 describe("geometry", () => {
+  it("a district's boundary can be saved, and its name is placed inside it", async () => {
+    await asUser(db, admin, (tx) => tx.query(`select public.locations_set_geometry('districts', $1, $2)`, [hodan, JSON.stringify(square(45.34, 2.044, 0.004))]));
+    const inside = await scalar<boolean>(db, `select extensions.st_contains(geom, label_point) from public.districts where id = $1`, [hodan]);
+    expect(inside).toBe(true);
+  });
+
   it("imports a GeoJSON polygon, repairs it and returns the area", async () => {
     const out = await asUser(db, gisHodan, (tx) =>
       scalar<{ area_m2: number }>(tx, `select public.locations_set_geometry('neighbourhoods', $1, $2)`, [nbhd, JSON.stringify(square(45.3, 2.04))]),
