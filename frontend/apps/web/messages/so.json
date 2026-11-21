@@ -4827,7 +4827,6 @@
     "actUse": "Beddelka isticmaalka",
     "actUseBody": "Beddel waxa dhulka loo isticmaalo, tusaale ahaan deegaan una beddel ganacsi. Biilashu waxay raacayaan isticmaalka cusub marka la ansixiyo.",
     "actReady": "Diyaar",
-    "actBlocked": "Waa la xannibay: {list}",
     "actCurrentUse": "Hadda: {use}",
     "mergeNeighbours": "Dhulalka la taabanaya",
     "mergeNeighboursHint": "Dhulalka dhulkan taabanaya ee isla xaafadda ku jira. Kaliya dhulal leh milkiilayaal iyo saamiyo isku mid ah ayaa la isku dari karaa: calaamadee kuwa la isku darayo.",
@@ -4836,7 +4835,10 @@
     "mergeSameOwners": "Milkiilayaal la mid ah dhulkan: waa la isku dari karaa",
     "mergeOtherOwners": "Milkiilayaal kale: lama isku dari karo (marka hore u wareeji milkiilayaasha isku midka ah)",
     "otherPunsOptional": "Lambarro dhul oo kale (ikhtiyaari)",
-    "houseNoShort": "Guri {no}"
+    "houseNoShort": "Guri {no}",
+    "blockersShort": {
+      "unpaid": "Lama bixin"
+    }
   },
   "reports": {
     "title": "Warbixinada",

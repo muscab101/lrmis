@@ -4827,7 +4827,6 @@
     "actUse": "Change of use",
     "actUseBody": "Change what the land is used for, for example residential to commercial. Bills follow the new use once approved.",
     "actReady": "Ready",
-    "actBlocked": "Blocked: {list}",
     "actCurrentUse": "Now: {use}",
     "mergeNeighbours": "Touching plots",
     "mergeNeighboursHint": "Plots that touch this land in the same neighbourhood. Only plots with exactly the same owners and shares can be merged: tick the ones to join.",
@@ -4836,7 +4835,10 @@
     "mergeSameOwners": "Same owners as this land: can be merged",
     "mergeOtherOwners": "Different owners: cannot be merged (transfer it to the same owners first)",
     "otherPunsOptional": "Other land numbers (optional)",
-    "houseNoShort": "House {no}"
+    "houseNoShort": "House {no}",
+    "blockersShort": {
+      "unpaid": "Unpaid"
+    }
   },
   "reports": {
     "title": "Reports",

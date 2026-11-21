@@ -31,7 +31,10 @@ export function TransferWizard({
   parcelId,
   types: allTypes,
   newOwner,
+  plain = false,
 }: {
+  /** An outline button (in lists of actions) instead of the main blue one. */
+  plain?: boolean;
   parcelId: string;
   types: TransferTypeChoice[];
   /** Staff who may create owners can register a new one here (the full owner form) and add them straight away. */
@@ -70,7 +73,7 @@ export function TransferWizard({
 
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)}>
+      <Button size="sm" variant={plain ? "outline" : "default"} onClick={() => setOpen(true)}>
         <ArrowRightLeft aria-hidden />
         {t("startTransfer")}
       </Button>

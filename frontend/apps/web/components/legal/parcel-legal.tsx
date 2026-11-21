@@ -7,7 +7,7 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert, Mono } from "@dhulka/ui/misc";
-import { ArrowRightLeft, CircleCheck, CircleX, Combine, Scissors, Shapes } from "lucide-react";
+import { Combine, Scissors, Shapes } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
@@ -83,13 +83,11 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
         {/* The four ways to change this land: what each does, whether it can start now, and its button. */}
         <div className="grid gap-3 sm:grid-cols-2">
           <ActionTile
-            icon={ArrowRightLeft}
-            tone="bg-primary/10 text-primary"
             title={t("actTransfer")}
             body={t("actTransferBody")}
             status={<Status blockers={data.blockers.transfer} />}
           >
-            {!archived && can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} newOwner={newOwner} />}
+            {!archived && can.transfer && !openTransfer && <TransferWizard plain parcelId={parcel.id} types={data.transferTypes} newOwner={newOwner} />}
             {openTransfer && (
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/transfers/${openTransfer.id}`}>
@@ -99,8 +97,6 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
             )}
           </ActionTile>
           <ActionTile
-            icon={Scissors}
-            tone="bg-amber-500/10 text-amber-700 dark:text-amber-400"
             title={t("actSubdivide")}
             body={t("actSubdivideBody")}
             status={<Status blockers={data.blockers.subdivide} />}
@@ -115,8 +111,6 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
             )}
           </ActionTile>
           <ActionTile
-            icon={Combine}
-            tone="bg-sky-500/10 text-sky-700 dark:text-sky-400"
             title={t("actMerge")}
             body={t("actMergeBody")}
             status={<Status blockers={data.blockers.subdivide} />}
@@ -129,8 +123,6 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
             )}
           </ActionTile>
           <ActionTile
-            icon={Shapes}
-            tone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             title={t("actUse")}
             body={t("actUseBody")}
             status={<span className="text-muted-foreground">{t("actCurrentUse", { use: ts(`landUses.${parcel.land_use}`) })}</span>}
@@ -383,20 +375,15 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
   );
 }
 
-/** One action: icon, what it does, can it start now, and its button. */
-function ActionTile({ icon: Icon, tone, title, body, status, children }: { icon: React.ComponentType<{ className?: string }>; tone: string; title: string; body: string; status: React.ReactNode; children?: React.ReactNode }) {
+/** One action: its name, what it does, whether it can start now, and its button. */
+function ActionTile({ title, body, status, children }: { title: string; body: string; status: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-card/60 p-4">
-      <div className="flex items-start gap-3">
-        <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${tone}`}>
-          <Icon className="size-4" aria-hidden />
-        </span>
-        <div className="min-w-0 space-y-1">
-          <p className="font-semibold">{title}</p>
-          <p className="text-xs leading-relaxed text-muted-foreground">{body}</p>
-        </div>
+    <div className="flex flex-col gap-3 rounded-md border p-4">
+      <div className="space-y-1">
+        <p className="font-medium">{title}</p>
+        <p className="text-muted-foreground">{body}</p>
       </div>
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 text-xs">
         {status}
         {children && <div className="flex flex-wrap gap-2">{children}</div>}
       </div>
@@ -404,22 +391,14 @@ function ActionTile({ icon: Icon, tone, title, body, status, children }: { icon:
   );
 }
 
-/** "Ready" in green, or what stops it in red. */
+/** Nothing blocking, or what stops it. */
 function Status({ blockers }: { blockers: string[] }) {
   const t = useTranslations("legal");
-  if (!blockers.length)
-    return (
-      <span className="flex items-center gap-1 text-status-approved">
-        <CircleCheck className="size-3.5" aria-hidden />
-        {t("actReady")}
-      </span>
-    );
-  return (
-    <span className="flex items-center gap-1 text-status-rejected">
-      <CircleX className="size-3.5" aria-hidden />
-      {t("actBlocked", { list: blockers.map((x) => t(`blockers.${x}`)).join(", ") })}
-    </span>
-  );
+  if (!blockers.length) return <span className="text-muted-foreground">{t("actReady")}</span>;
+  // Short words here ("Unpaid"); the longer blocker sentences stay for other pages.
+  const label = (x: string) => (t.has(`blockersShort.${x}`) ? t(`blockersShort.${x}`) : t(`blockers.${x}`));
+  const list = blockers.map(label).join(", ");
+  return <span className="text-status-rejected">{list.charAt(0).toUpperCase() + list.slice(1)}</span>;
 }
 
 function Section<T>({ title, empty, items, children }: { title: string; empty: string; items: T[]; children: (item: T) => React.ReactNode }) {
