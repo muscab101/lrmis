@@ -166,6 +166,22 @@ export const requestChangeAction = defineAction(
     });
   },
 );
+export interface MergeCandidate {
+  id: string;
+  pun: string | null;
+  house_no: string | null;
+  area_m2: number | null;
+  land_use: string;
+  status: string;
+  owners: { name: string; share: number | null }[];
+  same_owners: boolean;
+}
+
+/** The plots touching this land in the same neighbourhood, with their owners, for the Merge form. */
+export const mergeCandidatesAction = defineAction("parcels.merge_candidates", z.object({ parcelId: id }), async (v, ctx) =>
+  unwrap(await ctx.supabase.rpc("parcel_merge_candidates", { p_parcel: v.parcelId }), "merge candidates") as MergeCandidate[],
+);
+
 export const decideChangeAction = defineAction("parcels.decide_change", z.object({ id, approve: z.boolean(), note }), async (v, ctx) =>
   rpc(ctx, "parcel_change_decide", { p_id: v.id, p_approve: v.approve, p_note: v.note }),
 );

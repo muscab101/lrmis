@@ -7,14 +7,16 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input, Textarea } from "@dhulka/ui/input";
 import { Alert, Mono } from "@dhulka/ui/misc";
-import { Scissors } from "lucide-react";
+import { ArrowRightLeft, CircleCheck, CircleX, Combine, Scissors, Shapes } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import {
   createLeaseAction,
   endLeaseAction,
+  mergeCandidatesAction,
   requestChangeAction,
+  type MergeCandidate,
 } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { Link } from "@/i18n/navigation";
@@ -46,11 +48,23 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
   const [lessee, setLessee] = useState<ComboOption | null>(null);
   const date = (d: string) => format.dateTime(new Date(d), { dateStyle: "medium" });
   const archived = parcel.status === "archived";
-  const blockList = (b: string[]) => (b.length ? b.map((x) => t(`blockers.${x}`)).join(" · ") : t("noBlockers"));
   const searchParties = useCallback(async (q: string): Promise<ComboOption[]> => {
     const res = await searchPartiesAction({ q });
     return res.ok ? res.data.map((p) => ({ value: p.id, label: p.full_name, hint: p.id_number ?? p.phone ?? "" })) : [];
   }, []);
+  // Merge: the touching plots (with owners) loaded when the form opens; the ticked ones are merged.
+  const [cands, setCands] = useState<MergeCandidate[] | null>(null);
+  const [picked, setPicked] = useState<string[]>([]);
+  useEffect(() => {
+    if (dialog !== "merge") return;
+    let live = true;
+    setCands(null);
+    setPicked([]);
+    mergeCandidatesAction({ parcelId: parcel.id }).then((r) => live && setCands(r.ok ? r.data : []));
+    return () => {
+      live = false;
+    };
+  }, [dialog, parcel.id]);
   const open = (d: Dialog) => {
     setF({});
     setDialog(d);
@@ -61,20 +75,21 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{t("cardTitle")}</CardTitle>
-        <p className="text-sm text-muted-foreground">{t("cardHelp")}</p>
+        <p className="text-sm text-muted-foreground">{t("actionsIntro")}</p>
       </CardHeader>
       <CardContent className="space-y-6 text-sm">
         {archived && <Alert tone="warning" title={t("archived")} />}
-        <dl className="grid gap-1 sm:grid-cols-[10rem_1fr]">
-          <dt className="text-muted-foreground">{t("canTransfer")}</dt>
-          <dd className={data.blockers.transfer.length ? "text-status-rejected" : "text-status-approved"}>{blockList(data.blockers.transfer)}</dd>
-          <dt className="text-muted-foreground">{t("canSubdivide")}</dt>
-          <dd className={data.blockers.subdivide.length ? "text-status-rejected" : "text-status-approved"}>{blockList(data.blockers.subdivide)}</dd>
-        </dl>
 
-        {!archived && (
-          <div className="flex flex-wrap gap-2">
-            {can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} newOwner={newOwner} />}
+        {/* The four ways to change this land: what each does, whether it can start now, and its button. */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ActionTile
+            icon={ArrowRightLeft}
+            tone="bg-primary/10 text-primary"
+            title={t("actTransfer")}
+            body={t("actTransferBody")}
+            status={<Status blockers={data.blockers.transfer} />}
+          >
+            {!archived && can.transfer && !openTransfer && <TransferWizard parcelId={parcel.id} types={data.transferTypes} newOwner={newOwner} />}
             {openTransfer && (
               <Button size="sm" variant="outline" asChild>
                 <Link href={`/transfers/${openTransfer.id}`}>
@@ -82,32 +97,60 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
                 </Link>
               </Button>
             )}
-            {can.change && (
-              <>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/parcels/${parcel.id}/subdivide`}>
-                    <Scissors aria-hidden />
-                    {t("subdivide")}
-                  </Link>
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => open("merge")}>
-                  {t("merge")}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => open("use")}>
-                  {t("changeUse")}
-                </Button>
-              </>
-            )}
-            {can.lease && parcel.ownership === "public" && !data.leases.some((l) => l.status === "active") && (
-              <Button size="sm" variant="outline" onClick={() => open("lease")}>
-                {t("newLease")}
+          </ActionTile>
+          <ActionTile
+            icon={Scissors}
+            tone="bg-amber-500/10 text-amber-700 dark:text-amber-400"
+            title={t("actSubdivide")}
+            body={t("actSubdivideBody")}
+            status={<Status blockers={data.blockers.subdivide} />}
+          >
+            {!archived && can.change && (
+              <Button size="sm" variant="outline" asChild>
+                <Link href={`/parcels/${parcel.id}/subdivide`}>
+                  <Scissors aria-hidden />
+                  {t("subdivide")}
+                </Link>
               </Button>
             )}
+          </ActionTile>
+          <ActionTile
+            icon={Combine}
+            tone="bg-sky-500/10 text-sky-700 dark:text-sky-400"
+            title={t("actMerge")}
+            body={t("actMergeBody")}
+            status={<Status blockers={data.blockers.subdivide} />}
+          >
+            {!archived && can.change && (
+              <Button size="sm" variant="outline" onClick={() => open("merge")}>
+                <Combine aria-hidden />
+                {t("merge")}
+              </Button>
+            )}
+          </ActionTile>
+          <ActionTile
+            icon={Shapes}
+            tone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            title={t("actUse")}
+            body={t("actUseBody")}
+            status={<span className="text-muted-foreground">{t("actCurrentUse", { use: ts(`landUses.${parcel.land_use}`) })}</span>}
+          >
+            {!archived && can.change && (
+              <Button size="sm" variant="outline" onClick={() => open("use")}>
+                <Shapes aria-hidden />
+                {t("changeUse")}
+              </Button>
+            )}
+          </ActionTile>
+        </div>
+
+        {!archived && can.lease && parcel.ownership === "public" && !data.leases.some((l) => l.status === "active") && (
+          <div>
+            <Button size="sm" variant="outline" onClick={() => open("lease")}>
+              {t("newLease")}
+            </Button>
           </div>
         )}
-
-
-
 
         <Section title={t("transfers")} empty={t("none")} items={data.transfers}>
           {(x) => (
@@ -188,11 +231,55 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
         description={t("mergeBody")}
         confirmLabel={t("submitRequest")}
         successMessage={t("requested")}
-        submit={() => requestChangeAction({ kind: "merge", parcelIds: [parcel.id], otherPuns: (f.puns ?? "").split(/[\s,]+/).filter(Boolean), reason: f.reason ?? "" })}
+        className="max-w-2xl"
+        submit={async () => {
+          const otherPuns = [...(cands ?? []).filter((c) => picked.includes(c.id) && c.pun).map((c) => c.pun!), ...(f.puns ?? "").split(/[\s,]+/).filter(Boolean)];
+          if (otherPuns.length === 0) return { ok: false as const, error: { code: "VALIDATION" as const, requestId: "", fieldErrors: { otherPuns: ["validation.merge_pick"] } } };
+          return requestChangeAction({ kind: "merge", parcelIds: [parcel.id], otherPuns, reason: f.reason ?? "" });
+        }}
       >
         {(fe) => (
           <>
-            <Field id="puns" label={t("otherPuns")} hint={t("otherPunsHint")} error={fe("otherPuns")} required>
+            <Field id="neighbours" label={t("mergeNeighbours")} hint={t("mergeNeighboursHint")} error={fe("otherPuns")}>
+              <div className="max-h-72 space-y-2 overflow-y-auto">
+                {cands === null && <p className="text-muted-foreground text-sm">{tc("loading")}</p>}
+                {cands?.length === 0 && <p className="text-muted-foreground text-sm">{t("mergeNoNeighbours")}</p>}
+                {cands?.map((c) => {
+                  const on = picked.includes(c.id);
+                  return (
+                    <label
+                      key={c.id}
+                      className={`flex gap-3 rounded-md border p-3 text-sm ${c.same_owners ? "cursor-pointer hover:bg-muted/40" : "opacity-70"} ${on ? "border-primary bg-primary/5" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-1"
+                        disabled={!c.same_owners}
+                        checked={on}
+                        onChange={(e) => setPicked((cur) => (e.target.checked ? [...cur, c.id] : cur.filter((x) => x !== c.id)))}
+                      />
+                      <span className="min-w-0 flex-1 space-y-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <Link href={`/parcels/${c.id}`} target="_blank" className="font-medium hover:text-primary hover:underline">
+                            <Mono>{c.pun ?? "—"}</Mono>
+                          </Link>
+                          {c.house_no && <span className="text-muted-foreground text-xs">{t("houseNoShort", { no: c.house_no })}</span>}
+                          {c.area_m2 != null && <span className="text-muted-foreground text-xs">{format.number(Number(c.area_m2), { maximumFractionDigits: 0 })} m²</span>}
+                          <span className="text-muted-foreground text-xs">{ts(`landUses.${c.land_use}`)}</span>
+                        </span>
+                        <span className="block text-xs">
+                          {c.owners.length ? c.owners.map((o) => (o.share != null && Number(o.share) < 100 ? `${o.name} (${Number(o.share)}%)` : o.name)).join(", ") : t("mergeNoOwners")}
+                        </span>
+                        <span className={`block text-xs ${c.same_owners ? "text-status-approved" : "text-status-rejected"}`}>
+                          {c.same_owners ? t("mergeSameOwners") : t("mergeOtherOwners")}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Field>
+            <Field id="puns" label={t("otherPunsOptional")} hint={t("otherPunsHint")}>
               <Input className="font-mono" value={f.puns ?? ""} onChange={(e) => set("puns", e.target.value)} />
             </Field>
             <Field id="reason" label={t("reason")} error={fe("reason")} required>
@@ -293,6 +380,45 @@ export function ParcelLegalCard({ parcel, data, can, newOwner = null }: Props) {
         )}
       </FormDialog>
     </Card>
+  );
+}
+
+/** One action: icon, what it does, can it start now, and its button. */
+function ActionTile({ icon: Icon, tone, title, body, status, children }: { icon: React.ComponentType<{ className?: string }>; tone: string; title: string; body: string; status: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border bg-card/60 p-4">
+      <div className="flex items-start gap-3">
+        <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${tone}`}>
+          <Icon className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0 space-y-1">
+          <p className="font-semibold">{title}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{body}</p>
+        </div>
+      </div>
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
+        {status}
+        {children && <div className="flex flex-wrap gap-2">{children}</div>}
+      </div>
+    </div>
+  );
+}
+
+/** "Ready" in green, or what stops it in red. */
+function Status({ blockers }: { blockers: string[] }) {
+  const t = useTranslations("legal");
+  if (!blockers.length)
+    return (
+      <span className="flex items-center gap-1 text-status-approved">
+        <CircleCheck className="size-3.5" aria-hidden />
+        {t("actReady")}
+      </span>
+    );
+  return (
+    <span className="flex items-center gap-1 text-status-rejected">
+      <CircleX className="size-3.5" aria-hidden />
+      {t("actBlocked", { list: blockers.map((x) => t(`blockers.${x}`)).join(", ") })}
+    </span>
   );
 }
 

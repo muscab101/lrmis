@@ -550,7 +550,8 @@
     "documents_required": "Attach at least one document (PDF, Word, Excel or a photo).",
     "document_too_big": "This file is larger than 50 MB.",
     "document_type": "Program files (like .exe) can’t be attached. Documents, photos, videos and audio are fine.",
-    "document_upload_failed": "The file did not upload. Check the connection and try again."
+    "document_upload_failed": "The file did not upload. Check the connection and try again.",
+    "merge_pick": "Tick at least one touching plot, or type another land number."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -4815,7 +4816,27 @@
     "removeDocument": "Remove document",
     "uploading": "Uploading…",
     "documentsUploaded": "{count, plural, one {# document attached} other {# documents attached}}",
-    "documentsSomeFailed": "The transfer was saved, but some documents did not upload. Add them on the transfer page."
+    "documentsSomeFailed": "The transfer was saved, but some documents did not upload. Add them on the transfer page.",
+    "actionsIntro": "Four ways to change this land. Each one is checked and must be approved before it takes effect.",
+    "actTransfer": "Transfer ownership",
+    "actTransferBody": "Move the land to new owners: sale, gift, inheritance or exchange. Attach the documents; the stamp duty must be paid before approval.",
+    "actSubdivide": "Subdivide",
+    "actSubdivideBody": "Split this land into smaller plots on the map. Each new plot gets its own number (PUN + A, B…), owners and bills.",
+    "actMerge": "Merge",
+    "actMergeBody": "Join this land with touching plots in the same neighbourhood that have the same owners, into one plot.",
+    "actUse": "Change of use",
+    "actUseBody": "Change what the land is used for, for example residential to commercial. Bills follow the new use once approved.",
+    "actReady": "Ready",
+    "actBlocked": "Blocked: {list}",
+    "actCurrentUse": "Now: {use}",
+    "mergeNeighbours": "Touching plots",
+    "mergeNeighboursHint": "Plots that touch this land in the same neighbourhood. Only plots with exactly the same owners and shares can be merged: tick the ones to join.",
+    "mergeNoNeighbours": "No registered plot touches this land in its neighbourhood.",
+    "mergeNoOwners": "No owner recorded",
+    "mergeSameOwners": "Same owners as this land: can be merged",
+    "mergeOtherOwners": "Different owners: cannot be merged (transfer it to the same owners first)",
+    "otherPunsOptional": "Other land numbers (optional)",
+    "houseNoShort": "House {no}"
   },
   "reports": {
     "title": "Reports",

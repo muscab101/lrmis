@@ -550,7 +550,8 @@
     "documents_required": "Ku lifaaq ugu yaraan hal dukumenti (PDF, Word, Excel ama sawir).",
     "document_too_big": "Faylkan wuxuu ka weyn yahay 50 MB.",
     "document_type": "Faylasha barnaamijyada (sida .exe) lama lifaaqi karo. Dukumentiyada, sawirrada, muuqaallada iyo codadka waa la aqbalayaa.",
-    "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day."
+    "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day.",
+    "merge_pick": "Calaamadee ugu yaraan hal dhul oo la taabanaya, ama qor lambar dhul oo kale."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -4815,7 +4816,27 @@
     "removeDocument": "Ka saar dukumentiga",
     "uploading": "Waa la soo gelinayaa…",
     "documentsUploaded": "{count, plural, one {# dukumenti ayaa la lifaaqay} other {# dukumenti ayaa la lifaaqay}}",
-    "documentsSomeFailed": "Wareejinta waa la keydiyay, laakiin dukumentiyada qaar lama soo gelin. Ku dar bogga wareejinta."
+    "documentsSomeFailed": "Wareejinta waa la keydiyay, laakiin dukumentiyada qaar lama soo gelin. Ku dar bogga wareejinta.",
+    "actionsIntro": "Afar hab oo dhulkan lagu beddeli karo. Mid kasta waa la hubiyaa waana in la ansixiyaa ka hor intuusan dhaqan gelin.",
+    "actTransfer": "Wareejinta lahaanshaha",
+    "actTransferBody": "U wareeji dhulka milkiilayaal cusub: iib, hadiyad, dhaxal ama is-weydaarsi. Ku lifaaq dukumentiyada; canshuurta tigidhka waa in la bixiyaa ka hor ansixinta.",
+    "actSubdivide": "Kala qaybin",
+    "actSubdivideBody": "Dhulkan u kala qaybi dhulal ka yar khariidadda. Dhul kasta oo cusub wuxuu helayaa lambar u gaar ah (PUN + A, B…), milkiilayaal iyo biilal.",
+    "actMerge": "Isku darid",
+    "actMergeBody": "Dhulkan ku dar dhulal la taabanaya oo isla xaafadda ku jira, milkiilayaashooduna isku mid yihiin, si ay hal dhul u noqdaan.",
+    "actUse": "Beddelka isticmaalka",
+    "actUseBody": "Beddel waxa dhulka loo isticmaalo, tusaale ahaan deegaan una beddel ganacsi. Biilashu waxay raacayaan isticmaalka cusub marka la ansixiyo.",
+    "actReady": "Diyaar",
+    "actBlocked": "Waa la xannibay: {list}",
+    "actCurrentUse": "Hadda: {use}",
+    "mergeNeighbours": "Dhulalka la taabanaya",
+    "mergeNeighboursHint": "Dhulalka dhulkan taabanaya ee isla xaafadda ku jira. Kaliya dhulal leh milkiilayaal iyo saamiyo isku mid ah ayaa la isku dari karaa: calaamadee kuwa la isku darayo.",
+    "mergeNoNeighbours": "Ma jiro dhul diiwaangashan oo dhulkan ku taabanaya xaafaddiisa.",
+    "mergeNoOwners": "Milkiile lama diiwaangelin",
+    "mergeSameOwners": "Milkiilayaal la mid ah dhulkan: waa la isku dari karaa",
+    "mergeOtherOwners": "Milkiilayaal kale: lama isku dari karo (marka hore u wareeji milkiilayaasha isku midka ah)",
+    "otherPunsOptional": "Lambarro dhul oo kale (ikhtiyaari)",
+    "houseNoShort": "Guri {no}"
   },
   "reports": {
     "title": "Warbixinada",

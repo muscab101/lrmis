@@ -247,6 +247,13 @@ describe("subdivision, merge, change of use, leases (Phase 9)", () => {
   });
 
   it("merges adjacent parcels with the same owners back into one", async () => {
+    // The merge list shows the touching half with the same owners; the far-away public plot is not offered.
+    const cands = await asUser(db, gis, (tx) =>
+      tx.query<{ id: string; same_owners: boolean; owners: { name: string }[] }>(`select id, same_owners, owners from public.parcel_merge_candidates($1)`, [children[0]]).then((r) => r.rows),
+    );
+    expect(cands.map((c) => c.id)).toEqual([children[1]]);
+    expect(cands[0]!.same_owners).toBe(true);
+    expect(cands[0]!.owners.map((o) => o.name).sort()).toEqual(["Buyer Amina", "Buyer Bashir"]);
     const id = await asUser(db, gis, (tx) => scalar<string>(tx, `select public.parcel_change_request('merge', $1, '{}', 'Owners want one plot again')`, [children]));
     const out = await asUser(db, registrar2, (tx) => scalar<{ new_parcels: string[] }>(tx, `select public.parcel_change_decide($1, true, 'ok')`, [id]));
     const merged = out.new_parcels[0]!;
