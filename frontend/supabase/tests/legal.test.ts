@@ -104,6 +104,8 @@ describe("transfers, disputes, liens, orders (Phase 9)", () => {
       asUser(db, desk, (tx) => tx.query(`select public.transfer_document_add($1, 'elsewhere/x.pdf', 'x.pdf', 'application/pdf', 10)`, [transfer])),
       "VALIDATION: document",
     );
+    await asUser(db, desk, (tx) => tx.query(`select public.transfer_document_check($1)`, [transfer]));
+    await expectError(asUser(db, legal, (tx) => tx.query(`select public.transfer_document_check($1)`, [transfer])), "PERMISSION_DENIED");
     const extra = await attach(transfer, "id-copy.docx");
     await asUser(db, desk, (tx) => tx.query(`select public.transfer_document_remove($1)`, [extra]));
     expect(await scalar<number>(db, `select count(*)::int from public.transfer_documents where transfer_id = $1`, [transfer])).toBe(0);

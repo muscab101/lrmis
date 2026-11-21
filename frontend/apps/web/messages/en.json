@@ -548,8 +548,9 @@
     "letters_only": "Use letters only (no numbers).",
     "remapSurveyor": "Choose a surveyor who works in this district and records locations.",
     "documents_required": "Attach at least one document (PDF, Word, Excel or a photo).",
-    "document_too_big": "This file is larger than 20 MB.",
-    "document_type": "This kind of file can’t be attached. Use PDF, Word, Excel, a text file or a photo."
+    "document_too_big": "This file is larger than 50 MB.",
+    "document_type": "Program files (like .exe) can’t be attached. Documents, photos, videos and audio are fine.",
+    "document_upload_failed": "The file did not upload. Check the connection and try again."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -4808,7 +4809,7 @@
     "actionsTab": "Actions",
     "changesSubtitle": "Splitting, merging, change of use and corrections of land, waiting for a decision.",
     "documents": "Documents",
-    "documentsHint": "Attach the papers for this transfer: sale agreement, ID copies, court or family letters… PDF, Word, Excel or a photo, up to 20 MB each. At least one is needed before it can be submitted.",
+    "documentsHint": "Attach the papers for this transfer: sale agreement, ID copies, court or family letters, photos, a video or a voice recording. Any file up to 50 MB each. At least one is needed before it can be submitted.",
     "addDocuments": "Add documents",
     "documentsNone": "No documents yet. Attach at least one before submitting for approval.",
     "removeDocument": "Remove document",

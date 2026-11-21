@@ -548,8 +548,9 @@
     "letters_only": "Isticmaal xarfo kaliya (lambaro ma aha).",
     "remapSurveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha.",
     "documents_required": "Ku lifaaq ugu yaraan hal dukumenti (PDF, Word, Excel ama sawir).",
-    "document_too_big": "Faylkan wuxuu ka weyn yahay 20 MB.",
-    "document_type": "Nooca faylkan lama lifaaqi karo. Isticmaal PDF, Word, Excel, fayl qoraal ah ama sawir."
+    "document_too_big": "Faylkan wuxuu ka weyn yahay 50 MB.",
+    "document_type": "Faylasha barnaamijyada (sida .exe) lama lifaaqi karo. Dukumentiyada, sawirrada, muuqaallada iyo codadka waa la aqbalayaa.",
+    "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -4808,7 +4809,7 @@
     "actionsTab": "Tallaabooyin",
     "changesSubtitle": "Kala qaybinta, isku darka, beddelka isticmaalka iyo saxitaanka dhulka, oo sugaya go'aan.",
     "documents": "Dukumentiyada",
-    "documentsHint": "Ku lifaaq waraaqaha wareejintan: heshiiska iibka, nuqulka aqoonsiga, warqadaha maxkamadda ama qoyska… PDF, Word, Excel ama sawir, ilaa 20 MB mid kasta. Ugu yaraan mid ayaa loo baahan yahay ka hor intaan la gudbin.",
+    "documentsHint": "Ku lifaaq waraaqaha wareejintan: heshiiska iibka, nuqulka aqoonsiga, warqadaha maxkamadda ama qoyska, sawirro, muuqaal ama cod la duubay. Fayl kasta ilaa 50 MB. Ugu yaraan mid ayaa loo baahan yahay ka hor intaan la gudbin.",
     "addDocuments": "Ku dar dukumentiyo",
     "documentsNone": "Weli dukumenti lama lifaaqin. Ku lifaaq ugu yaraan mid ka hor intaadan u gudbin ansixinta.",
     "removeDocument": "Ka saar dukumentiga",

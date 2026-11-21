@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { normalizePun } from "@/lib/pun";
 import { log } from "@/lib/server/log";
-import { TRANSFER_DOCS_BUCKET, TRANSFER_DOC_EXT, TRANSFER_DOC_MAX } from "@/lib/server/transfer-documents";
+import { TRANSFER_DOCS_BUCKET, TRANSFER_DOC_BLOCKED_EXT, TRANSFER_DOC_MAX } from "@/lib/server/transfer-documents";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
@@ -67,28 +67,44 @@ export const createTransferAction = defineAction(
 export const submitTransferAction = defineAction("transfers.submit", z.object({ id }), async (v, ctx) => rpc(ctx, "transfer_submit", { p_id: v.id }));
 export const cancelTransferAction = defineAction("transfers.cancel", z.object({ id, note }), async (v, ctx) => rpc(ctx, "transfer_cancel", { p_id: v.id, p_reason: v.note }));
 
-/** Attach one document (PDF, Word, Excel, a photo…) to a transfer. */
-export async function uploadTransferDocumentAction(form: FormData) {
-  const handler = defineAction("transfers.document_add", z.object({ transferId: id }), async ({ transferId }, ctx) => {
-    const file = form.get("file");
-    if (!(file instanceof File) || file.size === 0) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.required"] });
-    if (file.size > TRANSFER_DOC_MAX) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_too_big"] });
-    const ext = (file.name.split(".").pop() ?? "").toLowerCase();
-    if (!TRANSFER_DOC_EXT.includes(ext)) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_type"] });
-    const path = `${transferId}/${crypto.randomUUID()}.${ext}`;
+/**
+ * Step 1 of attaching a file (any document, photo, video or audio up to 50 MB): checks the caller may add to this
+ * transfer and returns a one-time upload link, so the browser sends the file straight to the private store.
+ */
+export const prepareTransferDocumentAction = defineAction(
+  "transfers.document_prepare",
+  z.object({ transferId: id, name: z.string().trim().min(1).max(255), size: z.number().int() }),
+  async (v, ctx) => {
+    unwrap(await ctx.supabase.rpc("transfer_document_check", { p_transfer: v.transferId }), "transfer document");
+    if (v.size <= 0) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.required"] });
+    if (v.size > TRANSFER_DOC_MAX) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_too_big"] });
+    const dot = v.name.lastIndexOf(".");
+    const ext = dot > 0 ? v.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) : "";
+    if (TRANSFER_DOC_BLOCKED_EXT.includes(ext)) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_type"] });
+    const path = `${v.transferId}/${crypto.randomUUID()}${ext ? `.${ext}` : ""}`;
+    const { data, error } = await (await createAdminClient()).storage.from(TRANSFER_DOCS_BUCKET).createSignedUploadUrl(path);
+    if (error || !data) throw new Error(`transfer document upload link: ${error?.message ?? "none"}`);
+    return { bucket: TRANSFER_DOCS_BUCKET, path, token: data.token };
+  },
+);
+
+/** Step 2: record the uploaded file on the transfer (the file is removed again if that fails). */
+export const recordTransferDocumentAction = defineAction(
+  "transfers.document_add",
+  z.object({ transferId: id, path: z.string().max(300), name: z.string().trim().min(1).max(255), mime: z.string().max(150).default(""), size: z.number().int().positive() }),
+  async (v, ctx) => {
     const admin = await createAdminClient();
-    const up = await admin.storage.from(TRANSFER_DOCS_BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream" });
-    if (up.error) throw new Error(`transfer document upload: ${up.error.message}`);
-    const res = await ctx.supabase.rpc("transfer_document_add", { p_transfer: transferId, p_path: path, p_name: file.name, p_mime: file.type || "application/octet-stream", p_size: file.size });
+    const res = await ctx.supabase.rpc("transfer_document_add", { p_transfer: v.transferId, p_path: v.path, p_name: v.name, p_mime: v.mime || "application/octet-stream", p_size: v.size });
     if (res.error) {
-      const rm = await admin.storage.from(TRANSFER_DOCS_BUCKET).remove([path]);
-      if (rm.error) log("error", "transfers.document_cleanup_failed", { requestId: ctx.requestId, path });
+      if (v.path.startsWith(`${v.transferId}/`)) {
+        const rm = await admin.storage.from(TRANSFER_DOCS_BUCKET).remove([v.path]);
+        if (rm.error) log("error", "transfers.document_cleanup_failed", { requestId: ctx.requestId, path: v.path });
+      }
       unwrap(res, "transfer document");
     }
     return done({ id: res.data as string });
-  });
-  return handler({ transferId: String(form.get("transferId") ?? "") });
-}
+  },
+);
 
 /** Remove a document from a transfer that is still a draft. */
 export const removeTransferDocumentAction = defineAction("transfers.document_remove", z.object({ id }), async (v, ctx) => {

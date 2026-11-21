@@ -6,14 +6,14 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
-import { ArrowRightLeft, FileText, Paperclip, Trash2, UserPlus } from "lucide-react";
+import { ArrowRightLeft, Paperclip, Trash2, UserPlus } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import { createTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { PartyForm } from "@/components/owners/party-form";
-import { formatBytes, TRANSFER_DOC_ACCEPT, uploadTransferFiles } from "@/components/legal/transfer-documents";
+import { DocIcon, formatBytes, uploadTransferFiles } from "@/components/legal/transfer-documents";
 import { useErrorMessage, useValidationMessage } from "@/lib/client/errors";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { TransferTypeChoice } from "@/lib/server/legal";
@@ -196,7 +196,6 @@ export function TransferWizard({
                   ref={fileInput}
                   type="file"
                   multiple
-                  accept={TRANSFER_DOC_ACCEPT}
                   className="hidden"
                   onChange={(e) => {
                     const picked = Array.from(e.target.files ?? []);
@@ -210,7 +209,7 @@ export function TransferWizard({
                 </Button>
                 {files.map((f, i) => (
                   <div key={`${f.name}-${f.size}`} className="flex items-center gap-2 text-sm">
-                    <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    <DocIcon mime={f.type} className="size-4 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate">{f.name}</span>
                     <span className="text-xs text-muted-foreground">{formatBytes(f.size)}</span>
                     <Button type="button" size="icon-sm" variant="ghost" aria-label={t("removeDocument")} onClick={() => setFiles(files.filter((_, j) => j !== i))}>

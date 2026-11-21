@@ -3,10 +3,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export const TRANSFER_DOCS_BUCKET = "transfer-documents";
-/** Largest file staff may attach to a transfer (20 MB). */
-export const TRANSFER_DOC_MAX = 20 * 1024 * 1024;
-/** Any ordinary office file or picture. */
-export const TRANSFER_DOC_EXT = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "rtf", "txt", "csv", "jpg", "jpeg", "png", "webp", "heic", "gif", "tif", "tiff"];
+/** Largest file staff may attach to a transfer (50 MB, the storage limit). */
+export const TRANSFER_DOC_MAX = 50 * 1024 * 1024;
+/** Any file may be attached (documents, photos, video, audio…) except programs that could run on a computer. */
+export const TRANSFER_DOC_BLOCKED_EXT = ["exe", "msi", "bat", "cmd", "com", "scr", "pif", "vbs", "vbe", "js", "jse", "wsf", "wsh", "ps1", "psm1", "sh", "jar", "apk", "app", "dll", "sys", "lnk", "reg", "hta", "cpl", "html", "htm", "svg", "xhtml"];
 
 export interface TransferDocument {
   id: string;
@@ -30,8 +30,7 @@ export async function listTransferDocuments(transferId: string): Promise<Transfe
   const admin = await createAdminClient();
   const { data: signed } = await admin.storage.from(TRANSFER_DOCS_BUCKET).createSignedUrls(
     rows.map((r) => r.storage_path),
-    600,
-    { download: true },
+    3600,
   );
   const byPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
   return rows.map(({ storage_path, ...r }) => ({ ...r, url: byPath.get(storage_path) ?? null }));

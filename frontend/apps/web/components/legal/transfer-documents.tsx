@@ -3,19 +3,27 @@
 import { Button } from "@dhulka/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dhulka/ui/card";
 import { toast } from "@dhulka/ui/toaster";
-import { FileText, Paperclip, Trash2 } from "lucide-react";
+import { FileAudio, FileImage, FileText, FileVideo, Paperclip, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { removeTransferDocumentAction, uploadTransferDocumentAction } from "@/app/[locale]/(staff)/transfers/actions";
+import { prepareTransferDocumentAction, recordTransferDocumentAction, removeTransferDocumentAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { useRouter } from "@/i18n/navigation";
 import { useErrorMessage, useValidationMessage } from "@/lib/client/errors";
+import { createClient } from "@/lib/supabase/client";
 
-/** File types staff may attach (matches the server check). */
-export const TRANSFER_DOC_ACCEPT = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf,.txt,.csv,.jpg,.jpeg,.png,.webp,.heic,.gif,.tif,.tiff";
+/** Largest file (the server and storage check it too). */
+export const TRANSFER_DOC_MAX = 50 * 1024 * 1024;
+
+/** An icon for the kind of file. */
+export function DocIcon({ mime, className }: { mime: string; className?: string }) {
+  const Icon = mime.startsWith("video/") ? FileVideo : mime.startsWith("audio/") ? FileAudio : mime.startsWith("image/") ? FileImage : FileText;
+  return <Icon className={className} aria-hidden />;
+}
 
 export interface TransferDocItem {
   id: string;
   file_name: string;
+  mime_type: string;
   size_bytes: number;
   uploaded_at: string;
   url: string | null;
@@ -36,14 +44,30 @@ export async function uploadTransferFiles(
 ) {
   let failed = 0;
   for (const file of files) {
-    const fd = new FormData();
-    fd.set("transferId", transferId);
-    fd.set("file", file);
-    const r = await uploadTransferDocumentAction(fd);
+    if (file.size > TRANSFER_DOC_MAX) {
+      failed++;
+      show(`${file.name}: ${messages.vm("validation.document_too_big")}`);
+      continue;
+    }
+    const prep = await prepareTransferDocumentAction({ transferId, name: file.name, size: file.size });
+    if (!prep.ok) {
+      failed++;
+      const field = prep.error.fieldErrors?.documents?.[0];
+      show(`${file.name}: ${field ? messages.vm(field) : messages.em(prep.error)}`);
+      continue;
+    }
+    const up = await createClient()
+      .storage.from(prep.data.bucket)
+      .uploadToSignedUrl(prep.data.path, prep.data.token, file, { contentType: file.type || "application/octet-stream" });
+    if (up.error) {
+      failed++;
+      show(`${file.name}: ${messages.vm("validation.document_upload_failed")}`);
+      continue;
+    }
+    const r = await recordTransferDocumentAction({ transferId, path: prep.data.path, name: file.name, mime: file.type, size: file.size });
     if (!r.ok) {
       failed++;
-      const field = r.error.fieldErrors?.documents?.[0];
-      show(`${file.name}: ${field ? messages.vm(field) : messages.em(r.error)}`);
+      show(`${file.name}: ${messages.em(r.error)}`);
     }
   }
   return failed;
@@ -84,7 +108,7 @@ export function TransferDocuments({ transferId, docs, canAdd, canRemove }: { tra
         <CardTitle className="text-base">{t("documents")}</CardTitle>
         {canAdd && (
           <>
-            <input ref={input} type="file" multiple accept={TRANSFER_DOC_ACCEPT} className="hidden" onChange={(e) => add(e.target.files)} />
+            <input ref={input} type="file" multiple className="hidden" onChange={(e) => add(e.target.files)} />
             <Button size="sm" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
               <Paperclip aria-hidden />
               {busy ? t("uploading") : t("addDocuments")}
@@ -98,25 +122,30 @@ export function TransferDocuments({ transferId, docs, canAdd, canRemove }: { tra
         ) : (
           <ul className="divide-y text-sm">
             {docs.map((d) => (
-              <li key={d.id} className="flex items-center gap-3 py-2">
-                <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                <span className="min-w-0 flex-1 truncate">
-                  {d.url ? (
-                    <a href={d.url} className="hover:text-primary hover:underline" target="_blank" rel="noreferrer">
-                      {d.file_name}
-                    </a>
-                  ) : (
-                    d.file_name
+              <li key={d.id} className="space-y-2 py-2">
+                <div className="flex items-center gap-3">
+                  <DocIcon mime={d.mime_type} className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {d.url ? (
+                      <a href={d.url} className="hover:text-primary hover:underline" target="_blank" rel="noreferrer">
+                        {d.file_name}
+                      </a>
+                    ) : (
+                      d.file_name
+                    )}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {formatBytes(d.size_bytes)} · {format.dateTime(new Date(d.uploaded_at), { dateStyle: "medium" })}
+                  </span>
+                  {canRemove && (
+                    <Button size="icon-sm" variant="ghost" aria-label={t("removeDocument")} disabled={busy} onClick={() => remove(d.id)}>
+                      <Trash2 aria-hidden />
+                    </Button>
                   )}
-                </span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {formatBytes(d.size_bytes)} · {format.dateTime(new Date(d.uploaded_at), { dateStyle: "medium" })}
-                </span>
-                {canRemove && (
-                  <Button size="icon-sm" variant="ghost" aria-label={t("removeDocument")} disabled={busy} onClick={() => remove(d.id)}>
-                    <Trash2 aria-hidden />
-                  </Button>
-                )}
+                </div>
+                {/* Play recordings and videos right here. */}
+                {d.url && d.mime_type.startsWith("audio/") && <audio controls preload="none" src={d.url} className="w-full max-w-md" />}
+                {d.url && d.mime_type.startsWith("video/") && <video controls preload="metadata" src={d.url} className="max-h-64 w-full max-w-md rounded-md bg-black" />}
               </li>
             ))}
           </ul>
