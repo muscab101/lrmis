@@ -24,6 +24,10 @@ async function expectError(promise: Promise<unknown>, code: string) {
   await expect(promise).rejects.toThrow(new RegExp(`^${code}`));
 }
 
+/** Attach a supporting document to a transfer (submitting needs at least one). */
+const attach = (tr: string, name = "sale-agreement.pdf") =>
+  asUser(db, desk, (tx) => scalar<string>(tx, `select public.transfer_document_add($1::uuid, $2::text || '/' || gen_random_uuid() || '.pdf', $3, 'application/pdf', 1200)`, [tr, tr, name]));
+
 const LON = 45.3;
 const LAT = 2.04;
 const D = 0.0005;
@@ -94,12 +98,26 @@ describe("transfers, disputes, liens, orders (Phase 9)", () => {
     await asUser(db, desk, (tx) =>
       tx.query(`select public.transfer_set_recipients($1, $2)`, [transfer, JSON.stringify([{ party_id: buyerA, role: "owner", share_pct: 60 }, { party_id: buyerB, role: "co_owner", share_pct: 40 }])]),
     );
+    // No document yet: it cannot be submitted.
+    await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_submit($1)`, [transfer])), "VALIDATION: documents_required");
+    await expectError(
+      asUser(db, desk, (tx) => tx.query(`select public.transfer_document_add($1, 'elsewhere/x.pdf', 'x.pdf', 'application/pdf', 10)`, [transfer])),
+      "VALIDATION: document",
+    );
+    const extra = await attach(transfer, "id-copy.docx");
+    await asUser(db, desk, (tx) => tx.query(`select public.transfer_document_remove($1)`, [extra]));
+    expect(await scalar<number>(db, `select count(*)::int from public.transfer_documents where transfer_id = $1`, [transfer])).toBe(0);
+    await attach(transfer);
     lien = await asUser(db, legal, (tx) => scalar<string>(tx, `select public.lien_register($1, $2)`, [parcel, JSON.stringify({ kind: "mortgage", holder: "Salaam Bank", amount: 5000, reference: "MTG-77" })]));
     await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_submit($1)`, [transfer])), "CONFLICT: blocked:lien");
     await expectError(asUser(db, legal, (tx) => tx.query(`select public.lien_release($1, 'Loan repaid in full')`, [lien])), "MAKER_CHECKER");
     await asUser(db, legal2, (tx) => tx.query(`select public.lien_release($1, 'Loan repaid in full')`, [lien]));
     const out = await asUser(db, desk, (tx) => scalar<{ duty: number; invoice_id: string }>(tx, `select public.transfer_submit($1)`, [transfer]));
     expect(Number(out.duty)).toBe(200);
+    // Once submitted, its documents stay; more can still be added.
+    const doc = await scalar<string>(db, `select id from public.transfer_documents where transfer_id = $1`, [transfer]);
+    await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_document_remove($1)`, [doc])), "CONFLICT: status");
+    await attach(transfer, "witness.jpg");
   });
 
   it("approval needs the stamp duty paid; it replaces the owners and cancels the certificate", async () => {
@@ -123,6 +141,7 @@ describe("transfers, disputes, liens, orders (Phase 9)", () => {
     );
     expect(await scalar<string>(db, `select status::text from public.parcels where id = $1`, [parcel])).toBe("disputed");
     const t2 = await asUser(db, desk, (tx) => scalar<string>(tx, `select public.transfer_create($1, 'gift', 500, null, null)`, [parcel]));
+    await attach(t2);
     await asUser(db, desk, (tx) => tx.query(`select public.transfer_set_recipients($1, $2)`, [t2, JSON.stringify([{ party_id: sellerParty, role: "owner", share_pct: 100 }])]));
     await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_submit($1)`, [t2])), "CONFLICT: blocked:dispute");
     await expectError(asUser(db, legal, (tx) => tx.query(`select public.dispute_close($1, 'resolved', 'Survey re-checked')`, [d])), "MAKER_CHECKER");
@@ -168,6 +187,7 @@ describe("transfer types (0207)", () => {
     );
     await expectError(asUser(db, desk, (tx) => tx.query(`select public.transfer_type_save(null, $1)`, [JSON.stringify({ name_so: "Xx", name_en: "Yy", works_as: "sale" })])), "PERMISSION_DENIED");
     const tr = await asUser(db, desk, (tx) => scalar<string>(tx, `select public.transfer_create_typed($1, $2, null, null)`, [parcel, exchange]));
+    await attach(tr);
     expect(await scalar<string>(db, `select kind::text from public.transfers where id = $1`, [tr])).toBe("sale");
     await asUser(db, desk, (tx) => tx.query(`select public.transfer_set_recipients($1, $2)`, [tr, JSON.stringify([{ party_id: sellerParty, role: "owner", share_pct: 100 }])]));
     const out = await asUser(db, desk, (tx) => scalar<{ duty: number }>(tx, `select public.transfer_submit($1)`, [tr]));

@@ -6,13 +6,15 @@ import { Field } from "@dhulka/ui/field";
 import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
-import { ArrowRightLeft, Trash2, UserPlus } from "lucide-react";
+import { ArrowRightLeft, FileText, Paperclip, Trash2, UserPlus } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { searchPartiesAction } from "@/app/[locale]/(staff)/applications/actions";
 import { createTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { PartyForm } from "@/components/owners/party-form";
+import { formatBytes, TRANSFER_DOC_ACCEPT, uploadTransferFiles } from "@/components/legal/transfer-documents";
+import { useErrorMessage, useValidationMessage } from "@/lib/client/errors";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { TransferTypeChoice } from "@/lib/server/legal";
 
@@ -48,6 +50,11 @@ export function TransferWizard({
   const [note, setNote] = useState("");
   const [people, setPeople] = useState<Recipient[]>([]);
   const [creating, setCreating] = useState(false);
+  // The supporting documents (required): uploaded once the draft exists.
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const em = useErrorMessage();
+  const vm = useValidationMessage();
   // The owner just added (picked or newly registered) stays shown in the search box.
   const [lastAdded, setLastAdded] = useState<ComboOption | null>(null);
   const addPerson = (p: ComboOption) => {
@@ -74,20 +81,28 @@ export function TransferWizard({
           if (!o) {
             setCreating(false);
             setLastAdded(null);
+            setFiles([]);
           }
         }}
         title={t("startTransfer")}
         description={t("startTransferBody")}
         confirmLabel={t("createDraft")}
-        submit={() =>
-          createTransferAction({
+        submit={async () => {
+          if (files.length === 0) {
+            return { ok: false as const, error: { code: "VALIDATION" as const, requestId: "", fieldErrors: { documents: ["validation.documents_required"] } } };
+          }
+          const res = await createTransferAction({
             parcelId,
             typeId,
             courtOrderId: null,
             owners: people.map((p, i) => ({ partyId: p.party.value, role: p.role, share: equalShares(people.length)[i]! })),
             note,
-          })
-        }
+          });
+          if (!res.ok) return res;
+          const failed = await uploadTransferFiles((res.data as { id: string }).id, files, (m) => toast.error(m), { em, vm });
+          if (failed) toast.error(t("documentsSomeFailed"));
+          return res;
+        }}
         onDone={(d) => router.push(`/transfers/${(d as { id: string }).id}`)}
         className={creating ? "max-w-3xl" : undefined}
       >
@@ -169,6 +184,36 @@ export function TransferWizard({
                       <option value="heir">{t("roles.heir")}</option>
                     </NativeSelect>
                     <Button size="icon-sm" variant="ghost" aria-label={t("remove")} onClick={() => setPeople(people.filter((_, j) => j !== i))}>
+                      <Trash2 aria-hidden />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </Field>
+            <Field id="documents" label={t("documents")} hint={t("documentsHint")} error={fe("documents")} required>
+              <div className="space-y-2">
+                <input
+                  ref={fileInput}
+                  type="file"
+                  multiple
+                  accept={TRANSFER_DOC_ACCEPT}
+                  className="hidden"
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    setFiles((cur) => [...cur, ...picked.filter((f) => !cur.some((c) => c.name === f.name && c.size === f.size))]);
+                    e.target.value = "";
+                  }}
+                />
+                <Button type="button" size="sm" variant="outline" onClick={() => fileInput.current?.click()}>
+                  <Paperclip aria-hidden />
+                  {t("addDocuments")}
+                </Button>
+                {files.map((f, i) => (
+                  <div key={`${f.name}-${f.size}`} className="flex items-center gap-2 text-sm">
+                    <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                    <span className="text-xs text-muted-foreground">{formatBytes(f.size)}</span>
+                    <Button type="button" size="icon-sm" variant="ghost" aria-label={t("removeDocument")} onClick={() => setFiles(files.filter((_, j) => j !== i))}>
                       <Trash2 aria-hidden />
                     </Button>
                   </div>

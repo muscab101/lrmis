@@ -345,7 +345,8 @@
       "not_a_surveyor": "Choose a surveyor who works in this district and records locations.",
       "remap_building": "A flat is remapped with its building: remap the building.",
       "remap_not_standing": "Demolished or archived land can't be remapped.",
-      "remap_not_assigned": "No remapping is open for this land."
+      "remap_not_assigned": "No remapping is open for this land.",
+      "documents_required": "Attach at least one document to this transfer before submitting it for approval."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -545,7 +546,10 @@
     "phone_not_registered": "This phone number has no land registered in LRMIS. Please register first at your district's LRMIS office, then sign in here.",
     "pos_district_taken": "This district already has a cash desk. One office cash desk per district: change the one it has, or switch it off first.",
     "letters_only": "Use letters only (no numbers).",
-    "remapSurveyor": "Choose a surveyor who works in this district and records locations."
+    "remapSurveyor": "Choose a surveyor who works in this district and records locations.",
+    "documents_required": "Attach at least one document (PDF, Word, Excel or a photo).",
+    "document_too_big": "This file is larger than 20 MB.",
+    "document_type": "This kind of file can’t be attached. Use PDF, Word, Excel, a text file or a photo."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -4802,7 +4806,15 @@
     "legalSubtitle": "Ownership changes, disputes, liens, court orders and land changes, in one place. Find a parcel by its PUN to start any of them.",
     "transfersTab": "Transfers",
     "actionsTab": "Actions",
-    "changesSubtitle": "Splitting, merging, change of use and corrections of land, waiting for a decision."
+    "changesSubtitle": "Splitting, merging, change of use and corrections of land, waiting for a decision.",
+    "documents": "Documents",
+    "documentsHint": "Attach the papers for this transfer: sale agreement, ID copies, court or family letters… PDF, Word, Excel or a photo, up to 20 MB each. At least one is needed before it can be submitted.",
+    "addDocuments": "Add documents",
+    "documentsNone": "No documents yet. Attach at least one before submitting for approval.",
+    "removeDocument": "Remove document",
+    "uploading": "Uploading…",
+    "documentsUploaded": "{count, plural, one {# document attached} other {# documents attached}}",
+    "documentsSomeFailed": "The transfer was saved, but some documents did not upload. Add them on the transfer page."
   },
   "reports": {
     "title": "Reports",

@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { normalizePun } from "@/lib/pun";
+import { log } from "@/lib/server/log";
+import { TRANSFER_DOCS_BUCKET, TRANSFER_DOC_EXT, TRANSFER_DOC_MAX } from "@/lib/server/transfer-documents";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
 const note = z.string().max(1000).default("");
@@ -63,6 +66,38 @@ export const createTransferAction = defineAction(
 
 export const submitTransferAction = defineAction("transfers.submit", z.object({ id }), async (v, ctx) => rpc(ctx, "transfer_submit", { p_id: v.id }));
 export const cancelTransferAction = defineAction("transfers.cancel", z.object({ id, note }), async (v, ctx) => rpc(ctx, "transfer_cancel", { p_id: v.id, p_reason: v.note }));
+
+/** Attach one document (PDF, Word, Excel, a photo…) to a transfer. */
+export async function uploadTransferDocumentAction(form: FormData) {
+  const handler = defineAction("transfers.document_add", z.object({ transferId: id }), async ({ transferId }, ctx) => {
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.required"] });
+    if (file.size > TRANSFER_DOC_MAX) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_too_big"] });
+    const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+    if (!TRANSFER_DOC_EXT.includes(ext)) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_type"] });
+    const path = `${transferId}/${crypto.randomUUID()}.${ext}`;
+    const admin = await createAdminClient();
+    const up = await admin.storage.from(TRANSFER_DOCS_BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream" });
+    if (up.error) throw new Error(`transfer document upload: ${up.error.message}`);
+    const res = await ctx.supabase.rpc("transfer_document_add", { p_transfer: transferId, p_path: path, p_name: file.name, p_mime: file.type || "application/octet-stream", p_size: file.size });
+    if (res.error) {
+      const rm = await admin.storage.from(TRANSFER_DOCS_BUCKET).remove([path]);
+      if (rm.error) log("error", "transfers.document_cleanup_failed", { requestId: ctx.requestId, path });
+      unwrap(res, "transfer document");
+    }
+    return done({ id: res.data as string });
+  });
+  return handler({ transferId: String(form.get("transferId") ?? "") });
+}
+
+/** Remove a document from a transfer that is still a draft. */
+export const removeTransferDocumentAction = defineAction("transfers.document_remove", z.object({ id }), async (v, ctx) => {
+  const path = unwrap(await ctx.supabase.rpc("transfer_document_remove", { p_id: v.id }), "transfer document") as string;
+  const admin = await createAdminClient();
+  const rm = await admin.storage.from(TRANSFER_DOCS_BUCKET).remove([path]);
+  if (rm.error) log("error", "transfers.document_cleanup_failed", { requestId: ctx.requestId, path });
+  return done(null);
+});
 
 // ---- Parcel changes ----
 export const requestChangeAction = defineAction(

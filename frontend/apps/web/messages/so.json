@@ -345,7 +345,8 @@
       "not_a_surveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha.",
       "remap_building": "Guri dabaq ah waxaa lagu sawiraa dhismihiisa: dib u sawir dhismaha.",
       "remap_not_standing": "Dhul la dumiyay ama kaydsan dib looma sawiri karo.",
-      "remap_not_assigned": "Dhulkan dib-u-sawir furan uma jiro."
+      "remap_not_assigned": "Dhulkan dib-u-sawir furan uma jiro.",
+      "documents_required": "Ku lifaaq ugu yaraan hal dukumenti wareejintan ka hor intaadan u gudbin ansixinta."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -545,7 +546,10 @@
     "phone_not_registered": "Lambarkan dhul kuma diiwaangashana LRMIS. Marka hore iska diiwaangeli xafiiska LRMIS ee degmadaada, kadibna halkan ka gal.",
     "pos_district_taken": "Degmadan horey ayay u leedahay miis lacag qaadasho. Degmo kasta hal miis xafiis: beddel kan ay leedahay, ama marka hore dami.",
     "letters_only": "Isticmaal xarfo kaliya (lambaro ma aha).",
-    "remapSurveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha."
+    "remapSurveyor": "Dooro sahamiye ka shaqeeya degmadan oo qaada goobaha.",
+    "documents_required": "Ku lifaaq ugu yaraan hal dukumenti (PDF, Word, Excel ama sawir).",
+    "document_too_big": "Faylkan wuxuu ka weyn yahay 20 MB.",
+    "document_type": "Nooca faylkan lama lifaaqi karo. Isticmaal PDF, Word, Excel, fayl qoraal ah ama sawir."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -4802,7 +4806,15 @@
     "legalSubtitle": "Beddelka lahaanshaha, murannada, deymaha, amarrada maxkamadda iyo isbeddellada dhulka, hal meel. Ku raadi dhul PUN-kiisa si aad mid kasta u bilowdo.",
     "transfersTab": "Wareejinta",
     "actionsTab": "Tallaabooyin",
-    "changesSubtitle": "Kala qaybinta, isku darka, beddelka isticmaalka iyo saxitaanka dhulka, oo sugaya go'aan."
+    "changesSubtitle": "Kala qaybinta, isku darka, beddelka isticmaalka iyo saxitaanka dhulka, oo sugaya go'aan.",
+    "documents": "Dukumentiyada",
+    "documentsHint": "Ku lifaaq waraaqaha wareejintan: heshiiska iibka, nuqulka aqoonsiga, warqadaha maxkamadda ama qoyska… PDF, Word, Excel ama sawir, ilaa 20 MB mid kasta. Ugu yaraan mid ayaa loo baahan yahay ka hor intaan la gudbin.",
+    "addDocuments": "Ku dar dukumentiyo",
+    "documentsNone": "Weli dukumenti lama lifaaqin. Ku lifaaq ugu yaraan mid ka hor intaadan u gudbin ansixinta.",
+    "removeDocument": "Ka saar dukumentiga",
+    "uploading": "Waa la soo gelinayaa…",
+    "documentsUploaded": "{count, plural, one {# dukumenti ayaa la lifaaqay} other {# dukumenti ayaa la lifaaqay}}",
+    "documentsSomeFailed": "Wareejinta waa la keydiyay, laakiin dukumentiyada qaar lama soo gelin. Ku dar bogga wareejinta."
   },
   "reports": {
     "title": "Warbixinada",

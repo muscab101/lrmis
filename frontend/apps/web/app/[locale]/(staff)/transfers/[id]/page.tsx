@@ -7,6 +7,8 @@ import { ParcelCertificate } from "@/components/documents/parcel-certificate";
 import { GeometryPreview } from "@/components/map/lazy-geometry-preview";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
 import { TransferActions } from "@/components/legal/transfer-actions";
+import { TransferDocuments } from "@/components/legal/transfer-documents";
+import { listTransferDocuments } from "@/lib/server/transfer-documents";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { TransferHistory } from "@/components/legal/transfer-history";
@@ -35,7 +37,8 @@ export default async function TransferPage({ params }: { params: Promise<{ local
   const ts = await getTranslations("stage");
   const lang = await getLocale();
   // The land being transferred, with its invoices and certificate.
-  const [land, propertyTypes] = await Promise.all([tr.parcel ? getParcel(tr.parcel.id) : null, listPropertyTypes()]);
+  const [land, propertyTypes, docs] = await Promise.all([tr.parcel ? getParcel(tr.parcel.id) : null, listPropertyTypes(), listTransferDocuments(tr.id)]);
+  const canCreate = viewer.can("transfers.create");
   const num = (n: number | null, unit: string) => (n != null ? `${format.number(Number(n), { maximumFractionDigits: 1 })} ${unit}` : "—");
   const landFacts: [string, React.ReactNode][] = land
     ? [
@@ -132,6 +135,14 @@ export default async function TransferPage({ params }: { params: Promise<{ local
             </dl>
           </CardContent>
         </Card>
+        <div className="md:col-span-2">
+          <TransferDocuments
+            transferId={tr.id}
+            docs={docs}
+            canAdd={canCreate && (tr.status === "draft" || tr.status === "submitted")}
+            canRemove={canCreate && tr.status === "draft"}
+          />
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("from")}</CardTitle>
