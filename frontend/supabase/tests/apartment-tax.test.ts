@@ -73,6 +73,23 @@ describe("apartments: flats by floor, the rest of the plot to the manager", () =
     expect(Number(await bill(r.parcel_id))).toBe(150);
   });
 
+  it("the owner's drawing: 40 × 30 plot, 600 m² built, 3 floors × 2 flats of 100 m², one owner pays everything", async () => {
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone, district_id) values ('Whole Building Owner', '+252615550199', $1) returning id`, [district]);
+    // What the land form sends for "one owner": every flat owned by that person, who is also the manager.
+    const units = Array.from({ length: 6 }, (_, i) => ({ unit_no: String(i + 1).padStart(2, "0"), floor: Math.floor(i / 2), own_m2: 100, owner_id: owner }));
+    const r = await create({ house_no: "30", plot_width_m: 40, plot_length_m: 30, floors: 2, manager_party_id: owner, units });
+    const flats = await db.query<{ id: string; unit_floor: number }>(`select id, unit_floor from public.parcels where parent_id = $1 order by unit_no`, [r.parcel_id]).then((x) => x.rows);
+    expect(flats).toHaveLength(6);
+    // Ground floor: 2 × 100 m² × $2; upper floors: 4 × 100 m² × $1; empty land 1,200 − 600 = 600 m² × $0.50.
+    const flatBills = await Promise.all(flats.map((f) => bill(f.id).then(Number)));
+    expect(flatBills).toEqual([200, 200, 100, 100, 100, 100]);
+    expect(Number(await bill(r.parcel_id))).toBe(300);
+    expect(flatBills.reduce((a, b) => a + b, 0) + 300).toBe(1100);
+    // Every bill is the one owner's: they own all six flats and manage the building.
+    expect(await scalar<number>(db, `select count(distinct po.party_id)::int from public.parcel_owners po join public.parcels c on c.id = po.parcel_id where c.parent_id = $1 and po.valid_to is null`, [r.parcel_id])).toBe(1);
+    expect(await scalar<string>(db, `select manager_party_id::text from public.parcels where id = $1`, [r.parcel_id])).toBe(owner);
+  });
+
   it("the owner entered becomes the manager; a typed name makes a new person", async () => {
     const owner = await scalar<string>(db, `insert into public.parties (full_name, phone, district_id) values ('Building Owner', '+252615550123', $1) returning id`, [district]);
     const r = await create({ house_no: "21", manager_party_id: owner });

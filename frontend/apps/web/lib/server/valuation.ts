@@ -198,3 +198,23 @@ export async function getParcelValuation(parcelId: string): Promise<ParcelValuat
     appeals: (ap.data ?? []) as unknown as AppealRow[],
   };
 }
+
+export interface BuildingType {
+  id: string;
+  name_so: string;
+  name_en: string;
+  /** What kind of land: one house, a block of flats, or a compound of several houses. */
+  layout: "house" | "flats" | "compound";
+  /** The house type (Valuation price) that bills it. */
+  grade_code: string;
+  active: boolean;
+  sort: number;
+}
+
+/** Valuation → Building types: the land form's "Building type" choices. */
+export async function listBuildingTypes(activeOnly = false) {
+  const supabase = await createClient();
+  let q = supabase.from("building_types").select("id, name_so, name_en, layout, grade_code, active, sort");
+  if (activeOnly) q = q.eq("active", true);
+  return unwrap(await q.order("sort").order("name_en"), "building types") as BuildingType[];
+}

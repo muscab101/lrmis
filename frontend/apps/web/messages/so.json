@@ -2781,7 +2781,13 @@
       "houseNoPickPlace": "Marka hore calaamadi meesha ama dooro xaafadda.",
       "houseNoFull": "Lambar kasta oo guri xaafaddan waa la qaatay.",
       "neighbourhoodLocked": "Xaafadda aaggaaga sahanka.",
-      "pinOutsideZone": "Calaamaddu waxay ku taal {place}, oo ka baxsan xaafadda aaggaaga."
+      "pinOutsideZone": "Calaamaddu waxay ku taal {place}, oo ka baxsan xaafadda aaggaaga.",
+      "houseType": "Nooca dhismaha",
+      "houseTypeHint": "Noocyadu waxay ka yimaadaan Qiimaynta → Noocyada dhismaha.",
+      "houseTypeGroup_house": "Hal guri oo hal dhul ku yaal",
+      "houseTypeGroup_flats": "Abaartamaano (hal dhisme, qaybo badan)",
+      "houseTypeGroup_compound": "Xero (guryo badan oo hal dhul ku yaal)",
+      "landType": "Nooca dhulka"
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",
@@ -2922,6 +2928,45 @@
       "bannerTitle": "Wuxuu sugayaa dib-u-sawir",
       "bannerWith": "Waxaa haya {name}",
       "bannerSince": "tan iyo {date}"
+    },
+    "flats": {
+      "ownership": "Yaa iska leh dhismaha?",
+      "ownershipOne": "Hal milkiile ayaa iska leh dhismaha oo dhan",
+      "ownershipEach": "Abaartamaan kasta milkiile u gaar ah ayuu leeyahay",
+      "ownershipOneHint": "Milkiiluhu wuxuu bixinayaa abaartamaan kasta iyo dhulka bannaan.",
+      "ownershipEachHint": "Marka hore geli maamulaha dhismaha (wuxuu bixiyaa dhulka bannaan), kadibna milkiilaha abaartamaan kasta (wuxuu bixiyaa abaartamaankiisa).",
+      "levels": "Dabaqyada",
+      "levelsHint": "Ku tiri dabaqa hoose sidoo kale: hoose + 2 dabaq oo sare = 3. Dabaqa 0 waa dabaqa hoose (salka).",
+      "perFloor": "Abaartamaanada dabaqan",
+      "built": "Dhulka la dhisay (m²)",
+      "builtHint": "Dhulka uu dhismuhu ku fadhiyo. Inta kale ee dhulka waa dhul bannaan.",
+      "builtTooBig": "Dhulka la dhisay wuu ka weyn yahay dhulka ({land}).",
+      "tooMany": "Ilaa 200 abaartamaan ayaa mar la gelin karaa.",
+      "plot": "Dhulka",
+      "emptyLand": "Dhul bannaan",
+      "ownerTitle": "Milkiilaha dhismaha",
+      "managerTitle": "Maamulaha dhismaha",
+      "ownerName": "Magaca buuxa ee milkiilaha",
+      "ownerPays": "Wuxuu bixiyaa abaartamaan kasta iyo dhulka bannaan.",
+      "managerPays": "Wuxuu bixiyaa dhulka bannaan. Milkiile kasta wuxuu bixiyaa abaartamaankiisa.",
+      "flatsTitle": "{count, plural, one {# abaartamaan} other {# abaartamaan}}",
+      "flatsAllOwner": "Dhammaan abaartamaanadu waa kuwa milkiilaha dhismaha.",
+      "flatsEachOwner": "Geli milkiilaha abaartamaan kasta.",
+      "floorBase": "Dabaqa hoose (salka)",
+      "floorUpper": "Dabaqa {floor} (sare)",
+      "billTitle": "Biilka",
+      "billBase": "{count, plural, one {# abaartamaan dabaqa hoose} other {# abaartamaan dabaqa hoose}} ({area})",
+      "billUpper": "{count, plural, one {# abaartamaan dabaq sare} other {# abaartamaan dabaq sare}} ({area})",
+      "billEmpty": "Dhul bannaan {area}",
+      "billTotal": "Wadarta",
+      "payerOwner": "Milkiilaha",
+      "payerFlatOwners": "Milkiile kasta",
+      "payerManager": "Maamulaha",
+      "noPrice": "Qiime lama dhigin Qiimaynta",
+      "billNote": "Qiimayaasha waxay ka yimaadaan Qiimaynta → Heerarka hantida: Abaartamaan (dabaqa hoose), Dabaqyada sare iyo Dhul bannaan. Xaafad leh qiimayaal u gaar ah waxaa lagu biilaa kuwaas.",
+      "perFloorTitle": "Abaartamaanada dabaq kasta",
+      "floorShare": "{count, plural, one {# abaartamaan} other {# abaartamaan}} ayaa wadaaga {floorArea}: {each} mid kasta",
+      "flatsCount": "Abaartamaanada"
     }
   },
   "notices": {
@@ -2956,7 +3001,8 @@
       "appeals": "Racfaan",
       "transfer_types": "Noocyada wareejinta",
       "price_check": "Hubi qiimaha",
-      "requests": "Dhaafis iyo racfaan"
+      "requests": "Dhaafis iyo racfaan",
+      "building_types": "Noocyada dhismaha"
     },
     "searchAssessments": "Ku raadi lambarka qiimeynta",
     "year": "Sannad",
@@ -3188,7 +3234,26 @@
     "clearPricesTitle": "Ka saar qiimayaasha gaarka ah ee {place}?",
     "clearPricesBody": "Dhulka halkaas waxaa mar kale lagu biilayaa qiimayaasha caadiga ah. Biilasha hore loo sameeyay sidooda ayay ku harayaan.",
     "pricesCleared": "{place} wuxuu mar kale isticmaalayaa qiimayaasha caadiga ah.",
-    "actions": "Ficillada"
+    "actions": "Ficillada",
+    "buildingTypesHelp": "Doorashooyinka “Nooca dhismaha” ee foomka dhulka. Mid kasta wuxuu sheegaa nooca dhulka iyo qiimaha nooca guriga ee lagu biilayo.",
+    "addBuildingType": "Ku dar nooca dhismaha",
+    "buildingLayout": "Nooca dhulka",
+    "buildingGrade": "Lagu biilayo (nooca guriga)",
+    "buildingGradeHint": "Qiimaha m² kasta ee Noocyada guryaha. Abaartamaanada waxaa lagu biilaa dabaq ahaan (Abaartamaan / Dabaqyada sare), dhulka bannaanna Dhul bannaan.",
+    "buildingFlatsNote": "Abaartamaan: dabaqa hoose Abaartamaan, dabaqyada sare Dabaqyada sare",
+    "buildingTypesNone": "Weli nooc dhisme ma jiro. Ku dar mid si foomka dhulku u helo doorashooyin.",
+    "buildingLayouts": {
+      "house": "Hal guri",
+      "flats": "Dhisme abaartamaano ah",
+      "compound": "Xero (guryo badan)"
+    },
+    "buildingLayoutHint": {
+      "house": "Hal guri oo hal dhul ku yaal.",
+      "flats": "Hal dhisme oo abaartamaano badan leh; foomku wuxuu weydiinayaa dabaqyada, abaartamaanada dabaq kasta iyo milkiilaha/milkiilayaasha.",
+      "compound": "Guryo badan oo hal dhul ku yaal, mid kasta milkiile u gaar ah."
+    },
+    "deleteBuildingTypeBody": "Waa laga saarayaa foomka dhulka. Dhulka hore loo keydiyay wuxuu haynayaa noociisa iyo qiimihiisa.",
+    "buildingTypeDeleted": "Nooca dhismaha waa la tirtiray."
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

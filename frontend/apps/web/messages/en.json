@@ -2781,7 +2781,13 @@
       "houseNoPickPlace": "Drop the pin or pick the neighbourhood first.",
       "houseNoFull": "Every house number in this neighbourhood is taken.",
       "neighbourhoodLocked": "The neighbourhood of your survey zone.",
-      "pinOutsideZone": "The pin is in {place}, outside your zone's neighbourhood."
+      "pinOutsideZone": "The pin is in {place}, outside your zone's neighbourhood.",
+      "houseType": "Building type",
+      "houseTypeHint": "The types come from Valuation → Building types.",
+      "houseTypeGroup_house": "One house on one land",
+      "houseTypeGroup_flats": "Flats (one building, several flats)",
+      "houseTypeGroup_compound": "Compound (several houses on one land)",
+      "landType": "Land type"
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",
@@ -2922,6 +2928,45 @@
       "bannerTitle": "Waiting to be remapped",
       "bannerWith": "With {name}",
       "bannerSince": "since {date}"
+    },
+    "flats": {
+      "ownership": "Who owns the building?",
+      "ownershipOne": "One owner owns the whole building",
+      "ownershipEach": "Each flat has its own owner",
+      "ownershipOneHint": "The owner pays for every flat and for the empty land.",
+      "ownershipEachHint": "First enter the building’s manager (pays the empty land), then the owner of each flat (pays their flat).",
+      "levels": "Floors",
+      "levelsHint": "Count the ground floor too: ground + 2 upper floors = 3. Floor 0 is the ground floor (base).",
+      "perFloor": "Flats on this floor",
+      "built": "Built area (m²)",
+      "builtHint": "The ground the building covers. The rest of the plot is empty land.",
+      "builtTooBig": "The built area is larger than the plot ({land}).",
+      "tooMany": "Up to 200 flats can be added at once.",
+      "plot": "Plot",
+      "emptyLand": "Empty land",
+      "ownerTitle": "Owner of the building",
+      "managerTitle": "Building manager",
+      "ownerName": "Owner’s full name",
+      "ownerPays": "Pays every flat and the empty land.",
+      "managerPays": "Pays the empty land. Each flat owner pays their own flat.",
+      "flatsTitle": "{count, plural, one {# flat} other {# flats}}",
+      "flatsAllOwner": "All flats belong to the building’s owner.",
+      "flatsEachOwner": "Enter the owner of each flat.",
+      "floorBase": "Ground floor (base)",
+      "floorUpper": "Floor {floor} (upper)",
+      "billTitle": "Bill",
+      "billBase": "{count, plural, one {# ground-floor flat} other {# ground-floor flats}} ({area})",
+      "billUpper": "{count, plural, one {# upper-floor flat} other {# upper-floor flats}} ({area})",
+      "billEmpty": "Empty land {area}",
+      "billTotal": "Total",
+      "payerOwner": "Owner",
+      "payerFlatOwners": "Each flat owner",
+      "payerManager": "Manager",
+      "noPrice": "No price set in Valuation",
+      "billNote": "Prices from Valuation → Property grades: Apartment (ground floor), Upper Floors and Empty Land. A neighbourhood with its own prices is billed at those.",
+      "perFloorTitle": "Flats on each floor",
+      "floorShare": "{count, plural, one {# flat} other {# flats}} share {floorArea}: {each} each",
+      "flatsCount": "Flats"
     }
   },
   "notices": {
@@ -2956,7 +3001,8 @@
       "appeals": "Appeals",
       "transfer_types": "Transfer types",
       "price_check": "Price check",
-      "requests": "Exemptions & appeals"
+      "requests": "Exemptions & appeals",
+      "building_types": "Building types"
     },
     "searchAssessments": "Search by assessment number",
     "year": "Year",
@@ -3188,7 +3234,26 @@
     "clearPricesTitle": "Remove {place}'s own prices?",
     "clearPricesBody": "Land there is billed at the normal prices again. Bills already made stay as they are.",
     "pricesCleared": "{place} uses the normal prices again.",
-    "actions": "Actions"
+    "actions": "Actions",
+    "buildingTypesHelp": "The choices for “Building type” on the land form. Each one says what kind of land it is and which house type price bills it.",
+    "addBuildingType": "Add building type",
+    "buildingLayout": "Kind of land",
+    "buildingGrade": "Billed at (house type)",
+    "buildingGradeHint": "The price per m² from House types. Flats are billed by floor (Apartment / Upper Floors) and the empty land at Empty Land.",
+    "buildingFlatsNote": "Flats: ground floor Apartment, upper floors Upper Floors",
+    "buildingTypesNone": "No building types yet. Add one so the land form has choices.",
+    "buildingLayouts": {
+      "house": "One house",
+      "flats": "Block of flats",
+      "compound": "Compound (several houses)"
+    },
+    "buildingLayoutHint": {
+      "house": "One house on one land.",
+      "flats": "One building with several flats; the form asks floors, flats on each floor and the owner(s).",
+      "compound": "Several houses on one land, each with its own owner."
+    },
+    "deleteBuildingTypeBody": "It is removed from the land form. Land already saved keeps its kind and price.",
+    "buildingTypeDeleted": "Building type deleted."
   },
   "billing": {
     "runsTitle": "Billing runs",

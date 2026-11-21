@@ -29,7 +29,7 @@ export default async function ZoneAddLandPage({
   if (!viewer.can("surveys.create") && !viewer.can("applications.create")) forbidden();
   const t = await getTranslations("parcels.fieldLand");
   const tz = await getTranslations("yetToRegister.zone");
-  const { zone, districts, grades, start } = await zoneFormData(id, viewer);
+  const { zone, districts, grades, buildingTypes, start } = await zoneFormData(id, viewer);
   // Coming from New owner (or "Add land for" a waiting owner): the land is theirs.
   const ownerRow =
     owner && /^[0-9a-f-]{36}$/i.test(owner)
@@ -48,7 +48,7 @@ export default async function ZoneAddLandPage({
       <PageHeader title={t("title")} description={ownerRow ? ownerRow.full_name : t("subtitle")} />
       <Card>
         <CardContent className="pt-5">
-          <FieldLandForm districts={districts} grades={grades} start={start} returnTo={`/surveys/zones/${id}`} owner={ownerRow} />
+          <FieldLandForm districts={districts} grades={grades} buildingTypes={buildingTypes} start={start} returnTo={`/surveys/zones/${id}`} owner={ownerRow} />
         </CardContent>
       </Card>
     </div>

@@ -5,12 +5,13 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { CatalogEditor } from "@/components/valuation/catalog-editor";
 import { OwnerTypesEditor } from "@/components/valuation/owner-types-editor";
 import { TransferTypesEditor } from "@/components/valuation/transfer-types-editor";
+import { BuildingTypesEditor } from "@/components/valuation/building-types-editor";
 import { PriceCheck } from "@/components/valuation/price-check";
 import { RatesPanel } from "@/components/valuation/rates-panel";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { createClient } from "@/lib/supabase/server";
-import { listFeeTypes, listGrades, listOwnerTypes, listPricedNeighbourhoods, listTransferTypes, neighbourhoodPrices } from "@/lib/server/valuation";
+import { listBuildingTypes, listFeeTypes, listGrades, listOwnerTypes, listPricedNeighbourhoods, listTransferTypes, neighbourhoodPrices } from "@/lib/server/valuation";
 import { TabCount, tabClass } from "@/components/shell/tabs";
 
 export async function generateMetadata() {
@@ -18,7 +19,7 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const TABS = ["price_check", "rates", "grades", "fees", "transfer_types", "owner_types"] as const;
+const TABS = ["price_check", "rates", "grades", "building_types", "fees", "transfer_types", "owner_types"] as const;
 /** Exemptions, appeals and assessments are no longer shown: their old links open the first tab. */
 const OLD_TABS: Record<string, Tab> = {};
 type Tab = (typeof TABS)[number];
@@ -60,6 +61,8 @@ export default async function ValuationPage({ params, searchParams }: { params: 
     );
   } else if (tab === "grades") {
     body = <CatalogEditor kind="grades" items={await listGrades()} canEdit={viewer.can("valuation.update")} />;
+  } else if (tab === "building_types") {
+    body = <BuildingTypesEditor items={await listBuildingTypes()} grades={await listGrades()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "fees") {
     body = <CatalogEditor kind="fees" items={await listFeeTypes()} canEdit={viewer.can("valuation.update")} />;
   } else if (tab === "owner_types") {

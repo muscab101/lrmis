@@ -25,7 +25,12 @@ export interface SpaceRow {
 }
 export interface UnitsValue {
   floors: string;
-  /** Flats: the ground the building covers (m²); the rest of the plot is open ground, billed to the management. */
+  /** Flats: one owner for the whole building, or each flat its own owner (the manager pays the empty land). */
+  ownership: "one" | "each";
+  /** Flats: how many floors including the ground floor, and how many flats on each floor (floor 0 first). */
+  levels: string;
+  perFloor: string[];
+  /** Flats: the ground the building covers (m², the built area); the rest of the plot is empty land. */
   footprint: string;
   managerName: string;
   managerPhone: string;
@@ -50,11 +55,15 @@ export function startUnits(layout: LandLayout): UnitsValue {
   const name = layout === "flats" ? flatNo : houseNo;
   return {
     floors: "1",
+    ownership: "one",
+    levels: "",
+    perFloor: [],
     footprint: "",
     managerName: "",
     managerPhone: "",
     split: "equal",
-    units: [emptyRow(name(0)), emptyRow(name(1))],
+    // Flats are laid out from the floors and flats per floor; a compound starts with two houses to fill in.
+    units: layout === "flats" ? [] : [emptyRow(name(0)), emptyRow(name(1))],
     spaces: [],
   };
 }

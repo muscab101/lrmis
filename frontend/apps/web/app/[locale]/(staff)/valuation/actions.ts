@@ -119,6 +119,35 @@ export const deleteTransferTypeAction = defineAction("valuation.delete_transfer_
   return done({ result });
 });
 
+export const saveBuildingTypeAction = defineAction(
+  "valuation.save_building_type",
+  z.object({
+    id: z.uuid().nullable(),
+    nameSo: z.string().trim().min(2, "validation.name").max(80),
+    nameEn: z.string().trim().min(2, "validation.name").max(80),
+    layout: z.enum(["house", "flats", "compound"]),
+    gradeCode: z.string().trim().min(1, "validation.required").max(40),
+    active: z.boolean().default(true),
+  }),
+  async (v, ctx) => {
+    try {
+      unwrap(
+        await ctx.supabase.rpc("building_type_save", { p_id: v.id, p: { name_so: v.nameSo, name_en: v.nameEn, layout: v.layout, grade_code: v.gradeCode, active: v.active } }),
+        "save building type",
+      );
+    } catch (err) {
+      field(err, { building_type_taken: "nameEn", building_grade: "gradeCode", building_layout: "layout", name: "nameEn" });
+    }
+    return done(null);
+  },
+);
+
+/** Delete a building type (land already saved keeps its kind and price). */
+export const deleteBuildingTypeAction = defineAction("valuation.delete_building_type", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
+  unwrap(await ctx.supabase.rpc("building_type_delete", { p_id: id }), "delete building type");
+  return done(null);
+});
+
 /** One neighbourhood's own prices by house type id (the Price check tab). */
 export const neighbourhoodPricesAction = defineAction("valuation.neighbourhood_prices", z.object({ neighbourhoodId: z.uuid() }), async (v, ctx) => {
   const rows = unwrap(

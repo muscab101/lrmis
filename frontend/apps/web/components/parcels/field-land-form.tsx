@@ -31,6 +31,7 @@ import {
   type UnitsValue,
 } from "@/components/parcels/land-units-inputs";
 import { FormError } from "@/components/forms/form-error";
+import { FlatsInputs } from "@/components/parcels/flats-inputs";
 import { OwnerMatchNotice } from "@/components/owners/owner-match";
 import { useRouter } from "@/i18n/navigation";
 import { isApartmentType } from "@/lib/apartment";
@@ -38,7 +39,9 @@ import { useValidationMessage } from "@/lib/client/errors";
 
 interface Props {
   districts: { id: string; name_so: string; name_en: string }[];
-  grades: { code: string; name_so: string; name_en: string; active: boolean }[];
+  grades: { code: string; name_so: string; name_en: string; active: boolean; price?: number }[];
+  /** Valuation → Building types: the "Building type" choices (kind of land + the price that bills it). */
+  buildingTypes: { id: string; name_so: string; name_en: string; layout: LandLayout; grade_code: string }[];
   /** Opened from a survey zone: its neighbourhood. */
   start?: {
     id: string;
@@ -56,7 +59,7 @@ interface Props {
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, start = null, returnTo, owner: fixedOwner = null, onDone }: Props) {
+export function FieldLandForm({ districts, grades, buildingTypes, start = null, returnTo, owner: fixedOwner = null, onDone }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -98,6 +101,8 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     note: "",
   });
   const [layout, setLayout] = useState<LandLayout>("house");
+  // The building type chosen (Valuation → Building types): it sets the kind of land and the price type.
+  const [buildingType, setBuildingType] = useState("");
   const [unitsValue, setUnitsValue] = useState<UnitsValue>(() => startUnits("flats"));
   const [error, setError] = useState<AppError | null>(null);
   const [saving, setSaving] = useState(false);
@@ -170,6 +175,12 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
     f.grade,
     grades.map((g) => ({ code: g.code, name_en: g.name_en })),
   );
+  // Today's Valuation prices for the flats preview: ground floor (Apartment), upper floors (Upper Floors), empty land.
+  const priceOf = (code: string) => {
+    const g = grades.find((x) => x.code === code && x.active);
+    return g?.price != null ? Number(g.price) : null;
+  };
+  const flatPrices = { base: priceOf("apartment"), upper: priceOf("upper"), empty: priceOf("warehouse") };
   const houseNumbers = houseChoices
     ? Array.from({ length: houseChoices.capacity }, (_, i) =>
         String(i + 1).padStart(2, "0"),
@@ -222,6 +233,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
   const area = num(f.width) * num(f.length);
 
   const save = async () => {
+    if (!f.grade) return setError({ code: "VALIDATION", requestId: "", fieldErrors: { propertyType: ["validation.required"] } });
     setSaving(true);
     setError(null);
     const res =
@@ -238,7 +250,8 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             houseNo: f.houseNo,
             propertyType: f.grade,
             landUse: f.landUse,
-            floors: layout === "flats" ? num(unitsValue.floors) : null,
+            // The database counts storeys above the ground floor (at least 1).
+            floors: layout === "flats" ? Math.max(Math.floor(num(unitsValue.levels)) - 1, 1) : null,
             // Flats: the rest of the plot is worked out from the flats; the owner entered is the building's manager.
             footprintM2: null,
             managerPartyId: layout === "flats" ? (owner?.id ?? null) : null,
@@ -249,10 +262,15 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
               no: u.no,
               floor: layout === "flats" ? num(u.floor) : null,
               ownM2: num(u.own),
-              // A compound's first house belongs to the owner entered; every flat has its own owner.
-              ownerId: i === 0 && layout === "compound" ? (owner?.id ?? null) : null,
-              ownerName: i === 0 && layout === "compound" && owner ? "" : u.ownerName,
-              ownerPhone: i === 0 && layout === "compound" && owner ? "" : u.ownerPhone,
+              // A compound's first house belongs to the owner entered. Flats: one owner owns every flat (the person
+              // entered for the building), or each flat has its own owner.
+              ...(layout === "flats" && unitsValue.ownership === "one"
+                ? { ownerId: owner?.id ?? null, ownerName: owner ? "" : unitsValue.managerName, ownerPhone: owner ? "" : unitsValue.managerPhone }
+                : {
+                    ownerId: i === 0 && layout === "compound" ? (owner?.id ?? null) : null,
+                    ownerName: i === 0 && layout === "compound" && owner ? "" : u.ownerName,
+                    ownerPhone: i === 0 && layout === "compound" && owner ? "" : u.ownerPhone,
+                  }),
             })),
             spaces:
               layout === "compound"
@@ -357,6 +375,50 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         </div>
       </Field>
 
+      {/* First what kind of land it is (one house, flats or a compound), then its size. */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field id="propertyType" label={t("houseType")} hint={buildingType ? t(`layoutHint_${layout}`) : t("houseTypeHint")} error={fe("propertyType")} required>
+          {/* One choice sets both: the house type from Valuation → Property grades (what the bill uses) and the kind of
+              land (one house, a block of flats, or a compound of several houses). */}
+          <NativeSelect
+            value={buildingType}
+            onChange={(e) => {
+              const bt = buildingTypes.find((x) => x.id === e.target.value);
+              setBuildingType(e.target.value);
+              setF((p) => ({ ...p, grade: bt?.grade_code ?? "" }));
+              if (bt && bt.layout !== layout) {
+                setLayout(bt.layout);
+                if (bt.layout !== "house") setUnitsValue(startUnits(bt.layout));
+              }
+            }}
+          >
+            <option value="">{ta("choose")}</option>
+            {(["house", "flats", "compound"] as const).map((l) =>
+              buildingTypes.some((x) => x.layout === l) ? (
+                <optgroup key={l} label={t(`houseTypeGroup_${l}`)}>
+                  {buildingTypes
+                    .filter((x) => x.layout === l)
+                    .map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {name(x)}
+                      </option>
+                    ))}
+                </optgroup>
+              ) : null,
+            )}
+          </NativeSelect>
+        </Field>
+        <Field id="landUse" label={t("landType")} error={fe("landUse")}>
+          <NativeSelect value={f.landUse} onChange={set("landUse")}>
+            {LAND_USES.map((u) => (
+              <option key={u} value={u}>
+                {ts(`landUses.${u}`)}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Field id="plotWidthM" label={ta("plotWidth")} error={fe("plotWidthM")} required>
           <Input
@@ -386,7 +448,7 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
         </Field>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="max-w-md">
         <Field
           id="houseNo"
           label={ta("houseNo")}
@@ -423,47 +485,11 @@ export function FieldLandForm({ districts, grades, start = null, returnTo, owner
             </div>
           </div>
         </Field>
-        <Field id="propertyType" label={t("grade")} error={fe("propertyType")}>
-          <NativeSelect value={f.grade} onChange={set("grade")}>
-            <option value="">{ta("choose")}</option>
-            {grades
-              .filter((g) => g.active)
-              .map((g) => (
-                <option key={g.code} value={g.code}>
-                  {name(g)}
-                </option>
-              ))}
-          </NativeSelect>
-        </Field>
-        <Field id="landUse" label={ts("landUse")} error={fe("landUse")}>
-          <NativeSelect value={f.landUse} onChange={set("landUse")}>
-            {LAND_USES.map((u) => (
-              <option key={u} value={u}>
-                {ts(`landUses.${u}`)}
-              </option>
-            ))}
-          </NativeSelect>
-        </Field>
       </div>
 
-      <div className="max-w-sm">
-        <Field id="layout" label={t("layout")} hint={t(`layoutHint_${layout}`)} required>
-          <NativeSelect
-            value={layout}
-            onChange={(e) => {
-              const next = e.target.value as LandLayout;
-              setLayout(next);
-              if (next !== "house") setUnitsValue(startUnits(next));
-            }}
-          >
-            <option value="house">{t("layout_house")}</option>
-            <option value="flats">{t("layout_flats")}</option>
-            <option value="compound">{t("layout_compound")}</option>
-          </NativeSelect>
-        </Field>
-      </div>
-
-      {layout !== "house" ? (
+      {layout === "flats" ? (
+        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} />
+      ) : layout === "compound" ? (
         <LandUnitsInputs
           layout={layout}
           landArea={area}
