@@ -38,6 +38,8 @@ export const updateParcelDetailsAction = defineAction(
     /** A flat or compound house not registered yet. */
     ownM2: z.string().trim().max(12).optional(),
     unitFloor: z.string().trim().max(3).optional(),
+    /** One land (not a flat or compound house): its storeys above the ground floor, billed with it. */
+    upperStoreys: z.string().trim().max(3).optional(),
     /** Partial land only (registered land changes owners by transfer). */
     ownerName: z.string().trim().max(120).optional(),
     ownerPhone: z.string().trim().max(30).optional(),
@@ -67,6 +69,16 @@ export const updateParcelDetailsAction = defineAction(
       const field = { property_type: "propertyType", plot_size: "widthM", units: "units", owner_name: "ownerName", unit_size: "ownM2", unit_floor: "unitFloor", compound_too_big: "ownM2" }[String(err instanceof AppFailure ? err.values?.detail : "")];
       if (err instanceof AppFailure && err.code === "VALIDATION" && field) throw new AppFailure("VALIDATION", undefined, { [field]: ["validation.required"] });
       throw err;
+    }
+    if (v.upperStoreys !== undefined) {
+      const n = v.upperStoreys === "" ? 0 : Number(v.upperStoreys);
+      if (!Number.isInteger(n) || n < 0 || n > 100) throw new AppFailure("VALIDATION", undefined, { upperStoreys: ["validation.upper_storeys"] });
+      try {
+        unwrap(await ctx.supabase.rpc("parcel_set_upper_storeys", { p_parcel: v.id, p_storeys: n }), "upper storeys");
+      } catch (err) {
+        if (err instanceof AppFailure && err.code === "VALIDATION") throw new AppFailure("VALIDATION", undefined, { upperStoreys: ["validation.upper_storeys"] });
+        throw err;
+      }
     }
     if (v.owner && v.ownerId) {
       try {
@@ -129,7 +141,7 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
   const [{ data: parcel }, { data: types }, { data: canEditOwner }] = await Promise.all([
     ctx.supabase
       .from("parcels")
-      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parent_id, own_m2, unit_floor, parcel_owners(role, valid_to, party:parties(id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, email, address, next_of_kin, org_registration_no, district_id, owner_type_id))")
+      .select("property_type, flat_no, plot_width_m, plot_length_m, land_use, units, status, parent_id, own_m2, unit_floor, layout, upper_storeys, parcel_owners(role, valid_to, party:parties(id, kind, full_name, mother_name, gender, date_of_birth, nationality, id_type, id_number, phone, email, address, next_of_kin, org_registration_no, district_id, owner_type_id))")
       .eq("id", v.id)
       .maybeSingle(),
     ctx.supabase.from("property_grades").select("code, name_so, name_en, active").order("sort").order("name_en"),
@@ -146,6 +158,8 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     parent_id: string | null;
     own_m2: number | null;
     unit_floor: number | null;
+    layout: string;
+    upper_storeys: number | null;
     parcel_owners: { role: string; valid_to: string | null; party: PartyDb | null }[];
   } | null;
   // The building a flat belongs to, or the compound a house belongs to.
@@ -159,6 +173,8 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     lengthM: p?.plot_length_m != null ? String(p.plot_length_m) : "",
     landUse: (p?.land_use ?? "residential") as "residential" | "commercial" | "state" | "mixed" | "agricultural" | "other",
     units: p?.units != null ? String(p.units) : "",
+    /** One land (not flats, a compound, or a unit in one): its upper storeys; null where they don't apply. */
+    upperStoreys: p && !p.parent_id && p.layout === "house" ? String(p.upper_storeys ?? 0) : null,
     /** Partial land: its owner's name and phone can be fixed here. */
     owner: p && ["draft", "surveyed", "verified"].includes(p.status) && owner ? { name: owner.full_name, phone: owner.phone ?? "" } : null,
     /** Partial land, staff who may change owners: every owner field, saved with the land. */
@@ -235,6 +251,8 @@ export const addFieldLandAction = defineAction(
     ownerId: z.uuid().nullable().default(null),
     ownerName: z.string().trim().max(200, "validation.too_long").default(""),
     ownerPhone: optionalPhone,
+    /** A storey building with one owner: how many storeys above the ground floor (billed on the same invoice). */
+    upperStoreys: z.number().int("validation.upper_storeys").min(0, "validation.upper_storeys").max(100, "validation.upper_storeys").default(0),
     note: text(400),
   }),
   async (v, ctx) => {
@@ -258,6 +276,7 @@ export const addFieldLandAction = defineAction(
             owner_id: v.ownerId,
             owner_name: v.ownerName,
             owner_phone: v.ownerPhone,
+            upper_storeys: v.upperStoreys,
             note: v.note,
           },
         }),

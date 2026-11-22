@@ -191,6 +191,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   ...(partial ? { propertyType: info.propertyType } : {}),
                   ...(info.unit ? {} : { flatNo: apartment ? info.flatNo : "" }),
                   landUse: info.landUse,
+                  ...(info.upperStoreys !== null ? { upperStoreys: info.upperStoreys } : {}),
                   ...(info.unit
                     ? info.unit.partial
                       ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
@@ -253,6 +254,12 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                     ))}
                   </NativeSelect>
                 </Field>
+                {/* Storeys above the ground floor: billed on the same invoice at the Upper Floors price. */}
+                {info && info.upperStoreys !== null && (
+                  <Field id={`storeys-${parcel.id}`} label={tf("upperStoreys")} hint={tf("upperStoreysEditHint")} error={fe("upperStoreys")}>
+                    <Input type="number" inputMode="numeric" min={0} max={100} value={info.upperStoreys} onChange={(e) => setInfo({ ...info, upperStoreys: e.target.value })} />
+                  </Field>
+                )}
                 {apartment && !info?.unit && (
                   <Field id={`flat-${parcel.id}`} label={ta("flatNo")} hint={ta("flatNoHint")} error={fe("flatNo")} className="sm:col-span-2">
                     <Input value={info!.flatNo} maxLength={20} onChange={(e) => setInfo({ ...info!, flatNo: e.target.value })} />

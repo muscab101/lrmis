@@ -551,7 +551,8 @@
     "document_too_big": "Faylkan wuxuu ka weyn yahay 50 MB.",
     "document_type": "Faylasha barnaamijyada (sida .exe) lama lifaaqi karo. Dukumentiyada, sawirrada, muuqaallada iyo codadka waa la aqbalayaa.",
     "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day.",
-    "merge_pick": "Calaamadee ugu yaraan hal dhul oo la taabanaya, ama qor lambar dhul oo kale."
+    "merge_pick": "Calaamadee ugu yaraan hal dhul oo la taabanaya, ama qor lambar dhul oo kale.",
+    "upper_storeys": "Geli dabaqyada sare tiro dhan oo u dhexeysa 0 iyo 100."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -2787,7 +2788,9 @@
       "houseTypeGroup_house": "Hal guri oo hal dhul ku yaal",
       "houseTypeGroup_flats": "Abaartamaano (hal dhisme, qaybo badan)",
       "houseTypeGroup_compound": "Xero (guryo badan oo hal dhul ku yaal)",
-      "landType": "Nooca dhulka"
+      "landType": "Nooca dhulka",
+      "upperStoreys": "Dabaqyada sare",
+      "upperStoreysEditHint": "Dabaqyada ka sarreeya dabaqa hoose (0 haddii aysan jirin). Mid kasta waxaa lagu biilaa qiimaha Dabaqyada sare isla biilka."
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",
@@ -2933,7 +2936,7 @@
       "ownership": "Yaa iska leh dhismaha?",
       "ownershipOne": "Hal milkiile ayaa iska leh dhismaha oo dhan",
       "ownershipEach": "Abaartamaan kasta milkiile u gaar ah ayuu leeyahay",
-      "ownershipOneHint": "Milkiiluhu wuxuu bixinayaa abaartamaan kasta iyo dhulka bannaan.",
+      "ownershipOneHint": "Hal dhul iyo hal biil oo milkiilaha ah: salka (ballac × dherer) iyo dabaq kasta oo sare.",
       "ownershipEachHint": "Marka hore geli maamulaha dhismaha (wuxuu bixiyaa dhulka bannaan), kadibna milkiilaha abaartamaan kasta (wuxuu bixiyaa abaartamaankiisa).",
       "levels": "Dabaqyada",
       "levelsHint": "Ku tiri dabaqa hoose sidoo kale: hoose + 2 dabaq oo sare = 3. Dabaqa 0 waa dabaqa hoose (salka).",
@@ -2966,7 +2969,13 @@
       "billNote": "Qiimayaasha waxay ka yimaadaan Qiimaynta → Heerarka hantida: Abaartamaan (dabaqa hoose), Dabaqyada sare iyo Dhul bannaan. Xaafad leh qiimayaal u gaar ah waxaa lagu biilaa kuwaas.",
       "perFloorTitle": "Abaartamaanada dabaq kasta",
       "floorShare": "{count, plural, one {# abaartamaan} other {# abaartamaan}} ayaa wadaaga {floorArea}: {each} mid kasta",
-      "flatsCount": "Abaartamaanada"
+      "flatsCount": "Abaartamaanada",
+      "upperStoreys": "Dabaqyada sare",
+      "upperStoreysHint": "Dabaqyada ka sarreeya dabaqa hoose: 1, 2, 3 … (0 haddii aysan jirin).",
+      "oneInvoiceTitle": "Biilka",
+      "billBaseArea": "Salka (dabaqa hoose) {area}",
+      "billUpperStoreys": "{count, plural, one {# dabaq sare} other {# dabaq oo sare}} × {area}",
+      "oneInvoiceNote": "Dhammaan hal biil oo milkiilaha ah. Qiimayaasha Qiimaynta: qiimaha nooca dhismaha salka, Dabaqyada sare dabaq kasta oo sare."
     }
   },
   "notices": {

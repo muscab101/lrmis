@@ -236,8 +236,10 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
     if (!f.grade) return setError({ code: "VALIDATION", requestId: "", fieldErrors: { propertyType: ["validation.required"] } });
     setSaving(true);
     setError(null);
+    // A storey building with one owner is one land and one invoice: the base plus its upper storeys.
+    const oneOwnerBuilding = layout === "flats" && unitsValue.ownership === "one";
     const res =
-      layout !== "house"
+      layout !== "house" && !oneOwnerBuilding
         ? await addLandWithUnitsAction({
             layout,
             districtId,
@@ -292,8 +294,9 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             ownerId: owner?.id ?? null,
             // With an existing owner, their name and phone go along: they let the owner's record be used even
             // when it was first registered in another district (same person, second house).
-            ownerName: merged ? f.ownerName : owner ? owner.full_name : f.ownerName,
-            ownerPhone: merged ? f.ownerPhone : owner ? (owner.phone ?? "") : f.ownerPhone,
+            ownerName: merged ? f.ownerName : owner ? owner.full_name : oneOwnerBuilding ? unitsValue.managerName : f.ownerName,
+            ownerPhone: merged ? f.ownerPhone : owner ? (owner.phone ?? "") : oneOwnerBuilding ? unitsValue.managerPhone : f.ownerPhone,
+            upperStoreys: oneOwnerBuilding ? Math.max(Math.floor(num(unitsValue.upper)) || 0, 0) : 0,
             note: f.note,
           });
     setSaving(false);
@@ -488,7 +491,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
       </div>
 
       {layout === "flats" ? (
-        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} />
+        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} buildingPrice={f.grade ? priceOf(f.grade) : null} />
       ) : layout === "compound" ? (
         <LandUnitsInputs
           layout={layout}

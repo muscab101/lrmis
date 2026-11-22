@@ -30,6 +30,8 @@ export interface UnitsValue {
   /** Flats: how many floors including the ground floor, and how many flats on each floor (floor 0 first). */
   levels: string;
   perFloor: string[];
+  /** Flats with one owner: storeys above the ground floor, billed on the one invoice. */
+  upper: string;
   /** Flats: the ground the building covers (m², the built area); the rest of the plot is empty land. */
   footprint: string;
   managerName: string;
@@ -58,6 +60,7 @@ export function startUnits(layout: LandLayout): UnitsValue {
     ownership: "one",
     levels: "",
     perFloor: [],
+    upper: "",
     footprint: "",
     managerName: "",
     managerPhone: "",

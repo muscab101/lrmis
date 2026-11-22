@@ -551,7 +551,8 @@
     "document_too_big": "This file is larger than 50 MB.",
     "document_type": "Program files (like .exe) can’t be attached. Documents, photos, videos and audio are fine.",
     "document_upload_failed": "The file did not upload. Check the connection and try again.",
-    "merge_pick": "Tick at least one touching plot, or type another land number."
+    "merge_pick": "Tick at least one touching plot, or type another land number.",
+    "upper_storeys": "Enter the upper storeys as a whole number from 0 to 100."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -2787,7 +2788,9 @@
       "houseTypeGroup_house": "One house on one land",
       "houseTypeGroup_flats": "Flats (one building, several flats)",
       "houseTypeGroup_compound": "Compound (several houses on one land)",
-      "landType": "Land type"
+      "landType": "Land type",
+      "upperStoreys": "Upper storeys",
+      "upperStoreysEditHint": "Storeys above the ground floor (0 if none). Each one is billed at the Upper Floors price on the same invoice."
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",
@@ -2933,7 +2936,7 @@
       "ownership": "Who owns the building?",
       "ownershipOne": "One owner owns the whole building",
       "ownershipEach": "Each flat has its own owner",
-      "ownershipOneHint": "The owner pays for every flat and for the empty land.",
+      "ownershipOneHint": "One land and one invoice for the owner: the base (width × length) plus every upper storey.",
       "ownershipEachHint": "First enter the building’s manager (pays the empty land), then the owner of each flat (pays their flat).",
       "levels": "Floors",
       "levelsHint": "Count the ground floor too: ground + 2 upper floors = 3. Floor 0 is the ground floor (base).",
@@ -2966,7 +2969,13 @@
       "billNote": "Prices from Valuation → Property grades: Apartment (ground floor), Upper Floors and Empty Land. A neighbourhood with its own prices is billed at those.",
       "perFloorTitle": "Flats on each floor",
       "floorShare": "{count, plural, one {# flat} other {# flats}} share {floorArea}: {each} each",
-      "flatsCount": "Flats"
+      "flatsCount": "Flats",
+      "upperStoreys": "Upper storeys",
+      "upperStoreysHint": "Storeys above the ground floor: 1, 2, 3 … (0 if none).",
+      "oneInvoiceTitle": "Invoice",
+      "billBaseArea": "Base (ground floor) {area}",
+      "billUpperStoreys": "{count, plural, one {# upper storey} other {# upper storeys}} × {area}",
+      "oneInvoiceNote": "All on one invoice for the owner. Prices from Valuation: the building type’s price for the base, Upper Floors for each storey above."
     }
   },
   "notices": {

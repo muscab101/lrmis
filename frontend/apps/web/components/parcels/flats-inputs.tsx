@@ -62,6 +62,7 @@ export function FlatsInputs({
   onChange,
   fixedOwner,
   prices,
+  buildingPrice = null,
 }: {
   landArea: number;
   value: UnitsValue;
@@ -69,6 +70,8 @@ export function FlatsInputs({
   /** The owner chosen before (from the owner form): the building's single owner, or its manager. */
   fixedOwner?: { full_name: string; phone: string | null } | null;
   prices: FlatPrices;
+  /** One owner: the chosen building type's price per m² for the base (ground floor). */
+  buildingPrice?: number | null;
 }) {
   const t = useTranslations("parcels.flats");
   const tu = useTranslations("parcels.landUnits");
@@ -107,6 +110,12 @@ export function FlatsInputs({
   const baseTax = ready ? line(area(baseUnits), prices.base) : null;
   const upperTax = ready ? line(area(upperUnits), prices.upper ?? prices.base) : null;
   const emptyTax = prices.empty == null || !ready ? null : round2(Math.max(empty, 0) * prices.empty);
+  // One owner: area × the building's price, plus each upper storey × area × the Upper Floors price, on one invoice.
+  const storeys = Math.floor(n(value.upper));
+  const upperPrice = prices.upper ?? buildingPrice;
+  const oneBase = land > 0 && buildingPrice != null ? round2(land * buildingPrice) : null;
+  const oneUpper = land > 0 && upperPrice != null ? round2(storeys * land * upperPrice) : null;
+  const oneTotal = oneBase != null && (storeys === 0 || oneUpper != null) ? round2(oneBase + (oneUpper ?? 0)) : null;
   const sum = ready && [baseTax, upperUnits.length ? upperTax : 0, emptyTax].every((x) => x != null) ? round2((baseTax ?? 0) + (upperTax ?? 0) + (emptyTax ?? 0)) : null;
 
   return (
@@ -118,6 +127,15 @@ export function FlatsInputs({
         </NativeSelect>
       </Field>
 
+      {one && (
+        <div className="max-w-sm">
+          <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")}>
+            <Input type="number" inputMode="numeric" min={0} max={100} value={value.upper} onChange={(e) => onChange({ ...value, upper: e.target.value })} />
+          </Field>
+        </div>
+      )}
+
+      {!one && (
       <div className="grid gap-3 sm:grid-cols-2">
         <Field id="floors" label={t("levels")} hint={t("levelsHint")} required>
           <Input type="number" inputMode="numeric" min={1} max={100} value={value.levels} onChange={(e) => setLevels(e.target.value)} />
@@ -126,9 +144,10 @@ export function FlatsInputs({
           <Input type="number" inputMode="decimal" min={0} step="0.1" value={value.footprint} onChange={(e) => setNums({ footprint: e.target.value })} />
         </Field>
       </div>
+      )}
 
       {/* How many flats on each floor: floor 0 is the ground floor (base), the others are upper floors. */}
-      {levels > 0 && (
+      {!one && levels > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">{t("perFloorTitle")}</h3>
           <div className="divide-y rounded-md border">
@@ -157,19 +176,19 @@ export function FlatsInputs({
         </div>
       )}
 
-      {tooBig && (
+      {!one && tooBig && (
         <p role="alert" className="text-danger text-sm">
           {t("builtTooBig", { land: m2(land) })}
         </p>
       )}
-      {tooMany && (
+      {!one && tooMany && (
         <p role="alert" className="text-danger text-sm">
           {t("tooMany")}
         </p>
       )}
 
       {/* The numbers worked out, as in the owner's drawing. */}
-      {ready && (
+      {!one && ready && (
         <dl className="grid gap-3 text-sm sm:grid-cols-4">
           <div className="rounded-md border px-3 py-2">
             <dt className="text-muted-foreground text-xs">{t("plot")}</dt>
@@ -209,7 +228,7 @@ export function FlatsInputs({
         )}
       </div>
 
-      {value.units.length > 0 && (
+      {!one && value.units.length > 0 && (
         <div className="space-y-2 border-t pt-4">
           <h3 className="text-sm font-semibold">{t("flatsTitle", { count: value.units.length })}</h3>
           {one ? (
@@ -238,8 +257,34 @@ export function FlatsInputs({
         </div>
       )}
 
+      {/* One owner: one invoice, the base and the upper storeys. */}
+      {one && land > 0 && (
+        <div className="space-y-2 border-t pt-4">
+          <h3 className="text-sm font-semibold">{t("oneInvoiceTitle")}</h3>
+          <table className="w-full text-sm">
+            <tbody className="divide-y">
+              <BillRow label={t("billBaseArea", { area: m2(land) })} price={buildingPrice} amount={oneBase} payer={t("payerOwner")} usd={usd} missing={t("noPrice")} />
+              {storeys > 0 && (
+                <BillRow label={t("billUpperStoreys", { count: storeys, area: m2(land) })} price={upperPrice} amount={oneUpper} payer={t("payerOwner")} usd={usd} missing={t("noPrice")} />
+              )}
+            </tbody>
+            {oneTotal != null && (
+              <tfoot>
+                <tr className="border-t font-semibold">
+                  <td className="py-2">{t("billTotal")}</td>
+                  <td />
+                  <td className="py-2 text-end tabular-nums">{usd(oneTotal)}</td>
+                  <td />
+                </tr>
+              </tfoot>
+            )}
+          </table>
+          <p className="text-muted-foreground text-xs">{t("oneInvoiceNote")}</p>
+        </div>
+      )}
+
       {/* What the bills come to with today's Valuation prices. */}
-      {ready && (
+      {!one && ready && (
         <div className="space-y-2 border-t pt-4">
           <h3 className="text-sm font-semibold">{t("billTitle")}</h3>
           <table className="w-full text-sm">
