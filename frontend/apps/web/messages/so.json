@@ -7197,6 +7197,13 @@
     "owed": "Weli lagu leeyahay",
     "paid": "La bixiyay",
     "emptyTitle": "Weli maamulayaal ma jiraan",
-    "emptyBody": "Maamule ka dooro bogga dhismaha dabaqyada (sanduuqa Maamulaha)."
+    "emptyBody": "Maamule ka dooro bogga dhismaha dabaqyada (sanduuqa Maamulaha).",
+    "actions": "Ficillo",
+    "actionView": "Eeg",
+    "actionChange": "Beddel maamulaha",
+    "changeTitle": "Beddel maamulaha",
+    "changeBody": "Dooro qofka la wareegaya dhismaha. Wuxuu noqonayaa maamulahiisa wuxuuna bixinayaa biilka dhulka bannaan laga bilaabo hadda.",
+    "building": "Dhismaha",
+    "newManager": "Maamulaha cusub"
   }
 }

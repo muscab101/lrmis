@@ -7197,6 +7197,13 @@
     "owed": "Still owed",
     "paid": "Paid",
     "emptyTitle": "No managers yet",
-    "emptyBody": "Choose a manager on an apartment building's page (the building's Manager box)."
+    "emptyBody": "Choose a manager on an apartment building's page (the building's Manager box).",
+    "actions": "Actions",
+    "actionView": "View",
+    "actionChange": "Change manager",
+    "changeTitle": "Change manager",
+    "changeBody": "Choose the person who takes over the building. They become its manager and pay its empty-land bill from now on.",
+    "building": "Building",
+    "newManager": "New manager"
   }
 }

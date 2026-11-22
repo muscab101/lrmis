@@ -9,6 +9,10 @@ import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { listManagers } from "@/lib/server/apartments";
 import { OwnersTabs } from "@/components/shell/section-tabs";
+import { ManagerRowActions } from "@/components/owners/manager-row-actions";
+import { PARTY_COLUMNS, type PartyRow } from "@/lib/server/applications";
+import { listDistricts } from "@/lib/server/users";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
   const t = await getTranslations("managers");
@@ -26,6 +30,17 @@ export default async function ManagersPage({ params, searchParams }: { params: P
   const lang = await getLocale();
   const q = ((await searchParams).q ?? "").slice(0, 40);
   const { managers } = await listManagers(lang, q);
+  // The managers' full records (for Edit) and the districts the owner form offers.
+  const ids = managers.map((m) => m.partyId).filter((x): x is string => !!x);
+  const [{ data: partyRows }, districts] = await Promise.all([
+    ids.length ? (await createClient()).from("parties").select(PARTY_COLUMNS).in("id", ids) : Promise.resolve({ data: [] }),
+    listDistricts(),
+  ]);
+  const parties = new Map(((partyRows ?? []) as unknown as PartyRow[]).map((p) => [p.id, p]));
+  const can = {
+    edit: viewer.can("owners.update"),
+    change: viewer.can("apartments.update") || viewer.can("parcels.update") || viewer.can("valuation.update"),
+  };
   const usd = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const building = (b: { pun: string | null; house_no: string | null }) => b.pun ?? b.house_no ?? "—";
 
@@ -50,6 +65,7 @@ export default async function ManagersPage({ params, searchParams }: { params: P
                 <TableHead>{t("phone")}</TableHead>
                 <TableHead>{t("buildings")}</TableHead>
                 <TableHead className="text-end">{t("owed")}</TableHead>
+                <TableHead className="text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,6 +92,15 @@ export default async function ManagersPage({ params, searchParams }: { params: P
                     </div>
                   </TableCell>
                   <TableCell className={`text-end text-sm tabular-nums ${m.owed > 0 ? "" : "text-muted-foreground"}`}>{m.owed > 0 ? usd(m.owed) : t("paid")}</TableCell>
+                  <TableCell>
+                    <ManagerRowActions
+                      partyId={m.partyId}
+                      party={m.partyId ? (parties.get(m.partyId) ?? null) : null}
+                      buildings={m.buildings.map((b) => ({ id: b.id, label: `${building(b)}${b.neighbourhood ? ` · ${b.neighbourhood}` : ""}` }))}
+                      districts={districts}
+                      can={can}
+                    />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
