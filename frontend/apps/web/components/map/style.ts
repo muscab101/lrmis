@@ -370,10 +370,17 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         id: "districts-label",
         type: "symbol",
         source: "districts",
-        // One point per district (public.districts.label_point), so a name is drawn once, not once per tile.
+        // One point per district (public.districts.label_point), so a name is drawn once, not once per tile. Shown at
+        // every zoom and never hidden by other names.
         "source-layer": "district_labels",
-        maxzoom: 12.5,
-        layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 16, "text-transform": "uppercase", "text-letter-spacing": 0.12 },
+        layout: {
+          "text-field": ["get", nameField],
+          "text-font": FONT,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 10, 16, 17, 19],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.12,
+          "text-allow-overlap": true,
+        },
         paint: { "text-color": INK, "text-halo-color": "#f8fafc", "text-halo-width": 2 },
       },
       {
@@ -401,7 +408,8 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
 
 /** Map layer ids that belong to each toggle in the layers panel. */
 export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
-  districts: ["districts-fill", "districts-band", "districts-halo", "districts-line", "districts-label", "districts-label-near"],
+  // District names stay on even with the district borders turned off.
+  districts: ["districts-fill", "districts-band", "districts-halo", "districts-line"],
   sections: ["sections-fill", "sections-band", "sections-halo", "sections-line", "sections-label"],
   sectors: ["sectors-fill", "sectors-halo", "sectors-line", "sectors-label"],
   neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-halo", "neighbourhoods-line", "neighbourhoods-label"],
