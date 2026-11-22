@@ -376,13 +376,32 @@ export function buildStyle(origin: string, locale: "so" | "en", opts: { parcels?
         layout: { "text-field": ["get", nameField], "text-font": FONT, "text-size": 16, "text-transform": "uppercase", "text-letter-spacing": 0.12 },
         paint: { "text-color": INK, "text-halo-color": "#f8fafc", "text-halo-width": 2 },
       },
+      {
+        // Zoomed in, the one name point is usually off screen: name the district inside each piece of it the map
+        // draws, in the district's own colour, so you always see which district you are looking at.
+        id: "districts-label-near",
+        type: "symbol",
+        source: "districts",
+        "source-layer": "districts",
+        minzoom: 12.5,
+        layout: {
+          "text-field": ["get", nameField],
+          "text-font": FONT,
+          "text-size": ["interpolate", ["linear"], ["zoom"], 12.5, 14, 17, 17],
+          "text-transform": "uppercase",
+          "text-letter-spacing": 0.12,
+          "symbol-spacing": 400,
+          "text-padding": 40,
+        },
+        paint: { "text-color": districtColour as never, "text-halo-color": "#f8fafc", "text-halo-width": 2.2 },
+      },
     ],
   };
 }
 
 /** Map layer ids that belong to each toggle in the layers panel. */
 export const LAYER_IDS: Record<BoundaryLayer, string[]> = {
-  districts: ["districts-fill", "districts-band", "districts-halo", "districts-line", "districts-label"],
+  districts: ["districts-fill", "districts-band", "districts-halo", "districts-line", "districts-label", "districts-label-near"],
   sections: ["sections-fill", "sections-band", "sections-halo", "sections-line", "sections-label"],
   sectors: ["sectors-fill", "sectors-halo", "sectors-line", "sectors-label"],
   neighbourhoods: ["neighbourhoods-fill", "neighbourhoods-halo", "neighbourhoods-line", "neighbourhoods-label"],
