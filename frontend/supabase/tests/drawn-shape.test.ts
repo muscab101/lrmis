@@ -66,12 +66,4 @@ describe("4-corner shape kept on new land (0275)", () => {
     await expectError(asUser(db, surveyor, (tx) => tx.query(`select public.field_land_create($1)`, [JSON.stringify(land({ house_no: "23", geom: far }))])), "VALIDATION");
     expect(await scalar<number>(db, `select count(*)::int from public.parties`)).toBe(before);
   });
-  it("refuses a shape that crosses the neighbourhood border (0276)", async () => {
-    // The neighbourhood is a 0.004° square around 45.3, 2.04; this shape sticks out past its east edge.
-    const across = { type: "Polygon", coordinates: [[[45.3038, 2.0399], [45.3045, 2.0399], [45.3045, 2.0401], [45.3038, 2.0401], [45.3038, 2.0399]]] };
-    await expectError(
-      asUser(db, surveyor, (tx) => tx.query(`select public.field_land_create($1)`, [JSON.stringify(land({ house_no: "24", pin_lon: 45.3039, pin_lat: 2.04, geom: across }))])),
-      "VALIDATION.*drawn_shape_outside",
-    );
-  });
 });

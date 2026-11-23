@@ -304,7 +304,7 @@ export const addFieldLandAction = defineAction(
       }
       if (err instanceof AppFailure && err.code === "VALIDATION") {
         const detail = String(err.values?.detail ?? "");
-        const field = detail.startsWith("pin") || detail.startsWith("drawn_shape")
+        const field = detail.startsWith("pin") || detail === "drawn_shape"
           ? "pin"
           : detail.startsWith("neighbourhood")
             ? "neighbourhoodId"
@@ -334,8 +334,8 @@ const landError = (err: unknown): never => {
   if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
     throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
   }
-  if (err instanceof AppFailure && err.code === "VALIDATION" && String(err.values?.detail ?? "").startsWith("drawn_shape")) {
-    throw new AppFailure("VALIDATION", err.values, { pin: [`validation.${String(err.values?.detail)}`] });
+  if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "drawn_shape") {
+    throw new AppFailure("VALIDATION", err.values, { pin: ["validation.drawn_shape"] });
   }
   throw err;
 };

@@ -553,8 +553,7 @@
     "document_upload_failed": "The file did not upload. Check the connection and try again.",
     "merge_pick": "Tick at least one touching plot, or type another land number.",
     "upper_storeys": "Enter the upper storeys as a whole number from 0 to 100.",
-    "drawn_shape": "Draw the 4 corners again: the shape must be closed, near the pin, and no bigger than 1 km².",
-    "drawn_shape_outside": "The drawn land crosses the neighbourhood border. Draw it inside the neighbourhood."
+    "drawn_shape": "Draw the 4 corners again: the shape must be closed, near the pin, and no bigger than 1 km²."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",
@@ -1798,8 +1797,7 @@
       "side": "This side: {m} m",
       "done": "Shape drawn from 4 corners",
       "crossed": "The corners were out of order, so they were put in order around the land.",
-      "pinDone": "Pin put in the middle of the 4 corners",
-      "outside": "The pointer is outside the neighbourhood, or this side would cross its border. Move it inside."
+      "pinDone": "Pin put in the middle of the 4 corners"
     }
   },
   "locations": {
