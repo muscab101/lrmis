@@ -2684,8 +2684,8 @@
     "count": "{count, plural, one {# dhul} other {# dhul}}",
     "searchPlaceholderMore": "PUN, lambarka xisaabta, masuul, lambarka guriga, biil ama codsi",
     "editTitle": "Wax ka beddel {pun}",
-    "rebillHint": "Marka aad kaydiso, waxaad biilka aan la bixin u beddeli kartaa cabbirka ama nooca cusub (Dib u biil).",
-    "editBodyRegistered": "Faahfaahinta dhulka iyo milkiilaha. Nooc ama cabbir cusub wuxuu isla markiiba saxaa biilka canshuurta sannadkan. Milkiile cusub wuxuu maraa wareejin.",
+    "rebillHint": "Keydintu waxay biilasha aan la bixin ee dhulkan u habaysaa cabbirka ama nooca cusub.",
+    "editBodyRegistered": "Faahfaahinta dhulka iyo milkiilaha. Nooc ama cabbir cusub wuxuu isla markiiba dib u biileeyaa biilasha canshuurta ee aan la bixin; kuwa la bixiyay waa sidooda. Milkiile cusub wuxuu maraa wareejin.",
     "editBody": "Faahfaahinta xafiiska. Xuduudaha iyo masuuliyiinta waxaa lagu beddelaa sixitaan xog ama wareejin.",
     "plotNo": "Lambarka dhulka",
     "lockTitle": "Ma xiraysaa {pun}?",
@@ -2996,7 +2996,7 @@
       "billUpperStoreys": "{count, plural, one {# dabaq sare} other {# dabaq oo sare}} × {area}",
       "oneInvoiceNote": "Dhammaan hal biil oo milkiilaha ah. Qiimayaasha Qiimaynta: qiimaha nooca dhismaha salka, Dabaqyada sare dabaq kasta oo sare."
     },
-    "rebillHintRegistered": "Keydintu waxay biilka canshuurta sannadkan u saxdaa cabbirka ama nooca cusub."
+    "rebillHintRegistered": "Keydintu waxay biilasha canshuurta ee aan la bixin u habaysaa cabbirka ama nooca cusub. Biilasha la bixiyay sidooda ayay ahaanayaan."
   },
   "notices": {
     "eyebrow": "Ogeysiis dadweyne",

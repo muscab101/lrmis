@@ -104,7 +104,7 @@ describe("flat number", () => {
     expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
   });
 
-  it("a registered house's type and size can change; this year's tax bill follows (0280)", async () => {
+  it("a registered house's type and size can change; unpaid tax bills follow (0280, 0281)", async () => {
     await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('storey','Dabaq','Storey building', 0.4) on conflict (code) do update set amount = 0.4, active = true`);
     await db.query(`update public.parcels set property_type = 'storey', plot_width_m = 10, plot_length_m = 10 where id = $1`, [parcel]);
     const fee = await scalar<string>(db, `select id from public.fee_types where code = 'property_bill'`);
@@ -119,20 +119,12 @@ describe("flat number", () => {
     await edit({ plot_width_m: "12", plot_length_m: "15" });
     expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(72);
     expect(Number(await scalar<string>(db, `select area_m2 from public.parcels where id = $1`, [parcel]))).toBe(180);
-    // Bigger, bill already paid: the extra goes on the same bill, which shows it as owed (20 × 15 × 0.40 = 120).
+    // Bill already paid: it stays as it is (0281); only unpaid bills follow a new size.
     await db.query(`update public.invoices set status = 'paid', paid = total where id = $1`, [bill]);
     await edit({ plot_width_m: "20", plot_length_m: "15" });
-    const after = await scalar<{ total: number; status: string; bills: number }>(
-      db,
-      `select jsonb_build_object('total', total, 'status', status, 'bills', (select count(*) from public.invoices x where x.parcel_id = $2 and x.fee_type_id = invoices.fee_type_id and x.status <> 'cancelled')) from public.invoices where id = $1`,
-      [bill, parcel],
-    );
-    expect(Number(after.total)).toBe(120);
-    expect(after.status).toBe("partially_paid");
-    expect(Number(after.bills)).toBe(1);
-    // Smaller than what was paid: the bill can't go below the money already in; nothing changes.
-    await edit({ plot_width_m: "5", plot_length_m: "5" });
-    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(120);
+    const after = await scalar<{ total: number; status: string }>(db, `select jsonb_build_object('total', total, 'status', status) from public.invoices where id = $1`, [bill]);
+    expect(Number(after.total)).toBe(72);
+    expect(after.status).toBe("paid");
     // Flats, compounds and units still keep their size once registered (land-units tests).
     await db.query(`update public.parcels set status = 'draft' where id = $1`, [parcel]);
   });

@@ -218,7 +218,7 @@ describe("changing land not registered yet", () => {
     expect(Number((await taxBill(a))!.total)).toBe(40);
   });
 
-  it("a normal house not registered yet is re-billed (with Re-bill) after its size changes", async () => {
+  it("a normal house not registered yet is re-billed at once when its size changes (0281)", async () => {
     const r = await asUser(db, surveyor, (tx) =>
       scalar<{ parcel_id: string }>(tx, `select public.land_with_units_create($1)`, [JSON.stringify({ ...base(), layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "73" })]),
     );
@@ -231,7 +231,8 @@ describe("changing land not registered yet", () => {
     await db.query(`select private.parcel_bill($1)`, [house]);
     expect(Number((await taxBill(house))!.total)).toBe(50);
     await edit(house, { plot_width_m: "20", plot_length_m: "10" });
-    expect(Number((await taxBill(house))!.total)).toBe(50);
+    expect(Number((await taxBill(house))!.total)).toBe(100);
+    // Re-bill still works and changes nothing more.
     await rebill(house);
     expect(Number((await taxBill(house))!.total)).toBe(100);
   });
