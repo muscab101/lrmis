@@ -2685,7 +2685,7 @@
     "searchPlaceholderMore": "PUN, account no, owner, house no, invoice or application",
     "editTitle": "Edit {pun}",
     "rebillHint": "After saving, you can re-bill this land's unpaid bill to the new size or type.",
-    "editBodyRegistered": "Office details only. Size and property type stay as registered, because its bills and certificate were made from them.",
+    "editBodyRegistered": "Land and owner details. A new type or size corrects this year's tax bill at once. A new owner goes through a transfer.",
     "editBody": "Office details. Boundary and owners change through a data correction or a transfer.",
     "plotNo": "Plot number",
     "lockTitle": "Lock {pun}?",
@@ -2995,7 +2995,8 @@
       "billBaseArea": "Base (ground floor) {area}",
       "billUpperStoreys": "{count, plural, one {# upper storey} other {# upper storeys}} × {area}",
       "oneInvoiceNote": "All on one invoice for the owner. Prices from Valuation: the building type’s price for the base, Upper Floors for each storey above."
-    }
+    },
+    "rebillHintRegistered": "Saving corrects this year's tax bill to the new size or type."
   },
   "notices": {
     "eyebrow": "Public notice",

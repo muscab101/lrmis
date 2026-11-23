@@ -173,7 +173,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
         open={dialog === "edit"}
         onOpenChange={close}
         title={t("editTitle", { pun: name })}
-        className={partial ? "sm:max-w-2xl" : undefined}
+        className={partial || info?.ownerDetails || info?.registeredSize ? "sm:max-w-2xl" : undefined}
         description={partial ? t("editBody") : t("editBodyRegistered")}
         confirmLabel={tc("saveChanges")}
         successMessage={tc("saved")}
@@ -188,7 +188,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
             ...v,
             ...(info
               ? {
-                  ...(partial ? { propertyType: info.propertyType } : {}),
+                  ...(partial || info.registeredSize ? { propertyType: info.propertyType } : {}),
                   ...(info.unit ? {} : { flatNo: apartment ? info.flatNo : "" }),
                   landUse: info.landUse,
                   ...(info.upperStoreys !== null ? { upperStoreys: info.upperStoreys } : {}),
@@ -196,7 +196,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                     ? info.unit.partial
                       ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
                       : {}
-                    : partial
+                    : partial || info.registeredSize
                       ? { widthM: info.widthM, lengthM: info.lengthM }
                       : {}),
                   // With full owner details, the name and phone come from them (saved together with the land).
@@ -231,7 +231,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   <Input value={v.plotNo} maxLength={40} onChange={(e) => setV({ ...v, plotNo: e.target.value })} />
                 </Field>
                 {/* Registered land keeps the size and type its bills and certificate were made from. */}
-                {partial && (
+                {(partial || info?.registeredSize) && (
                   <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")}>
                     <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
                       <option value="">{ta("choose")}</option>
@@ -278,7 +278,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                         )}
                       </>
                     )
-                  : partial && (
+                  : (partial || info?.registeredSize) && (
                       <>
                         <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
                           <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
@@ -291,7 +291,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                           <p className="bg-muted/50 rounded-md px-3 py-2 text-sm sm:col-span-2">
                             <span className="text-muted-foreground">{tf("area")}: </span>
                             <span className="font-medium tabular-nums">{Math.round(Number(info.widthM) * Number(info.lengthM) * 10) / 10} m²</span>
-                            <span className="text-muted-foreground ms-2 text-xs">{t("rebillHint")}</span>
+                            <span className="text-muted-foreground ms-2 text-xs">{t(partial ? "rebillHint" : "rebillHintRegistered")}</span>
                           </p>
                         )}
                       </>

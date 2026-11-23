@@ -104,9 +104,36 @@ describe("flat number", () => {
     expect(await scalar<string>(db, `select flat_no from public.parcels where id = $1`, [parcel])).toBe("3B");
   });
 
-  it("registered land keeps its size and type; land not registered yet can change them", async () => {
-    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"property_type":"storey"}')`, [parcel])), "CONFLICT: registered_size_fixed");
-    await expectError(asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, '{"plot_width_m":"12","plot_length_m":"15"}')`, [parcel])), "CONFLICT: registered_size_fixed");
+  it("a registered house's type and size can change; this year's tax bill follows (0280)", async () => {
+    await db.query(`insert into public.property_grades (code, name_so, name_en, amount) values ('storey','Dabaq','Storey building', 0.4) on conflict (code) do update set amount = 0.4, active = true`);
+    await db.query(`update public.parcels set property_type = 'storey', plot_width_m = 10, plot_length_m = 10 where id = $1`, [parcel]);
+    const fee = await scalar<string>(db, `select id from public.fee_types where code = 'property_bill'`);
+    const bill = await scalar<string>(
+      db,
+      `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, due_date, total)
+       select 'INV-T-1', id, district_id, $2, '2026', current_date + 30, 40 from public.parcels where id = $1 returning id`,
+      [parcel, fee],
+    );
+    const edit = (p: Record<string, string>) => asUser(db, clerk, (tx) => tx.query(`select public.parcel_update_details($1, $2)`, [parcel, JSON.stringify(p)]));
+    // Bigger, bill still open: the difference goes on it (12 × 15 × 0.40 = 72).
+    await edit({ plot_width_m: "12", plot_length_m: "15" });
+    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(72);
+    expect(Number(await scalar<string>(db, `select area_m2 from public.parcels where id = $1`, [parcel]))).toBe(180);
+    // Bigger, bill already paid: the extra goes on the same bill, which shows it as owed (20 × 15 × 0.40 = 120).
+    await db.query(`update public.invoices set status = 'paid', paid = total where id = $1`, [bill]);
+    await edit({ plot_width_m: "20", plot_length_m: "15" });
+    const after = await scalar<{ total: number; status: string; bills: number }>(
+      db,
+      `select jsonb_build_object('total', total, 'status', status, 'bills', (select count(*) from public.invoices x where x.parcel_id = $2 and x.fee_type_id = invoices.fee_type_id and x.status <> 'cancelled')) from public.invoices where id = $1`,
+      [bill, parcel],
+    );
+    expect(Number(after.total)).toBe(120);
+    expect(after.status).toBe("partially_paid");
+    expect(Number(after.bills)).toBe(1);
+    // Smaller than what was paid: the bill can't go below the money already in; nothing changes.
+    await edit({ plot_width_m: "5", plot_length_m: "5" });
+    expect(Number(await scalar<string>(db, `select total from public.invoices where id = $1`, [bill]))).toBe(120);
+    // Flats, compounds and units still keep their size once registered (land-units tests).
     await db.query(`update public.parcels set status = 'draft' where id = $1`, [parcel]);
   });
 

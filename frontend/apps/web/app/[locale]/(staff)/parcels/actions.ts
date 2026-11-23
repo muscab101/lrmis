@@ -177,9 +177,10 @@ export const parcelEditInfoAction = defineAction("parcels.edit_info", z.object({
     upperStoreys: p && !p.parent_id && p.layout === "house" ? String(p.upper_storeys ?? 0) : null,
     /** Partial land: its owner's name and phone can be fixed here. */
     owner: p && ["draft", "surveyed", "verified"].includes(p.status) && owner ? { name: owner.full_name, phone: owner.phone ?? "" } : null,
-    /** Partial land, staff who may change owners: every owner field, saved with the land. */
-    ownerDetails:
-      p && ["draft", "surveyed", "verified"].includes(p.status) && owner && canEditOwner === true ? { id: owner.id, input: partyInput(owner) } : null,
+    /** Staff who may change owners: every owner field, saved with the land (partial or registered; a new owner is a transfer). */
+    ownerDetails: p && p.status !== "archived" && owner && canEditOwner === true ? { id: owner.id, input: partyInput(owner) } : null,
+    /** Registered house (not flats, a compound or a unit): its type and size can change; this year's tax bill follows. */
+    registeredSize: !!p && !p.parent_id && p.layout === "house" && !["draft", "surveyed", "verified"].includes(p.status),
     /** A flat or compound house: its size is its own m², not a width and length. */
     unit: p?.parent_id
       ? {
