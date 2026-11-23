@@ -34,7 +34,19 @@ export interface Snapshot {
   bills?: { number: string; fee_so: string; fee_en: string; code: string; total: number; paid: number; balance: number }[];
   receipts?: { receipt_no: string; at: string; amount: number }[];
   paid_in_full?: boolean;
-  valuation?: { type: string; type_so: string; type_en: string; floors: number | null; area_m2: number | null; rate_m2: number; tax: number } | null;
+  valuation?: {
+    type: string;
+    type_so: string;
+    type_en: string;
+    floors: number | null;
+    area_m2: number | null;
+    rate_m2: number;
+    /** The yearly tax: the land part plus any upper storeys. */
+    tax: number;
+    /** A storey building's upper storeys and what they add (0283; absent on older certificates). */
+    upper_storeys?: number;
+    upper_storeys_amount?: number;
+  } | null;
   sequence?: number;
   previous?: { serial: string; issued_at: string; tax_year: number } | null;
   changes?: ("owners" | "area" | "land_use" | "building")[];

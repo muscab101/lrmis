@@ -4580,7 +4580,8 @@
     "lockedTitle": "{serial}: you can print this certificate",
     "lockedBody": "Viewing certificates is turned off for you. Use Print now to send it to your desk's printer.",
     "printerOnline": "on",
-    "cancelPrint": "Cancel"
+    "cancelPrint": "Cancel",
+    "upperStoreys": "Upper storeys ({count})"
   },
   "verify": {
     "title": "Verify a certificate",

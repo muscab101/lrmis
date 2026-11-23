@@ -105,4 +105,11 @@ describe("upper storeys (0272)", () => {
     expect(Number(c.buildings_amount)).toBe(172.8);
     expect(Number(c.total)).toBeCloseTo(230.4 + Number(c.service_charge), 2);
   });
+  it("the certificate's yearly tax counts the upper storeys too (0283)", async () => {
+    const out = await asUser(db, surveyor, (tx) => scalar<{ parcel_id: string }>(tx, `select public.field_land_create($1)`, [JSON.stringify(land({ house_no: "32", upper_storeys: 6, plot_width_m: 12, plot_length_m: 12 }))]));
+    const v = await scalar<{ tax: number; upper_storeys: number; upper_storeys_amount: number }>(db, `select private.certificate_year_facts($1, 2026) -> 'valuation'`, [out.parcel_id]);
+    expect(Number(v.tax)).toBe(230.4);
+    expect(Number(v.upper_storeys)).toBe(6);
+    expect(Number(v.upper_storeys_amount)).toBe(172.8);
+  });
 });

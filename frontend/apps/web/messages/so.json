@@ -4580,7 +4580,8 @@
     "lockedTitle": "{serial}: shahaadadan waad daabici kartaa",
     "lockedBody": "Arkidda shahaadooyinka waa laga xiray adiga. Riix Hadda daabac si loogu diro printer-ka miiskaaga.",
     "printerOnline": "shidan",
-    "cancelPrint": "Jooji"
+    "cancelPrint": "Jooji",
+    "upperStoreys": "Dabaqyada sare ({count})"
   },
   "verify": {
     "title": "Hubi shahaado",

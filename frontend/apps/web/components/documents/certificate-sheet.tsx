@@ -410,6 +410,12 @@ export async function CertificateSheet({
               </dd>
               <dt className="text-neutral-500">{t("rate")}</dt>
               <dd className="tabular-nums">{t("perM2", { amount: usd(val.rate_m2) })}</dd>
+              {Number(val.upper_storeys ?? 0) > 0 && (
+                <>
+                  <dt className="text-neutral-500">{t("upperStoreys", { count: Number(val.upper_storeys) })}</dt>
+                  <dd className="tabular-nums">{usd(Number(val.upper_storeys_amount ?? 0))}</dd>
+                </>
+              )}
               <dt className="border-t border-neutral-300 pt-0.5 font-semibold">{t("yearlyTax")}</dt>
               <dd className="border-t border-neutral-300 pt-0.5 font-semibold tabular-nums">
                 {usd(val.tax)}
