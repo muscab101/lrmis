@@ -32,6 +32,18 @@ interface Props {
   corners?: boolean;
   /** The 4-corner shape drawn (null when cleared), so the land can keep it as its boundary. */
   onShape?: (shape: GeoJSON.Polygon | null) => void;
+  /** The neighbourhood's own boundary: everything outside it is shaded, and the 4 corners must stay inside it. */
+  boundary?: GeoJSON.Geometry | null;
+}
+
+const MASK_SRC = "pin-outside";
+
+/** The whole world with the neighbourhood cut out: shaded, so only the neighbourhood stays clear. */
+function outsideOf(b: GeoJSON.Geometry): GeoJSON.Feature | null {
+  const polys = b.type === "Polygon" ? [b.coordinates] : b.type === "MultiPolygon" ? b.coordinates : [];
+  if (!polys.length) return null;
+  const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+  return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [world, ...polys.map((p) => p[0]!)] } };
 }
 
 const CORNERS_SRC = "pin-corners";
@@ -58,7 +70,7 @@ function middleOf(p: GeoJSON.Polygon): [number, number] {
 }
 
 /** Drop a pin by clicking the map, or use the device GPS. */
-export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false, onShape }: Props) {
+export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false, onShape, boundary = null }: Props) {
   const t = useTranslations("applications.pin");
   const tm = useTranslations("map.corners");
   // 4-corner drawing: the centre pointer is out; the last shape drawn stays on the map.
@@ -121,6 +133,31 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     const corners = shape ? (shape.coordinates[0]!.slice(0, -1) as [number, number][]) : [];
     (map.getSource(CORNERS_SRC) as GeoJSONSource | undefined)?.setData(cornerFeatures(corners, null, true));
   }, [shape]);
+
+  // Shade everything outside the neighbourhood (once the map has loaded).
+  useEffect(() => {
+    let cancelled = false;
+    const paint = () => {
+      const map = mapRef.current?.getMap();
+      if (cancelled || !map) return;
+      const mask = boundary ? outsideOf(boundary) : null;
+      const data: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: mask ? [mask] : [] };
+      const src = map.getSource(MASK_SRC) as GeoJSONSource | undefined;
+      if (src) return void src.setData(data);
+      map.addSource(MASK_SRC, { type: "geojson", data });
+      map.addLayer({ id: `${MASK_SRC}-fill`, type: "fill", source: MASK_SRC, paint: { "fill-color": "#0f172a", "fill-opacity": 0.5 } });
+    };
+    const h = setTimeout(() => {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+      if (map.isStyleLoaded()) paint();
+      else map.once("load", paint);
+    }, 50);
+    return () => {
+      cancelled = true;
+      clearTimeout(h);
+    };
+  }, [boundary]);
 
   /** The 4 corners are in: the pin goes to their middle. */
   function cornersDone(p: GeoJSON.Polygon, reordered: boolean) {
@@ -185,7 +222,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           parcels
           onFeatureClick={(_, lngLat) => !disabled && !cornering && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
         />
-        {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} onDone={cornersDone} onCancel={() => setCornering(false)} />}
+        {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} inside={boundary} onDone={cornersDone} onCancel={() => setCornering(false)} />}
         {!value && !disabled && !cornering && (
           <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card-solid/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
         )}

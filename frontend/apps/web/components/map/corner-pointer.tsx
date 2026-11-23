@@ -19,6 +19,33 @@ function metres(a: Pt, b: Pt) {
   return Math.hypot(x, y) * 6_371_000;
 }
 
+/** Is the point inside the shape (a polygon or multipolygon, holes counted)? Plain ray casting. */
+export function pointInside(pt: Pt, g: GeoJSON.Geometry): boolean {
+  const inRing = (ring: GeoJSON.Position[]) => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i] as Pt;
+      const [xj, yj] = ring[j] as Pt;
+      if (yi > pt[1] !== yj > pt[1] && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const inPoly = (rings: GeoJSON.Position[][]) => inRing(rings[0]!) && !rings.slice(1).some(inRing);
+  if (g.type === "Polygon") return inPoly(g.coordinates);
+  if (g.type === "MultiPolygon") return g.coordinates.some(inPoly);
+  return true;
+}
+
+/** Does the whole side a→b stay inside the shape? Checked every metre or so along it (the database checks exactly). */
+function sideInside(a: Pt, b: Pt, g: GeoJSON.Geometry) {
+  const steps = Math.max(2, Math.ceil(metres(a, b)));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    if (!pointInside([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], g)) return false;
+  }
+  return true;
+}
+
 const fmtM = (m: number) => `${m.toLocaleString("en", { maximumFractionDigits: 1 })} m`;
 const f = (kind: string, geometry: GeoJSON.Geometry, props: Record<string, unknown> = {}): GeoJSON.Feature => ({ type: "Feature", geometry, properties: { kind, ...props } });
 
@@ -104,8 +131,11 @@ export function CornerPointer({
   onDone,
   onCancel,
   colour = "#1d5fc2",
+  inside = null,
 }: {
   getMap: () => MlMap | null | undefined;
+  /** The neighbourhood's boundary: corners and sides must stay inside it. */
+  inside?: GeoJSON.Geometry | null;
   onDone: (shape: GeoJSON.Polygon, reordered: boolean) => void;
   onCancel: () => void;
   colour?: string;
@@ -114,6 +144,12 @@ export function CornerPointer({
   const format = useFormatter();
   const [corners, setCorners] = useState<Pt[]>([]);
   const [side, setSide] = useState(0);
+  // The pointer is outside the neighbourhood (or the side to it would cross its border).
+  const [outside, setOutside] = useState(false);
+  const insideRef = useRef(inside);
+  useEffect(() => {
+    insideRef.current = inside;
+  }, [inside]);
   const cornersRef = useRef<Pt[]>([]);
   // The map is read through a ref, so a new getMap each render does not redraw the layers.
   const mapOf = useRef(getMap);
@@ -135,6 +171,13 @@ export function CornerPointer({
     const pts = cornersRef.current;
     src.setData(cornerFeatures(pts, here));
     setSide(pts.length ? metres(pts.at(-1)!, here) : 0);
+    const b = insideRef.current;
+    setOutside(
+      !!b &&
+        (!pointInside(here, b) ||
+          (pts.length > 0 && !sideInside(pts.at(-1)!, here, b)) ||
+          (pts.length === 3 && !sideInside(here, pts[0]!, b))),
+    );
   }, [centre]);
 
   useEffect(() => {
@@ -156,7 +199,7 @@ export function CornerPointer({
 
   function add() {
     const here = centre();
-    if (!here) return;
+    if (!here || outside) return;
     const next = [...corners, here];
     if (next.length < 4) return setCorners(next);
     const { polygon, reordered } = shapeOf(next);
@@ -170,9 +213,9 @@ export function CornerPointer({
       {/* The pointer: always the middle of the map. */}
       <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center" aria-hidden>
         <svg width="44" height="44" viewBox="0 0 44 44" className="drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]">
-          <circle cx="22" cy="22" r="9" fill="none" stroke={colour} strokeWidth="2.5" />
-          <path d="M22 2v12M22 30v12M2 22h12M30 22h12" stroke={colour} strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="22" cy="22" r="2" fill={colour} />
+          <circle cx="22" cy="22" r="9" fill="none" stroke={outside ? "#dc2626" : colour} strokeWidth="2.5" />
+          <path d="M22 2v12M22 30v12M2 22h12M30 22h12" stroke={outside ? "#dc2626" : colour} strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="22" cy="22" r="2" fill={outside ? "#dc2626" : colour} />
         </svg>
       </div>
       <div className="absolute inset-x-3 bottom-10 z-20 rounded-md border bg-card-solid p-3 text-sm shadow-sm sm:inset-x-auto sm:start-3 sm:w-80" aria-live="polite">
@@ -183,9 +226,10 @@ export function CornerPointer({
           </Button>
         </div>
         <p className="text-muted-foreground">{t("help", { n })}</p>
+        {outside && <p className="text-danger mt-1 text-xs font-medium">{t("outside")}</p>}
         {corners.length > 0 && <p className="mt-1 text-xs tabular-nums text-muted-foreground">{t("side", { m: format.number(side, { maximumFractionDigits: 1 }) })}</p>}
         <div className="mt-2 flex gap-2">
-          <Button type="button" size="sm" onClick={add}>
+          <Button type="button" size="sm" onClick={add} disabled={outside}>
             <Plus aria-hidden />
             {t("add", { n })}
           </Button>

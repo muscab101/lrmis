@@ -94,6 +94,8 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
     bbox: [number, number, number, number];
   } | null>(null);
   const [nearby, setNearby] = useState<string | null>(null);
+  // The neighbourhood's own boundary (not its district's): outside it is shaded and 4-corner land must stay inside.
+  const [nbhdBoundary, setNbhdBoundary] = useState<GeoJSON.Geometry | null>(null);
   const [f, setF] = useState({
     width: "",
     length: "",
@@ -137,6 +139,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
       void neighbourhoodViewAction({ id: neighbourhood.value }).then((r) => {
         if (!live) return;
         const v = r.ok ? r.data : null;
+        setNbhdBoundary(v?.neighbourhood?.geometry ?? null);
         if (v?.neighbourhood) return setOutline(v.neighbourhood);
         const shape = v?.district ?? null;
         if (v?.point) {
@@ -149,6 +152,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
         setOutline(shape);
       });
     } else if (districtId) {
+      setNbhdBoundary(null);
       void getGeometryAction({ level: "districts", id: districtId }).then(
         (r) => live && setOutline(r.ok ? r.data : null),
       );
@@ -388,6 +392,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             outlineBbox={outline?.bbox ?? null}
             corners={canCorners}
             onShape={onShape}
+            boundary={nbhdBoundary}
           />
           {nearby && (
             <p

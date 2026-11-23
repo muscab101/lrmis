@@ -553,7 +553,8 @@
     "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day.",
     "merge_pick": "Calaamadee ugu yaraan hal dhul oo la taabanaya, ama qor lambar dhul oo kale.",
     "upper_storeys": "Geli dabaqyada sare tiro dhan oo u dhexeysa 0 iyo 100.",
-    "drawn_shape": "Mar kale sawir 4-ta gees: qaabku waa inuu xiran yahay, u dhow biinka, kana yar yahay 1 km²."
+    "drawn_shape": "Mar kale sawir 4-ta gees: qaabku waa inuu xiran yahay, u dhow biinka, kana yar yahay 1 km².",
+    "drawn_shape_outside": "Dhulka la sawiray wuxuu ka gudbayaa xuduudka xaafadda. Gudaha xaafadda ku sawir."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",
@@ -1797,7 +1798,8 @@
       "side": "Dhinacan: {m} m",
       "done": "Qaabka waxaa laga sawiray 4 gees",
       "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka.",
-      "pinDone": "Biinka waxaa la dhigay bartamaha 4-ta gees"
+      "pinDone": "Biinka waxaa la dhigay bartamaha 4-ta gees",
+      "outside": "Tilmaamuhu wuxuu ka baxsan yahay xaafadda, ama dhinacani wuxuu ka gudbayaa xuduudkeeda. Gudaha u dhaqaaji."
     }
   },
   "locations": {
