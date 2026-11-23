@@ -3280,7 +3280,8 @@
       "compound": "Guryo badan oo hal dhul ku yaal, mid kasta milkiile u gaar ah."
     },
     "deleteBuildingTypeBody": "Waa laga saarayaa foomka dhulka. Dhulka hore loo keydiyay wuxuu haynayaa noociisa iyo qiimihiisa.",
-    "buildingTypeDeleted": "Nooca dhismaha waa la tirtiray."
+    "buildingTypeDeleted": "Nooca dhismaha waa la tirtiray.",
+    "upperStoreysLine": "{count} dabaq sare, qiimaha Dabaqyada sare: {amount}"
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

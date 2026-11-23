@@ -95,4 +95,14 @@ describe("upper storeys (0272)", () => {
     expect((await asUser(db, admin, (tx) => scalar<{ changed: boolean }>(tx, `select public.parcel_set_upper_storeys($1, 1)`, [reg.parcel_id]))).changed).toBe(false);
     await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_set_upper_storeys($1, -1)`, [reg.parcel_id])), "VALIDATION: upper_storeys");
   });
+  it("the yearly valuation counts the upper storeys in buildings and the total (0278)", async () => {
+    const out = await asUser(db, surveyor, (tx) => scalar<{ parcel_id: string }>(tx, `select public.field_land_create($1)`, [JSON.stringify(land({ house_no: "31", upper_storeys: 6, plot_width_m: 12, plot_length_m: 12 }))]));
+    const c = await scalar<{ land_amount: number; buildings_amount: number; upper_storeys: number; upper_storeys_amount: number; total: number; service_charge: number }>(
+      db, `select private.compute_assessment($1, 2026)`, [out.parcel_id]);
+    expect(Number(c.land_amount)).toBe(57.6);
+    expect(Number(c.upper_storeys)).toBe(6);
+    expect(Number(c.upper_storeys_amount)).toBe(172.8);
+    expect(Number(c.buildings_amount)).toBe(172.8);
+    expect(Number(c.total)).toBeCloseTo(230.4 + Number(c.service_charge), 2);
+  });
 });

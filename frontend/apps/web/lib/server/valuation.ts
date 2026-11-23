@@ -167,6 +167,10 @@ export interface Breakdown {
   land_amount: number;
   buildings: { grade: string; grade_so: string; grade_en: string; units: number; amount: number; line: number }[];
   buildings_amount: number;
+  /** A storey building's upper storeys (counted in buildings_amount), e.g. "6 upper storeys × 144 m² × 0.20 USD per m² (Upper Floors)". */
+  upper_storeys?: number;
+  upper_storeys_amount?: number;
+  upper_storeys_line?: string | null;
   exemption_kind: string | null;
   exemption_pct: number;
   exemption_amount: number;

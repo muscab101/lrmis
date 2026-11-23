@@ -3280,7 +3280,8 @@
       "compound": "Several houses on one land, each with its own owner."
     },
     "deleteBuildingTypeBody": "It is removed from the land form. Land already saved keeps its kind and price.",
-    "buildingTypeDeleted": "Building type deleted."
+    "buildingTypeDeleted": "Building type deleted.",
+    "upperStoreysLine": "{count, plural, one {# upper storey} other {# upper storeys}} at the Upper Floors price: {amount}"
   },
   "billing": {
     "runsTitle": "Billing runs",

@@ -136,7 +136,14 @@ export function ParcelValuation({ parcelId, registered, data, grades, can }: Pro
                 </span>
               </dt>
               <dd className="tabular-nums">{usd(preview.land_amount)}</dd>
-              <dt>{t("buildingsLine")}</dt>
+              <dt>
+                {t("buildingsLine")}
+                {Number(preview.upper_storeys_amount ?? 0) > 0 && (
+                  <span className="block text-xs text-muted-foreground">
+                    {t("upperStoreysLine", { count: Number(preview.upper_storeys ?? 0), amount: usd(Number(preview.upper_storeys_amount)) })}
+                  </span>
+                )}
+              </dt>
               <dd className="tabular-nums">{usd(preview.buildings_amount)}</dd>
               {Number(preview.exemption_pct) > 0 && (
                 <>
