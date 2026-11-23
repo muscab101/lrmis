@@ -159,6 +159,27 @@ describe("citizen sign-in codes", () => {
     const linked = await asUser(db, newcomer, (tx) => scalar<string>(tx, `select public.my_party()`), "aal1");
     expect(await scalar<string>(db, `select full_name from public.parties where id = $1`, [linked])).toBe("Office Owner");
   });
+
+  it("after staff correct the owner's phone, signing in with the new number takes the owner over (0282)", async () => {
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone) values ('Wrong Number', '+252615550666') returning id`);
+    const first = await createAuthUser(db, { phone: "+252615550666", fullName: "" });
+    expect(await asUser(db, first, (tx) => scalar<string>(tx, `select public.my_party()`), "aal1")).toBe(owner);
+    // Staff fix the number on the register; the first account keeps its old number.
+    await db.query(`update public.parties set phone = '+252615550667' where id = $1`, [owner]);
+    const second = await createAuthUser(db, { phone: "+252615550667", fullName: "" });
+    expect(await asUser(db, second, (tx) => scalar<string>(tx, `select public.my_party()`), "aal1")).toBe(owner);
+    expect(await scalar<string>(db, `select citizen_user_id from public.parties where id = $1`, [owner])).toBe(second);
+  });
+
+  it("an owner linked to an account with the same phone is never taken over", async () => {
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone) values ('Kept Owner', '+252615550777') returning id`);
+    const first = await createAuthUser(db, { phone: "+252615550777", fullName: "" });
+    await asUser(db, first, (tx) => tx.query(`select public.my_party()`), "aal1");
+    const copycat = await createAuthUser(db, { email: "copy@gmail.com", fullName: "" });
+    await db.query(`update public.profiles set phone = '+252615550777', kind = 'citizen' where user_id = $1`, [copycat]);
+    expect(await asUser(db, copycat, (tx) => scalar<string | null>(tx, `select public.my_party()`), "aal1")).toBeNull();
+    expect(await scalar<string>(db, `select citizen_user_id from public.parties where id = $1`, [owner])).toBe(first);
+  });
 });
 
 describe("phone format from Supabase Auth", () => {
