@@ -1796,11 +1796,8 @@
       "side": "This side: {m} m",
       "done": "Shape drawn from 4 corners",
       "crossed": "The corners were out of order, so they were put in order around the land.",
-      "tool": "4-corner drawing",
-      "sideN": "Side {n}",
-      "again": "Draw again"
-    },
-    "measureHint_corners": "Drag a corner to fix it. Draw again starts a new shape."
+      "pinDone": "Pin put in the middle of the 4 corners"
+    }
   },
   "locations": {
     "title": "Locations",

@@ -48,7 +48,7 @@ export default async function ZoneAddLandPage({
       <PageHeader title={t("title")} description={ownerRow ? ownerRow.full_name : t("subtitle")} />
       <Card>
         <CardContent className="pt-5">
-          <FieldLandForm districts={districts} grades={grades} buildingTypes={buildingTypes} start={start} returnTo={`/surveys/zones/${id}`} owner={ownerRow} />
+          <FieldLandForm districts={districts} grades={grades} buildingTypes={buildingTypes} start={start} returnTo={`/surveys/zones/${id}`} owner={ownerRow} canCorners={viewer.can("map.draw_corners")} />
         </CardContent>
       </Card>
     </div>

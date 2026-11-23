@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@dhulka/ui/button";
-import maplibregl from "maplibre-gl";
-import { Crosshair, Loader2 } from "lucide-react";
+import { toast } from "@dhulka/ui/toaster";
+import maplibregl, { type GeoJSONSource } from "maplibre-gl";
+import { Crosshair, Loader2, Scan } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { addCornerLayers, CornerPointer, cornerFeatures } from "@/components/map/corner-pointer";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
 
 export interface Pin {
@@ -26,11 +28,40 @@ interface Props {
   /** Optional outline to show (the chosen neighbourhood). */
   outline?: GeoJSON.Geometry | null;
   outlineBbox?: [number, number, number, number] | null;
+  /** Offer 4-corner drawing (map.draw_corners): the pin then goes to the middle of the 4 corners. */
+  corners?: boolean;
+}
+
+const CORNERS_SRC = "pin-corners";
+
+/** The middle of a shape (its centre of area), so the pin sits inside the land even when it is not a neat square. */
+function middleOf(p: GeoJSON.Polygon): [number, number] {
+  const ring = p.coordinates[0]!;
+  let a = 0;
+  let x = 0;
+  let y = 0;
+  for (let i = 0; i < ring.length - 1; i++) {
+    const [x0, y0] = ring[i] as [number, number];
+    const [x1, y1] = ring[i + 1] as [number, number];
+    const c = x0 * y1 - x1 * y0;
+    a += c;
+    x += (x0 + x1) * c;
+    y += (y0 + y1) * c;
+  }
+  if (Math.abs(a) < 1e-14) {
+    const pts = ring.slice(0, -1);
+    return [pts.reduce((s, c) => s + c[0]!, 0) / pts.length, pts.reduce((s, c) => s + c[1]!, 0) / pts.length];
+  }
+  return [x / (3 * a), y / (3 * a)];
 }
 
 /** Drop a pin by clicking the map, or use the device GPS. */
-export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox }: Props) {
+export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false }: Props) {
   const t = useTranslations("applications.pin");
+  const tm = useTranslations("map.corners");
+  // 4-corner drawing: the centre pointer is out; the last shape drawn stays on the map.
+  const [cornering, setCornering] = useState(false);
+  const [shape, setShape] = useState<GeoJSON.Polygon | null>(null);
   const mapRef = useRef<DhulkaMapHandle>(null);
   const marker = useRef<maplibregl.Marker | null>(null);
   const [locating, setLocating] = useState(false);
@@ -79,6 +110,25 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     // Only when the outline changes; following the pin would fight the user's panning.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, outlineBbox]);
+
+  // The 4-corner shape on the map, under the pin: its 4 sides as lines, each with its length, and the corners numbered.
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map || !map.isStyleLoaded()) return;
+    addCornerLayers(map, CORNERS_SRC, "#1d5fc2");
+    const corners = shape ? (shape.coordinates[0]!.slice(0, -1) as [number, number][]) : [];
+    (map.getSource(CORNERS_SRC) as GeoJSONSource | undefined)?.setData(cornerFeatures(corners, null, true));
+  }, [shape]);
+
+  /** The 4 corners are in: the pin goes to their middle. */
+  function cornersDone(p: GeoJSON.Polygon, reordered: boolean) {
+    setCornering(false);
+    setShape(p);
+    const [lon, lat] = middleOf(p);
+    onChange({ lon, lat, accuracy: null, method: "manual" });
+    if (reordered) toast.warning(tm("crossed"));
+    else toast.success(tm("pinDone"));
+  }
 
   // Keep reading the GPS until it is accurate enough (or the wait runs out), keeping the best fix.
   const watch = useRef<number | null>(null);
@@ -130,9 +180,10 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           base="satellite"
           visible={{ facilities: false, streets: false }}
           parcels
-          onFeatureClick={(_, lngLat) => !disabled && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
+          onFeatureClick={(_, lngLat) => !disabled && !cornering && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
         />
-        {!value && !disabled && (
+        {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} onDone={cornersDone} onCancel={() => setCornering(false)} />}
+        {!value && !disabled && !cornering && (
           <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card-solid/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
         )}
       </div>
@@ -141,6 +192,24 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           <Button type="button" variant="outline" size="sm" onClick={locating ? stopGps : useGps}>
             {locating ? <Loader2 className="animate-spin" aria-hidden /> : <Crosshair aria-hidden />}
             {locating ? t("gpsStop", { m: live ?? "…" }) : value?.method === "gps" ? t("gpsAgain") : t("useGps")}
+          </Button>
+        )}
+        {corners && !disabled && (
+          <Button
+            type="button"
+            variant={cornering ? "default" : "outline"}
+            size="sm"
+            aria-pressed={cornering}
+            onClick={() => {
+              if (!cornering) {
+                stopGps();
+                setShape(null);
+              }
+              setCornering(!cornering);
+            }}
+          >
+            <Scan aria-hidden />
+            {tm("button")}
           </Button>
         )}
         {value && (

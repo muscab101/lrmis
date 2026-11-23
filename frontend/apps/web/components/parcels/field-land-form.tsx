@@ -56,10 +56,12 @@ interface Props {
   owner?: { id: string; full_name: string; phone: string | null } | null;
   /** Opened in a side panel: called after saving instead of going to another page. */
   onDone?: () => void;
+  /** May place the pin by drawing the land's 4 corners (map.draw_corners). */
+  canCorners?: boolean;
 }
 
 /** A surveyor in the field: where the house is, its size and number, and who owns it. Saved as partial land. */
-export function FieldLandForm({ districts, grades, buildingTypes, start = null, returnTo, owner: fixedOwner = null, onDone }: Props) {
+export function FieldLandForm({ districts, grades, buildingTypes, start = null, returnTo, owner: fixedOwner = null, onDone, canCorners = false }: Props) {
   const t = useTranslations("parcels.fieldLand");
   const ta = useTranslations("applications");
   const ts = useTranslations("stage");
@@ -366,6 +368,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             onChange={(p) => void onPin(p)}
             outline={outline?.geometry ?? null}
             outlineBbox={outline?.bbox ?? null}
+            corners={canCorners}
           />
           {nearby && (
             <p
