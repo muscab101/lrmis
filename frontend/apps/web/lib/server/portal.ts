@@ -85,6 +85,8 @@ export interface CitizenReceipt {
   parcel: { id: string; pun: string | null } | null;
   pos: { name: string } | null;
   payment_allocations: { id: number; amount: number; invoice: { number: string; period: string | null } | null }[];
+  /** The cashier who took it (null when paid online). */
+  created_by: string | null;
 }
 
 /** One of the citizen's own receipts (the database only shows payments on land they own). */
@@ -93,7 +95,7 @@ export async function citizenReceipt(id: string): Promise<CitizenReceipt | null>
   const supabase = await createClient();
   const { data } = await supabase
     .from("payments")
-    .select("id, receipt_no, amount, currency, unallocated, method, reference, payer_name, status, received_at, parcel:parcels(id, pun), pos:points_of_sale(name), payment_allocations(id, amount, invoice:invoices(number, period))")
+    .select("id, receipt_no, amount, currency, unallocated, method, reference, payer_name, status, received_at, created_by, parcel:parcels(id, pun), pos:points_of_sale(name), payment_allocations(id, amount, invoice:invoices(number, period))")
     .eq("id", id)
     .maybeSingle();
   return (data as unknown as CitizenReceipt | null) ?? null;

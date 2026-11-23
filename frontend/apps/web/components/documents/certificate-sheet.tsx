@@ -1,6 +1,7 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { getCertificateMarks } from "@/lib/server/certificate-marks";
+import { capName } from "@/lib/cap-name";
 import { fullHouseNo } from "@/lib/house-no";
 import { type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
 import { getCertificateDesign } from "@/lib/server/certificate-design";
@@ -95,10 +96,13 @@ export async function CertificateSheet({
   doc,
   verifyUrl,
   watermarkFacts,
+  servedBy,
 }: {
   doc: DocumentDetail;
   verifyUrl: string;
   watermarkFacts?: WatermarkFacts;
+  /** The staff member printing it. */
+  servedBy?: string | null;
 }) {
   const t = await getTranslations("documents");
   const ts = await getTranslations("stage");
@@ -437,11 +441,17 @@ export async function CertificateSheet({
             {format.dateTime(new Date(doc.issued_at), { dateStyle: "long" })}
           </p>
           <p className="mt-3 text-neutral-500">{t("registrar")}</p>
-          <p className="font-medium">{s.registrar ?? "—"}</p>
+          <p className="font-medium">{capName(s.registrar) ?? "—"}</p>
           <p className="mt-0.5 whitespace-nowrap font-mono text-[9px] text-(--cert)">
             {t("eSigned")} · {doc.verify_code.slice(0, 4)}-{doc.verify_code.slice(4, 8)}-
             {doc.verify_code.slice(8)}
           </p>
+          {capName(servedBy) && (
+            <>
+              <p className="mt-3 text-neutral-500">{t("servedBy")}</p>
+              <p className="font-medium">{capName(servedBy)}</p>
+            </>
+          )}
         </div>
         {(marks.signature || marks.stamp) && (
           <SignBlock

@@ -6,6 +6,7 @@ import { PrintButton } from "@/app/[locale]/(print)/invoices/[id]/print/print-bu
 import { Link } from "@/i18n/navigation";
 import { requireCitizen } from "@/lib/server/auth";
 import { citizenReceipt } from "@/lib/server/portal";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ export default async function CitizenReceiptPage({ params }: { params: Promise<{
   const tp = await getTranslations("portal");
   const p = await citizenReceipt(id);
   if (!p) notFound();
+  // Served by: the cashier who took the payment (none for money paid online).
+  const servedBy = p.created_by ? ((await (await createClient()).rpc("staff_name", { p_user: p.created_by })).data as string | null) : null;
   return (
     <div className="min-h-dvh bg-neutral-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto mb-4 flex max-w-[80mm] items-center justify-between print:hidden">
@@ -47,6 +50,7 @@ export default async function CitizenReceiptPage({ params }: { params: Promise<{
           amount: Number(p.amount),
           currency: p.currency,
           status: p.status,
+          served_by: servedBy,
         }}
       />
     </div>

@@ -43,7 +43,7 @@ export default async function DocumentPrintPage({ params }: { params: Promise<{ 
       <style>{d.type === "certificate" ? "@page { size: A4; margin: 0 }" : "@page { size: 85.6mm 54mm; margin: 0 }"}</style>
       <PrintControls id={d.id} printed={d.print_count > 0} status={d.status} canPrint={canPrint} printers={printers} payment={awaitingCardPayment(pay) ? { invoiceNumber: pay!.invoiceNumber } : null}>
         <ScreenshotShield off={inApp}>
-          <div className="shadow-sm print:shadow-none">{d.type === "certificate" ? (viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <CertificateLocked serial={d.serial} />) : <IdCardSheet doc={d} verifyUrl={verifyUrl} />}</div>
+          <div className="shadow-sm print:shadow-none">{d.type === "certificate" ? (viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} servedBy={viewer.profile.full_name} /> : <CertificateLocked serial={d.serial} />) : <IdCardSheet doc={d} verifyUrl={verifyUrl} servedBy={viewer.profile.full_name} />}</div>
         </ScreenshotShield>
       </PrintControls>
     </div>

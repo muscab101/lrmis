@@ -4,6 +4,7 @@ import { ReceiptSheet } from "@/components/payments/receipt-sheet";
 import { PrintButton } from "@/app/[locale]/(print)/invoices/[id]/print/print-button";
 import { requirePermission } from "@/lib/server/auth";
 import { getPayment } from "@/lib/server/payments";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +20,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
   const t = await getTranslations("payments");
   const p = await getPayment(id);
   if (!p) notFound();
+  // Served by: the cashier who took the payment (none for money paid online).
+  const servedBy = p.created_by ? ((await (await createClient()).rpc("staff_name", { p_user: p.created_by })).data as string | null) : null;
   return (
     <div className="min-h-dvh bg-neutral-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto mb-4 flex max-w-[80mm] justify-end print:hidden">
@@ -38,6 +41,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
           amount: Number(p.amount),
           currency: p.currency,
           status: p.status,
+          served_by: servedBy,
         }}
       />
     </div>

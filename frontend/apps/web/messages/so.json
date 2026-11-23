@@ -3588,7 +3588,8 @@
       "beforeAutomatic": "ka hor biilasha tooska ah",
       "note": "Wareegyada waxaa loo sameeyaa qabyo ahaan: ka fur liiska si aad u hubiso biilasha, u ansixiso oo u bixiso.",
       "done": "{count, plural, one {Wareegga {list} waa la sameeyay} other {# wareeg ayaa la sameeyay: {list}}}. Hoos ka ansixi oo bixi."
-    }
+    },
+    "servedBy": "Waxaa adeegay"
   },
   "pay": {
     "title": "Bixi biilkaaga",
@@ -3891,7 +3892,9 @@
     "bankField_account_name": "Magaca akoonka",
     "bankField_account_no": "Lambarka akoonka",
     "bankField_branch": "Laanta",
-    "bankField_swift": "SWIFT"
+    "bankField_swift": "SWIFT",
+    "servedBy": "Waxaa adeegay",
+    "servedOnline": "Online"
   },
   "accounting": {
     "title": "Xisaabaadka",
@@ -4582,7 +4585,8 @@
     "lockedBody": "Arkidda shahaadooyinka waa laga xiray adiga. Riix Hadda daabac si loogu diro printer-ka miiskaaga.",
     "printerOnline": "shidan",
     "cancelPrint": "Jooji",
-    "upperStoreys": "Dabaqyada sare ({count})"
+    "upperStoreys": "Dabaqyada sare ({count})",
+    "servedBy": "Waxaa adeegay"
   },
   "verify": {
     "title": "Hubi shahaado",

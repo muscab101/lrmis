@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function InvoicePrintPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requirePermission(locale, "invoices.print");
+  const viewer = await requirePermission(locale, "invoices.print");
   const t = await getTranslations("documents");
   const lang = await getLocale();
   const inv = await getInvoice(id);
@@ -40,6 +40,7 @@ export default async function InvoicePrintPage({ params }: { params: Promise<{ l
           }}
           payUrl={payUrl}
           qr={await payQr(payUrl)}
+          servedBy={viewer.profile.full_name}
         />
       </div>
     </div>

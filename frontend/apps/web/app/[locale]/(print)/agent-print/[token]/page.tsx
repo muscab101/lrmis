@@ -31,7 +31,7 @@ export default async function AgentPrintPage({ params }: { params: Promise<{ loc
     return (
       <div className="bg-white">
         <style>{"@page { size: A4; margin: 0 }"}</style>
-        <InvoiceSheet inv={job.invoice} payUrl={payUrl} qr={await payQr(payUrl)} />
+        <InvoiceSheet inv={job.invoice} payUrl={payUrl} qr={await payQr(payUrl)} servedBy={job.servedBy} />
       </div>
     );
   }
@@ -41,9 +41,9 @@ export default async function AgentPrintPage({ params }: { params: Promise<{ loc
     <div className="bg-white">
       <style>{doc.type === "certificate" ? "@page { size: A4; margin: 0 }" : "@page { size: 85.6mm 54mm; margin: 0 }"}</style>
       {doc.type === "certificate" ? (
-        <CertificateSheet doc={doc} verifyUrl={verifyUrl} watermarkFacts={job.facts} />
+        <CertificateSheet doc={doc} verifyUrl={verifyUrl} watermarkFacts={job.facts} servedBy={job.servedBy} />
       ) : (
-        <IdCardSheet doc={doc} verifyUrl={verifyUrl} agent={{ facts: job.facts, photoUrl: job.photoUrl, outlines: job.outlines }} />
+        <IdCardSheet doc={doc} verifyUrl={verifyUrl} servedBy={job.servedBy} agent={{ facts: job.facts, photoUrl: job.photoUrl, outlines: job.outlines }} />
       )}
     </div>
   );

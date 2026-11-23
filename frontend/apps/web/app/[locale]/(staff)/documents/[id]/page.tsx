@@ -89,9 +89,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ local
         <ScreenshotShield off={inApp}>
         <div className="relative mx-auto w-fit">
           {d.type === "certificate" ? (
-            viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} /> : <CertificateLocked serial={d.serial} />
+            viewer.can("certificates.design") ? <CertificateSheet doc={d} verifyUrl={verifyUrl} servedBy={viewer.profile.full_name} /> : <CertificateLocked serial={d.serial} />
           ) : (
-            <IdCardSheet doc={d} verifyUrl={verifyUrl} />
+            <IdCardSheet doc={d} verifyUrl={verifyUrl} servedBy={viewer.profile.full_name} />
           )}
           <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden">
             <span className={`-rotate-30 font-bold tracking-widest whitespace-nowrap text-red-600/15 select-none ${d.type === "certificate" ? "text-[64px]" : "text-[28px]"}`}>

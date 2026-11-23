@@ -22,13 +22,15 @@ export async function loadAgentJob(token: string) {
   if (!/^[0-9a-f]{64}$/.test(token)) return null;
   const { data } = await createIsolatedClient().rpc("agent_job_document", { p_token: token });
   if (!data) return null;
+  // Who served: the cashier for a receipt, else the staff member who sent the paper to the printer.
+  const servedBy = (data as { served_by?: string | null }).served_by ?? null;
   if ((data as { receipt?: unknown }).receipt) {
-    return { kind: "receipt" as const, receipt: (data as { receipt: ReceiptSheetData }).receipt };
+    return { kind: "receipt" as const, receipt: { ...(data as { receipt: ReceiptSheetData }).receipt, served_by: servedBy } };
   }
   if ((data as { invoice?: unknown }).invoice) {
-    return { kind: "invoice" as const, invoice: (data as { invoice: InvoiceSheetData & { pay_link: string | null } }).invoice };
+    return { kind: "invoice" as const, invoice: (data as { invoice: InvoiceSheetData & { pay_link: string | null } }).invoice, servedBy };
   }
   const job = data as { doc: DocumentDetail; facts: WatermarkFacts; photo_path: string | null; outlines: Awaited<ReturnType<typeof banadirOutlines>> | null };
   const photoUrl = job.photo_path ? ((await (await createAdminClient()).storage.from(PARTY_PHOTO_BUCKET).createSignedUrl(job.photo_path, 600)).data?.signedUrl ?? null) : null;
-  return { kind: "document" as const, doc: job.doc, facts: job.facts, photoUrl, outlines: job.outlines ?? [] };
+  return { kind: "document" as const, doc: job.doc, facts: job.facts, photoUrl, outlines: job.outlines ?? [], servedBy };
 }

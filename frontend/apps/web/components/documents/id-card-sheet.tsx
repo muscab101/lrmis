@@ -1,3 +1,4 @@
+import { capName } from "@/lib/cap-name";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { banadirOutlines, type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
@@ -14,9 +15,12 @@ export async function IdCardSheet({
   doc,
   verifyUrl,
   agent,
+  servedBy,
 }: {
   doc: DocumentDetail;
   verifyUrl: string;
+  /** The staff member printing it. */
+  servedBy?: string | null;
   /** Printing through the print program there is no signed-in person: the page hands over what would be fetched. */
   agent?: { facts: WatermarkFacts; photoUrl: string | null; outlines: Awaited<ReturnType<typeof banadirOutlines>> };
 }) {
@@ -108,6 +112,11 @@ export async function IdCardSheet({
         </div>
         <footer className="relative flex items-center justify-between bg-white/70 px-[3mm] py-[0.9mm] text-[5.2pt] text-[#0b1a3a]">
           <span className="font-mono">{doc.serial}</span>
+          {capName(servedBy) && (
+            <span className="truncate px-1">
+              {t("servedBy")}: {capName(servedBy)}
+            </span>
+          )}
           <span>
             {t("validUntil")} {date(doc.expires_at)}
           </span>

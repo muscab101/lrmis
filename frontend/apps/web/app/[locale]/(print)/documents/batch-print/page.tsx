@@ -70,9 +70,9 @@ export default async function BatchPrintPage({ params, searchParams }: { params:
                 <div key={d.id} className={`shadow-sm print:shadow-none ${d.type === "certificate" ? "sheet-cert" : "sheet-card"}`}>
                   {d.type === "certificate"
                     ? viewer.can("certificates.design")
-                      ? await CertificateSheet({ doc: d, verifyUrl })
+                      ? await CertificateSheet({ doc: d, verifyUrl, servedBy: viewer.profile.full_name })
                       : <CertificateLocked serial={d.serial} />
-                    : await IdCardSheet({ doc: d, verifyUrl })}
+                    : await IdCardSheet({ doc: d, verifyUrl, servedBy: viewer.profile.full_name })}
                 </div>
               );
             }),

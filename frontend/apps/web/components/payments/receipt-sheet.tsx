@@ -1,4 +1,5 @@
 import { getFormatter, getTranslations } from "next-intl/server";
+import { capName } from "@/lib/cap-name";
 
 export interface ReceiptSheetData {
   receipt_no: string;
@@ -13,6 +14,8 @@ export interface ReceiptSheetData {
   amount: number;
   currency: string;
   status: string;
+  /** The cashier who took the payment (null: paid online). */
+  served_by?: string | null;
 }
 
 /** The receipt itself: narrow (fits 80 mm thermal printers and A4). Used on screen and by the print program. */
@@ -59,7 +62,10 @@ export async function ReceiptSheet({ r }: { r: ReceiptSheetData }) {
       </p>
       {r.status === "reversed" && <p className="mt-2 text-center font-bold">*** {t("status.reversed")} ***</p>}
       <hr className="my-3 border-dashed border-black" />
-      <p className="text-center font-sans text-[11px]">{t("receiptThanks")}</p>
+      <p className="text-center font-sans text-[11px]">
+        {t("servedBy")}: {capName(r.served_by) ?? t("servedOnline")}
+      </p>
+      <p className="mt-1 text-center font-sans text-[11px]">{t("receiptThanks")}</p>
     </article>
   );
 }

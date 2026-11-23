@@ -3588,7 +3588,8 @@
       "beforeAutomatic": "before automatic billing",
       "note": "Runs are made as drafts: open them in the list to check the bills, approve and issue.",
       "done": "{count, plural, one {Run {list} made} other {# runs made: {list}}}. Approve and issue them below."
-    }
+    },
+    "servedBy": "Served by"
   },
   "pay": {
     "title": "Pay your invoice",
@@ -3891,7 +3892,9 @@
     "bankField_account_name": "Account name",
     "bankField_account_no": "Account number",
     "bankField_branch": "Branch",
-    "bankField_swift": "SWIFT"
+    "bankField_swift": "SWIFT",
+    "servedBy": "Served by",
+    "servedOnline": "Online"
   },
   "accounting": {
     "title": "Accounting",
@@ -4582,7 +4585,8 @@
     "lockedBody": "Viewing certificates is turned off for you. Use Print now to send it to your desk's printer.",
     "printerOnline": "on",
     "cancelPrint": "Cancel",
-    "upperStoreys": "Upper storeys ({count})"
+    "upperStoreys": "Upper storeys ({count})",
+    "servedBy": "Served by"
   },
   "verify": {
     "title": "Verify a certificate",

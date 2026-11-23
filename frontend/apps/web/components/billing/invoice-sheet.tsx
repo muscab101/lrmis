@@ -1,3 +1,4 @@
+import { capName } from "@/lib/cap-name";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 type Named = { name_so: string; name_en: string } | null;
@@ -21,7 +22,7 @@ export interface InvoiceSheetData {
 }
 
 /** The A4 invoice, with a QR code to the public pay page. Used on screen and by the print program. */
-export function InvoiceSheet({ inv, payUrl, qr }: { inv: InvoiceSheetData; payUrl: string | null; qr: string | null }) {
+export function InvoiceSheet({ inv, payUrl, qr, servedBy }: { inv: InvoiceSheetData; payUrl: string | null; qr: string | null; /** The staff member printing it. */ servedBy?: string | null }) {
   const t = useTranslations("billing");
   const tc = useTranslations("common");
   const format = useFormatter();
@@ -119,6 +120,11 @@ export function InvoiceSheet({ inv, payUrl, qr }: { inv: InvoiceSheetData; payUr
           <p className="font-semibold text-[#0b1a3a]">{t("howToPay")}</p>
           <p>{t("howToPayBody", { pun: inv.parcel?.pun ?? "" })}</p>
           {payUrl && <p className="font-mono break-all">{payUrl}</p>}
+          {capName(servedBy) && (
+            <p className="pt-2 text-[#0b1a3a]">
+              {t("servedBy")}: <span className="font-semibold">{capName(servedBy)}</span>
+            </p>
+          )}
         </div>
         {qr && <div className="size-28 shrink-0" aria-label={t("qrLabel")} dangerouslySetInnerHTML={{ __html: qr }} />}
       </section>
