@@ -552,7 +552,8 @@
     "document_type": "Program files (like .exe) can’t be attached. Documents, photos, videos and audio are fine.",
     "document_upload_failed": "The file did not upload. Check the connection and try again.",
     "merge_pick": "Tick at least one touching plot, or type another land number.",
-    "upper_storeys": "Enter the upper storeys as a whole number from 0 to 100."
+    "upper_storeys": "Enter the upper storeys as a whole number from 0 to 100.",
+    "drawn_shape": "Draw the 4 corners again: the shape must be closed, near the pin, and no bigger than 1 km²."
   },
   "auth": {
     "staffLoginTitle": "Staff sign in",

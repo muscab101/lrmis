@@ -30,6 +30,8 @@ interface Props {
   outlineBbox?: [number, number, number, number] | null;
   /** Offer 4-corner drawing (map.draw_corners): the pin then goes to the middle of the 4 corners. */
   corners?: boolean;
+  /** The 4-corner shape drawn (null when cleared), so the land can keep it as its boundary. */
+  onShape?: (shape: GeoJSON.Polygon | null) => void;
 }
 
 const CORNERS_SRC = "pin-corners";
@@ -56,7 +58,7 @@ function middleOf(p: GeoJSON.Polygon): [number, number] {
 }
 
 /** Drop a pin by clicking the map, or use the device GPS. */
-export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false }: Props) {
+export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false, onShape }: Props) {
   const t = useTranslations("applications.pin");
   const tm = useTranslations("map.corners");
   // 4-corner drawing: the centre pointer is out; the last shape drawn stays on the map.
@@ -124,6 +126,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
   function cornersDone(p: GeoJSON.Polygon, reordered: boolean) {
     setCornering(false);
     setShape(p);
+    onShape?.(p);
     const [lon, lat] = middleOf(p);
     onChange({ lon, lat, accuracy: null, method: "manual" });
     if (reordered) toast.warning(tm("crossed"));
@@ -204,6 +207,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
               if (!cornering) {
                 stopGps();
                 setShape(null);
+                onShape?.(null);
               }
               setCornering(!cornering);
             }}

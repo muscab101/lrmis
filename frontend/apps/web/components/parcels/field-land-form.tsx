@@ -86,6 +86,8 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
       : null,
   );
   const [pin, setPin] = useState<Pin | null>(null);
+  // The 4-corner shape drawn on the pin map: saved as the land's boundary.
+  const [drawnShape, setDrawnShape] = useState<GeoJSON.Polygon | null>(null);
   const [pinPlace, setPinPlace] = useState<string | null>(null);
   const [outline, setOutline] = useState<{
     geometry: GeoJSON.Geometry;
@@ -199,6 +201,20 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [houseChoices, apartment, layout]);
 
+  /** A 4-corner shape: kept for the land; with no size typed yet, width and length come from its sides. */
+  function onShape(p: GeoJSON.Polygon | null) {
+    setDrawnShape(p);
+    const ring = p?.coordinates[0];
+    if (!ring || ring.length !== 5) return;
+    const m = (a: number[], b: number[]) => {
+      const r = Math.PI / 180;
+      return Math.hypot((b[0]! - a[0]!) * r * Math.cos(((a[1]! + b[1]!) / 2) * r), (b[1]! - a[1]!) * r) * 6_371_000;
+    };
+    const sides = [0, 1, 2, 3].map((i) => m(ring[i]!, ring[i + 1]!));
+    const fix = (n: number) => String(Math.round(n * 10) / 10);
+    setF((x) => (x.width || x.length ? x : { ...x, width: fix((sides[0]! + sides[2]!) / 2), length: fix((sides[1]! + sides[3]!) / 2) }));
+  }
+
   // Dropping a pin fills in the neighbourhood and district, and warns about land already registered close by.
   const onPin = async (p: Pin) => {
     setPin(p);
@@ -249,6 +265,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             pinLon: pin?.lon as number,
             pinLat: pin?.lat as number,
             pinAccuracyM: pin?.accuracy ?? null,
+            drawnShape: drawnShape as { type: "Polygon"; coordinates: [number, number][][] } | null,
             plotWidthM: num(f.width),
             plotLengthM: num(f.length),
             houseNo: f.houseNo,
@@ -288,6 +305,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             pinLon: pin?.lon as number,
             pinLat: pin?.lat as number,
             pinAccuracyM: pin?.accuracy ?? null,
+            drawnShape: drawnShape as { type: "Polygon"; coordinates: [number, number][][] } | null,
             plotWidthM: num(f.width),
             plotLengthM: num(f.length),
             houseNo: f.houseNo,
@@ -369,6 +387,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             outline={outline?.geometry ?? null}
             outlineBbox={outline?.bbox ?? null}
             corners={canCorners}
+            onShape={onShape}
           />
           {nearby && (
             <p

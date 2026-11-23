@@ -552,7 +552,8 @@
     "document_type": "Faylasha barnaamijyada (sida .exe) lama lifaaqi karo. Dukumentiyada, sawirrada, muuqaallada iyo codadka waa la aqbalayaa.",
     "document_upload_failed": "Faylka lama soo gelin. Hubi internetka oo mar kale isku day.",
     "merge_pick": "Calaamadee ugu yaraan hal dhul oo la taabanaya, ama qor lambar dhul oo kale.",
-    "upper_storeys": "Geli dabaqyada sare tiro dhan oo u dhexeysa 0 iyo 100."
+    "upper_storeys": "Geli dabaqyada sare tiro dhan oo u dhexeysa 0 iyo 100.",
+    "drawn_shape": "Mar kale sawir 4-ta gees: qaabku waa inuu xiran yahay, u dhow biinka, kana yar yahay 1 km²."
   },
   "auth": {
     "staffLoginTitle": "Galitaanka shaqaalaha",

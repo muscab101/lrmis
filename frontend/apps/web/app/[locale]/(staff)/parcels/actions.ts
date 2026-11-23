@@ -234,6 +234,12 @@ const size = z
   .max(5000, "validation.plot_size");
 
 /** A surveyor adds land found in the field: it goes to Parcels → Partial registration (no application yet). */
+/** A shape drawn with 4-corner drawing (GeoJSON Polygon, one ring of 4 to 51 points). */
+const drawnShape = z
+  .object({ type: z.literal("Polygon"), coordinates: z.array(z.array(z.tuple([z.number(), z.number()])).min(4).max(51)).length(1) })
+  .nullable()
+  .default(null);
+
 export const addFieldLandAction = defineAction(
   "parcels.field_land",
   z.object({
@@ -242,6 +248,8 @@ export const addFieldLandAction = defineAction(
     pinLon: z.number({ error: "validation.pin_required" }).min(40).max(52),
     pinLat: z.number({ error: "validation.pin_required" }).min(-2).max(12.5),
     pinAccuracyM: z.number().min(0).max(10_000).nullable().default(null),
+    /** The 4-corner shape drawn on the pin map: kept as the land's boundary. */
+    drawnShape: drawnShape,
     plotWidthM: size,
     plotLengthM: size,
     houseNo: text(40),
@@ -277,6 +285,7 @@ export const addFieldLandAction = defineAction(
             owner_name: v.ownerName,
             owner_phone: v.ownerPhone,
             upper_storeys: v.upperStoreys,
+            geom: v.drawnShape,
             note: v.note,
           },
         }),
@@ -295,7 +304,7 @@ export const addFieldLandAction = defineAction(
       }
       if (err instanceof AppFailure && err.code === "VALIDATION") {
         const detail = String(err.values?.detail ?? "");
-        const field = detail.startsWith("pin")
+        const field = detail.startsWith("pin") || detail === "drawn_shape"
           ? "pin"
           : detail.startsWith("neighbourhood")
             ? "neighbourhoodId"
@@ -325,6 +334,9 @@ const landError = (err: unknown): never => {
   if (err instanceof AppFailure && err.code === "CONFLICT" && err.values?.detail === "house_no_taken") {
     throw new AppFailure("VALIDATION", err.values, { houseNo: ["validation.house_no_taken"] });
   }
+  if (err instanceof AppFailure && err.code === "VALIDATION" && err.values?.detail === "drawn_shape") {
+    throw new AppFailure("VALIDATION", err.values, { pin: ["validation.drawn_shape"] });
+  }
   throw err;
 };
 
@@ -338,6 +350,8 @@ export const addLandWithUnitsAction = defineAction(
     pinLon: z.number({ error: "validation.pin_required" }).min(40).max(52),
     pinLat: z.number({ error: "validation.pin_required" }).min(-2).max(12.5),
     pinAccuracyM: z.number().min(0).max(10_000).nullable().default(null),
+    /** The 4-corner shape drawn on the pin map: kept as the land's boundary. */
+    drawnShape: drawnShape,
     plotWidthM: size,
     plotLengthM: size,
     houseNo: text(40),
@@ -398,6 +412,7 @@ export const addLandWithUnitsAction = defineAction(
               owner_phone: u.ownerPhone,
             })),
             shared_spaces: v.spaces.map((s) => ({ name: s.name, area_m2: s.areaM2 })),
+            geom: v.drawnShape,
             note: v.note,
           },
         }),
