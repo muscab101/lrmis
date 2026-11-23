@@ -37,7 +37,8 @@ export async function generateMetadata() {
   return { title: t("invoicesTitle") };
 }
 
-const FILTERS: InvoiceFilter[] = ["open", "overdue", "paid", "cancelled", "any"];
+// "All" first: the page opens on every bill, paid ones included.
+const FILTERS: InvoiceFilter[] = ["any", "open", "overdue", "paid", "cancelled"];
 
 export default async function InvoicesPage({
   params,
@@ -53,7 +54,7 @@ export default async function InvoicesPage({
   const format = await getFormatter();
   const sp = await searchParams;
   const canPrint = viewer.can("invoices.print");
-  const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "open";
+  const filter = (FILTERS as string[]).includes(sp.f ?? "") ? (sp.f as InvoiceFilter) : "any";
   const page = Math.max(1, Number(sp.page) || 1);
   const counts = await billingCounts();
   // One list; the filter can narrow it to registered land or land in partial registration.
