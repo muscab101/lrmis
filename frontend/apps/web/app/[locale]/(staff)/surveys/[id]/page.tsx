@@ -47,7 +47,7 @@ export default async function SurveyPage({ params }: { params: Promise<{ locale:
           }}
         />
       )}
-      <SurveyWorkspace key={survey.id} survey={survey} outline={outline} canEdit={canEdit} canReview={canReview} />
+      <SurveyWorkspace key={survey.id} survey={survey} outline={outline} canEdit={canEdit} canReview={canReview} canCorners={(canEdit || canReview) && viewer.can("map.draw_corners")} />
     </>
   );
 }

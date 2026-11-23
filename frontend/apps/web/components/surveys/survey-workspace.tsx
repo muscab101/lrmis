@@ -13,7 +13,7 @@ import { area as turfArea } from "@turf/area";
 import { polygon as turfPolygon } from "@turf/helpers";
 import { kinks } from "@turf/kinks";
 import { length as turfLength } from "@turf/length";
-import { ArrowRight, Camera, Check, Footprints, Layers, Loader2, MousePointer2, PenLine, Trash2, Undo2, Upload } from "lucide-react";
+import { ArrowRight, Camera, Check, Footprints, Layers, Loader2, MousePointer2, PenLine, Scan, Trash2, Undo2, Upload } from "lucide-react";
 import maplibregl, { type Map as MlMap } from "maplibre-gl";
 import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,6 +27,7 @@ import {
   uploadSurveyPhotoAction,
 } from "@/app/[locale]/(staff)/surveys/actions";
 import { FormError } from "@/components/forms/form-error";
+import { CornerPointer } from "@/components/map/corner-pointer";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
 import { pinElement } from "@/components/map/geometry-preview";
 import { useRouter } from "@/i18n/navigation";
@@ -43,6 +44,8 @@ interface Props {
   canEdit: boolean;
   /** GIS officer resolving an overlap. */
   canReview: boolean;
+  /** May draw the land by its 4 corners with the centre pointer (map.draw_corners). */
+  canCorners?: boolean;
 }
 
 const SNAP_PX = 12;
@@ -92,8 +95,9 @@ function parcelSnapper(map: MlMap) {
   };
 }
 
-export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) {
+export function SurveyWorkspace({ survey, outline, canEdit, canReview, canCorners = false }: Props) {
   const t = useTranslations("surveys");
+  const tm = useTranslations("map.corners");
   const tc = useTranslations("common");
   const format = useFormatter();
   const vm = useValidationMessage();
@@ -108,6 +112,8 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
   const [accuracy, setAccuracy] = useState<number | null>(survey.accuracy_m != null ? Number(survey.accuracy_m) : null);
   const [walk, setWalk] = useState<{ points: [number, number][]; worst: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  // 4-corner drawing with the centre pointer is open.
+  const [cornering, setCornering] = useState(false);
   const [neighbours, setNeighbours] = useState({ north: "", east: "", south: "", west: "", ...survey.neighbours });
   const [building, setBuilding] = useState({ type: "none", floors: null as number | null, use: "", condition: "", ...survey.building });
   const [notes, setNotes] = useState(survey.notes ?? "");
@@ -274,6 +280,19 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
   function selectMode() {
     draw.current?.setMode("select");
     setMode("select");
+  }
+  /** The 4 corners are in: the shape replaces any drawn before and its corners can be fixed by dragging. */
+  function cornersDone(p: Polygon, reordered: boolean) {
+    setCornering(false);
+    putPolygon(p);
+    setPolygon(p);
+    setMethod("drawn");
+    setGeomDirty(true);
+    setDirty(true);
+    const id = draw.current?.getSnapshot().at(-1)?.id;
+    if (id !== undefined) draw.current?.selectFeature(id);
+    if (reordered) toast.warning(tm("crossed"));
+    else toast.success(tm("done"));
   }
   function clearShape() {
     putPolygon(null);
@@ -455,7 +474,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
           <div className="absolute start-3 top-3 flex flex-wrap gap-1.5">
             {editable && (
               <>
-                <Button size="sm" variant={mode === "polygon" ? "default" : "outline"} className="bg-card" onClick={startDrawing} disabled={!!walk}>
+                <Button size="sm" variant={mode === "polygon" ? "default" : "outline"} className="bg-card" onClick={startDrawing} disabled={!!walk || cornering}>
                   <PenLine aria-hidden />
                   {polygon ? t("redraw") : t("draw")}
                 </Button>
@@ -463,8 +482,24 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
                   <MousePointer2 aria-hidden />
                   {t("editCorners")}
                 </Button>
+                {canCorners && (
+                  <Button
+                    size="sm"
+                    variant={cornering ? "default" : "outline"}
+                    className="bg-card"
+                    disabled={!!walk}
+                    aria-pressed={cornering}
+                    onClick={() => {
+                      if (!cornering) selectMode();
+                      setCornering(!cornering);
+                    }}
+                  >
+                    <Scan aria-hidden />
+                    {tm("button")}
+                  </Button>
+                )}
                 {canEdit && (
-                  <Button size="sm" variant="outline" className="bg-card" onClick={() => (walk ? finishWalk() : setWalk({ points: [], worst: 0 }))}>
+                  <Button size="sm" variant="outline" className="bg-card" disabled={cornering} onClick={() => (walk ? finishWalk() : setWalk({ points: [], worst: 0 }))}>
                     <Footprints aria-hidden />
                     {walk ? t("finishWalk") : t("gpsWalk")}
                   </Button>
@@ -480,6 +515,7 @@ export function SurveyWorkspace({ survey, outline, canEdit, canReview }: Props) 
               {base === "satellite" ? t("streets") : t("satellite")}
             </Button>
           </div>
+          {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} onDone={cornersDone} onCancel={() => setCornering(false)} />}
           {walk && (
             <div className="absolute inset-x-3 bottom-10 rounded-md border bg-card-solid p-3 text-sm shadow-sm sm:inset-x-auto sm:start-3 sm:w-80">
               <p className="font-medium">{t("walkTitle", { count: walk.points.length })}</p>

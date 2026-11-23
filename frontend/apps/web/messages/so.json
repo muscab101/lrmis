@@ -1458,6 +1458,7 @@
       "payments_refund": "Celin",
       "certificates_reprint": "Dib u daabac",
       "map_edit_geometry": "Beddel xuduudaha",
+      "map_draw_corners": "Sawir 4 gees",
       "users_manage": "Jooji / hawlgeli",
       "users_reset_2fa": "Dib u deji 2FA",
       "users_reset_password": "Dib u deji furaha",
@@ -1486,7 +1487,8 @@
       },
       "map": {
         "view": "Fur Khariidadda oo arag xuduudaha dhulka.",
-        "edit_geometry": "Sax xuduudda sahanka inta lagu jiro dib-u-eegista isku-dhaafka GIS."
+        "edit_geometry": "Sax xuduudda sahanka inta lagu jiro dib-u-eegista isku-dhaafka GIS.",
+        "draw_corners": "Ku sawir dhulka afartiisa gees: dhaqaaji khariidadda ilaa tilmaamaha bartamaha uu saaran yahay gees kasta, kadib riix Ku dar gees."
       },
       "applications": {
         "view": "Arag dhulka sugaya diiwaangelinta ee codsi lagu bilaabay.",
@@ -1783,7 +1785,18 @@
     "addPart": "Ku dar qayb",
     "undo": "Dib u celi",
     "redo": "Soo celi",
-    "clearAll": "Tirtir dhammaan"
+    "clearAll": "Tirtir dhammaan",
+    "corners": {
+      "button": "4 gees",
+      "title": "Geeska {n} ee 4",
+      "help": "Dhaqaaji khariidadda ilaa tilmaamaha bartamaha uu saaran yahay geeska {n} ee dhulka, kadib riix Ku dar gees.",
+      "add": "Ku dar geeska {n}",
+      "undo": "Ka noqo geeska",
+      "cancel": "Jooji",
+      "side": "Dhinacan: {m} m",
+      "done": "Qaabka waxaa laga sawiray 4 gees",
+      "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka."
+    }
   },
   "locations": {
     "title": "Goobaha",

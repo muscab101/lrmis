@@ -44,6 +44,7 @@ export default async function RemapPage({ params, searchParams }: { params: Prom
         placedByGuess={Boolean(p.geom_provisional)}
         pinState={partial ? "partial" : owing ? "owing" : "paid"}
         backTo={backTo}
+        canCorners={viewer.can("map.draw_corners")}
       />
     </>
   );

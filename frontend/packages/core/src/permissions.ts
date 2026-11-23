@@ -50,6 +50,7 @@ export const SPECIAL_PERMISSIONS = [
   "payments.refund",
   "certificates.reprint",
   "map.edit_geometry",
+  "map.draw_corners",
   "users.manage",
   "users.reset_2fa",
   "users.reset_password",

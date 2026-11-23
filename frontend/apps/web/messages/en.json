@@ -1458,6 +1458,7 @@
       "payments_refund": "Refund",
       "certificates_reprint": "Reprint",
       "map_edit_geometry": "Edit geometry",
+      "map_draw_corners": "4-corner drawing",
       "users_manage": "Deactivate / activate",
       "users_reset_2fa": "Reset 2FA",
       "users_reset_password": "Reset password",
@@ -1486,7 +1487,8 @@
       },
       "map": {
         "view": "Open the Map and see parcel boundaries.",
-        "edit_geometry": "Fix a survey's boundary during the GIS overlap review."
+        "edit_geometry": "Fix a survey's boundary during the GIS overlap review.",
+        "draw_corners": "Draw land by its 4 corners: move the map until the centre pointer sits on each corner and press Add corner."
       },
       "applications": {
         "view": "See land that is waiting for registration through an application.",
@@ -1783,7 +1785,18 @@
     "addPart": "Add a part",
     "undo": "Undo",
     "redo": "Redo",
-    "clearAll": "Clear all"
+    "clearAll": "Clear all",
+    "corners": {
+      "button": "4 corners",
+      "title": "Corner {n} of 4",
+      "help": "Move the map until the pointer in the middle sits on corner {n} of the land, then press Add corner.",
+      "add": "Add corner {n}",
+      "undo": "Undo corner",
+      "cancel": "Cancel",
+      "side": "This side: {m} m",
+      "done": "Shape drawn from 4 corners",
+      "crossed": "The corners were out of order, so they were put in order around the land."
+    }
   },
   "locations": {
     "title": "Locations",

@@ -9,13 +9,14 @@ import { Alert } from "@dhulka/ui/misc";
 import { toast } from "@dhulka/ui/toaster";
 import { area as turfArea } from "@turf/area";
 import maplibregl from "maplibre-gl";
-import { Crosshair, Loader2, LocateFixed, Move, PenLine, RotateCcw } from "lucide-react";
+import { Crosshair, Loader2, LocateFixed, Move, PenLine, RotateCcw, Scan } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import { remapParcelAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { FormError } from "@/components/forms/form-error";
+import { CornerPointer } from "@/components/map/corner-pointer";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
 import { pinElement } from "@/components/map/geometry-preview";
 import type { PinState } from "@/components/map/style";
@@ -58,6 +59,7 @@ export function RemapEditor({
   placedByGuess,
   pinState,
   backTo,
+  canCorners = false,
 }: {
   parcelId: string;
   /** Where to go after saving (the remapping list it was opened from); the land's page otherwise. */
@@ -67,8 +69,13 @@ export function RemapEditor({
   placedByGuess: boolean;
   /** The colour of this land's pin (paid, owing, not registered yet), as on its own page. */
   pinState: PinState;
+  /** May draw the land by its 4 corners with the centre pointer (map.draw_corners). */
+  canCorners?: boolean;
 }) {
   const t = useTranslations("parcels.remap");
+  const tm = useTranslations("map.corners");
+  // 4-corner drawing with the centre pointer is open.
+  const [cornering, setCornering] = useState(false);
   const format = useFormatter();
   const router = useRouter();
   const vm = useValidationMessage();
@@ -270,6 +277,22 @@ export function RemapEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** The 4 corners are in: they become the new shape, its corners still draggable. */
+  const cornersDone = (p: Polygon, reordered: boolean) => {
+    setCornering(false);
+    const d = draw.current;
+    if (!d) return;
+    d.clear();
+    const id = crypto.randomUUID();
+    d.addFeatures([{ type: "Feature", id, geometry: p, properties: { mode: "polygon" } }]);
+    d.setMode("select");
+    d.selectFeature(id);
+    setMode("select");
+    setShape(p);
+    if (reordered) toast.warning(tm("crossed"));
+    else toast.success(tm("done"));
+  };
+
   const drawNew = () => {
     draw.current?.clear();
     draw.current?.setMode("polygon");
@@ -311,10 +334,29 @@ export function RemapEditor({
             <PenLine aria-hidden />
             {t("drawNew")}
           </Button>
+          {canCorners && (
+            <Button
+              size="sm"
+              variant={cornering ? "default" : "outline"}
+              className="bg-card"
+              aria-pressed={cornering}
+              onClick={() => {
+                if (!cornering) {
+                  draw.current?.setMode("select");
+                  setMode("select");
+                }
+                setCornering(!cornering);
+              }}
+            >
+              <Scan aria-hidden />
+              {tm("button")}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="bg-card" onClick={resetCopy} aria-label={t("startAgain")}>
             <RotateCcw aria-hidden />
           </Button>
         </div>
+        {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} colour="#c2410c" onDone={cornersDone} onCancel={() => setCornering(false)} />}
         <div className="absolute end-3 bottom-8 flex flex-col items-end gap-1.5">
           {me && (
             <Button size="sm" variant="outline" className="bg-card" onClick={moveHere}>
