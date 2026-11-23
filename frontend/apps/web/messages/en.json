@@ -4426,6 +4426,7 @@
     "account": "Account",
     "district": "District",
     "neighbourhood": "Neighbourhood",
+    "houseNo": "House number",
     "area": "Area",
     "landUse": "Land use",
     "plot": "Plot no.",

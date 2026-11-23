@@ -1,6 +1,7 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { getCertificateMarks } from "@/lib/server/certificate-marks";
+import { fullHouseNo } from "@/lib/house-no";
 import { type DocumentDetail, watermarkLine, type WatermarkFacts } from "@/lib/server/certificates";
 import { getCertificateDesign } from "@/lib/server/certificate-design";
 import { ParcelMapSvg } from "./parcel-map-svg";
@@ -139,6 +140,8 @@ export async function CertificateSheet({
     [t("account"), s.account_no ?? "—"],
     [t("district"), name(s.district)],
     [t("neighbourhood"), name(s.neighbourhood)],
+    // The house number with its neighbourhood code (KRWJXL07 01); older certificates take it from the register.
+    [t("houseNo"), fullHouseNo(s.neighbourhood?.code, s.house_no ?? watermarkFacts?.house_no) ?? "—"],
     [
       t("area"),
       s.area_m2 != null
