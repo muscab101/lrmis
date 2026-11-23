@@ -1778,7 +1778,7 @@
     "editNoBoundary": "Goobtan weli xad looma sameyn. Ku dar Goobaha.",
     "editFailed": "Xadka lama kaydin karin.",
     "drawBorder": "Sawir xad",
-    "drawBorderHint": "Dooro degmada (ama mid ka mid ah qaybaheeda), kadib ku wareeg khariidadda adigoo gujinaya. Guji dhibicda koowaad si aad u xirto; waxaad sawiri kartaa in ka badan hal qayb. Dhibcaha jiid si aad u saxdo, kadib kaydi.",
+    "drawBorderHint": "Dooro degmada, kadib ku koob qayb, waax ama xaafad (✓ = xuduudka horay ayaa loo sawiray). Ku dhufo hareerihiisa khariidadda, kadib ku dhufo barta koowaad si aad u xirto; waxaad sawiri kartaa in ka badan hal qayb. Jiid barahaasi si aad u saxdo, kadib keydi.",
     "measureHint_draw": "Goobtan weli xad ma leh. Ku wareeg khariidadda adigoo gujinaya; guji dhibicda koowaad si aad u xirto. Kadib dhibcaha jiid si aad u saxdo oo kaydi.",
     "wholeDistrict": "Degmada oo dhan",
     "startDrawing": "Bilow sawirka",
@@ -1798,7 +1798,10 @@
       "done": "Qaabka waxaa laga sawiray 4 gees",
       "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka.",
       "pinDone": "Biinka waxaa la dhigay bartamaha 4-ta gees"
-    }
+    },
+    "wholeSection": "Qaybta oo dhan",
+    "wholeSector": "Waaxda oo dhan",
+    "hoodsDrawn": "{drawn} ka mid ah {total} xaafadood ayaa la sawiray (✓)"
   },
   "locations": {
     "title": "Goobaha",

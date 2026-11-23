@@ -105,14 +105,15 @@ export const neighbourhoodLandBboxAction = defineAction(
     unwrap(await ctx.supabase.rpc("neighbourhood_land_bbox", { p_id: id }), "land bbox") as [number, number, number, number] | null,
 );
 
-/** Children for cascading pickers (district → sections → sectors). Small lists. */
+/** Children for cascading pickers (district → sections → sectors → neighbourhoods). Small lists; has_geom says
+ *  whether each one's boundary is drawn. */
 export const listChildrenAction = defineAction(
   "locations.children",
-  z.object({ level: z.enum(["sections", "sectors"]), parentId: z.uuid() }),
+  z.object({ level: z.enum(["sections", "sectors", "neighbourhoods"]), parentId: z.uuid() }),
   async ({ level, parentId }, ctx) => {
-    const col = level === "sections" ? "district_id" : "section_id";
-    const res = await ctx.supabase.from(level).select("id, code, name_so, name_en").eq(col, parentId).is("deleted_at", null).order("code");
-    return unwrap(res, level) as { id: string; code: string; name_so: string; name_en: string }[];
+    const col = level === "sections" ? "district_id" : level === "sectors" ? "section_id" : "sector_id";
+    const res = await ctx.supabase.from(level).select("id, code, name_so, name_en, has_geom").eq(col, parentId).is("deleted_at", null).order("code");
+    return unwrap(res, level) as { id: string; code: string; name_so: string; name_en: string; has_geom: boolean }[];
   },
 );
 

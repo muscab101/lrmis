@@ -34,6 +34,8 @@ export interface EditTarget {
   id: string;
   name: string;
   colour: string;
+  /** With no boundary yet: the places around it (nearest first) whose boundary or point frames the map to draw on. */
+  frame?: { level: LocationLevel; id: string }[];
 }
 
 type Tool = "line" | "area" | "edit" | "pick";
@@ -97,23 +99,49 @@ export function MapTools({
   }, []);
   // A border drawn from nothing (the place has none yet).
   const [fresh, setFresh] = useState(false);
-  // The place picked to draw: a district, or one of its sections.
-  const [pick, setPick] = useState<{ district: string; section: string }>({ district: "", section: "" });
-  const [sections, setSections] = useState<{ id: string; code: string; name_so: string; name_en: string }[]>([]);
+  // The place picked to draw: a district, one of its sections, a sector in it, or a neighbourhood in that.
+  type Place = { id: string; code: string; name_so: string; name_en: string; has_geom: boolean };
+  const [pick, setPick] = useState({ district: "", section: "", sector: "", neighbourhood: "" });
+  const [sections, setSections] = useState<Place[]>([]);
+  const [sectors, setSectors] = useState<Place[]>([]);
+  const [hoods, setHoods] = useState<Place[]>([]);
   useEffect(() => {
     setSections([]);
     if (!pick.district) return;
     void listChildrenAction({ level: "sections", parentId: pick.district }).then((r) => r.ok && setSections(r.data));
   }, [pick.district]);
+  useEffect(() => {
+    setSectors([]);
+    if (!pick.section) return;
+    void listChildrenAction({ level: "sectors", parentId: pick.section }).then((r) => r.ok && setSectors(r.data));
+  }, [pick.section]);
+  // Loaded again each time the picker opens, so a border just saved shows its tick.
+  useEffect(() => {
+    setHoods([]);
+    if (!pick.sector || tool !== "pick") return;
+    void listChildrenAction({ level: "neighbourhoods", parentId: pick.sector }).then((r) => r.ok && setHoods(r.data));
+  }, [pick.sector, tool]);
+  const drawnMark = (x: Place) => (x.has_geom ? " ✓" : "");
   const nameOf = (x: { name_so: string; name_en: string }) => (locale === "so" ? x.name_so : x.name_en) || x.name_so;
   function startPicked() {
     const d = districts.find((x) => x.id === pick.district);
     if (!d) return;
     const sec = sections.find((x) => x.id === pick.section);
+    const sect = sectors.find((x) => x.id === pick.sector);
+    const hood = hoods.find((x) => x.id === pick.neighbourhood);
+    const up = [
+      ...(sect ? [{ level: "sectors" as const, id: sect.id }] : []),
+      ...(sec ? [{ level: "sections" as const, id: sec.id }] : []),
+      { level: "districts" as const, id: d.id },
+    ];
     onEditStart(
-      sec
-        ? { level: "sections", id: sec.id, name: `${nameOf(sec)} · ${nameOf(d)}`, colour: "#d97706" }
-        : { level: "districts", id: d.id, name: nameOf(d), colour: districtColourFor(d.name_so, d.name_en) },
+      hood
+        ? { level: "neighbourhoods", id: hood.id, name: `${hood.code} · ${nameOf(hood)}`, colour: "#2563eb", frame: up }
+        : sect
+          ? { level: "sectors", id: sect.id, name: `${sect.code} · ${nameOf(sect)}`, colour: "#15803d", frame: up.slice(1) }
+          : sec
+            ? { level: "sections", id: sec.id, name: `${nameOf(sec)} · ${nameOf(d)}`, colour: "#d97706", frame: up.slice(-1) }
+            : { level: "districts", id: d.id, name: nameOf(d), colour: districtColourFor(d.name_so, d.name_en) },
     );
   }
 
@@ -197,6 +225,14 @@ export function MapTools({
       if (!g || (g.type !== "Polygon" && g.type !== "MultiPolygon")) {
         setFresh(true);
         d.setMode("polygon");
+        // Go to where it should be drawn: the nearest place around it that is on the map (its boundary or point).
+        void (async () => {
+          for (const f of edit.frame ?? []) {
+            const r = await getGeometryAction(f);
+            if (!live) return;
+            if (r.ok && r.data) return mapRef.current?.fitBounds(r.data.bbox, 17);
+          }
+        })();
         return;
       }
       setFresh(false);
@@ -274,7 +310,7 @@ export function MapTools({
           <div className="space-y-2">
             <label className="grid gap-1 text-xs text-muted-foreground">
               {t("district")}
-              <NativeSelect value={pick.district} onChange={(e) => setPick({ district: e.target.value, section: "" })}>
+              <NativeSelect value={pick.district} onChange={(e) => setPick({ district: e.target.value, section: "", sector: "", neighbourhood: "" })}>
                 <option value="">{t("choose")}</option>
                 {districts.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -285,14 +321,42 @@ export function MapTools({
             </label>
             <label className="grid gap-1 text-xs text-muted-foreground">
               {t("layer_sections")}
-              <NativeSelect value={pick.section} disabled={!pick.district} onChange={(e) => setPick({ ...pick, section: e.target.value })}>
+              <NativeSelect value={pick.section} disabled={!pick.district} onChange={(e) => setPick({ ...pick, section: e.target.value, sector: "", neighbourhood: "" })}>
                 <option value="">{t("wholeDistrict")}</option>
                 {sections.map((x) => (
                   <option key={x.id} value={x.id}>
                     {x.code} · {nameOf(x)}
+                    {drawnMark(x)}
                   </option>
                 ))}
               </NativeSelect>
+            </label>
+            <label className="grid gap-1 text-xs text-muted-foreground">
+              {t("layer_sectors")}
+              <NativeSelect value={pick.sector} disabled={!pick.section} onChange={(e) => setPick({ ...pick, sector: e.target.value, neighbourhood: "" })}>
+                <option value="">{t("wholeSection")}</option>
+                {sectors.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.code} · {nameOf(x)}
+                    {drawnMark(x)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </label>
+            <label className="grid gap-1 text-xs text-muted-foreground">
+              {t("layer_neighbourhoods")}
+              <NativeSelect value={pick.neighbourhood} disabled={!pick.sector} onChange={(e) => setPick({ ...pick, neighbourhood: e.target.value })}>
+                <option value="">{t("wholeSector")}</option>
+                {hoods.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.code} · {nameOf(x)}
+                    {drawnMark(x)}
+                  </option>
+                ))}
+              </NativeSelect>
+              {hoods.length > 0 && (
+                <span>{t("hoodsDrawn", { drawn: hoods.filter((x) => x.has_geom).length, total: hoods.length })}</span>
+              )}
             </label>
           </div>
           <Button size="sm" className="mt-3" disabled={!pick.district} onClick={startPicked}>

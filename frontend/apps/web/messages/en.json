@@ -1778,7 +1778,7 @@
     "editNoBoundary": "This place has no boundary to edit yet. Add one in Locations.",
     "editFailed": "The boundary could not be saved.",
     "drawBorder": "Draw a border",
-    "drawBorderHint": "Pick the district (or one of its sections), then click around it on the map. Click the first point to close it; you can draw more than one part. Drag points to fix it, then save.",
+    "drawBorderHint": "Pick the district, then narrow it to a section, a sector or a neighbourhood (✓ = border already drawn). Click around it on the map and click the first point to close it; you can draw more than one part. Drag points to fix it, then save.",
     "measureHint_draw": "This place has no border yet. Click around it on the map; click the first point to close it. Then drag points to fix it and save.",
     "wholeDistrict": "The whole district",
     "startDrawing": "Start drawing",
@@ -1798,7 +1798,10 @@
       "done": "Shape drawn from 4 corners",
       "crossed": "The corners were out of order, so they were put in order around the land.",
       "pinDone": "Pin put in the middle of the 4 corners"
-    }
+    },
+    "wholeSection": "Whole section",
+    "wholeSector": "Whole sector",
+    "hoodsDrawn": "{drawn} of {total} neighbourhoods drawn (✓)"
   },
   "locations": {
     "title": "Locations",
