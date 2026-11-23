@@ -24,7 +24,7 @@ export default async function PayBillsPage({ params, searchParams }: { params: P
   const wanted = new Set(decodeURIComponent(ids).split(",").filter((x) => UUID.test(x)).slice(0, 20));
   const me = await citizenOverview();
   // Only the citizen's own bills, on land that can pay; paid ones drop out.
-  const all = me.parcels.flatMap((p) => (p.demolished ? [] : p.invoices.filter((i) => wanted.has(i.id)).map((i) => ({ ...i, pun: p.pun }))));
+  const all = me.parcels.flatMap((p) => (p.demolished || p.partial ? [] : p.invoices.filter((i) => wanted.has(i.id)).map((i) => ({ ...i, pun: p.pun }))));
   const bills = all.filter((b) => Number(b.balance) > 0);
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const total = bills.reduce((s, b) => s + Number(b.balance), 0);

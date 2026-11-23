@@ -58,28 +58,37 @@ describe("paying several bills together", () => {
     await expect(start(citizen, [])).rejects.toThrow(/^VALIDATION/);
   });
 
-  it("one payment for the total; each bill gets its own receipt and partial land registers", async () => {
-    const intent = await start(citizen, [regBill, partBill]);
-    expect(Number(intent.amount)).toBe(42);
-    expect(intent.invoice_number).toContain("TAX-1");
-    expect(intent.invoice_number).toContain("REG-1");
+  it("partial land can't be paid online by its owner (0279); registered land can", async () => {
+    await expect(start(citizen, [regBill, partBill])).rejects.toThrow(/^CONFLICT: parcel_partial/);
+    await expect(
+      asUser(db, citizen, (tx) => tx.query(`select public.payment_intent_create($1, null, 'test', '+252610009977')`, [partBill]), "aal1"),
+    ).rejects.toThrow(/^CONFLICT: parcel_partial/);
+    const intent = await start(citizen, [regBill]);
+    expect(Number(intent.amount)).toBe(30);
     const ref = await scalar<string>(db, `update public.payment_intents set provider_ref = 'tp-1' where id = $1 returning provider_ref`, [intent.intent_id]);
-    const event = { status: "succeeded", provider_ref: ref, intent_id: intent.intent_id, amount: 42, currency: "USD" };
+    const event = { status: "succeeded", provider_ref: ref, intent_id: intent.intent_id, amount: 30, currency: "USD" };
     const res = await asService(db, (tx) => scalar<{ result: string; payments: number }>(tx, `select public.webhook_ingest('test', 'tog1', true, $1, '{}')`, [JSON.stringify(event)]));
     expect(res.result).toBe("recorded");
-    expect(res.payments).toBe(2);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [regBill])).toBe("paid");
-    expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).toBe("paid");
-    expect(await scalar<number>(db, `select count(*)::int from public.payments where intent_id = $1 and status = 'completed'`, [intent.intent_id])).toBe(2);
-    expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [part])).toBe("registered");
+    expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).not.toBe("paid");
     const status = await asUser(db, citizen, (tx) => scalar<{ status: string; receipt_no: string }>(tx, `select public.payment_intent_status($1)`, [intent.intent_id]), "aal1");
     expect(status.status).toBe("succeeded");
-    expect(status.receipt_no.split(", ")).toHaveLength(2);
+  });
+
+  it("staff who take payments can still collect for partial land online; it registers once paid", async () => {
+    const intent = await asUser(db, admin, (tx) => scalar<{ intent_id: string; amount: number }>(tx, `select public.payment_intent_create_many($1::uuid[], 'test', '+252610009977')`, [[partBill]]));
+    expect(Number(intent.amount)).toBe(12);
+    await db.query(`update public.payment_intents set provider_ref = 'tp-2' where id = $1`, [intent.intent_id]);
+    const event = { status: "succeeded", provider_ref: "tp-2", intent_id: intent.intent_id, amount: 12, currency: "USD" };
+    const res = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'tog3', true, $1, '{}')`, [JSON.stringify(event)]));
+    expect(res.result).toBe("recorded");
+    expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).toBe("paid");
+    expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [part])).toBe("registered");
   });
 
   it("the same event again is not recorded twice", async () => {
     const intentId = await scalar<string>(db, `select id from public.payment_intents where provider_ref = 'tp-1'`);
-    const event = { status: "succeeded", provider_ref: "tp-1", intent_id: intentId, amount: 42, currency: "USD" };
+    const event = { status: "succeeded", provider_ref: "tp-1", intent_id: intentId, amount: 30, currency: "USD" };
     const res = await asService(db, (tx) => scalar<{ result: string }>(tx, `select public.webhook_ingest('test', 'tog2', true, $1, '{}')`, [JSON.stringify(event)]));
     expect(res.result).toBe("already_recorded");
   });

@@ -25,8 +25,8 @@ export default async function CitizenParcelPage({ params }: { params: Promise<{ 
   const name = (n: { name_so: string; name_en: string } | null) => (n ? (lang === "so" ? n.name_so : n.name_en) : "");
   const houseNo = fullHouseNo(name(p.neighbourhood), p.house_no);
   const payments = p.pun ? me.payments.filter((x) => x.pun === p.pun) : [];
-  // Demolished land waits for the district office; partial land can pay (it registers by itself once paid).
-  const payable = !p.demolished;
+  // Demolished land and land not registered yet (partial) are paid at the district office, not online.
+  const payable = !p.demolished && !p.partial;
   const open = payable ? p.invoices.filter((i) => Number(i.balance) > 0) : [];
   const today = new Date().toISOString().slice(0, 10);
 

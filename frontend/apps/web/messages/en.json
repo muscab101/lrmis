@@ -346,7 +346,8 @@
       "remap_building": "A flat is remapped with its building: remap the building.",
       "remap_not_standing": "Demolished or archived land can't be remapped.",
       "remap_not_assigned": "No remapping is open for this land.",
-      "documents_required": "Attach at least one document to this transfer before submitting it for approval."
+      "documents_required": "Attach at least one document to this transfer before submitting it for approval.",
+      "parcel_partial": "Bills for land not registered yet can't be paid online. Please pay at the district office."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -758,7 +759,7 @@
     "issuedOn": "issued {date}",
     "verifyLink": "Verify",
     "partialTitle": "Not registered yet",
-    "partialNotice": "This land is not registered yet. Once its bills are paid, it is registered by itself (with its PUN).",
+    "partialNotice": "This land is not registered yet, so its bills can't be paid online. Please pay at the {district} district office.",
     "demolishedTitle": "Demolished land",
     "demolishedNotice": "This land is recorded as demolished. Please visit the {district} district office.",
     "payAfterRegistered": "Pay after registration",
@@ -3644,7 +3645,9 @@
     "paidShort": "Paid",
     "totalToPay": "Total to pay",
     "bankOnePerProperty": "Make {count} transfers, one per property:",
-    "bankWriteReferences": "Write each reference on its own transfer"
+    "bankWriteReferences": "Write each reference on its own transfer",
+    "partialTitle": "This land is not registered yet",
+    "partialBody": "Bills for land not registered yet can't be paid online. Please pay at the district office."
   },
   "payments": {
     "title": "Payments",

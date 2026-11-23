@@ -21,8 +21,8 @@ export default async function PortalHome({ params }: { params: Promise<{ locale:
   const who = await citizenMe();
   const usd = (n: number) => format.number(Number(n), { style: "currency", currency: "USD" });
   const date = (d: string) => format.dateTime(new Date(d), { dateStyle: "medium" });
-  // Demolished land waits for the district office; partial land can pay (it registers by itself once paid).
-  const payable = (p: (typeof me.parcels)[number]) => !p.demolished;
+  // Demolished land and land not registered yet (partial) are paid at the district office, not online.
+  const payable = (p: (typeof me.parcels)[number]) => !p.demolished && !p.partial;
   const owed = me.parcels.filter(payable).reduce((s, p) => s + Number(p.balance), 0);
   const overdue = me.parcels.filter(payable).reduce((s, p) => s + Number(p.overdue), 0);
   const paidTotal = me.payments.reduce((s, p) => s + Number(p.amount), 0);

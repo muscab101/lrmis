@@ -346,7 +346,8 @@
       "remap_building": "Guri dabaq ah waxaa lagu sawiraa dhismihiisa: dib u sawir dhismaha.",
       "remap_not_standing": "Dhul la dumiyay ama kaydsan dib looma sawiri karo.",
       "remap_not_assigned": "Dhulkan dib-u-sawir furan uma jiro.",
-      "documents_required": "Ku lifaaq ugu yaraan hal dukumenti wareejintan ka hor intaadan u gudbin ansixinta."
+      "documents_required": "Ku lifaaq ugu yaraan hal dukumenti wareejintan ka hor intaadan u gudbin ansixinta.",
+      "parcel_partial": "Biilasha dhulka aan weli la diiwaangelin lama bixin karo online. Fadlan ku bixi xafiiska degmada."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -758,7 +759,7 @@
     "issuedOn": "la bixiyay {date}",
     "verifyLink": "Hubi",
     "partialTitle": "Weli lama diiwaangelin",
-    "partialNotice": "Dhulkan weli lama diiwaangelin. Marka biilashiisa la bixiyo, si toos ah ayaa loo diiwaangelinayaa (PUN-kiisa la siinayo).",
+    "partialNotice": "Dhulkan weli lama diiwaangelin, sidaa darteed biilasha lama bixin karo online. Fadlan ku bixi xafiiska degmada {district}.",
     "demolishedTitle": "Dhul la dumiyay",
     "demolishedNotice": "Dhulkan waxaa loo diiwaangeliyay inuu dumay. Fadlan booqo xafiiska degmada {district}.",
     "payAfterRegistered": "Bixi kadib diiwaangelinta",
@@ -3644,7 +3645,9 @@
     "paidShort": "La bixiyay",
     "totalToPay": "Wadarta la bixinayo",
     "bankOnePerProperty": "Samee {count} xawilaad, mid hanti kasta:",
-    "bankWriteReferences": "Tixraac kasta ku qor xawilaaddiisa"
+    "bankWriteReferences": "Tixraac kasta ku qor xawilaaddiisa",
+    "partialTitle": "Dhulkan weli lama diiwaangelin",
+    "partialBody": "Biilasha dhulka aan weli la diiwaangelin lama bixin karo online. Fadlan ku bixi xafiiska degmada."
   },
   "payments": {
     "title": "Lacag bixinno",
