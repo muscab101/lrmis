@@ -1795,8 +1795,12 @@
       "cancel": "Jooji",
       "side": "Dhinacan: {m} m",
       "done": "Qaabka waxaa laga sawiray 4 gees",
-      "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka."
-    }
+      "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka.",
+      "tool": "Sawir 4 gees",
+      "sideN": "Dhinaca {n}",
+      "again": "Mar kale sawir"
+    },
+    "measureHint_corners": "Jiid gees si aad u saxdo. Mar kale sawir wuxuu bilaabaa qaab cusub."
   },
   "locations": {
     "title": "Goobaha",

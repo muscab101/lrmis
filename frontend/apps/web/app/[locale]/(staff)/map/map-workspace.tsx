@@ -35,6 +35,7 @@ export function MapWorkspace({
   initialView,
   extent,
   canEditLocations,
+  canCorners = false,
   canViewParcels,
   canMarkDemolished,
   districts,
@@ -42,6 +43,8 @@ export function MapWorkspace({
   initialView: MapView | undefined;
   extent: [number, number, number, number] | null;
   canEditLocations: boolean;
+  /** May use 4-corner drawing (map.draw_corners). */
+  canCorners?: boolean;
   canViewParcels: boolean;
   canMarkDemolished: boolean;
   districts: { id: string; code: string; name_so: string; name_en: string; has_geom: boolean | null }[];
@@ -240,7 +243,7 @@ export function MapWorkspace({
         <Button variant="outline" size="icon" className="bg-card-solid shadow-sm" onClick={() => setPanelOpen((o) => !o)} aria-expanded={panelOpen} aria-label={t("layers")}>
           <Layers aria-hidden />
         </Button>
-        <MapTools mapRef={mapRef} edit={edit} onEditStart={setEdit} onEditEnd={endEdit} onActiveChange={onToolActive} canDraw={canEditLocations} districts={districts} />
+        <MapTools mapRef={mapRef} edit={edit} onEditStart={setEdit} onEditEnd={endEdit} onActiveChange={onToolActive} canDraw={canEditLocations} canCorners={canCorners} districts={districts} />
         {panelOpen && (
           <div className="w-64 rounded-md border bg-card-solid p-4 shadow-sm">
             <div className="label-caps mb-2 text-muted-foreground">{t("baseMap")}</div>

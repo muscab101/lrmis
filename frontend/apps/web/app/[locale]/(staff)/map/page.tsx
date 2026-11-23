@@ -35,6 +35,7 @@ export default async function MapPage({
       initialView={parseView(c)}
       extent={(extent as [number, number, number, number] | null) ?? null}
       canEditLocations={viewer.can("locations.update")}
+      canCorners={viewer.can("map.draw_corners")}
       canViewParcels={viewer.can("parcels.view")}
       canMarkDemolished={viewer.can("parcels.demolish") || viewer.can("parcels.demolish_approve")}
       districts={districts ?? []}

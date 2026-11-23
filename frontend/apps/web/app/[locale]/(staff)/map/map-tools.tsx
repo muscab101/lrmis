@@ -8,10 +8,11 @@ import { cn } from "@dhulka/ui/lib/cn";
 import { toast } from "@dhulka/ui/toaster";
 import type { VectorTileSource } from "maplibre-gl";
 import { NativeSelect } from "@dhulka/ui/form-controls";
-import { PenTool, Pentagon, Redo2, Ruler, Save, Spline, Trash2, Undo2, X } from "lucide-react";
+import { PenTool, Pentagon, Redo2, Ruler, Save, Scan, Spline, Trash2, Undo2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   TerraDraw,
   TerraDrawLineStringMode,
@@ -23,6 +24,7 @@ import {
   type GeoJSONStoreFeatures,
 } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
+import { CornerPointer } from "@/components/map/corner-pointer";
 import type { DhulkaMapHandle } from "@/components/map/dhulka-map";
 import { districtColourFor } from "@/components/map/style";
 import { useRouter } from "@/i18n/navigation";
@@ -36,7 +38,7 @@ export interface EditTarget {
   colour: string;
 }
 
-type Tool = "line" | "area" | "edit" | "pick";
+type Tool = "line" | "area" | "edit" | "pick" | "corners";
 type Polygon = GeoJSON.Polygon;
 
 /** Area in words: m² for small areas, hectares and km² for big ones. */
@@ -70,6 +72,7 @@ export function MapTools({
   onEditEnd,
   onActiveChange,
   canDraw,
+  canCorners = false,
   districts,
 }: {
   mapRef: RefObject<DhulkaMapHandle | null>;
@@ -79,6 +82,8 @@ export function MapTools({
   onActiveChange: (active: boolean) => void;
   /** May draw and edit borders (locations.update). */
   canDraw: boolean;
+  /** May draw land by its 4 corners with the centre pointer (map.draw_corners). */
+  canCorners?: boolean;
   districts: { id: string; name_so: string; name_en: string }[];
 }) {
   const locale = useLocale();
@@ -87,7 +92,9 @@ export function MapTools({
   const tc = useTranslations("common");
   const draw = useRef<TerraDraw | null>(null);
   const [tool, setTool] = useState<Tool | null>(null);
-  const [result, setResult] = useState<{ km: number; m2: number; shapes: number }>({ km: 0, m2: 0, shapes: 0 });
+  const [result, setResult] = useState<{ km: number; m2: number; shapes: number; sides: number[] }>({ km: 0, m2: 0, shapes: 0, sides: [] });
+  // 4-corner drawing: the centre pointer is out, waiting for corners.
+  const [cornering, setCornering] = useState(false);
   const [saving, setSaving] = useState(false);
   // Undo / redo: a point while drawing, else the last change (a moved point, a closed shape, a clear).
   const [history, setHistory] = useState({ undo: false, redo: false });
@@ -124,22 +131,29 @@ export function MapTools({
     let km = 0;
     let m2 = 0;
     let shapes = 0;
+    let sides: number[] = [];
     for (const f of d.getSnapshot()) {
       if (f.geometry.type === "LineString" || f.geometry.type === "Polygon") {
         const m = measureShape(f.geometry);
         km += m.km;
-        if (f.geometry.type === "Polygon") m2 += m.m2;
+        if (f.geometry.type === "Polygon") {
+          m2 += m.m2;
+          // Each side of the last shape, in metres (shown for 4-corner drawing).
+          const ring = f.geometry.coordinates[0]!;
+          sides = ring.slice(1).map((c, i) => turfLength({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [ring[i]!, c] } }) * 1000);
+        }
         shapes++;
       }
     }
-    setResult({ km, m2, shapes });
+    setResult({ km, m2, shapes, sides });
   }, []);
 
   const stop = useCallback(() => {
     draw.current?.stop();
     draw.current = null;
     setTool(null);
-    setResult({ km: 0, m2: 0, shapes: 0 });
+    setCornering(false);
+    setResult({ km: 0, m2: 0, shapes: 0, sides: [] });
     setHistory({ undo: false, redo: false });
     onActiveChange(false);
   }, [onActiveChange]);
@@ -172,6 +186,8 @@ export function MapTools({
       onActiveChange(true);
       if (next === "line") d.setMode("linestring");
       if (next === "area") d.setMode("polygon");
+      // 4 corners: the shape is made by the pointer; once made, its corners can be dragged.
+      if (next === "corners") d.setMode("select");
       return d;
     },
     [mapRef, onActiveChange, recount, syncHistory],
@@ -241,6 +257,20 @@ export function MapTools({
     router.refresh();
   }
 
+  /** The 4 corners are in: the shape joins the drawing, measured, its corners draggable. */
+  function cornersDone(p: Polygon, reordered: boolean) {
+    setCornering(false);
+    const d = draw.current;
+    if (!d) return;
+    const id = crypto.randomUUID();
+    d.addFeatures([{ type: "Feature", id, geometry: round(p), properties: { mode: "polygon" } } as GeoJSONStoreFeatures]);
+    d.selectFeature(id);
+    recount();
+    syncHistory();
+    if (reordered) toast.warning(t("corners.crossed"));
+  }
+  const mapBox = mapRef.current?.getMap()?.getContainer();
+
   const btn = (on: boolean) => cn("bg-card-solid shadow-sm", on && "border-primary text-primary");
 
   return (
@@ -254,6 +284,19 @@ export function MapTools({
           {canDraw && (
             <Button variant="outline" size="icon" className={btn(tool === "pick")} onClick={() => (tool === "pick" ? stop() : (stop(), setTool("pick"), onActiveChange(true)))} aria-pressed={tool === "pick"} aria-label={t("drawBorder")} title={t("drawBorder")}>
               <PenTool aria-hidden />
+            </Button>
+          )}
+          {canCorners && (
+            <Button
+              variant="outline"
+              size="icon"
+              className={btn(tool === "corners")}
+              onClick={() => (tool === "corners" ? stop() : (start("corners", "#1d5fc2"), setCornering(true)))}
+              aria-pressed={tool === "corners"}
+              aria-label={t("corners.tool")}
+              title={t("corners.tool")}
+            >
+              <Scan aria-hidden />
             </Button>
           )}
           <Button variant="outline" size="icon" className={btn(tool === "area")} onClick={() => (tool === "area" ? stop() : start("area"))} aria-pressed={tool === "area"} aria-label={t("measureArea")} title={t("measureArea")}>
@@ -302,12 +345,14 @@ export function MapTools({
         </div>
       )}
 
-      {tool && tool !== "pick" && (
+      {tool === "corners" && cornering && mapBox && createPortal(<CornerPointer getMap={() => mapRef.current?.getMap()} onDone={cornersDone} onCancel={() => (result.shapes ? setCornering(false) : stop())} />, mapBox)}
+
+      {tool && tool !== "pick" && !(tool === "corners" && cornering) && (
         <div className="fixed inset-x-3 bottom-12 z-20 rounded-md border bg-card-solid p-4 shadow-sm sm:absolute sm:inset-x-auto sm:end-14 sm:top-0 sm:bottom-auto sm:w-72" aria-live="polite">
           <div className="mb-2 flex items-start justify-between gap-2">
             <div>
               <div className="label-caps text-flag">{tool === "edit" ? t("editBoundary") : t("measure")}</div>
-              <div className="text-base font-semibold">{tool === "edit" ? edit?.name : tool === "line" ? t("measureDistance") : t("measureArea")}</div>
+              <div className="text-base font-semibold">{tool === "edit" ? edit?.name : tool === "line" ? t("measureDistance") : tool === "corners" ? t("corners.tool") : t("measureArea")}</div>
             </div>
             <Button variant="ghost" size="icon-sm" onClick={tool === "edit" ? closeEdit : stop} aria-label={tc("close")}>
               <X aria-hidden />
@@ -326,6 +371,13 @@ export function MapTools({
                 <dd className="font-semibold tabular-nums">{formatArea(result.m2)}</dd>
                 <dt className="text-muted-foreground">{t("perimeter")}</dt>
                 <dd className="tabular-nums">{formatLength(result.km)}</dd>
+                {tool === "corners" &&
+                  result.sides.map((m, i) => (
+                    <div key={i} className="contents">
+                      <dt className="text-muted-foreground">{t("corners.sideN", { n: i + 1 })}</dt>
+                      <dd className="tabular-nums">{formatLength(m / 1000)}</dd>
+                    </div>
+                  ))}
               </>
             )}
           </dl>
@@ -379,10 +431,17 @@ export function MapTools({
                   <Trash2 aria-hidden />
                   {t("measureClear")}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => start(tool === "line" ? "area" : "line")}>
-                  {tool === "line" ? <Pentagon aria-hidden /> : <Spline aria-hidden />}
-                  {tool === "line" ? t("measureArea") : t("measureDistance")}
-                </Button>
+                {tool === "corners" ? (
+                  <Button size="sm" variant="outline" onClick={() => (draw.current?.clear(), recount(), setCornering(true))}>
+                    <Scan aria-hidden />
+                    {t("corners.again")}
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => start(tool === "line" ? "area" : "line")}>
+                    {tool === "line" ? <Pentagon aria-hidden /> : <Spline aria-hidden />}
+                    {tool === "line" ? t("measureArea") : t("measureDistance")}
+                  </Button>
+                )}
               </>
             )}
           </div>
