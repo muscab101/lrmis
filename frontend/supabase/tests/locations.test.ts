@@ -87,6 +87,27 @@ describe("geometry", () => {
     );
   });
 
+  it("a neighbourhood can't be drawn in or over another one; touching is fine (0285)", async () => {
+    // nbhd (012) is the square 45.298–45.302, 2.038–2.042 from the test above.
+    const other = await scalar<string>(
+      db,
+      `insert into public.neighbourhoods (sector_id, code, name_so, name_en, capacity) values ($1,'099','Inside','Inside',50) returning id`,
+      [sectorH],
+    );
+    const save = (g: unknown) => asUser(db, admin, (tx) => tx.query(`select public.locations_set_geometry('neighbourhoods', $1, $2)`, [other, JSON.stringify(g)]));
+    // Inside 012, and half over it: refused, naming 012.
+    await expectError(save(square(45.3, 2.04, 0.001)), "CONFLICT: neighbourhood_overlap: 012");
+    await expectError(save(square(45.302, 2.04, 0.002)), "CONFLICT: neighbourhood_overlap: 012");
+    // Right next to it, sharing only the edge: saved.
+    await save({ type: "Polygon", coordinates: [[[45.302, 2.036], [45.306, 2.036], [45.306, 2.044], [45.302, 2.044], [45.302, 2.036]]] });
+    expect(await scalar<boolean>(db, `select geom is not null from public.neighbourhoods where id = $1`, [other])).toBe(true);
+    // And 012 can't now be stretched over its neighbour either.
+    await expectError(
+      asUser(db, admin, (tx) => tx.query(`select public.locations_set_geometry('neighbourhoods', $1, $2)`, [nbhd, JSON.stringify(square(45.302, 2.04, 0.004))])),
+      "CONFLICT: neighbourhood_overlap: 099",
+    );
+  });
+
   it("a user without locations.update cannot change geometry", async () => {
     const cashier = await createStaff(db, admin, "cash@gmail.com", ["cashier"], [hodan]);
     await expectError(

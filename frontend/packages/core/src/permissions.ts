@@ -82,6 +82,7 @@ export const SPECIAL_PERMISSIONS = [
   "chat.view",
   "assistant.view",
   "verify.view",
+  "deleted.view",
 ] as const;
 export type SpecialPermission = (typeof SPECIAL_PERMISSIONS)[number];
 

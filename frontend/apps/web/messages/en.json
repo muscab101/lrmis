@@ -104,7 +104,8 @@
       "apartments": "Apartments",
       "parcelsAll": "All parcels",
       "managers": "Managers",
-      "verify": "Verify"
+      "verify": "Verify",
+      "deleted": "Deleted items"
     }
   },
   "status": {
@@ -1454,7 +1455,8 @@
       "points_of_sale": "Points of sale",
       "verify": "Verify",
       "chat": "Staff chat",
-      "assistant": "Assistant"
+      "assistant": "Assistant",
+      "deleted": "Deleted items"
     },
     "specials": {
       "payments_refund": "Refund",
@@ -1506,7 +1508,7 @@
         "update": "Edit a parcel's office details, send a surveyor to check it exists, and request changes (boundary, subdivide, change of use).",
         "approve": "Register land (gives the PUN and raises its bills), and decide parcel changes and leases.",
         "delete": "Delete partial land (not registered yet).",
-        "delete_registered": "Delete registered land from the register. Land with money paid can never be deleted.",
+        "delete_registered": "Delete registered land from the register. Money already paid stays on the books.",
         "lock": "Lock and unlock a parcel, e.g. for a court case, so nothing on it can change.",
         "yet_to_register": "Open Yet to register: neighbourhoods still to register, and zones given to surveyors."
       },
@@ -1639,6 +1641,9 @@
         "create": "Create new roles.",
         "update": "Change a role's permissions and move its users.",
         "delete": "Delete roles."
+      },
+      "deleted": {
+        "view": "See everything deleted (land, owners, users, places) and bring it back."
       }
     }
   },
@@ -1803,7 +1808,8 @@
     },
     "wholeSection": "Whole section",
     "wholeSector": "Whole sector",
-    "hoodsDrawn": "{drawn} of {total} neighbourhoods drawn (✓)"
+    "hoodsDrawn": "{drawn} of {total} neighbourhoods drawn (✓)",
+    "neighbourhoodOverlap": "This border covers part of neighbourhood {code}. A neighbourhood can't be drawn inside or over another one; draw it up to that border."
   },
   "locations": {
     "title": "Locations",
@@ -2818,7 +2824,7 @@
     "addHouse": "Add house",
     "deleteTitle": "Delete {pun}?",
     "deleteBodyPartial": "This partial land is removed from the lists. It stays in the history with your reason.",
-    "deleteBodyRegistered": "This registered land is removed from the register: its unpaid bills are cancelled and its certificate withdrawn. Land with money paid can't be deleted. It stays in the history with your reason.",
+    "deleteBodyRegistered": "This registered land is removed from the register: its unpaid bills are cancelled and its certificate withdrawn. Bills with money paid, and their receipts, stay on the books. It stays in the history with your reason.",
     "deleted": "Land deleted",
     "deleteReason": "Why it's deleted",
     "siteCheck": {
@@ -7235,5 +7241,50 @@
     "changeBody": "Choose the person who takes over the building. They become its manager and pay its empty-land bill from now on.",
     "building": "Building",
     "newManager": "New manager"
+  },
+  "deleted": {
+    "title": "Deleted items",
+    "subtitle": "Everything deleted. Bring it back here; 3 months after it was deleted it is removed for good. Land with money paid on it is never removed.",
+    "tabs": {
+      "all": "All",
+      "land": "Land",
+      "owner": "Owners",
+      "user": "Users",
+      "places": "Places"
+    },
+    "kinds": {
+      "land": "Land",
+      "owner": "Owner",
+      "user": "User",
+      "district": "District",
+      "section": "Section",
+      "sector": "Sector",
+      "neighbourhood": "Neighbourhood",
+      "street": "Street",
+      "facility": "Facility"
+    },
+    "what": "What",
+    "name": "Name",
+    "deletedOn": "Deleted",
+    "by": "by {name}",
+    "reason": "Reason",
+    "goesOn": "Removed for good on",
+    "keptMoney": "Kept: money paid",
+    "restore": "Restore",
+    "restoreTitle": "Restore {name}?",
+    "restored": "Restored",
+    "restoreBody": {
+      "land": "The land comes back with the unpaid bills its deletion cancelled. A withdrawn certificate has to be issued again.",
+      "owner": "The owner comes back on the register. A portal account that was unlinked links again at the owner's next sign-in.",
+      "user": "The user comes back and can sign in again with the same roles and districts.",
+      "district": "The district comes back.",
+      "section": "The section comes back (its district must not be deleted).",
+      "sector": "The sector comes back (its section must not be deleted).",
+      "neighbourhood": "The neighbourhood comes back (its sector must not be deleted).",
+      "street": "The street comes back.",
+      "facility": "The facility comes back."
+    },
+    "none": "Nothing deleted",
+    "noneBody": "Deleted land, owners, users and places show here."
   }
 }

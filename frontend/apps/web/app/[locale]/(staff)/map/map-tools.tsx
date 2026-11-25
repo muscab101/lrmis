@@ -268,7 +268,12 @@ export function MapTools({
     setSaving(true);
     const res = await setGeometryAction({ level: edit.level, id: edit.id, geojson: JSON.stringify(geometry) });
     setSaving(false);
-    if (!res.ok) return toast.error(t("editFailed"));
+    if (!res.ok) {
+      // A neighbourhood drawn in or over another one: say which.
+      const detail = String(res.error.values?.detail ?? "");
+      if (detail.startsWith("neighbourhood_overlap")) return toast.error(t("neighbourhoodOverlap", { code: detail.split(": ")[1] ?? "" }));
+      return toast.error(t("editFailed"));
+    }
     toast.success(t("boundarySaved", { name: edit.name }));
     // Load the level's map pictures again so the new boundary shows.
     const src = mapRef.current?.getMap()?.getSource(edit.level) as VectorTileSource | undefined;

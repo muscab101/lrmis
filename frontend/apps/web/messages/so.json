@@ -104,7 +104,8 @@
       "apartments": "Guryaha dabaqyada",
       "parcelsAll": "Dhammaan dhulalka",
       "managers": "Maamulayaasha",
-      "verify": "Hubi"
+      "verify": "Hubi",
+      "deleted": "Waxyaabaha la tirtiray"
     }
   },
   "status": {
@@ -1454,7 +1455,8 @@
       "points_of_sale": "Goobaha lacag bixinta",
       "verify": "Hubi",
       "chat": "Wada-hadalka shaqaalaha",
-      "assistant": "Kaaliyaha AI"
+      "assistant": "Kaaliyaha AI",
+      "deleted": "Waxyaabaha la tirtiray"
     },
     "specials": {
       "payments_refund": "Celin",
@@ -1506,7 +1508,7 @@
         "update": "Wax ka beddel faahfaahinta xafiiska, dir sahamiye si uu u hubiyo inuu jiro, oo codso isbeddel (xuduud, kala qaybin, isticmaal).",
         "approve": "Diiwaangeli dhul (wuxuu helayaa PUN, biilashiisana waa la soo saarayaa), oo go'aami isbeddelada dhulka iyo kirada.",
         "delete": "Tirtir dhul qayb ah (aan weli la diiwaangelin).",
-        "delete_registered": "Ka tirtir dhul diiwaangashan diiwaanka. Dhul lacag laga bixiyay weligii lama tirtiri karo.",
+        "delete_registered": "Ka tirtir dhulka diiwaangashan diiwaanka. Lacagta horay loo bixiyay waxay ku jiraysaa buugaagta.",
         "lock": "Quful oo fur dhul, tusaale kiis maxkamadeed, si aan waxba looga beddelin.",
         "yet_to_register": "Fur Aan weli la diiwaangelin: xaafadaha weli la diiwaangelin, iyo aagagga sahamiyayaasha la siiyay."
       },
@@ -1639,6 +1641,9 @@
         "create": "Samee doorar cusub.",
         "update": "Beddel ogolaanshaha door oo u wareeji isticmaalayaashiisa.",
         "delete": "Tirtir doorar."
+      },
+      "deleted": {
+        "view": "Arag wax kasta oo la tirtiray (dhul, milkiilayaal, isticmaalayaal, goobo) oo soo celi."
       }
     }
   },
@@ -1803,7 +1808,8 @@
     },
     "wholeSection": "Qaybta oo dhan",
     "wholeSector": "Waaxda oo dhan",
-    "hoodsDrawn": "{drawn} ka mid ah {total} xaafadood ayaa la sawiray (✓)"
+    "hoodsDrawn": "{drawn} ka mid ah {total} xaafadood ayaa la sawiray (✓)",
+    "neighbourhoodOverlap": "Xuduudkani wuxuu daboolayaa qayb ka mid ah xaafadda {code}. Xaafad laguma sawiri karo gudaha ama dusha xaafad kale; ku sawir ilaa xuduudkaas."
   },
   "locations": {
     "title": "Goobaha",
@@ -2818,7 +2824,7 @@
     "addHouse": "Ku dar guri",
     "deleteTitle": "Tirtir {pun}?",
     "deleteBodyPartial": "Dhulkan aan dhammaystirnayn waa laga saarayaa liisaska. Wuxuu ku jirayaa taariikhda iyo sababtaada.",
-    "deleteBodyRegistered": "Dhulkan la diiwaangeliyay waa laga saarayaa diiwaanka: biilashiisa aan la bixin waa la joojinayaa, shahaadadiisana waa la laalayaa. Dhul lacag laga bixiyay lama tirtiri karo. Wuxuu ku jirayaa taariikhda iyo sababtaada.",
+    "deleteBodyRegistered": "Dhulkan diiwaangashan waa laga saarayaa diiwaanka: biilasha aan la bixin waa la joojinayaa, shahaadadiisana waa la laabanayaa. Biilasha lacag laga bixiyay iyo rasiidhadooda waxay ku jiraan buugaagta. Taariikhda ayuu ku jiraa sababtaada.",
     "deleted": "Dhulka waa la tirtiray",
     "deleteReason": "Sababta loo tirtirayo",
     "siteCheck": {
@@ -7235,5 +7241,50 @@
     "changeBody": "Dooro qofka la wareegaya dhismaha. Wuxuu noqonayaa maamulahiisa wuxuuna bixinayaa biilka dhulka bannaan laga bilaabo hadda.",
     "building": "Dhismaha",
     "newManager": "Maamulaha cusub"
+  },
+  "deleted": {
+    "title": "Waxyaabaha la tirtiray",
+    "subtitle": "Wax kasta oo la tirtiray. Halkan ka soo celi; 3 bilood kadib markii la tirtiray si buuxda ayaa looga saarayaa. Dhulka lacag laga bixiyay weligii lagama saaro.",
+    "tabs": {
+      "all": "Dhammaan",
+      "land": "Dhul",
+      "owner": "Milkiilayaal",
+      "user": "Isticmaalayaal",
+      "places": "Goobo"
+    },
+    "kinds": {
+      "land": "Dhul",
+      "owner": "Milkiile",
+      "user": "Isticmaale",
+      "district": "Degmo",
+      "section": "Qayb",
+      "sector": "Waax",
+      "neighbourhood": "Xaafad",
+      "street": "Waddo",
+      "facility": "Xarun"
+    },
+    "what": "Maxay tahay",
+    "name": "Magaca",
+    "deletedOn": "La tirtiray",
+    "by": "waxaa tirtiray {name}",
+    "reason": "Sababta",
+    "goesOn": "Si buuxda looga saarayo",
+    "keptMoney": "Waa la hayaa: lacag ayaa la bixiyay",
+    "restore": "Soo celi",
+    "restoreTitle": "Ma soo celinaysaa {name}?",
+    "restored": "Waa la soo celiyay",
+    "restoreBody": {
+      "land": "Dhulka wuxuu la soo noqonayaa biilasha aan la bixin ee tirtiriddu joojisay. Shahaado la laabtay mar kale ayaa la bixinayaa.",
+      "owner": "Milkiiluhu wuxuu ku soo noqonayaa diiwaanka. Akoon portal ah oo la kala saaray wuxuu dib ugu xirmayaa marka milkiiluhu soo galo.",
+      "user": "Isticmaaluhu waa soo noqonayaa wuxuuna mar kale geli karaa isla doorarka iyo degmooyinka.",
+      "district": "Degmada waa soo noqonaysaa.",
+      "section": "Qaybta waa soo noqonaysaa (degmadeedu waa inaanay tirtirnayn).",
+      "sector": "Waaxda waa soo noqonaysaa (qaybteedu waa inaanay tirtirnayn).",
+      "neighbourhood": "Xaafadda waa soo noqonaysaa (waaxdeedu waa inaanay tirtirnayn).",
+      "street": "Waddada waa soo noqonaysaa.",
+      "facility": "Xarunta waa soo noqonaysaa."
+    },
+    "none": "Waxba lama tirtirin",
+    "noneBody": "Dhulka, milkiilayaasha, isticmaalayaasha iyo goobaha la tirtiray halkan ayay ka muuqdaan."
   }
 }

@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createAuthUser, createDb, createStaff, scalar, square } from "./harness";
 
 let db: PGlite;
 let hodan: string;
@@ -79,7 +79,7 @@ describe("deleting land", () => {
     expect(await scalar<string>(db, `select status::text from public.invoices where id = $1`, [inv])).toBe("cancelled");
   });
 
-  it("land with money received can't be deleted", async () => {
+  it("land with money received can be deleted; the money stays on the books (0286)", async () => {
     const reg = await parcel(true);
     const tax = await scalar<string>(db, `select id from public.fee_types where code = 'property_tax'`);
     const inv = await scalar<string>(
@@ -88,7 +88,23 @@ describe("deleting land", () => {
       [reg, hodan, tax],
     );
     await db.query(`select private.record_payment(jsonb_build_object('parcel_id', $1::text, 'invoice_id', $2::text, 'method', 'cash', 'amount', 10))`, [reg, inv]);
-    await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'Wrong house entirely')`, [reg])), "CONFLICT: has_payments");
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'Wrong house entirely')`, [reg]));
+    expect(await scalar<boolean>(db, `select deleted_at is not null from public.parcels where id = $1`, [reg])).toBe(true);
+    // The part-paid bill and its receipt are kept as they are.
+    expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [inv])).toBe("partially_paid");
+    expect(await scalar<number>(db, `select count(*)::int from public.payments where parcel_id = $1 and status = 'completed'`, [reg])).toBe(1);
+  });
+
+  it("an owner whose land was deleted can be deleted, even with a portal account (0286)", async () => {
+    const reg = await parcel(true);
+    const citizen = await createAuthUser(db, { phone: "+252615557788", fullName: "" });
+    const owner = await scalar<string>(db, `insert into public.parties (full_name, phone, district_id, citizen_user_id) values ('Gone Owner', '+252615557788', $1, $2) returning id`, [hodan, citizen]);
+    await db.query(`insert into public.parcel_owners (parcel_id, party_id, role, share_pct) values ($1, $2, 'owner', 100)`, [reg, owner]);
+    await expectError(asUser(db, admin, (tx) => tx.query(`select public.party_delete($1, 'Entered twice by mistake')`, [owner])), "HAS_RECORDS: land");
+    await asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'Entered twice by mistake')`, [reg]));
+    await asUser(db, admin, (tx) => tx.query(`select public.party_delete($1, 'Entered twice by mistake')`, [owner]));
+    const p = await scalar<{ deleted: boolean; account: string | null }>(db, `select jsonb_build_object('deleted', deleted_at is not null, 'account', citizen_user_id) from public.parties where id = $1`, [owner]);
+    expect(p).toEqual({ deleted: true, account: null });
   });
 });
 

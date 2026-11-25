@@ -1,6 +1,7 @@
 import type { PermissionKey } from "@dhulka/core/permissions";
 import {
   ScanSearch,
+  Trash2,
   Activity,
   Stamp,
   BadgeCheck,
@@ -93,6 +94,7 @@ export const STAFF_NAV: NavGroup[] = [
       { key: "owners", href: "/owners", icon: Users, permission: "owners.view", also: ["/owners/managers"] },
       { key: "parcels", href: "/parcels", icon: MapPinned, permission: "parcels.view", also: ["/apartments"] },
       { key: "demolished", href: "/demolished", icon: Hammer, permission: "parcels.demolitions" },
+      { key: "deleted", href: "/deleted", icon: Trash2, permission: "deleted.view" },
     ],
   },
   {

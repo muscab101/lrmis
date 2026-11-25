@@ -30,5 +30,5 @@ describe("permission catalog stays in sync with the SQL migration", () => {
     }
     expect(special.sort()).toEqual([...SPECIAL_PERMISSIONS].sort());
   });
-  it("total count matches the database test (234)", () => expect(ALL_PERMISSIONS).toHaveLength(234));
+  it("total count matches the database test (235)", () => expect(ALL_PERMISSIONS).toHaveLength(235));
 });

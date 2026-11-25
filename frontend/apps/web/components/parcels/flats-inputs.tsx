@@ -1,7 +1,6 @@
 "use client";
 
 import { Field } from "@dhulka/ui/field";
-import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { useFormatter, useTranslations } from "next-intl";
 import type { UnitRow, UnitsValue } from "@/components/parcels/land-units-inputs";
@@ -120,13 +119,7 @@ export function FlatsInputs({
 
   return (
     <div className="space-y-4 rounded-md border p-4">
-      <Field id="flatsOwnership" label={t("ownership")} hint={one ? t("ownershipOneHint") : t("ownershipEachHint")} required>
-        <NativeSelect value={value.ownership} onChange={(e) => onChange({ ...value, ownership: e.target.value as UnitsValue["ownership"] })}>
-          <option value="one">{t("ownershipOne")}</option>
-          <option value="each">{t("ownershipEach")}</option>
-        </NativeSelect>
-      </Field>
-
+      {/* No "who owns the building" question: a building is one owner, one land and one invoice (upper storeys included). */}
       {one && (
         <div className="max-w-sm">
           <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")}>

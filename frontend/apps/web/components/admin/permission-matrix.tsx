@@ -58,6 +58,7 @@ const PARTS: { id: string; after: string; cells: Partial<Record<Action, string>>
   { id: "verify", after: "certificates", cells: { view: "verify.view" } },
   { id: "chat", after: "messages", cells: { view: "chat.view" } },
   { id: "assistant", after: "reports", cells: { view: "assistant.view" } },
+  { id: "deleted", after: "audit", cells: { view: "deleted.view" } },
 ];
 for (const p of PARTS) {
   const at = ROWS.findIndex((r) => r.id === p.after);
