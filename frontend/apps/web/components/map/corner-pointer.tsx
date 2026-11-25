@@ -138,13 +138,33 @@ export function CornerPointer({
   }, [centre]);
 
   useEffect(() => {
-    const map = mapOf.current();
-    if (!map) return;
-    addCornerLayers(map, SRC, colour);
-    map.on("move", paint);
-    paint();
+    // The tool can open with the page, before the map has loaded: wait for it, then draw.
+    let map: MlMap | null | undefined = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    const ready = () => {
+      if (stopped || !map) return;
+      addCornerLayers(map, SRC, colour);
+      map.on("move", paint);
+      paint();
+    };
+    const wait = (tries: number) => {
+      if (stopped) return;
+      map = mapOf.current();
+      if (!map) {
+        if (tries < 100) timer = setTimeout(() => wait(tries + 1), 100);
+        return;
+      }
+      if (map.isStyleLoaded()) ready();
+      else map.once("load", ready);
+    };
+    wait(0);
     return () => {
+      stopped = true;
+      clearTimeout(timer);
+      if (!map) return;
       map.off("move", paint);
+      map.off("load", ready);
       removeCornerLayers(map, SRC);
     };
   }, [paint, colour]);

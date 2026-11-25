@@ -1798,7 +1798,8 @@
       "side": "This side: {m} m",
       "done": "Shape drawn from 4 corners",
       "crossed": "The corners were out of order, so they were put in order around the land.",
-      "pinDone": "Pin put in the middle of the 4 corners"
+      "pinDone": "Pin put in the middle of the 4 corners",
+      "again": "Draw the 4 corners again"
     },
     "wholeSection": "Whole section",
     "wholeSector": "Whole sector",

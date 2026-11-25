@@ -2,7 +2,7 @@ import { Card, CardContent } from "@dhulka/ui/card";
 import { EmptyState, KpiChip, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
 import { Button } from "@dhulka/ui/button";
-import { Home, MapPinPlus, UserPlus, UserRound } from "lucide-react";
+import { Home, MapPinPlus, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ParcelStatusBadge } from "@/components/parcels/parcel-status-badge";
@@ -57,21 +57,14 @@ export default async function ZonePage({ params }: { params: Promise<{ locale: s
         actions={
           <div className="flex flex-wrap gap-2">
             {canAddLand && (
-              <Button asChild>
+              <Button asChild className="min-w-48 px-8">
                 <Link href={`/surveys/zones/${zone.id}/land`}>
                   <MapPinPlus aria-hidden />
                   {t("addLand")}
                 </Link>
               </Button>
             )}
-            {open && (mine || viewer.can("surveys.approve")) && viewer.can("owners.create") && (
-              <Button asChild variant="outline">
-                <Link href={`/surveys/zones/${zone.id}/owner`}>
-                  <UserPlus aria-hidden />
-                  {t("addOwner")}
-                </Link>
-              </Button>
-            )}
+            {/* One button: the land form takes the owner too. */}
             {/* Mark done only once every house is recorded (e.g. 50 of 50); zones are not cancelled from here. */}
             {open && zone.recorded >= zone.target && (
               <ZoneCloseButtons id={zone.id} name={name} canDone={mine || viewer.can("surveys.approve")} canCancel={false} />

@@ -62,7 +62,8 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
   const t = useTranslations("applications.pin");
   const tm = useTranslations("map.corners");
   // 4-corner drawing: the centre pointer is out; the last shape drawn stays on the map.
-  const [cornering, setCornering] = useState(false);
+  // With 4-corner drawing on, the form opens straight into it: the pointer is out until the 4 corners are in.
+  const [cornering, setCornering] = useState(corners && !disabled);
   const [shape, setShape] = useState<GeoJSON.Polygon | null>(null);
   const mapRef = useRef<DhulkaMapHandle>(null);
   const marker = useRef<maplibregl.Marker | null>(null);
@@ -197,23 +198,21 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
             {locating ? t("gpsStop", { m: live ?? "…" }) : value?.method === "gps" ? t("gpsAgain") : t("useGps")}
           </Button>
         )}
-        {corners && !disabled && (
+        {/* No choice to make: the corners start by themselves; once drawn (or closed) they can be drawn again. */}
+        {corners && !disabled && !cornering && (
           <Button
             type="button"
-            variant={cornering ? "default" : "outline"}
+            variant="outline"
             size="sm"
-            aria-pressed={cornering}
             onClick={() => {
-              if (!cornering) {
-                stopGps();
-                setShape(null);
-                onShape?.(null);
-              }
-              setCornering(!cornering);
+              stopGps();
+              setShape(null);
+              onShape?.(null);
+              setCornering(true);
             }}
           >
             <Scan aria-hidden />
-            {tm("button")}
+            {tm("again")}
           </Button>
         )}
         {value && (

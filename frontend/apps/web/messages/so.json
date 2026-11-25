@@ -1798,7 +1798,8 @@
       "side": "Dhinacan: {m} m",
       "done": "Qaabka waxaa laga sawiray 4 gees",
       "crossed": "Geesaha si khaldan ayay u kala horreeyeen, markaa waxaa loo habeeyay hareeraha dhulka.",
-      "pinDone": "Biinka waxaa la dhigay bartamaha 4-ta gees"
+      "pinDone": "Biinka waxaa la dhigay bartamaha 4-ta gees",
+      "again": "Mar kale sawir 4-ta gees"
     },
     "wholeSection": "Qaybta oo dhan",
     "wholeSector": "Waaxda oo dhan",
