@@ -4,7 +4,15 @@ import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono, PageHeader } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
-import { BarChart3, Download, FileSpreadsheet, FileText } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  BarChart3,
+  Download,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { AreaFilter } from "@/components/reports/area-filter";
 import { AssistantPanel } from "@/components/reports/assistant-panel";
@@ -20,6 +28,7 @@ import {
   type SummaryTopic,
 } from "@/components/reports/summary-view";
 import { Link } from "@/i18n/navigation";
+import { groupChoices, readShape, shapeTable } from "@/lib/report-shape";
 import { requirePermission } from "@/lib/server/auth";
 import { type Cell, type CellKind, reportTable } from "@/lib/server/report-table";
 import {
@@ -255,6 +264,7 @@ export default async function ReportsPage({
     format.number(n, { style: "currency", currency: "USD", notation: "compact" });
   const name = (r: { district_so: string; district_en: string }) =>
     lang === "so" ? r.district_so : r.district_en;
+  const shape = readShape(sp);
   const usesRange = !SNAPSHOT_REPORTS.includes(report);
   const usesDistrict = DISTRICT_REPORTS.includes(report);
   const qs = new URLSearchParams({
@@ -273,6 +283,9 @@ export default async function ReportsPage({
     ...(checkSt ? { check: checkSt } : {}),
     ...(billSt ? { bill: billSt } : {}),
     ...(isRevenue && view === "detail" ? { view } : {}),
+    // The files follow the page's sort and summary.
+    ...(shape.sort !== null ? { sort: String(shape.sort), dir: shape.dir } : {}),
+    ...(shape.group !== null ? { group: String(shape.group) } : {}),
   }).toString();
   const areaArgs = {
     from,
@@ -336,7 +349,19 @@ export default async function ReportsPage({
     !["revenue", "income", "arrears", "collection", "registrations", "cashiers"].includes(report)
   ) {
     // The listing reports draw straight from the same table the PDF and Excel files use.
-    const table = await reportTable(report, rows, lang, reportHref);
+    // Detailed (every row) or summed up by one column, sorted by any column: the files get the same view.
+    const base = await reportTable(report, rows, lang, reportHref);
+    const choices = groupChoices(base);
+    const table = shapeTable(base, shape, t("rowsLabel"));
+    const grouped = table !== base && table.columns.length !== base.columns.length;
+    const shapeHref = (over: Record<string, string | null>) => {
+      const next = new URLSearchParams(sp);
+      for (const [k, v] of Object.entries(over)) {
+        if (v === null) next.delete(k);
+        else next.set(k, v);
+      }
+      return `/reports?${next.toString()}`;
+    };
     const shown = table.rows.slice(0, PAGE_ROWS);
     let chart: React.ReactNode = null;
     if (report === "paymentTypes" || report === "collections" || report === "collectionsCashier") {
@@ -349,7 +374,7 @@ export default async function ReportsPage({
             data={
               report === "collections"
                 ? (r as CollectionsRow[]).map((x, i) => ({
-                    label: String(table.rows[i]?.[0] ?? x.period),
+                    label: String(base.rows[i]?.[0] ?? x.period),
                     value: Number(x.total),
                   }))
                 : CHANNELS.map((c) => ({
@@ -392,14 +417,42 @@ export default async function ReportsPage({
     body = (
       <>
         {chart}
+        {choices.length > 0 && (
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-4 py-2 text-sm" aria-label={t("viewLabel")}>
+            <span className="text-muted-foreground text-xs">{t("viewLabel")}</span>
+            <Link href={shapeHref({ group: null, sort: null, dir: null })} className={grouped ? "text-muted-foreground hover:text-foreground" : "text-primary font-medium"}>
+              {t("viewDetailed")}
+            </Link>
+            <span className="text-muted-foreground text-xs">{t("viewSummaryBy")}</span>
+            {choices.map((c) => (
+              <Link
+                key={c.index}
+                href={shapeHref({ group: String(c.index), sort: null, dir: null })}
+                className={grouped && shape.group === c.index ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}
+              >
+                {c.label}
+              </Link>
+            ))}
+          </nav>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
-              {table.columns.map((c) => (
-                <TableHead key={c.label} className={right(c.kind) ? "text-end" : ""}>
-                  {c.label}
-                </TableHead>
-              ))}
+              {table.columns.map((c, j) => {
+                const on = shape.sort === j;
+                return (
+                  <TableHead key={c.label} className={right(c.kind) ? "text-end" : ""}>
+                    <Link
+                      href={shapeHref({ sort: String(j), dir: on && shape.dir === "desc" ? "asc" : "desc" })}
+                      className={`hover:text-foreground inline-flex items-center gap-1 ${on ? "text-primary" : ""} ${right(c.kind) ? "flex-row-reverse" : ""}`}
+                      title={t("sortBy", { column: c.label })}
+                    >
+                      {c.label}
+                      {on ? shape.dir === "asc" ? <ArrowUp className="size-3.5" aria-hidden /> : <ArrowDown className="size-3.5" aria-hidden /> : <ArrowUpDown className="size-3.5 opacity-40" aria-hidden />}
+                    </Link>
+                  </TableHead>
+                );
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>

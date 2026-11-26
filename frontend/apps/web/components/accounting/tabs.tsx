@@ -37,6 +37,7 @@ import {
   type MovementStatus,
 } from "@/lib/server/accounting";
 import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 
 const STATUS_TONE: Record<string, StatusTone> = {
   pending: "pending",
@@ -980,32 +981,24 @@ export async function LedgerTab({
         <input type="hidden" name="to" value={to} />
         <label className="space-y-1">
           <span className="text-muted-foreground block text-xs">{t("account")}</span>
-          <select
-            name="account"
-            defaultValue={account}
-            className="bg-background h-9 rounded-md border px-2 text-sm"
-          >
+          <NativeSelect name="account" defaultValue={account} className="h-9 w-auto">
             {accounts.map((a) => (
               <option key={a.code} value={a.code}>
                 {a.code} · {name(a)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
         <label className="space-y-1">
           <span className="text-muted-foreground block text-xs">{t("district")}</span>
-          <select
-            name="district"
-            defaultValue={districtId}
-            className="bg-background h-9 rounded-md border px-2 text-sm"
-          >
+          <NativeSelect name="district" defaultValue={districtId} className="h-9 w-auto">
             <option value="">{t("ledger.allDistricts")}</option>
             {districts.map((d) => (
               <option key={d.id} value={d.id}>
                 {name(d)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
         <span className="ms-auto flex flex-wrap gap-x-5 text-sm">
           <span>{t("ledger.opening", { amount: usd(gl.opening) })}</span>

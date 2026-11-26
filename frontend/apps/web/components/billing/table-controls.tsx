@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { PAGE_SIZES } from "./page-sizes";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 
 /** "Show [10] entries": changing it goes back to page 1 with the new size. */
 export function EntriesSelect({ size, query }: { size: number; query: Record<string, string> }) {
@@ -12,8 +13,8 @@ export function EntriesSelect({ size, query }: { size: number; query: Record<str
   return (
     <label className="flex items-center gap-2 text-sm">
       {t("table.show")}
-      <select
-        className="bg-background h-8 rounded-md border px-2 text-sm"
+      <NativeSelect
+        className="h-8 w-auto"
         value={size}
         onChange={(e) => {
           const q = new URLSearchParams({ ...query, size: e.target.value });
@@ -26,7 +27,7 @@ export function EntriesSelect({ size, query }: { size: number; query: Record<str
             {n}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       {t("table.entries")}
     </label>
   );

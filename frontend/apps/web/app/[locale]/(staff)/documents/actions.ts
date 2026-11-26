@@ -72,13 +72,6 @@ export const reprintDirectAction = defineAction("certificates.reprint_direct", z
   }
 });
 
-export const sendBulkToPrinterAction = defineAction(
-  "certificates.send_bulk_to_printer",
-  z.object({ ids: z.array(z.uuid()).min(1).max(100), printerId: z.uuid("validation.required"), locale: z.enum(["so", "en"]) }),
-  async (v, ctx) =>
-    done(unwrap(await ctx.supabase.rpc("document_send_to_printer_bulk", { p_ids: v.ids, p_printer: v.printerId, p_locale: v.locale }), "send to printer") as { sent: string[]; failed: { id: string; serial: string | null; error: string }[] }),
-);
-
 /** Send an ID card's print bill to the district's cashier (raised at the fixed fee if missing). */
 export const sendCardToCashierAction = defineAction("documents.card_to_cashier", z.object({ id: z.uuid() }), async ({ id }, ctx) => {
   const number = unwrap(await ctx.supabase.rpc("card_send_to_cashier", { p_card: id }), "card to cashier") as string;

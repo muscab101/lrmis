@@ -4531,11 +4531,6 @@
     "bulkIssueFailed": "{count, plural, =1 {1 dhul lama bixin} other {# dhul lama bixin}}",
     "bulkIssued": "{count, plural, =1 {1 shahaado} other {# shahaado}} iyo {cards, plural, =1 {1 kaar aqoonsi} other {# kaar aqoonsi}} ayaa la bixiyay.",
     "printSelected": "{count, plural, =0 {Daabac kuwa la doortay} =1 {Daabac 1 dukumenti} other {Daabac # dukumenti}}",
-    "batchTitle": "Daabac dukumentiyada",
-    "batchSkipped": "{count, plural, =1 {1 dukumenti waa laga reebay} other {# dukumenti waa laga reebay}} maxaa yeelay hore ayaa loo daabacay ama waa la joojiyay:",
-    "batchNothing": "Waxba halkan laguma daabici karo. Ka dooro dukumentiyada tabka Daabacaadda.",
-    "batchFailed": "{count, plural, =1 {1 dukumenti lama diiwaangelin} other {# dukumenti lama diiwaangelin}} lamana bixin karo:",
-    "batchCount": "{count, plural, =1 {1 dukumenti} other {# dukumenti}} daabacaaddan",
     "printOfficialAll": "{count, plural, =1 {Daabac nuqulka rasmiga ah} other {Daabac # nuqul rasmi ah}}",
     "pendingRequest": "Codsi {kind} ah ayaa sugaya ansixin",
     "registerChanged": "Diiwaanku wuu isbeddelay tan iyo markii dukumentigan la bixiyay",
@@ -4552,7 +4547,6 @@
     "actions": "Ficillo",
     "cardPayOpen": "Lacag ayaa loo baahan yahay: biilka daabacaadda {number} weli lama bixin. Khasnajigu ha qaado lacagta, kadib kaarka waa la daabici karaa.",
     "cardPayNone": "Lacag ayaa loo baahan yahay: kaarkan weli biil daabacaad ma laha. U dir lacag-hayaha; waa la daabacayaa marka lacagta la bixiyo.",
-    "batchUnpaid": "{count, plural, =1 {1 kaar aqoonsi ayaa sugaya} other {# kaar aqoonsi ayaa sugaya}} in biilkooda daabacaadda la bixiyo:",
     "payPaid": "Daabacaadda waa la bixiyay",
     "payOpen": "Biilka {number} lama bixin",
     "payNone": "Biil lama samayn",
@@ -4570,7 +4564,6 @@
       "printed": "Lagu daabacay {printer}",
       "failed": "Daabacaadda {printer} way fashilantay. Mar kale ayaad diri kartaa."
     },
-    "batchProgress": "La daabacay {printed}, sugaya {waiting}, fashilmay {failed}",
     "taxYear": "Sanadka canshuurta",
     "validRange": "Ansax {from} – {to}",
     "sequence": "Shahaadada {n}aad ee dhulkan",
@@ -5352,7 +5345,11 @@
       "linesSub": "Taariikhaha iyo goobta la doortay",
       "listOnly": "Warbixintan waa liis aan wax la isku daro lahayn. Fur warbixinta oo dhan si aad u akhrido.",
       "openFull": "Fur warbixinta oo dhan →"
-    }
+    },
+    "rowsLabel": "Safaf",
+    "viewDetailed": "Faahfaahsan (saf kasta)",
+    "viewSummaryBy": "Soo koob sida:",
+    "sortBy": "U kala sooc {column}"
   },
   "messages": {
     "title": "Fariimaha",

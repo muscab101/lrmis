@@ -242,7 +242,6 @@ export const bankAccountSetAction = defineAction(
   async (v, ctx) => {
     unwrap(await ctx.supabase.rpc("payment_bank_account_set", { p: v }), "bank account");
     revalidatePath("/[locale]/pay/[token]", "page");
-    revalidatePath("/[locale]/portal/pay/[token]", "page");
     return done(null);
   },
 );

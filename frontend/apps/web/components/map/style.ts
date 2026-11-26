@@ -106,15 +106,6 @@ const FONT = ["Open Sans Semibold"];
 /** Mogadishu (Banadir) — used when nothing is mapped yet. */
 export const DEFAULT_VIEW = { center: [45.32, 2.05] as [number, number], zoom: 11.5 };
 
-/** Parcel fill colour by status (matches the status badges). */
-export const PARCEL_COLOURS: Record<string, string> = {
-  draft: "#5d6573",
-  surveyed: "#1d5fc2",
-  verified: "#b45309",
-  registered: "#15803d",
-  disputed: "#c62828",
-};
-
 /** A land shape's colour, the same as its pin: grey when demolished, blue when paid, red while it owes —
  * land not registered yet is red too (its first bills are still unpaid). Only these three colours. */
 const PARCEL_FILL = [

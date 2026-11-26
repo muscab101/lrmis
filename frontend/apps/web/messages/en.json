@@ -4531,11 +4531,6 @@
     "bulkIssueFailed": "{count, plural, =1 {1 parcel wasn't issued} other {# parcels weren't issued}}",
     "bulkIssued": "{count, plural, =1 {1 certificate} other {# certificates}} and {cards, plural, =1 {1 ID card} other {# ID cards}} issued.",
     "printSelected": "{count, plural, =0 {Print selected} =1 {Print 1 document} other {Print # documents}}",
-    "batchTitle": "Print documents",
-    "batchSkipped": "{count, plural, =1 {1 document is left out} other {# documents are left out}} because already printed or cancelled:",
-    "batchNothing": "Nothing here can be printed. Pick documents on the To print tab.",
-    "batchFailed": "{count, plural, =1 {1 document wasn't logged} other {# documents weren't logged}} and shouldn't be handed out:",
-    "batchCount": "{count, plural, =1 {1 document} other {# documents}} in this print run",
     "printOfficialAll": "{count, plural, =1 {Print official copy} other {Print # official copies}}",
     "pendingRequest": "{kind} request waiting for approval",
     "registerChanged": "The register has changed since this document was issued",
@@ -4552,7 +4547,6 @@
     "actions": "Actions",
     "cardPayOpen": "Payment needed: the print bill {number} isn't paid yet. The cashier takes the payment, then the card can be printed.",
     "cardPayNone": "Payment needed: this card has no print bill yet. Send it to the cashier; it prints once the charge is paid.",
-    "batchUnpaid": "{count, plural, =1 {1 ID card waits} other {# ID cards wait}} for its print bill to be paid:",
     "payPaid": "Print paid",
     "payOpen": "Bill {number} unpaid",
     "payNone": "Not billed",
@@ -4570,7 +4564,6 @@
       "printed": "Printed on {printer}",
       "failed": "Printing on {printer} failed. You can send it again."
     },
-    "batchProgress": "Printed {printed}, waiting {waiting}, failed {failed}",
     "taxYear": "Tax year",
     "validRange": "Valid {from} – {to}",
     "sequence": "Certificate {n} of this land",
@@ -5352,7 +5345,11 @@
       "linesSub": "For the dates and place chosen",
       "listOnly": "This report is a list with nothing to add up. Open the full report to read it.",
       "openFull": "Open the full report →"
-    }
+    },
+    "rowsLabel": "Rows",
+    "viewDetailed": "Detailed (every row)",
+    "viewSummaryBy": "Summary by:",
+    "sortBy": "Sort by {column}"
   },
   "messages": {
     "title": "Messages",

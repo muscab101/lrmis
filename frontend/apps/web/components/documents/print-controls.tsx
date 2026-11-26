@@ -9,7 +9,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import {
   printStatusAction,
-  sendBulkToPrinterAction,
   sendCardToCashierAction,
   sendToPrinterAction,
 } from "@/app/[locale]/(staff)/documents/actions";
@@ -227,92 +226,6 @@ export function PrintControls({
         )}
       </div>
       <Preview>{children}</Preview>
-    </>
-  );
-}
-
-/** The batch version: sends every ready document to one added printer and follows them. */
-export function BatchPrintControls({
-  ids,
-  canPrint,
-  printers,
-  children,
-}: {
-  ids: string[];
-  canPrint: boolean;
-  printers: Choice[];
-  children: React.ReactNode;
-}) {
-  const t = useTranslations("documents");
-  const locale = useLocale() as "so" | "en";
-  const [printer, setPrinter] = useState(defaultPrinter(printers));
-  const [started, setStarted] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<AppError | null>(null);
-  const [failed, setFailed] = useState<{ id: string; serial: string | null; error: string }[]>([]);
-  const jobs = useQueue(canPrint ? ids : [], started);
-  const count = (s: JobState["status"]) => jobs.filter((j) => j.status === s).length;
-  const waiting = count("queued") + count("printing");
-  const blocked =
-    ids.length === 0
-      ? t("batchNothing")
-      : !canPrint
-        ? t("printNoPermission")
-        : printers.length === 0
-          ? t("noPrinters")
-          : null;
-  return (
-    <>
-      <div className="mx-auto mb-4 flex max-w-[210mm] flex-wrap items-center justify-end gap-3 print:hidden">
-        {blocked ? (
-          <Alert tone="warning" title={blocked} className="w-full" />
-        ) : (
-          <>
-            <FormError error={error} />
-            {failed.length > 0 && (
-              <Alert
-                tone="warning"
-                title={t("batchFailed", { count: failed.length })}
-                className="w-full"
-              >
-                {failed.map((f) => f.serial).join(", ")}
-              </Alert>
-            )}
-            {jobs.length > 0 && (
-              <Alert
-                tone={count("failed") ? "danger" : "info"}
-                title={t("batchProgress", {
-                  printed: count("printed"),
-                  waiting,
-                  failed: count("failed"),
-                })}
-                className="w-full"
-              />
-            )}
-            <span className="text-muted-foreground me-auto text-sm">
-              {t("batchCount", { count: ids.length })}
-            </span>
-            <PrinterSelect printers={printers} value={printer} onChange={setPrinter} />
-            <Button
-              loading={busy}
-              disabled={!printer || waiting > 0}
-              onClick={async () => {
-                setBusy(true);
-                setError(null);
-                const res = await sendBulkToPrinterAction({ ids, printerId: printer, locale });
-                setBusy(false);
-                if (!res.ok) return setError(res.error);
-                setFailed(res.data.failed);
-                setStarted((n) => n + 1);
-              }}
-            >
-              <Printer aria-hidden />
-              {t("sendAllToPrinter", { count: ids.length })}
-            </Button>
-          </>
-        )}
-      </div>
-      <Preview fixed>{children}</Preview>
     </>
   );
 }

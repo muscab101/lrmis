@@ -29,6 +29,7 @@ import {
 import { listDistricts } from "@/lib/server/users";
 import { zonePlaces } from "@/lib/server/zones";
 import { createClient } from "@/lib/supabase/server";
+import { readShape, shapeTable } from "@/lib/report-shape";
 
 async function posName(supabase: Awaited<ReturnType<typeof createClient>>, id: string) {
   const { data } = await supabase
@@ -135,11 +136,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   const t = await getTranslations({ locale, namespace: "reports" });
-  const [table, viewer, districts] = await Promise.all([
+  const [base, viewer, districts] = await Promise.all([
     reportTable(report, rows, locale),
     getViewer(),
     listDistricts(),
   ]);
+  // The same view as the page: detailed or summed up by a column, sorted by any column.
+  const q = request.nextUrl.searchParams;
+  const table = shapeTable(base, readShape({ sort: q.get("sort"), dir: q.get("dir"), group: q.get("group") }), t("rowsLabel"));
   const d = districts.find((x) => x.id === district);
   const nm = (o: { name_so: string; name_en: string; code?: string }) =>
     `${o.code ? `${o.code} · ` : ""}${locale === "so" ? o.name_so : o.name_en}`;

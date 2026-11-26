@@ -165,11 +165,7 @@ export default async function InvoicesPage({
               {q && <input type="hidden" name="q" value={q} />}
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("statusLabel")}</span>
-                <select
-                  name="f"
-                  defaultValue={filter}
-                  className="bg-background h-9 rounded-md border px-2"
-                >
+                <NativeSelect name="f" defaultValue={filter} className="h-9 w-auto">
                   {FILTERS.map((f) => (
                     <option key={f} value={f}>
                       {t(`filters.${f}`)}
@@ -178,7 +174,7 @@ export default async function InvoicesPage({
                         : ""}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </label>
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("table.landFilter")}</span>
@@ -193,15 +189,11 @@ export default async function InvoicesPage({
               </label>
               <label className="grid gap-1 text-sm">
                 <span className="text-muted-foreground text-xs">{t("feeType")}</span>
-                <select
-                  name="fee"
-                  defaultValue={fee ?? ""}
-                  className="bg-background h-9 rounded-md border px-2"
-                >
+                <NativeSelect name="fee" defaultValue={fee ?? ""} className="h-9 w-auto">
                   <option value="">{t("table.allFees")}</option>
                   <option value="property_bill">{t("table.taxBill")}</option>
                   <option value="service_charge">{t("table.serviceCharge")}</option>
-                </select>
+                </NativeSelect>
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <label className="grid gap-1 text-sm">
