@@ -12,19 +12,38 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { deleteFeeTypeAction, deleteGradeAction, saveFeeTypeAction, saveGradeAction } from "@/app/[locale]/(staff)/valuation/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
+import { FEE_FACTORS, FEE_MOMENTS, type FeeFactor, type FeeMoment } from "@/lib/fee-rules";
 import type { FeeType, Grade } from "@/lib/server/valuation";
 
 const INTERVALS = ["annual", "biannual", "quarterly", "monthly", "one_off"] as const;
 /** Fee types the system uses by code: Delete switches them off instead of removing them. */
 const BUILT_IN_FEES = new Set(["property_tax", "service_charge", "application_fee", "certificate_fee", "transfer_stamp_duty", "building_permit", "registration_fee", "property_bill"]);
-type Item = Grade & { interval?: FeeType["interval"] };
+/** These keep their own flows: no moments or formula (the database refuses them too). */
+const SYSTEM_FEES = new Set([...BUILT_IN_FEES, "id_card_print"]);
+type Moment = FeeMoment;
+/** The sample land the worked example uses: 12 m × 12 m, 2 upper storeys, 3 floors, 4 flats. */
+const EXAMPLE: Record<FeeFactor, number> = { area: 144, width: 12, length: 12, storeys: 2, floors: 3, units: 4 };
+type Factor = FeeFactor;
+type Item = Grade & { interval?: FeeType["interval"]; charge_on?: Moment[]; factors?: Factor[] };
 
 /** Property grades or fee types: list + add/edit dialog. */
 export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees"; items: Item[]; canEdit: boolean }) {
   const t = useTranslations("valuation");
   const format = useFormatter();
   const locale = useLocale();
-  const blank = { id: null as string | null, code: "", nameSo: "", nameEn: "", amount: "0", active: true, sort: "100", interval: "annual" as FeeType["interval"] };
+  const blank = {
+    id: null as string | null,
+    code: "",
+    nameSo: "",
+    nameEn: "",
+    amount: "0",
+    active: true,
+    sort: "100",
+    interval: "annual" as FeeType["interval"],
+    chargeOn: [] as Moment[],
+    factors: [] as Factor[],
+  };
+  const toggle = <T extends string>(list: T[], x: T) => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x]);
   const [form, setForm] = useState<typeof blank | null>(null);
   const [deleting, setDeleting] = useState<Item | null>(null);
   const set = (k: keyof typeof blank, v: string | boolean) => setForm((f) => (f ? { ...f, [k]: v } : f));
@@ -57,7 +76,15 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
               <TableCell>
                 <Mono>{i.code}</Mono>
               </TableCell>
-              <TableCell className="text-sm">{locale === "so" ? i.name_so : i.name_en}</TableCell>
+              <TableCell className="text-sm">
+                {locale === "so" ? i.name_so : i.name_en}
+                {kind === "fees" && (i.charge_on?.length ?? 0) > 0 && (
+                  <span className="text-muted-foreground block text-xs">
+                    {i.charge_on!.map((m) => t(`moments.${m}`)).join(" · ")}
+                    {(i.factors?.length ?? 0) > 0 && ` — ${[format.number(Number(i.amount)), ...i.factors!.map((x) => t(`factors.${x}`))].join(" × ")}`}
+                  </span>
+                )}
+              </TableCell>
               {kind === "fees" && <TableCell className="text-sm">{t(`intervals.${i.interval}`)}</TableCell>}
               <TableCell className="text-end text-sm tabular-nums">{format.number(Number(i.amount), { style: "currency", currency: "USD" })}</TableCell>
               <TableCell className="text-sm">{i.active ? t("active") : t("inactive")}</TableCell>
@@ -68,7 +95,18 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                     variant="ghost"
                     aria-label={t("edit")}
                     onClick={() =>
-                      setForm({ id: i.id, code: i.code, nameSo: i.name_so, nameEn: i.name_en, amount: String(i.amount), active: i.active, sort: String(i.sort), interval: i.interval ?? "annual" })
+                      setForm({
+                        id: i.id,
+                        code: i.code,
+                        nameSo: i.name_so,
+                        nameEn: i.name_en,
+                        amount: String(i.amount),
+                        active: i.active,
+                        sort: String(i.sort),
+                        interval: i.interval ?? "annual",
+                        chargeOn: i.charge_on ?? [],
+                        factors: i.factors ?? [],
+                      })
                     }
                   >
                     <Pencil aria-hidden />
@@ -90,12 +128,13 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
         open={form !== null}
         onOpenChange={(o) => !o && setForm(null)}
         title={form?.id ? t("editItem") : t(kind === "grades" ? "addGrade" : "addFee")}
+        className={kind === "fees" ? "sm:max-w-2xl" : undefined}
         confirmLabel={t("save")}
         successMessage={t("saved")}
         submit={() => {
           const f = form!;
           const base = { id: f.id, code: f.code, nameSo: f.nameSo, nameEn: f.nameEn, amount: f.amount, active: f.active, sort: f.sort };
-          return kind === "grades" ? saveGradeAction(base) : saveFeeTypeAction({ ...base, interval: f.interval });
+          return kind === "grades" ? saveGradeAction(base) : saveFeeTypeAction({ ...base, interval: f.interval, chargeOn: f.chargeOn, factors: f.factors });
         }}
       >
         {(fe) =>
@@ -134,6 +173,58 @@ export function CatalogEditor({ kind, items, canEdit }: { kind: "grades" | "fees
                   </Field>
                 )}
               </div>
+              {kind === "fees" && !SYSTEM_FEES.has(form.code) && (
+                <>
+                  {/* 1. When the system adds this fee by itself. */}
+                  <fieldset className="space-y-3 rounded-md border p-4">
+                    <legend className="px-1 text-sm font-semibold">{t("chargeOn")}</legend>
+                    <p className="text-muted-foreground text-sm">{t("chargeOnHint")}</p>
+                    <div className="space-y-2">
+                      {FEE_MOMENTS.map((m) => (
+                        <label key={m} className="hover:bg-muted/40 flex cursor-pointer items-start gap-3 rounded-md border p-3">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 size-4 shrink-0"
+                            checked={form.chargeOn.includes(m)}
+                            onChange={() => setForm((f) => (f ? { ...f, chargeOn: toggle(f.chargeOn, m) } : f))}
+                          />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">{t(`moments.${m}`)}</span>
+                            <span className="text-muted-foreground block text-xs">{t(`momentsHint.${m}`)}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  {/* 2. How much: the amount above, times the land's numbers ticked here. */}
+                  <fieldset className="space-y-3 rounded-md border p-4">
+                    <legend className="px-1 text-sm font-semibold">{t("multiplyBy")}</legend>
+                    <p className="text-muted-foreground text-sm">{t("multiplyByHint")}</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {FEE_FACTORS.map((x) => (
+                        <label key={x} className="hover:bg-muted/40 flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2">
+                          <input
+                            type="checkbox"
+                            className="size-4 shrink-0"
+                            checked={form.factors.includes(x)}
+                            onChange={() => setForm((f) => (f ? { ...f, factors: toggle(f.factors, x) } : f))}
+                          />
+                          <span className="text-sm">{t(`factors.${x}`)}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {/* A worked example, so the result is easy to check. */}
+                    <div className="bg-muted/50 rounded-md px-3 py-2 text-sm">
+                      <p className="text-muted-foreground text-xs">{t("formulaExample")}</p>
+                      <p className="font-medium tabular-nums">
+                        {[`${Number(form.amount) || 0} USD`, ...form.factors.map((x) => `${EXAMPLE[x]} ${t(`factorUnits.${x}`)}`)].join(" × ")}
+                        {" = "}
+                        {format.number(form.factors.reduce((a, x) => a * EXAMPLE[x], Number(form.amount) || 0), { style: "currency", currency: "USD" })}
+                      </p>
+                    </div>
+                  </fieldset>
+                </>
+              )}
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={form.active} onCheckedChange={(v) => set("active", v)} />
                 {t("active")}

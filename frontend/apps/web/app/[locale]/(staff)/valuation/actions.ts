@@ -47,13 +47,17 @@ export const saveGradeAction = defineAction("valuation.save_grade", catalogItem,
 
 export const saveFeeTypeAction = defineAction(
   "valuation.save_fee_type",
-  catalogItem.extend({ interval: z.enum(["monthly", "quarterly", "biannual", "annual", "one_off"]) }),
+  catalogItem.extend({
+    interval: z.enum(["monthly", "quarterly", "biannual", "annual", "one_off"]),
+    chargeOn: z.array(z.enum(["registration", "yearly", "transfer", "id_card"])).default([]),
+    factors: z.array(z.enum(["area", "width", "length", "storeys", "floors", "units"])).default([]),
+  }),
   async (v, ctx) => {
     try {
       unwrap(
         await ctx.supabase.rpc("valuation_save_fee_type", {
           p_id: v.id,
-          p: { code: v.code, name_so: v.nameSo, name_en: v.nameEn, interval: v.interval, amount: v.amount, active: v.active, sort: v.sort },
+          p: { code: v.code, name_so: v.nameSo, name_en: v.nameEn, interval: v.interval, amount: v.amount, active: v.active, sort: v.sort, charge_on: v.chargeOn, factors: v.factors },
         }),
         "save fee type",
       );

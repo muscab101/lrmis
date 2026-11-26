@@ -3290,7 +3290,40 @@
     },
     "deleteBuildingTypeBody": "Waa laga saarayaa foomka dhulka. Dhulka hore loo keydiyay wuxuu haynayaa noociisa iyo qiimihiisa.",
     "buildingTypeDeleted": "Nooca dhismaha waa la tirtiray.",
-    "upperStoreysLine": "{count} dabaq sare, qiimaha Dabaqyada sare: {amount}"
+    "upperStoreysLine": "{count} dabaq sare, qiimaha Dabaqyada sare: {amount}",
+    "chargeOn": "1. Goorma la qaadayo khidmaddan",
+    "chargeOnHint": "Calaamadee goorta nidaamku si toos ah ugu darayo khidmaddan biilasha dhulka. Haddii aan waxba la calaamadeyn: shaqaaluhu gacanta ayay ku darayaan (Biil cusub ee bogga dhulka).",
+    "moments": {
+      "registration": "Marka dhulka la diiwaangeliyo",
+      "yearly": "Sannad kasta",
+      "transfer": "Marka dhulka la wareejiyo",
+      "id_card": "Marka kaarka aqoonsiga la daabaco"
+    },
+    "multiplyBy": "2. Intee la qaadayo",
+    "multiplyByHint": "Qaddarka kore waa qiimaha. Calaamadee tirooyinka dhulka ee lagu dhufanayo; haddii aan waxba la calaamadeyn, dhul kasta isla qaddar go'an ayuu bixinayaa. Dhul aan lahayn tiro la calaamadeeyay (0 ama banaan) lama qaado. Marka cabbirka ama dabaqyada dhulku is beddelaan, biilasha aan la bixin waa la raacinayaa.",
+    "factors": {
+      "area": "Bedka dhulka (m²)",
+      "width": "Ballaca (m)",
+      "length": "Dhererka (m)",
+      "storeys": "Dabaqyada sare",
+      "floors": "Dabaqyada",
+      "units": "Guryaha ama qaybaha"
+    },
+    "momentsHint": {
+      "registration": "Hal mar ayaa lagu darayaa, biilka canshuurta ugu horreeya ee dhulka.",
+      "yearly": "Sannadkii hal mar ayaa lagu darayaa, canshuurta sannadlaha ah la socda.",
+      "transfer": "Wareejin kasta hal mar ayaa lagu darayaa, canshuurta shaabadda la socda.",
+      "id_card": "Kaar kasta oo la daabaco hal mar ayaa lagu darayaa, biilka kaarka la socda."
+    },
+    "factorUnits": {
+      "area": "m²",
+      "width": "m ballac",
+      "length": "m dherer",
+      "storeys": "dabaq",
+      "floors": "dabaq",
+      "units": "qaybood"
+    },
+    "formulaExample": "Tusaale guri 12 m × 12 m ah oo leh 2 dabaq oo sare, 3 dabaq iyo 4 guri:"
   },
   "billing": {
     "runsTitle": "Biil-wareegyo",

@@ -3290,7 +3290,40 @@
     },
     "deleteBuildingTypeBody": "It is removed from the land form. Land already saved keeps its kind and price.",
     "buildingTypeDeleted": "Building type deleted.",
-    "upperStoreysLine": "{count, plural, one {# upper storey} other {# upper storeys}} at the Upper Floors price: {amount}"
+    "upperStoreysLine": "{count, plural, one {# upper storey} other {# upper storeys}} at the Upper Floors price: {amount}",
+    "chargeOn": "1. When to charge this fee",
+    "chargeOnHint": "Tick when the system should add this fee to a land's bills by itself. Nothing ticked: staff add it by hand (New bill on the land's page).",
+    "moments": {
+      "registration": "When land is registered",
+      "yearly": "Every year",
+      "transfer": "When land is transferred",
+      "id_card": "When an ID card is printed"
+    },
+    "multiplyBy": "2. How much to charge",
+    "multiplyByHint": "The amount above is the price. Tick the land's numbers to multiply it by; tick nothing to charge the same fixed amount to every land. A land without a ticked number (0 or empty) is not charged. When a land's size or storeys change, its unpaid bills follow.",
+    "factors": {
+      "area": "Land area (m²)",
+      "width": "Width (m)",
+      "length": "Length (m)",
+      "storeys": "Upper storeys",
+      "floors": "Floors",
+      "units": "Flats or units"
+    },
+    "momentsHint": {
+      "registration": "Added once, together with the land's first tax bill.",
+      "yearly": "Added once a year, together with the yearly property tax.",
+      "transfer": "Added once for each transfer, together with the stamp duty.",
+      "id_card": "Added once for each ID card printed, together with the card bill."
+    },
+    "factorUnits": {
+      "area": "m²",
+      "width": "m wide",
+      "length": "m long",
+      "storeys": "storeys",
+      "floors": "floors",
+      "units": "units"
+    },
+    "formulaExample": "Example for a 12 m × 12 m house with 2 upper storeys, 3 floors and 4 flats:"
   },
   "billing": {
     "runsTitle": "Billing runs",

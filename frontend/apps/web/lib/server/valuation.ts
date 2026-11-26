@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { unwrap } from "./action";
+import type { FeeFactor, FeeMoment } from "@/lib/fee-rules";
 
 export interface Grade {
   id: string;
@@ -13,6 +14,10 @@ export interface Grade {
 }
 export interface FeeType extends Grade {
   interval: "monthly" | "quarterly" | "biannual" | "annual" | "one_off";
+  /** When it is billed by itself (fee types you create only). */
+  charge_on: FeeMoment[];
+  /** What its amount is multiplied by. */
+  factors: FeeFactor[];
 }
 
 export async function listGrades() {
@@ -22,7 +27,7 @@ export async function listGrades() {
 
 export async function listFeeTypes() {
   const supabase = await createClient();
-  return unwrap(await supabase.from("fee_types").select("id, code, name_so, name_en, interval, amount, active, sort").order("sort"), "fee types") as FeeType[];
+  return unwrap(await supabase.from("fee_types").select("id, code, name_so, name_en, interval, amount, active, sort, charge_on, factors").order("sort"), "fee types") as FeeType[];
 }
 
 export interface TransferType {
