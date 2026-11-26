@@ -23,7 +23,7 @@ export async function generateMetadata() {
 
 /** Other waiting work not in a job panel (My work covers surveys, transfers and land changes). */
 const TASK_LINKS = {
-  campaigns: "/messages?s=campaigns",
+  campaigns: "/messages?s=history",
   messages_failed: "/messages?f=failed",
 } as const;
 

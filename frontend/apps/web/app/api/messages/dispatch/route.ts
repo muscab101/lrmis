@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { providerFor, smsProvider, type OutgoingMessage } from "@/lib/server/messaging";
+import { emailProvider, providerFor, smsProvider, type OutgoingMessage } from "@/lib/server/messaging";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ function authorised(request: NextRequest) {
  */
 async function dispatch(request: NextRequest) {
   if (!authorised(request)) return NextResponse.json({ code: "UNAUTHENTICATED" }, { status: 401 });
-  if (!smsProvider() && !providerFor("whatsapp")) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
+  if (!smsProvider() && !providerFor("whatsapp") && !emailProvider()) return NextResponse.json({ code: "NOT_CONFIGURED" }, { status: 503 });
   const admin = await createAdminClient();
   const { data, error } = await admin.rpc("messages_claim", { p_limit: BATCH });
   if (error) return NextResponse.json({ code: "INTERNAL" }, { status: 500 });

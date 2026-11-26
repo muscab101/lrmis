@@ -6,6 +6,8 @@ export interface OutgoingMessage {
   to_address: string;
   body: string;
   template_code: string | null;
+  /** Email only: the subject line. */
+  subject?: string | null;
 }
 
 export interface SendResult {
@@ -70,10 +72,44 @@ const whatsappProvider: MessageProvider = {
   },
 };
 
+/** Email through Resend (RESEND_API_KEY + EMAIL_FROM, e.g. "Dhulka <no-reply@your-domain>"). */
+const resendProvider: MessageProvider = {
+  code: "resend",
+  async send(m) {
+    const key = process.env.RESEND_API_KEY;
+    const from = process.env.EMAIL_FROM;
+    if (!key || !from) return { ok: false, error: "email not configured" };
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+      body: JSON.stringify({ from, to: [m.to_address], subject: m.subject ?? "Dhulka", text: m.body }),
+      signal: AbortSignal.timeout(15_000),
+    }).catch((err: Error) => ({ ok: false, status: 0, json: async () => ({ message: err.message }) }) as const);
+    const data = (await res.json().catch(() => ({}))) as { id?: string; message?: string; name?: string };
+    return res.ok && data.id ? { ok: true, ref: data.id } : { ok: false, error: `${res.status} ${data.name ?? ""} ${data.message ?? ""}`.trim() };
+  },
+};
+
+/** Development: prints a line for an email and marks it sent. */
+const emailLogProvider: MessageProvider = {
+  code: "log",
+  async send(m) {
+    console.info(`[email:log] ${m.subject ?? ""} → ${m.to_address.replace(/^(.).*(@.*)$/, "$1•••$2")} (${m.body.length} chars)`);
+    return { ok: true, ref: `log-${m.id.slice(0, 8)}` };
+  },
+};
+
+/** The configured email provider, or null when email is switched off. */
+export function emailProvider(): MessageProvider | null {
+  if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM) return resendProvider;
+  return process.env.NODE_ENV !== "production" ? emailLogProvider : null;
+}
+
 /** Provider for a message's channel, or null when that channel is switched off. */
 export function providerFor(channel: OutgoingMessage["channel"]): MessageProvider | null {
   if (channel === "sms") return smsProvider();
   if (channel === "whatsapp") return process.env.WHATSAPP_TOKEN ? whatsappProvider : process.env.NODE_ENV !== "production" ? logProvider : null;
+  if (channel === "email") return emailProvider();
   return null;
 }
 

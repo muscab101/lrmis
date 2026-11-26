@@ -301,3 +301,17 @@ export const setUserPowersAction = defineAction(
   },
 );
 
+
+/** Limit who a staff member can send messages to: some sections, sectors or neighbourhoods (empty = their whole districts). */
+export const setUserAreasAction = defineAction(
+  "admin.users.areas",
+  z.object({
+    userId: z.uuid(),
+    areas: z.array(z.object({ level: z.enum(["section", "sector", "neighbourhood"]), id: z.uuid() })).max(200),
+  }),
+  async ({ userId, areas }, ctx) => {
+    unwrap(await ctx.supabase.rpc("admin_set_user_areas", { p_user_id: userId, p_areas: areas }), "set messaging areas");
+    revalidatePath(`/[locale]/admin/users/${userId}`, "page");
+    return areas.length;
+  },
+);

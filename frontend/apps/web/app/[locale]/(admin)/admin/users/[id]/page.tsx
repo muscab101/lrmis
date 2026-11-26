@@ -13,8 +13,10 @@ import { Button } from "@dhulka/ui/button";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { listRoles, rolePermissionMap } from "@/lib/server/users";
+import { userAreas } from "@/lib/server/messages";
 import { createClient } from "@/lib/supabase/server";
 import { CashDeskCard } from "./cash-desk-card";
+import { MessagingAreasCard } from "./messaging-areas-card";
 import { UserSecurityPanel } from "./security-panel";
 
 export default async function UserDetailPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ created?: string; tab?: string }> }) {
@@ -143,6 +145,11 @@ export default async function UserDetailPage({ params, searchParams }: { params:
             </Card>
           )}
           <CashDeskCard userId={id} current={(profile.point_of_sale_id as string | null) ?? null} desks={userDesks} canEdit={viewer.can("users.update")} />
+          <MessagingAreasCard
+            userId={id}
+            canEdit={viewer.can("users.update")}
+            initial={(await userAreas(id)).map((a) => ({ level: a.level, id: a.id, code: a.code, name: locale === "so" ? a.name_so : a.name_en }))}
+          />
         </TabsContent>
 
         <TabsContent value="powers">
