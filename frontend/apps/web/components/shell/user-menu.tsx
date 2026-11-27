@@ -13,11 +13,26 @@ import { Camera, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { signOutAction } from "@/app/[locale]/(auth)/actions";
+import { OfficeBadge } from "@/components/shell/office-badge";
 import { ProfilePhotoDialog } from "@/components/shell/profile-photo-dialog";
+import type { Office } from "@/lib/office";
 import { useRouter } from "@/i18n/navigation";
 
 /** The account menu. Citizens sign in with an SMS code, so they have no password or two-factor settings. */
-export function UserMenu({ name, email, photo = null, citizen = false }: { name: string; email: string | null; photo?: string | null; citizen?: boolean }) {
+export function UserMenu({
+  name,
+  email,
+  photo = null,
+  citizen = false,
+  office,
+}: {
+  name: string;
+  email: string | null;
+  photo?: string | null;
+  citizen?: boolean;
+  /** Staff: the office they work for (set by an administrator). */
+  office?: Office | null;
+}) {
   const t = useTranslations("common");
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -32,6 +47,7 @@ export function UserMenu({ name, email, photo = null, citizen = false }: { name:
         <DropdownMenuLabel className="text-foreground">
           <div className="truncate text-sm font-semibold">{name}</div>
           {email && email !== name && <div className="truncate text-xs font-normal text-muted-foreground">{email}</div>}
+          {!citizen && office !== undefined && <OfficeBadge office={office} className="mt-1.5 text-xs font-normal" />}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => setPhotoOpen(true)}>

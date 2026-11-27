@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, printOnPrinter } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, printOnPrinter, completeLand } from "./harness";
 
 // Each role, with only that role, can do its own job — and doesn't get other jobs' pages.
 let db: PGlite;
@@ -72,6 +72,7 @@ describe("every role works on its own", () => {
     );
     const pos = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDN1', 'Hodan office', $1, 'HDN1') returning id`, [hodan]);
     const shift = await asUser(db, u.cashier!, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
+    await completeLand(db);
     const pay = await asUser(db, u.cashier!, (tx) => scalar<{ payment_id: string }>(tx, `select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: parcel, amount: 50, currency: "USD", method: "cash" })]));
     await asUser(db, u.cashier!, (tx) => tx.query(`select public.shift_close($1, 50)`, [shift]));
     await asUser(db, u.finance_manager!, (tx) => tx.query(`select public.shift_approve($1)`, [shift]));
@@ -109,6 +110,7 @@ describe("register land straight from the parcel (no Applications page)", () => 
       ]),
     );
     await expect(asUser(db, u.surveyor!, (tx) => tx.query(`select public.parcel_register($1)`, [land.parcel_id]))).rejects.toThrow(/^PERMISSION_DENIED/);
+    await completeLand(db);
     const r = await asUser(db, u.registrar!, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [land.parcel_id]));
     expect(r.pun).toMatch(/^HDN/);
     const p = await scalar<{ status: string; pun: string }>(db, `select row_to_json(p) from public.parcels p where id = $1`, [land.parcel_id]);

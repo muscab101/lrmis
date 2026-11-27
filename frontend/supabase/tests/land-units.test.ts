@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, completeLand } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -104,15 +104,18 @@ describe("flats building", () => {
 
   it("a flat registers alone and the building follows; a registered flat can't be deleted alone; the rest register all at once", async () => {
     const unit = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = '01'`, [land.parcel_id]);
+    await completeLand(db);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit]));
     await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'not needed any more')`, [unit])), "CONFLICT: unit_follows_land");
     expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "draft", "draft"]);
     expect(await scalar<string>(db, `select status from public.parcels where id = $1`, [land.parcel_id])).toBe("registered");
     await expectError(asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [unit])), "CONFLICT: status");
     for (const u of await scalar<string[]>(db, `select array_agg(id) from public.parcels where parent_id = $1 and status = 'draft'`, [land.parcel_id])) {
+      await completeLand(db);
       await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [u]));
     }
     const other = await create({ layout: "flats", floors: 2, units: flats, house_no: "99" });
+    await completeLand(db);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [other.parcel_id]));
     expect((await unitsOf(other.parcel_id)).map((u) => u.status)).toEqual(["registered", "registered", "registered"]);
     expect((await unitsOf(land.parcel_id)).map((u) => u.status)).toEqual(["registered", "registered", "registered"]);
@@ -213,6 +216,7 @@ describe("changing land not registered yet", () => {
   it("a registered flat's size is fixed and its bill stays", async () => {
     const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "72" });
     const a = await unitId(r.parcel_id, "A");
+    await completeLand(db);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [a]));
     await expectError(edit(a, { own_m2: "100" }), "CONFLICT: units_fixed");
     expect(Number((await taxBill(a))!.total)).toBe(40);
@@ -270,6 +274,7 @@ describe("changing land not registered yet", () => {
     const [one, two] = await unitsOf(r.parcel_id);
     const first = await unitId(r.parcel_id, one!.unit_no);
     const second = await unitId(r.parcel_id, two!.unit_no);
+    await completeLand(db);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [first]));
     await expectError(edit(second, { own_m2: String(Number(two!.own_m2) + 1) }), "CONFLICT: compound_started");
     await expectError(remove(second), "CONFLICT: compound_started");
@@ -285,6 +290,7 @@ describe("a registered flat", () => {
     ];
     const r = await create({ layout: "flats", floors: 1, units: flats, property_type: "unit_test", house_no: "81" });
     const a = await scalar<string>(db, `select id from public.parcels where parent_id = $1 and unit_no = 'A'`, [r.parcel_id]);
+    await completeLand(db);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_register($1)`, [a]));
     const edit = (p: Record<string, unknown>) => asUser(db, admin, (tx) => tx.query(`select public.parcel_update_details($1, $2)`, [a, JSON.stringify(p)]));
     await edit({ house_no: "81-A1", plot_no: "P-7" });

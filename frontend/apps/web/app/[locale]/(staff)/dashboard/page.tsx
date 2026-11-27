@@ -15,6 +15,8 @@ import { Link } from "@/i18n/navigation";
 import { requireStaff } from "@/lib/server/auth";
 import { dashboardKpis, dashboardPeriod } from "@/lib/server/reports";
 import type { ApplicationStatus } from "@dhulka/core/schemas";
+import { OfficeBadge } from "@/components/shell/office-badge";
+import { userOffice } from "@/lib/server/office";
 
 export async function generateMetadata() {
   const t = await getTranslations("dashboard");
@@ -52,7 +54,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   const range = (RANGES as readonly number[]).includes(Number((await searchParams).range)) ? Number((await searchParams).range) : 30;
 
   // "My work" (each job's waiting work) is on the Incomplete page.
-  const [kpis, period] = await Promise.all([dashboardKpis(), dashboardPeriod(range)]);
+  const [kpis, period, office] = await Promise.all([dashboardKpis(), dashboardPeriod(range), userOffice()]);
 
   const usd = (n: number, compact = false) =>
     format.number(Number(n), { style: "currency", currency: "USD", maximumFractionDigits: compact ? 1 : 0, notation: compact ? "compact" : "standard" });
@@ -86,6 +88,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
             {new Intl.DateTimeFormat(locale === "so" ? "so-SO" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date())}
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{t("greeting", { name: firstName })}</h1>
+          <OfficeBadge office={office} className="mt-1" />
           <p className="text-muted-foreground mt-0.5 text-sm">{t("periodSubtitle", { range: rangeLabel })}</p>
           <div className="mt-1.5">
             <LiveRefresh label={t("updatedAt", { time: format.dateTime(new Date(), { hour: "2-digit", minute: "2-digit", second: "2-digit" }) })} />

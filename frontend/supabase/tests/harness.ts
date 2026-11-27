@@ -212,3 +212,28 @@ export async function printOnPrinter(db: PGlite, user: string, document: string)
   const claim = await as(db, "anon", {}, (tx) => scalar<{ job: { id: string } }>(tx, `select public.agent_claim_job($1, '10.0.0.5')`, [key]));
   await as(db, "anon", {}, (tx) => tx.query(`select public.agent_report_job($1, $2, true)`, [key, claim.job.id]));
 }
+
+/**
+ * Fill in what land needs before it can be registered (0294), for tests whose land is made with only the basics:
+ * House No, property type, land use, size, storeys, and each owner's phone and owner type. Only missing details are
+ * filled; nothing already set changes.
+ */
+export async function completeLand(db: PGlite): Promise<void> {
+  await db.query(`insert into public.owner_types (name_so, name_en) select 'Qof', 'Person' where not exists (select 1 from public.owner_types)`);
+  await db.query(`
+    update public.parties pa
+       set owner_type_id = coalesce(pa.owner_type_id, (select id from public.owner_types order by name_en limit 1)),
+           phone = coalesce(nullif(trim(coalesce(pa.phone, '')), ''), '+2526' || lpad((abs(hashtext(pa.id::text)) % 100000000)::text, 8, '0'))
+     where exists (select 1 from public.parcel_owners po where po.party_id = pa.id and po.valid_to is null)
+        or exists (select 1 from public.application_parties ap where ap.party_id = pa.id)`);
+  await db.query(`
+    update public.parcels p
+       set house_no = case when p.parent_id is null then coalesce(nullif(trim(coalesce(p.house_no, '')), ''), 'T' || substr(p.id::text, 1, 6)) else p.house_no end,
+           property_type = case when p.parent_id is null then coalesce(p.property_type, (select code from public.property_grades where active order by code limit 1)) else p.property_type end,
+           land_use = coalesce(p.land_use, 'residential'),
+           plot_width_m = case when p.parent_id is null then coalesce(p.plot_width_m, 10) else p.plot_width_m end,
+           plot_length_m = case when p.parent_id is null then coalesce(p.plot_length_m, 10) else p.plot_length_m end,
+           own_m2 = case when p.parent_id is not null then coalesce(nullif(p.own_m2, 0), 50) else p.own_m2 end,
+           upper_storeys = case when p.property_type = 'storey' and p.layout = 'house' and p.parent_id is null and coalesce(p.upper_storeys, 0) < 1 then 1 else p.upper_storeys end
+     where p.status in ('draft', 'surveyed', 'verified') and p.deleted_at is null`);
+}

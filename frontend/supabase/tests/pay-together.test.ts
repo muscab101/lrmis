@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { as, asService, asUser, bootstrapSuperAdmin, createAuthUser, createDb, scalar, square, testPrinter } from "./harness";
+import { as, asService, asUser, bootstrapSuperAdmin, createAuthUser, createDb, scalar, square, testPrinter, completeLand } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -76,6 +76,7 @@ describe("paying several bills together", () => {
   });
 
   it("staff who take payments can still collect for partial land online; it registers once paid", async () => {
+    await completeLand(db);
     const intent = await asUser(db, admin, (tx) => scalar<{ intent_id: string; amount: number }>(tx, `select public.payment_intent_create_many($1::uuid[], 'test', '+252610009977')`, [[partBill]]));
     expect(Number(intent.amount)).toBe(12);
     await db.query(`update public.payment_intents set provider_ref = 'tp-2' where id = $1`, [intent.intent_id]);

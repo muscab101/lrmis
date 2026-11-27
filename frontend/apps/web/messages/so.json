@@ -363,7 +363,8 @@
       "category": "Dooro nooc.",
       "lang": "Dooro Soomaali ama Ingiriis.",
       "areas": "Aagaggaas lama kaydin karo.",
-      "channel": "Dooro SMS ama iimayl."
+      "channel": "Dooro SMS ama iimayl.",
+      "missing": "Buuxi kuwan ka hor diiwaangelinta: {list}."
     },
     "blockers": {
       "demolished": "dhulka waa la dumiyay",
@@ -377,6 +378,15 @@
       "not_registered": "lama diiwaangelin",
       "transfer_open": "wareejin furan",
       "lease_active": "kiro socota"
+    },
+    "missing": {
+      "house_no": "Lambarka Guriga",
+      "property_type": "nooca hantida",
+      "land_use": "isticmaalka dhulka",
+      "size": "ballaca iyo dhererka",
+      "upper_storeys": "dabaqyada sare",
+      "owner_phone": "telefoonka milkiilaha",
+      "owner_type": "nooca milkiilaha"
     }
   },
   "validation": {
@@ -2855,7 +2865,9 @@
       "landType": "Nooca dhulka",
       "upperStoreys": "Dabaqyada sare",
       "upperStoreysEditHint": "Dabaqyada ka sarreeya dabaqa hoose (0 haddii aysan jirin). Mid kasta waxaa lagu biilaa qiimaha Dabaqyada sare isla biilka.",
-      "sizeFromRoof": "Ballaca {w} m iyo dhererka {l} m waxaa laga qaaday saqafka. Beddel haddii dhulku ka weyn yahay guriga."
+      "sizeFromRoof": "Ballaca {w} m iyo dhererka {l} m waxaa laga qaaday saqafka. Beddel haddii dhulku ka weyn yahay guriga.",
+      "ownerType": "Nooca milkiilaha",
+      "ownerTypeHint": "Milkiilaha (milkiilayaasha) foomkan lagu qoray. Waa loo baahan yahay si dhulka loo diiwaangeliyo."
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",
@@ -7525,5 +7537,15 @@
     },
     "none": "Waxba lama tirtirin",
     "noneBody": "Dhulka, milkiilayaasha, isticmaalayaasha iyo goobaha la tirtiray halkan ayay ka muuqdaan."
+  },
+  "office": {
+    "assigned": "Xafiiska loo xilsaaray",
+    "head_office": "Xafiiska Dhexe",
+    "district": "Xafiiska Degmada {name}",
+    "section": "Qaybta {code} {name}",
+    "sector": "Laanta {code} {name}",
+    "neighbourhood": "Xaafadda {code} {name}",
+    "more": "+{n} kale",
+    "adminOnly": "Kaliya maamule ayaa beddeli kara."
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { listOwnerTypesAction, type OwnerTypeOption } from "@/app/[locale]/(staff)/owners/actions";
 import type { AppError } from "@dhulka/core/errors";
 import { LAND_USES } from "@dhulka/core/schemas";
 import { Button } from "@dhulka/ui/button";
@@ -102,8 +103,14 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
     landUse: "residential",
     ownerName: "",
     ownerPhone: "",
+    ownerType: "",
     note: "",
   });
+  // Owner types (Valuation → Owner types): registering needs one for every owner.
+  const [ownerTypes, setOwnerTypes] = useState<OwnerTypeOption[]>([]);
+  useEffect(() => {
+    void listOwnerTypesAction({}).then((r) => r.ok && setOwnerTypes((r.data ?? []).filter((o) => o.active)));
+  }, []);
   const [layout, setLayout] = useState<LandLayout>("house");
   // The building type chosen (Valuation → Building types): it sets the kind of land and the price type.
   const [buildingType, setBuildingType] = useState("");
@@ -253,7 +260,17 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
   const plotSize = useMemo(() => ({ width: num(f.width), length: num(f.length) }), [f.width, f.length]);
 
   const save = async () => {
-    if (!f.grade) return setError({ code: "VALIDATION", requestId: "", fieldErrors: { propertyType: ["validation.required"] } });
+    // Everything registering needs is asked here (0294): house number, type, size, storeys, owner phone and type.
+    const need: Record<string, string[]> = {};
+    if (!f.grade) need.propertyType = ["validation.required"];
+    if (!f.houseNo) need.houseNo = ["validation.required"];
+    if (!(num(f.width) > 0)) need.plotWidthM = ["validation.required"];
+    if (!(num(f.length) > 0)) need.plotLengthM = ["validation.required"];
+    if (!owner && !f.ownerType) need.ownerType = ["validation.required"];
+    if (f.grade === "storey" && layout === "flats" && unitsValue.ownership === "one" && !(Math.floor(num(unitsValue.upper)) >= 1))
+      need.upperStoreys = ["validation.required"];
+    if (!owner && layout === "house" && !f.ownerPhone.trim()) need.ownerPhone = ["validation.required"];
+    if (Object.keys(need).length) return setError({ code: "VALIDATION", requestId: "", fieldErrors: need });
     setSaving(true);
     setError(null);
     // A storey building with one owner is one land and one invoice: the base plus its upper storeys.
@@ -281,6 +298,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             managerName: layout === "flats" && !owner ? unitsValue.managerName : "",
             managerPhone: layout === "flats" && !owner ? unitsValue.managerPhone : "",
             split: unitsValue.split,
+            ownerTypeId: owner ? null : f.ownerType || null,
             units: unitsValue.units.map((u, i) => ({
               no: u.no,
               floor: layout === "flats" ? num(u.floor) : null,
@@ -319,6 +337,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             ownerName: merged ? f.ownerName : owner ? owner.full_name : oneOwnerBuilding ? unitsValue.managerName : f.ownerName,
             ownerPhone: merged ? f.ownerPhone : owner ? (owner.phone ?? "") : oneOwnerBuilding ? unitsValue.managerPhone : f.ownerPhone,
             upperStoreys: oneOwnerBuilding ? Math.max(Math.floor(num(unitsValue.upper)) || 0, 0) : 0,
+            ownerTypeId: owner ? null : f.ownerType || null,
             note: f.note,
           });
     setSaving(false);
@@ -414,6 +433,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
           id="houseNo"
           label={ta("houseNo")}
           error={fe("houseNo")}
+          required
           hint={
             !neighbourhood
               ? t("houseNoPickPlace")
@@ -496,6 +516,19 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             ))}
           </NativeSelect>
         </Field>
+        {/* The owner type of the owner(s) entered below; an owner chosen before already has theirs. */}
+        {!owner && (
+          <Field id="ownerType" label={t("ownerType")} hint={t("ownerTypeHint")} error={fe("ownerType")} required>
+            <NativeSelect value={f.ownerType} onChange={set("ownerType")}>
+              <option value="">{ta("choose")}</option>
+              {ownerTypes.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {locale === "so" ? o.name_so : o.name_en}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -528,7 +561,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
       </div>
 
       {layout === "flats" ? (
-        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} buildingPrice={f.grade ? priceOf(f.grade) : null} chooseOwnership={f.grade !== "storey"} />
+        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} buildingPrice={f.grade ? priceOf(f.grade) : null} chooseOwnership={f.grade !== "storey"} storeysError={fe("upperStoreys")} />
       ) : layout === "compound" ? (
         <LandUnitsInputs
           layout={layout}
@@ -563,6 +596,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             label={t("ownerPhone")}
             hint={t("ownerPhoneHint")}
             error={fe("ownerPhone")}
+            required
           >
             <Input
               type="tel"

@@ -17,6 +17,8 @@ import { userAreas } from "@/lib/server/messages";
 import { createClient } from "@/lib/supabase/server";
 import { CashDeskCard } from "./cash-desk-card";
 import { MessagingAreasCard } from "./messaging-areas-card";
+import { OfficeBadge } from "@/components/shell/office-badge";
+import { userOffice } from "@/lib/server/office";
 import { UserSecurityPanel } from "./security-panel";
 
 export default async function UserDetailPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ created?: string; tab?: string }> }) {
@@ -83,6 +85,7 @@ export default async function UserDetailPage({ params, searchParams }: { params:
         }
         description={
           <>
+            <OfficeBadge office={await userOffice(id)} className="mb-1 flex" />
             {profile.email} · {t("lastLogin")}: {profile.last_login_at ? format.dateTime(new Date(profile.last_login_at), { dateStyle: "medium", timeStyle: "short" }) : t("never")}
           </>
         }

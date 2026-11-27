@@ -260,6 +260,8 @@ export const addFieldLandAction = defineAction(
     ownerId: z.uuid().nullable().default(null),
     ownerName: z.string().trim().max(200, "validation.too_long").default(""),
     ownerPhone: optionalPhone,
+    /** The owner type (Valuation → Owner types) for the owner this form creates. */
+    ownerTypeId: z.uuid().nullable().default(null),
     /** A storey building with one owner: how many storeys above the ground floor (billed on the same invoice). */
     upperStoreys: z.number().int("validation.upper_storeys").min(0, "validation.upper_storeys").max(100, "validation.upper_storeys").default(0),
     note: text(400),
@@ -285,6 +287,7 @@ export const addFieldLandAction = defineAction(
             owner_id: v.ownerId,
             owner_name: v.ownerName,
             owner_phone: v.ownerPhone,
+            owner_type_id: v.ownerTypeId,
             upper_storeys: v.upperStoreys,
             geom: v.drawnShape,
             note: v.note,
@@ -365,6 +368,8 @@ export const addLandWithUnitsAction = defineAction(
     managerName: z.string().trim().max(200, "validation.too_long").default(""),
     managerPhone: optionalPhone,
     split: z.enum(["equal", "by_size"]),
+    /** The owner type for every owner this form creates (flats, houses, the manager). */
+    ownerTypeId: z.uuid().nullable().default(null),
     units: z
       .array(
         z.object({
@@ -404,6 +409,7 @@ export const addLandWithUnitsAction = defineAction(
             manager_name: v.managerName,
             manager_phone: v.managerPhone,
             shared_split: v.split,
+            owner_type_id: v.ownerTypeId,
             units: v.units.map((u) => ({
               unit_no: u.no,
               floor: u.floor,

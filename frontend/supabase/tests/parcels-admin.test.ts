@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createAuthUser, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createAuthUser, createDb, createStaff, scalar, square, completeLand } from "./harness";
 
 let db: PGlite;
 let hodan: string;
@@ -87,6 +87,7 @@ describe("deleting land", () => {
       `insert into public.invoices (number, parcel_id, district_id, fee_type_id, period, issue_date, due_date, total) values (private.invoice_number(2026), $1, $2, $3, '2026', current_date, current_date + 30, 40) returning id`,
       [reg, hodan, tax],
     );
+    await completeLand(db);
     await db.query(`select private.record_payment(jsonb_build_object('parcel_id', $1::text, 'invoice_id', $2::text, 'method', 'cash', 'amount', 10))`, [reg, inv]);
     await asUser(db, admin, (tx) => tx.query(`select public.parcel_delete($1, 'Wrong house entirely')`, [reg]));
     expect(await scalar<boolean>(db, `select deleted_at is not null from public.parcels where id = $1`, [reg])).toBe(true);
@@ -121,6 +122,7 @@ describe("check if it exists", () => {
     await expectError(asUser(db, registrar, (tx) => tx.query(`select public.parcel_register($1)`, [part])), "CONFLICT: site_not_found");
     await asUser(db, registrar, (tx) => tx.query(`select public.parcel_request_site_check($1)`, [part]));
     await asUser(db, surveyor, (tx) => tx.query(`select public.parcel_confirm_site($1, true)`, [part]));
+    await completeLand(db);
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [part]));
     expect(r.pun).toMatch(/^HDN/);
   });
@@ -135,6 +137,7 @@ describe("registering land that was started through an old application", () => {
     const app = await scalar<string>(db, `select application_id from public.parcels where id = $1`, [part]);
     await db.query(`update public.property_grades set amount = 1 where code = (select code from public.property_grades order by sort limit 1)`);
     await db.query(`update public.parcels set property_type = (select code from public.property_grades order by sort limit 1) where id = $1`, [part]);
+    await completeLand(db);
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [part]));
     expect(r.pun).toMatch(/^HDN/);
     expect(await scalar<string>(db, `select status::text from public.applications where id = $1`, [app])).toBe("approved");
@@ -179,6 +182,7 @@ describe("registered land that owes money goes to the district's cashier; paying
     const part = await parcel(false);
     await db.query(`update public.property_grades set amount = 1 where code = (select code from public.property_grades order by sort limit 1)`);
     await db.query(`update public.parcels set property_type = (select code from public.property_grades order by sort limit 1) where id = $1`, [part]);
+    await completeLand(db);
     const r = await asUser(db, registrar, (tx) => scalar<{ pun: string }>(tx, `select public.parcel_register($1)`, [part]));
     const owed = Number(await scalar<string>(db, `select sum(balance) from public.invoices where parcel_id = $1 and status in ('issued','partially_paid')`, [part]));
     expect(owed).toBeGreaterThan(0);
@@ -189,6 +193,7 @@ describe("registered land that owes money goes to the district's cashier; paying
     // The cashier takes the whole amount.
     const pos = await scalar<string>(db, `insert into public.points_of_sale (code, name, district_id, receipt_prefix) values ('HDNC', 'Hodan cash', $1, 'HDNC') returning id`, [hodan]);
     const shift = await asUser(db, cashier, (tx) => scalar<string>(tx, `select public.shift_open($1, 0)`, [pos]));
+    await completeLand(db);
     await asUser(db, cashier, (tx) => tx.query(`select public.cashier_take_payment($1, $2)`, [shift, JSON.stringify({ parcel_id: part, amount: owed, currency: "USD", method: "cash" })]));
     expect(await scalar<number>(db, `select count(*)::int from public.invoices where parcel_id = $1 and status in ('issued','partially_paid')`, [part])).toBe(0);
     expect(await scalar<number>(db, `select count(*)::int from public.issued_documents where parcel_id = $1 and type = 'certificate' and status = 'valid'`, [part])).toBe(1);

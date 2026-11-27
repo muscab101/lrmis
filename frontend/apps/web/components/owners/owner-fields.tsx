@@ -54,7 +54,7 @@ export function OwnerFields({
         {t("ownerDetails")}
       </legend>
       <div className="grid items-start gap-3 sm:grid-cols-2">
-        <Field id="o-type" label={t("ownerType")} error={fe("ownerTypeId")}>
+        <Field id="o-type" label={t("ownerType")} error={fe("ownerTypeId")} required>
           <NativeSelect
             value={value.ownerTypeId ?? ""}
             onChange={(e) => set("ownerTypeId", e.target.value)}
@@ -87,7 +87,7 @@ export function OwnerFields({
         >
           <Input allow="letters" {...name("fullName")} />
         </Field>
-        <Field id="o-phone" label={t("phone")} hint={t("phoneHint")} error={fe("phone")}>
+        <Field id="o-phone" label={t("phone")} hint={t("phoneHint")} error={fe("phone")} required>
           <Input
             type="tel"
             inputMode="tel"

@@ -9,7 +9,9 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { TestingBanner } from "@/components/activity/test-login";
 import { WorkRecorder } from "@/components/activity/work-recorder";
 import { CommandMenu } from "./command-menu";
+import type { Office } from "@/lib/office";
 import { EnvBadge } from "./env-badge";
+import { OfficeBadge } from "./office-badge";
 import { LocaleSwitch } from "./locale-switch";
 import { visibleNav } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
@@ -28,12 +30,14 @@ interface AppShellProps {
   recording: boolean;
   /** The user's name while a super admin is testing this account. */
   testingAs?: string | null;
+  /** The office the user works for (shown next to their name). */
+  office?: Office | null;
   children: ReactNode;
 }
 
 const COLLAPSE_KEY = "dhulka.sidebar.collapsed";
 
-export function AppShell({ permissions, user, env, testingAs, recording, children }: AppShellProps) {
+export function AppShell({ permissions, user, env, testingAs, recording, office = null, children }: AppShellProps) {
   const groups = useMemo(() => {
     const allowed = new Set(permissions);
     return visibleNav((p) => allowed.has(p));
@@ -95,12 +99,13 @@ export function AppShell({ permissions, user, env, testingAs, recording, childre
             <EnvBadge env={env} />
           </div>
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+            <OfficeBadge office={office} compact className="me-1 hidden max-w-60 md:inline-flex" />
             {recording && <WorkRecorder userId={user.id} />}
             <LocaleSwitch />
             <ThemeToggle />
             <NotificationsBell userId={user.id} />
             <div className="ms-1">
-              <UserMenu name={user.name} email={user.email} photo={user.photo} />
+              <UserMenu name={user.name} email={user.email} photo={user.photo} office={office} />
             </div>
           </div>
         </header>

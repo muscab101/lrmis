@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, completeLand } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -61,6 +61,7 @@ describe("partial land pays, and registers by itself once its bills are paid", (
   });
 
   it("paid in full: the land is registered with a PUN, and its owner with it", async () => {
+    await completeLand(db);
     await take(part, partBill, 7);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).toBe("paid");
     const l = await land(part);

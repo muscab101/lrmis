@@ -30,6 +30,11 @@ export function useErrorMessage() {
         const list = detail.slice(8).split(",").map((b) => (te.has(`blockers.${b}`) ? te(`blockers.${b}`) : b));
         return te("details.blocked", { list: list.join(", ") });
       }
+      // Land not ready to register: "missing:house_no,owner_type" → the things still to fill in.
+      if (detail.startsWith("missing:")) {
+        const list = detail.slice(8).split(",").map((m) => (te.has(`missing.${m}`) ? te(`missing.${m}`) : m));
+        return te("details.missing", { list: list.join(", ") });
+      }
       if (detail && te.has(`details.${detail}`)) return te(`details.${detail}`, values);
       return te.has(`codes.${error.code}`) ? te(`codes.${error.code}`, values) : te("codes.UNKNOWN", values);
     },

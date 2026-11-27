@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asService, asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square } from "./harness";
+import { asService, asUser, bootstrapSuperAdmin, createDb, createStaff, scalar, square, completeLand } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -19,6 +19,7 @@ const today = new Date().toISOString().slice(0, 10);
 const base = (house: string) => ({ district_id: district, neighbourhood_id: neighbourhood, pin_lon: 45.3, pin_lat: 2.04, plot_width_m: 10, plot_length_m: 20, property_type: "brick", land_use: "residential", house_no: house });
 const house = async (no: string, owner = "Owner " + no) => {
   const r = await asUser(db, surveyor, (tx) => scalar<{ parcel_id: string; pun: string }>(tx, `select public.field_land_create($1)`, [JSON.stringify({ ...base(no), owner_name: owner })]));
+  await completeLand(db);
   await asUser(db, registrar, (tx) => tx.query(`select public.parcel_register($1)`, [r.parcel_id]));
   return r;
 };
@@ -28,6 +29,7 @@ const units = async (layout: "flats" | "compound", no: string) => {
       JSON.stringify({ ...base(no), layout, floors: 2, units: [{ unit_no: "01", floor: 0, own_m2: 50, owner_name: `Unit One ${no}` }, { unit_no: "02", floor: 1, own_m2: 50, owner_name: `Unit Two ${no}` }] }),
     ]),
   );
+  await completeLand(db);
   await asUser(db, registrar, (tx) => tx.query(`select public.parcel_register($1)`, [r.parcel_id]));
   return r;
 };

@@ -69,6 +69,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
     });
   }, [dialog, parcel.id]);
   const apartment = !!info && isApartmentType(info.propertyType, info.types);
+  // Upper storeys only mean something for a storey building (or a one-owner apartment).
+  const storeyed = !!info && (info.propertyType === "storey" || info.propertyType === "apartment");
   const locked = !!parcel.locked_at;
   const partial = parcel.status === "draft" || parcel.status === "surveyed" || parcel.status === "verified";
   const canDelete = !!can.delete && !locked;
@@ -182,8 +184,25 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
           if (!partial || !info || sizeKey(info) === sizeBefore) return;
           void parcelBillCheckAction({ id: parcel.id }).then((r) => r.ok && r.data && setBill(r.data));
         }}
-        submit={() =>
-          updateParcelDetailsAction({
+        submit={() => {
+          // Everything registering needs must be filled in (0294); the database refuses to register without it too.
+          const need: Record<string, string[]> = {};
+          if (!v.houseNo && !info?.unit) need.houseNo = ["validation.required"];
+          if (info) {
+            const sized = !info.unit && (partial || info.registeredSize);
+            if (sized && !info.propertyType) need.propertyType = ["validation.required"];
+            if (sized && !(Number(info.widthM) > 0)) need.widthM = ["validation.required"];
+            if (sized && !(Number(info.lengthM) > 0)) need.lengthM = ["validation.required"];
+            if (info.unit?.partial && !(Number(info.unit.ownM2) > 0)) need.ownM2 = ["validation.required"];
+            if (info.propertyType === "storey" && info.upperStoreys !== null && !(Math.floor(Number(info.upperStoreys)) >= 1))
+              need.upperStoreys = ["validation.required"];
+            if (info.ownerDetails) {
+              if (!info.ownerDetails.input.ownerTypeId) need["owner.ownerTypeId"] = ["validation.required"];
+              if (!(info.ownerDetails.input.phone ?? "").trim()) need["owner.phone"] = ["validation.required"];
+            } else if (info.owner && !info.owner.phone.trim()) need.ownerPhone = ["validation.required"];
+          }
+          if (Object.keys(need).length) return Promise.resolve({ ok: false as const, error: { code: "VALIDATION" as const, requestId: "", fieldErrors: need } });
+          return updateParcelDetailsAction({
             id: parcel.id,
             ...v,
             ...(info
@@ -191,7 +210,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   ...(partial || info.registeredSize ? { propertyType: info.propertyType } : {}),
                   ...(info.unit ? {} : { flatNo: apartment ? info.flatNo : "" }),
                   landUse: info.landUse,
-                  ...(info.upperStoreys !== null ? { upperStoreys: info.upperStoreys } : {}),
+                  // Another type has no upper storeys: they go back to 0 so they are no longer billed.
+                  ...(info.upperStoreys !== null ? { upperStoreys: storeyed ? info.upperStoreys : "0" } : {}),
                   ...(info.unit
                     ? info.unit.partial
                       ? { ownM2: info.unit.ownM2, ...(info.unit.flats ? { unitFloor: info.unit.floor } : {}) }
@@ -212,8 +232,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                       : {}),
                 }
               : {}),
-          })
-        }
+          });
+        }}
       >
         {(fe) => (
           <div className="space-y-4">
@@ -224,7 +244,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                 {t("editLand")}
               </legend>
               <div className="grid items-start gap-3 sm:grid-cols-2">
-                <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")}>
+                <Field id={`house-${parcel.id}`} label={t("houseNo")} error={fe("houseNo")} required={!info?.unit}>
                   <HouseNoSelect source={{ parcelId: parcel.id }} value={v.houseNo} onChange={(houseNo) => setV({ ...v, houseNo })} />
                 </Field>
                 <Field id={`plot-${parcel.id}`} label={t("plotNo")} error={fe("plotNo")}>
@@ -232,7 +252,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                 </Field>
                 {/* Registered land keeps the size and type its bills and certificate were made from. */}
                 {(partial || info?.registeredSize) && (
-                  <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")}>
+                  <Field id={`type-${parcel.id}`} label={ta("propertyType")} error={fe("propertyType")} required>
                     <NativeSelect value={info?.propertyType ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, propertyType: e.target.value })}>
                       <option value="">{ta("choose")}</option>
                       {(info?.types ?? [])
@@ -255,8 +275,8 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                   </NativeSelect>
                 </Field>
                 {/* Storeys above the ground floor: billed on the same invoice at the Upper Floors price. */}
-                {info && info.upperStoreys !== null && (
-                  <Field id={`storeys-${parcel.id}`} label={tf("upperStoreys")} hint={tf("upperStoreysEditHint")} error={fe("upperStoreys")}>
+                {info && info.upperStoreys !== null && storeyed && (
+                  <Field id={`storeys-${parcel.id}`} label={tf("upperStoreys")} hint={tf("upperStoreysEditHint")} error={fe("upperStoreys")} required={info.propertyType === "storey"}>
                     <Input type="number" inputMode="numeric" min={0} max={100} value={info.upperStoreys} onChange={(e) => setInfo({ ...info, upperStoreys: e.target.value })} />
                   </Field>
                 )}
@@ -268,7 +288,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                 {info?.unit
                   ? info.unit.partial && (
                       <>
-                        <Field id={`own-${parcel.id}`} label={tu("ownM2")} hint={t("rebillHint")} error={fe("ownM2")}>
+                        <Field id={`own-${parcel.id}`} label={tu("ownM2")} hint={t("rebillHint")} error={fe("ownM2")} required>
                           <Input type="number" inputMode="decimal" min={0} step="0.01" value={info.unit.ownM2} onChange={(e) => setInfo({ ...info, unit: { ...info.unit!, ownM2: e.target.value } })} />
                         </Field>
                         {info.unit.flats && (
@@ -280,10 +300,10 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                     )
                   : (partial || info?.registeredSize) && (
                       <>
-                        <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")}>
+                        <Field id={`w-${parcel.id}`} label={ta("plotWidth")} error={fe("widthM")} required>
                           <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.widthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, widthM: e.target.value })} />
                         </Field>
-                        <Field id={`l-${parcel.id}`} label={ta("plotLength")}>
+                        <Field id={`l-${parcel.id}`} label={ta("plotLength")} error={fe("lengthM")} required>
                           <Input type="number" inputMode="decimal" min={0} step="0.1" value={info?.lengthM ?? ""} disabled={!info} onChange={(e) => info && setInfo({ ...info, lengthM: e.target.value })} />
                         </Field>
                         {/* The size worked out as it is typed: the bill is made from it. */}
@@ -313,7 +333,7 @@ export function ParcelRowActions({ parcel, can, onDetail = false }: { parcel: Pa
                     <Field id={`owner-${parcel.id}`} label={tf("ownerName")} error={fe("ownerName")}>
                       <Input allow="letters" value={info.owner.name} maxLength={120} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, name: e.target.value } })} />
                     </Field>
-                    <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")}>
+                    <Field id={`phone-${parcel.id}`} label={tf("ownerPhone")} error={fe("ownerPhone")} required>
                       <Input type="tel" value={info.owner.phone} maxLength={30} onChange={(e) => setInfo({ ...info, owner: { ...info.owner!, phone: e.target.value } })} />
                     </Field>
                   </div>

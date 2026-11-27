@@ -64,6 +64,7 @@ export function FlatsInputs({
   prices,
   buildingPrice = null,
   chooseOwnership = false,
+  storeysError,
 }: {
   landArea: number;
   value: UnitsValue;
@@ -75,6 +76,8 @@ export function FlatsInputs({
   buildingPrice?: number | null;
   /** An apartment: ask whether one owner owns it all, or each flat has its own owner (with a manager). */
   chooseOwnership?: boolean;
+  /** The storeys box's error (a storey building needs at least 1 to be registered). */
+  storeysError?: string;
 }) {
   const t = useTranslations("parcels.flats");
   const tu = useTranslations("parcels.landUnits");
@@ -135,7 +138,7 @@ export function FlatsInputs({
       )}
       {one && (
         <div className="max-w-sm">
-          <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")}>
+          <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")} error={storeysError} required={!chooseOwnership}>
             <Input type="number" inputMode="numeric" min={0} max={100} value={value.upper} onChange={(e) => onChange({ ...value, upper: e.target.value })} />
           </Field>
         </div>

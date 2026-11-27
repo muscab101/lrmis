@@ -363,7 +363,8 @@
       "category": "Choose a category.",
       "lang": "Choose Somali or English.",
       "areas": "Those areas can't be saved.",
-      "channel": "Choose SMS or email."
+      "channel": "Choose SMS or email.",
+      "missing": "Fill these in before registering: {list}."
     },
     "blockers": {
       "demolished": "the land is demolished",
@@ -377,6 +378,15 @@
       "not_registered": "not registered",
       "transfer_open": "open transfer",
       "lease_active": "active lease"
+    },
+    "missing": {
+      "house_no": "House No",
+      "property_type": "property type",
+      "land_use": "land use",
+      "size": "width and length",
+      "upper_storeys": "upper storeys",
+      "owner_phone": "owner's phone",
+      "owner_type": "owner type"
     }
   },
   "validation": {
@@ -2855,7 +2865,9 @@
       "landType": "Land type",
       "upperStoreys": "Upper storeys",
       "upperStoreysEditHint": "Storeys above the ground floor (0 if none). Each one is billed at the Upper Floors price on the same invoice.",
-      "sizeFromRoof": "Width {w} m and length {l} m taken from the roof. Change them if the plot is bigger than the house."
+      "sizeFromRoof": "Width {w} m and length {l} m taken from the roof. Change them if the plot is bigger than the house.",
+      "ownerType": "Owner type",
+      "ownerTypeHint": "For the owner(s) entered on this form. Needed to register the land."
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",
@@ -7525,5 +7537,15 @@
     },
     "none": "Nothing deleted",
     "noneBody": "Deleted land, owners, users and places show here."
+  },
+  "office": {
+    "assigned": "Assigned office",
+    "head_office": "Head Office",
+    "district": "{name} District Office",
+    "section": "Section {code} {name}",
+    "sector": "Sector {code} {name}",
+    "neighbourhood": "Neighbourhood {code} {name}",
+    "more": "+{n} more",
+    "adminOnly": "Only an administrator can change it."
   }
 }

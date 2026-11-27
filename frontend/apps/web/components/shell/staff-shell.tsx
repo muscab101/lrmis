@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { WELCOME_COOKIE } from "@/lib/welcome";
 import { publicEnv } from "@/lib/env";
 import type { Viewer } from "@/lib/server/auth";
+import { userOffice } from "@/lib/server/office";
 import { profilePhotoUrl } from "@/lib/server/profile-photo";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "./app-shell";
@@ -18,9 +19,10 @@ export async function StaffShell({ viewer, children }: { viewer: Viewer; childre
   // Just signed in: the welcome screen covers the first paint, then lifts away.
   const welcome = (await cookies()).get(WELCOME_COOKIE)?.value === "1";
   // Staff activity recording can be switched off in Settings (security.staff_recording): then no recorder runs.
-  const [photo, recording] = await Promise.all([
+  const [photo, recording, office] = await Promise.all([
     profilePhotoUrl(viewer.profile.avatar_path),
     createClient().then(async (s) => (await s.rpc("staff_recording_on")).data === true),
+    userOffice(),
   ]);
   return (
     <>
@@ -36,6 +38,7 @@ export async function StaffShell({ viewer, children }: { viewer: Viewer; childre
         }}
         env={env}
         recording={recording}
+        office={office}
       >
         {children}
       </AppShell>
