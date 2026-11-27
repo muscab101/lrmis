@@ -3988,7 +3988,29 @@
     "bankField_branch": "Laanta",
     "bankField_swift": "SWIFT",
     "servedBy": "Waxaa adeegay",
-    "servedOnline": "Online"
+    "servedOnline": "Online",
+    "anyStatus": "Xaalad kasta",
+    "anyMethod": "Hab kasta",
+    "channel": "Halka",
+    "anyChannel": "Khasnaji ama online",
+    "channels": {
+      "desk": "Miiska khasnajiga",
+      "online": "Online"
+    },
+    "district": "Degmo",
+    "anyDistrict": "Degmo kasta",
+    "filter": "Shaandhee",
+    "clear": "Tirtir",
+    "found": "{n, plural, one {1 lacag bixin} other {# lacag bixin}}",
+    "payer": "Bixiyaha",
+    "takenAt": "Halka laga qaaday",
+    "takenBy": "Waxaa qaaday",
+    "houseNo": "Lambarka Guriga",
+    "creditLeftShort": "{amount} aan weli la isticmaalin",
+    "kpiMonth": "Bishan",
+    "kpiUnmatched": "Aan la isku xirin",
+    "totalRow": "Wadar",
+    "firstRows": "{n}-ta ugu horreysa"
   },
   "accounting": {
     "title": "Xisaabaadka",

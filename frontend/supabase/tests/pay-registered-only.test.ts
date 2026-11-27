@@ -88,4 +88,18 @@ describe("partial land pays, and registers by itself once its bills are paid", (
     await take(reg, regBill);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [regBill])).toBe("paid");
   });
+
+  it("the Payments page list: filters, desk or online, totals (0299)", async () => {
+    const list = (p: object) => asUser(db, admin, (tx) => scalar<{ total: number; sum: string; rows: { online: boolean; receipt_no: string; method: string }[] }>(tx, `select public.payment_list($1)`, [JSON.stringify(p)]));
+    const all = await list({});
+    expect(all.total).toBe(4);
+    expect(Number(all.sum)).toBe(36);
+    expect((await list({ channel: "desk" })).rows.every((r) => !r.online)).toBe(true);
+    expect((await list({ channel: "desk" })).total).toBe(1);
+    expect((await list({ channel: "online" })).total).toBe(3);
+    expect((await list({ method: "mobile_money" })).total).toBe(3);
+    expect((await list({ q: all.rows[0]!.receipt_no })).total).toBe(1);
+    expect((await list({ from: "2000-01-01", to: "2000-01-02" })).total).toBe(0);
+    expect((await list({ size: 2 })).rows).toHaveLength(2);
+  });
 });

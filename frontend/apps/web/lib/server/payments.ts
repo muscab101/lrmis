@@ -420,3 +420,71 @@ export async function parcelForCashier(term: string) {
     ).map((b) => ({ ...b, push_ok: pushable.has(b.id) })),
   };
 }
+
+export interface PaymentListRow {
+  id: string;
+  receipt_no: string;
+  received_at: string;
+  method: PaymentMethod;
+  wallet: string | null;
+  provider: string | null;
+  provider_ref: string | null;
+  reference: string | null;
+  currency: string;
+  amount: number;
+  amount_base: number;
+  unallocated: number;
+  status: PaymentStatus;
+  payer_name: string | null;
+  payer_phone: string | null;
+  parcel_id: string | null;
+  pun: string | null;
+  house_no: string | null;
+  nb_code: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  pos_code: string | null;
+  pos_name: string | null;
+  /** The cashier (or staff member) who took it; null for online payments by owners. */
+  taken_by: string | null;
+  /** Not taken at a cashier's desk (portal, pay link, provider, staff online). */
+  online: boolean;
+}
+
+export interface PaymentListFilters {
+  q?: string;
+  status?: PaymentStatus;
+  method?: PaymentMethod;
+  channel?: "desk" | "online";
+  district?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+}
+
+/** Payments in the user's districts, newest first, with the count and total of everything that matches. */
+export async function queryPayments(f: PaymentListFilters) {
+  const supabase = await createClient();
+  const p = Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && v !== ""));
+  const out = unwrap(await supabase.rpc("payment_list", { p }), "payments") as { total: number; sum: number; month: number; rows: PaymentListRow[] };
+  return { total: Number(out.total) || 0, sum: Number(out.sum) || 0, month: Number(out.month) || 0, rows: out.rows ?? [] };
+}
+
+export const PAYMENT_STATUSES = ["completed", "unmatched", "reversed"] as const;
+export const PAYMENT_METHODS = ["cash", "mobile_money", "bank_transfer", "cheque", "card"] as const;
+
+/** The Payments page filters from the address. */
+export function paymentFilters(sp: Record<string, string | null | undefined>): PaymentListFilters {
+  const date = (x?: string | null) => (x && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : undefined);
+  const pick = <T extends string>(x: string | null | undefined, list: readonly T[]) => (x && (list as readonly string[]).includes(x) ? (x as T) : undefined);
+  return {
+    q: (sp.q ?? "").slice(0, 60) || undefined,
+    status: pick(sp.status, PAYMENT_STATUSES),
+    method: pick(sp.method, PAYMENT_METHODS),
+    channel: pick(sp.channel, ["desk", "online"] as const),
+    district: sp.district && /^[0-9a-f-]{36}$/i.test(sp.district) ? sp.district : undefined,
+    from: date(sp.from),
+    to: date(sp.to),
+  };
+}

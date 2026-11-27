@@ -3988,7 +3988,29 @@
     "bankField_branch": "Branch",
     "bankField_swift": "SWIFT",
     "servedBy": "Served by",
-    "servedOnline": "Online"
+    "servedOnline": "Online",
+    "anyStatus": "Any status",
+    "anyMethod": "Any method",
+    "channel": "Where",
+    "anyChannel": "Desk or online",
+    "channels": {
+      "desk": "Cashier desk",
+      "online": "Online"
+    },
+    "district": "District",
+    "anyDistrict": "Any district",
+    "filter": "Filter",
+    "clear": "Clear",
+    "found": "{n, plural, one {1 payment} other {# payments}}",
+    "payer": "Payer",
+    "takenAt": "Taken at",
+    "takenBy": "Taken by",
+    "houseNo": "House No",
+    "creditLeftShort": "{amount} not yet used",
+    "kpiMonth": "This month",
+    "kpiUnmatched": "Unmatched",
+    "totalRow": "Total",
+    "firstRows": "first {n} listed"
   },
   "accounting": {
     "title": "Accounting",

@@ -2,7 +2,7 @@
 
 import { Button } from "@dhulka/ui/button";
 import { Field } from "@dhulka/ui/field";
-import { NativeSelect, Switch } from "@dhulka/ui/form-controls";
+import { Switch } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { EmptyState, Mono } from "@dhulka/ui/misc";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@dhulka/ui/table";
@@ -12,7 +12,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   matchPaymentAction,
-  recordBankPaymentAction,
   bankAccountSetAction,
   toggleProviderAction,
 } from "@/app/[locale]/(staff)/payments/actions";
@@ -272,94 +271,6 @@ export function ProviderToggles({
         </li>
       ))}
     </ul>
-  );
-}
-
-export function BankPaymentButton() {
-  const t = useTranslations("payments");
-  const today = new Date().toISOString().slice(0, 10);
-  const [open, setOpen] = useState(false);
-  const [v, setV] = useState({
-    pun: "",
-    amount: "",
-    currency: "USD" as "USD" | "SOS",
-    method: "bank_transfer" as "bank_transfer" | "cheque",
-    reference: "",
-    receivedOn: today,
-  });
-  return (
-    <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        {t("recordBank")}
-      </Button>
-      <FormDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={t("recordBank")}
-        description={t("recordBankBody")}
-        confirmLabel={t("record")}
-        successMessage={t("recorded")}
-        submit={() => recordBankPaymentAction(v)}
-      >
-        {(fe) => (
-          <>
-            <Field id="pun" label={t("punOptional")} hint={t("punOptionalHint")} error={fe("pun")}>
-              <Input
-                value={v.pun}
-                onChange={(e) => setV({ ...v, pun: e.target.value })}
-                className="font-mono"
-              />
-            </Field>
-            <div className="grid grid-cols-3 gap-3">
-              <Field id="amount" label={t("amount")} error={fe("amount")} required>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={v.amount}
-                  onChange={(e) => setV({ ...v, amount: e.target.value })}
-                />
-              </Field>
-              <Field id="currency" label={t("currency")} error={fe("currency")}>
-                <NativeSelect
-                  value={v.currency}
-                  onChange={(e) => setV({ ...v, currency: e.target.value as "USD" | "SOS" })}
-                >
-                  <option value="USD">USD</option>
-                  <option value="SOS">SOS</option>
-                </NativeSelect>
-              </Field>
-              <Field id="method" label={t("method")}>
-                <NativeSelect
-                  value={v.method}
-                  onChange={(e) =>
-                    setV({ ...v, method: e.target.value as "bank_transfer" | "cheque" })
-                  }
-                >
-                  <option value="bank_transfer">{t("methods.bank_transfer")}</option>
-                  <option value="cheque">{t("methods.cheque")}</option>
-                </NativeSelect>
-              </Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field id="ref" label={t("bankReference")} error={fe("reference")} required>
-                <Input
-                  value={v.reference}
-                  onChange={(e) => setV({ ...v, reference: e.target.value })}
-                />
-              </Field>
-              <Field id="date" label={t("receivedOn")} error={fe("receivedOn")} required>
-                <Input
-                  type="date"
-                  value={v.receivedOn}
-                  onChange={(e) => setV({ ...v, receivedOn: e.target.value })}
-                />
-              </Field>
-            </div>
-          </>
-        )}
-      </FormDialog>
-    </>
   );
 }
 

@@ -128,51 +128,6 @@ export const closeShiftAction = defineAction(
 );
 
 // ---- Payments ----
-export const recordBankPaymentAction = defineAction(
-  "payments.record_bank",
-  z.object({
-    pun: z.string().trim().max(40).default(""),
-    amount: money,
-    currency: z.enum(["USD", "SOS"]),
-    method: z.enum(["bank_transfer", "cheque"]),
-    reference: z.string().trim().min(2, "validation.reference").max(80),
-    receivedOn: isoDate,
-  }),
-  async (v, ctx) => {
-    let parcelId: string | null = null;
-    if (v.pun) {
-      const { data } = await ctx.supabase
-        .from("parcels")
-        .select("id")
-        .or(punFilter(normalizePun(v.pun)))
-        .maybeSingle();
-      if (!data)
-        throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
-      parcelId = (data as { id: string }).id;
-    }
-    try {
-      return done(
-        unwrap(
-          await ctx.supabase.rpc("payment_record_manual", {
-            p: {
-              parcel_id: parcelId,
-              amount: v.amount,
-              currency: v.currency,
-              method: v.method,
-              reference: v.reference,
-              provider_ref: `BANK-${v.reference}`,
-              received_at: `${v.receivedOn}T12:00:00Z`,
-            },
-          }),
-          "record bank payment",
-        ) as { payment_id: string; receipt_no: string },
-      );
-    } catch (err) {
-      field(err, { no_fx_rate: "currency" });
-    }
-  },
-);
-
 export const matchPaymentAction = defineAction(
   "payments.match",
   z.object({ id: z.uuid(), pun: z.string().trim().min(5, "validation.pun").max(40) }),
