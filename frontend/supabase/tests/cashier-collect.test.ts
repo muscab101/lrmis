@@ -9,6 +9,7 @@ let surveyor: string;
 let hodan: string;
 let nbhd: string;
 let paid: string;
+let adminId: string;
 
 beforeAll(async () => {
   db = await createDb();
@@ -24,6 +25,7 @@ beforeAll(async () => {
     [sector, JSON.stringify(square(45.3, 2.04, 0.004))],
   );
   const admin = await bootstrapSuperAdmin(db);
+  adminId = admin;
   cashier = await createStaff(db, admin, "cashier@gmail.com", ["cashier"], [hodan]);
   karaanCashier = await createStaff(db, admin, "krn-cashier@gmail.com", ["cashier"], [karaan]);
   surveyor = await createStaff(db, admin, "surveyor@gmail.com", ["surveyor"], [hodan]);
@@ -74,5 +76,27 @@ describe("cashier: to collect", () => {
     expect(n.rows).toEqual([{ user_id: cashier, title_en: "New house to collect from", body_en: "BNHDN01203 · House 03 · Taleh · $30.00 due", link: "/cashier" }]);
     const rows = await asUser(db, cashier, (tx) => tx.query<{ pun: string }>(`select pun from public.cashier_to_collect()`));
     expect(rows.rows.map((r) => r.pun).sort()).toEqual(["BNHDN01201", "BNHDN01203"]);
+  });
+
+  it("the Invoices page list: owners, totals, filters, search by owner and house, sort by balance (0300)", async () => {
+    type L = { total: number; sums: Record<string, number>; rows: { house_no: string; owners: string | null; balance: number; fee_code: string; phone: string | null }[] };
+    const list = (p: object) => asUser(db, adminId, (tx) => scalar<L>(tx, `select public.invoice_list($1)`, [JSON.stringify(p)]));
+    const all = await list({});
+    expect(all.total).toBe(3);
+    expect(all.sums).toMatchObject({ billed: 90, paid: 30, outstanding: 60, overdue: 0, overdue_count: 0 });
+    expect((await list({ filter: "open" })).total).toBe(2);
+    expect((await list({ filter: "paid" })).total).toBe(1);
+    // House 03 was registered by an earlier test.
+    expect((await list({ land: "partial" })).total).toBe(0);
+    expect((await list({ land: "registered" })).total).toBe(3);
+    expect((await list({ q: "cali" })).total).toBeGreaterThanOrEqual(2);
+    expect((await list({ q: "03" })).total).toBe(1);
+    expect((await list({ q: "615550101" })).rows[0]!.phone).toBe("+252615550101");
+    expect((await list({ fee: "property_bill", period: "2026" })).total).toBe(3);
+    expect((await list({ fee: "service_charge" })).total).toBe(0);
+    expect((await list({ sort: "balance", dir: "asc" })).rows[0]!.balance).toBe(0);
+    expect((await list({ size: 1, page: 2 })).rows).toHaveLength(1);
+    // Another district's staff see nothing.
+    expect((await asUser(db, karaanCashier, (tx) => tx.query(`select public.invoice_list('{}')`))).rows).toHaveLength(1);
   });
 });

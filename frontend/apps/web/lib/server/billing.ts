@@ -78,16 +78,6 @@ export interface InvoiceRow {
   fee_type: { code: string; name_so: string; name_en: string } | null;
 }
 
-/** A row of the Invoices table: the invoice plus the land's account and receipt numbers and the owner's phone. */
-export interface InvoiceListRow extends InvoiceRow {
-  created_at: string;
-  account_no: string | null;
-  phone: string | null;
-  /** Its land isn't registered yet, so it can't be paid. */
-  partial_land: boolean;
-  /** Its land is demolished: an archive, so it can't be paid. */
-  demolished_land: boolean;
-}
 const LIST_COLUMNS =
   "id, number, period, issue_date, due_date, total, paid, credited, balance, status, created_at, fee_type:fee_types(code, name_so, name_en), " +
   "parcel:parcels(id, pun, status, building_state, account_no, owners:parcel_owners(valid_to, party:parties(phone)))";
@@ -179,33 +169,6 @@ export async function listInvoices(opts: {
       .order("number", { ascending: true });
   const res = await req.range((page - 1) * size, page * size - 1);
   return { rows: unwrap(res, "invoices") as unknown as InvoiceRow[], total: res.count ?? 0 };
-}
-
-/** Rows for the Invoices table: listInvoices plus the land's numbers and the current owner's phone. */
-export async function listInvoiceTable(opts: Parameters<typeof listInvoices>[0]) {
-  const { rows, total } = await listInvoices(opts);
-  type Raw = InvoiceRow & {
-    created_at: string;
-    parcel:
-      | (InvoiceRow["parcel"] & {
-          status: string;
-          building_state: string;
-          account_no: string | null;
-          owners?: { valid_to: string | null; party: { phone: string | null } | null }[];
-        })
-      | null;
-  };
-  return {
-    total,
-    rows: (rows as Raw[]).map((r): InvoiceListRow => ({
-      ...r,
-      parcel: r.parcel ? { id: r.parcel.id, pun: r.parcel.pun } : null,
-      partial_land: ["draft", "surveyed", "verified"].includes(r.parcel?.status ?? ""),
-      demolished_land: r.parcel?.building_state === "demolished",
-      account_no: r.parcel?.account_no ?? null,
-      phone: r.parcel?.owners?.find((o) => !o.valid_to && o.party?.phone)?.party?.phone ?? null,
-    })),
-  };
 }
 
 export interface InvoiceOwner {
@@ -436,4 +399,81 @@ export async function runPlaceNames(run: Pick<RunRow, "section_ids" | "sector_id
   };
   const [sections, sectors, neighbourhoods] = await Promise.all([names("sections", run.section_ids), names("sectors", run.sector_ids), names("neighbourhoods", run.neighbourhood_ids)]);
   return [...sections, ...sectors, ...neighbourhoods];
+}
+
+/** A row of the Invoices page (public.invoice_list). */
+export interface InvoicePageRow {
+  id: string;
+  number: string;
+  period: string;
+  issue_date: string;
+  due_date: string;
+  total: number;
+  paid: number;
+  credited: number;
+  balance: number;
+  status: InvoiceStatus;
+  fee_code: string | null;
+  fee_so: string | null;
+  fee_en: string | null;
+  parcel_id: string | null;
+  pun: string | null;
+  house_no: string | null;
+  account_no: string | null;
+  land_status: string | null;
+  building_state: string | null;
+  nb_code: string | null;
+  district_so: string | null;
+  district_en: string | null;
+  owners: string | null;
+  phone: string | null;
+}
+
+export const INVOICE_PAGE_SORTS = ["number", "issue_date", "due_date", "total", "paid", "balance"] as const;
+export type InvoicePageSort = (typeof INVOICE_PAGE_SORTS)[number];
+
+export interface InvoicePageFilters {
+  q?: string;
+  filter?: InvoiceFilter;
+  land?: InvoiceLand;
+  fee?: string;
+  district?: string;
+  period?: string;
+  from?: string;
+  to?: string;
+  sort?: InvoicePageSort;
+  dir?: "asc" | "desc";
+  page?: number;
+  size?: number;
+}
+
+/** Invoices in the user's districts with the totals of everything that matches. */
+export async function invoicePage(f: InvoicePageFilters) {
+  const supabase = await createClient();
+  const p = Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined && v !== "" && v !== "any"));
+  if (f.filter) p.filter = f.filter;
+  const out = unwrap(await supabase.rpc("invoice_list", { p }), "invoices") as {
+    total: number;
+    sums: { billed: number; paid: number; credited: number; outstanding: number; overdue: number; overdue_count: number };
+    rows: InvoicePageRow[];
+  };
+  return { total: Number(out.total) || 0, sums: out.sums, rows: out.rows ?? [] };
+}
+
+/** The Invoices page filters from the address. */
+export function invoicePageFilters(sp: Record<string, string | null | undefined>): InvoicePageFilters {
+  const date = (x?: string | null) => (x && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : undefined);
+  const filters: InvoiceFilter[] = ["any", "open", "overdue", "paid", "cancelled"];
+  return {
+    q: (sp.q ?? "").slice(0, 60) || undefined,
+    filter: filters.includes(sp.f as InvoiceFilter) ? (sp.f as InvoiceFilter) : "any",
+    land: (INVOICE_LANDS as readonly string[]).includes(sp.land ?? "") ? (sp.land as InvoiceLand) : undefined,
+    fee: sp.fee && /^[a-z0-9_]{2,40}$/.test(sp.fee) ? sp.fee : undefined,
+    district: sp.district && /^[0-9a-f-]{36}$/i.test(sp.district) ? sp.district : undefined,
+    period: sp.period && /^\d{4}$/.test(sp.period) ? sp.period : undefined,
+    from: date(sp.from),
+    to: date(sp.to),
+    sort: (INVOICE_PAGE_SORTS as readonly string[]).includes(sp.sort ?? "") ? (sp.sort as InvoicePageSort) : undefined,
+    dir: sp.dir === "asc" ? "asc" : "desc",
+  };
 }

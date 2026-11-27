@@ -3635,7 +3635,13 @@
       "showing": "Showing {first} to {last} of {total} entries",
       "pages": "Pages",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "owner": "Owner",
+      "paid": "Paid",
+      "balance": "Balance",
+      "houseNo": "House No",
+      "totalRow": "Total",
+      "firstRows": "first {n} listed"
     },
     "placesLabel": "Places (optional)",
     "placesHint": "Leave empty to bill the whole districts. Tick sections, then sectors, then neighbourhoods to bill only those.",
@@ -3683,7 +3689,19 @@
       "note": "Runs are made as drafts: open them in the list to check the bills, approve and issue.",
       "done": "{count, plural, one {Run {list} made} other {# runs made: {list}}}. Approve and issue them below."
     },
-    "servedBy": "Served by"
+    "servedBy": "Served by",
+    "anyDistrict": "Any district",
+    "anyYear": "Any year",
+    "off": "off",
+    "searchInvoicesMore": "Search invoice no, PUN, account, house no, owner or phone",
+    "sums": {
+      "count": "Invoices",
+      "countN": "{n, plural, one {1 invoice} other {# invoices}}",
+      "billed": "Billed",
+      "paid": "Paid",
+      "outstanding": "Still owed",
+      "overdue": "Overdue ({n})"
+    }
   },
   "pay": {
     "title": "Pay your invoice",
