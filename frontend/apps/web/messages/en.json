@@ -3000,7 +3000,7 @@
     "flats": {
       "ownership": "Who owns the building?",
       "ownershipOne": "One owner owns the whole building",
-      "ownershipEach": "Each flat has its own owner",
+      "ownershipEach": "Many owners: each flat has its own owner, and a manager",
       "ownershipOneHint": "One land and one invoice for the owner: the base (width × length) plus every upper storey.",
       "ownershipEachHint": "First enter the building’s manager (pays the empty land), then the owner of each flat (pays their flat).",
       "levels": "Floors",

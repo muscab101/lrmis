@@ -528,7 +528,7 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
       </div>
 
       {layout === "flats" ? (
-        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} buildingPrice={f.grade ? priceOf(f.grade) : null} />
+        <FlatsInputs landArea={area} value={unitsValue} onChange={setUnitsValue} fixedOwner={owner} prices={flatPrices} buildingPrice={f.grade ? priceOf(f.grade) : null} chooseOwnership={f.grade !== "storey"} />
       ) : layout === "compound" ? (
         <LandUnitsInputs
           layout={layout}

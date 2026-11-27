@@ -1,6 +1,7 @@
 "use client";
 
 import { Field } from "@dhulka/ui/field";
+import { NativeSelect } from "@dhulka/ui/form-controls";
 import { Input } from "@dhulka/ui/input";
 import { useFormatter, useTranslations } from "next-intl";
 import type { UnitRow, UnitsValue } from "@/components/parcels/land-units-inputs";
@@ -62,6 +63,7 @@ export function FlatsInputs({
   fixedOwner,
   prices,
   buildingPrice = null,
+  chooseOwnership = false,
 }: {
   landArea: number;
   value: UnitsValue;
@@ -71,6 +73,8 @@ export function FlatsInputs({
   prices: FlatPrices;
   /** One owner: the chosen building type's price per m² for the base (ground floor). */
   buildingPrice?: number | null;
+  /** An apartment: ask whether one owner owns it all, or each flat has its own owner (with a manager). */
+  chooseOwnership?: boolean;
 }) {
   const t = useTranslations("parcels.flats");
   const tu = useTranslations("parcels.landUnits");
@@ -119,8 +123,16 @@ export function FlatsInputs({
 
   return (
     <div className="space-y-4 rounded-md border p-4">
-      {/* No "who owns the building" question: the building type decides. A storey building is one owner, one land and
-          one invoice (upper storeys included); an apartment is laid out by floors and flats, each flat with its own owner. */}
+      {/* A storey building is always one owner, one land and one invoice (upper storeys included). An apartment asks:
+          one owner for everything, or floors and flats with an owner for each flat and a manager for the empty land. */}
+      {chooseOwnership && (
+        <Field id="flatsOwnership" label={t("ownership")} hint={one ? t("ownershipOneHint") : t("ownershipEachHint")} required>
+          <NativeSelect value={value.ownership} onChange={(e) => onChange({ ...value, ownership: e.target.value as UnitsValue["ownership"] })}>
+            <option value="each">{t("ownershipEach")}</option>
+            <option value="one">{t("ownershipOne")}</option>
+          </NativeSelect>
+        </Field>
+      )}
       {one && (
         <div className="max-w-sm">
           <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")}>
