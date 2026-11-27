@@ -10,7 +10,7 @@ import { Input, Textarea } from "@dhulka/ui/input";
 import { toast } from "@dhulka/ui/toaster";
 import { MapPinPlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { nearbyPinsAction } from "@/app/[locale]/(staff)/applications/actions";
 import {
   getGeometryAction,
@@ -249,6 +249,8 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
 
   const num = (x: string) => (x.trim() === "" ? Number.NaN : Number(x));
   const area = num(f.width) * num(f.length);
+  // The box drawn around the pin when no roof is found: the plot's width × length.
+  const plotSize = useMemo(() => ({ width: num(f.width), length: num(f.length) }), [f.width, f.length]);
 
   const save = async () => {
     if (!f.grade) return setError({ code: "VALIDATION", requestId: "", fieldErrors: { propertyType: ["validation.required"] } });
@@ -387,6 +389,12 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             outline={outline?.geometry ?? null}
             outlineBbox={outline?.bbox ?? null}
             corners={canCorners}
+            size={plotSize}
+            onRoofSize={({ width, length }) => {
+              // The house chosen on the map gives the plot's width and length (the surveyor can still change them).
+              setF((p) => ({ ...p, width: String(width), length: String(length) }));
+              toast.success(t("sizeFromRoof", { w: width, l: length }));
+            }}
             onShape={onShape}
           />
           {nearby && (
@@ -400,7 +408,47 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
         </div>
       </Field>
 
-      {/* First what kind of land it is (one house, flats or a compound), then its size. */}
+      {/* The house number first. */}
+      <div className="max-w-md">
+        <Field
+          id="houseNo"
+          label={ta("houseNo")}
+          error={fe("houseNo")}
+          hint={
+            !neighbourhood
+              ? t("houseNoPickPlace")
+              : houseChoices && houseNumbers.length === 0
+                ? t("houseNoFull")
+                : undefined
+          }
+        >
+          {/* The neighbourhood code in front, the house number chosen after it: KRWJXL01 | 02. */}
+          <div className="flex">
+            {houseChoices?.code && (
+              <span className="bg-muted text-muted-foreground inline-flex shrink-0 items-center rounded-s-md border border-e-0 px-3 font-mono text-sm">
+                {houseChoices.code}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <NativeSelect
+                value={f.houseNo}
+                onChange={set("houseNo")}
+                disabled={!neighbourhood || !houseChoices}
+                className={houseChoices?.code ? "rounded-s-none" : undefined}
+              >
+                <option value="">{ta("choose")}</option>
+                {houseNumbers.map((no) => (
+                  <option key={no} value={no}>
+                    {no}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          </div>
+        </Field>
+      </div>
+
+      {/* Then what kind of land it is (one house, flats or a compound), then its size. */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="propertyType" label={t("houseType")} hint={buildingType ? t(`layoutHint_${layout}`) : t("houseTypeHint")} error={fe("propertyType")} required>
           {/* One choice sets both: the house type from Valuation → Property grades (what the bill uses) and the kind of
@@ -414,6 +462,12 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
               if (bt && bt.layout !== layout) {
                 setLayout(bt.layout);
                 if (bt.layout !== "house") setUnitsValue(startUnits(bt.layout));
+              }
+              // A storey building has one owner (upper storeys on one invoice); an apartment is laid out by floors and
+              // flats, each flat with its own owner.
+              if (bt?.layout === "flats") {
+                const ownership = bt.grade_code === "storey" ? "one" : "each";
+                setUnitsValue((u) => (u.ownership === ownership ? u : { ...startUnits("flats"), ownership }));
               }
             }}
           >
@@ -470,45 +524,6 @@ export function FieldLandForm({ districts, grades, buildingTypes, start = null, 
             readOnly
             value={Number.isFinite(area) && area > 0 ? `${Math.round(area * 100) / 100} m²` : "—"}
           />
-        </Field>
-      </div>
-
-      <div className="max-w-md">
-        <Field
-          id="houseNo"
-          label={ta("houseNo")}
-          error={fe("houseNo")}
-          hint={
-            !neighbourhood
-              ? t("houseNoPickPlace")
-              : houseChoices && houseNumbers.length === 0
-                ? t("houseNoFull")
-                : undefined
-          }
-        >
-          {/* The neighbourhood code in front, the house number chosen after it: KRWJXL01 | 02. */}
-          <div className="flex">
-            {houseChoices?.code && (
-              <span className="bg-muted text-muted-foreground inline-flex shrink-0 items-center rounded-s-md border border-e-0 px-3 font-mono text-sm">
-                {houseChoices.code}
-              </span>
-            )}
-            <div className="min-w-0 flex-1">
-              <NativeSelect
-                value={f.houseNo}
-                onChange={set("houseNo")}
-                disabled={!neighbourhood || !houseChoices}
-                className={houseChoices?.code ? "rounded-s-none" : undefined}
-              >
-                <option value="">{ta("choose")}</option>
-                {houseNumbers.map((no) => (
-                  <option key={no} value={no}>
-                    {no}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-          </div>
         </Field>
       </div>
 

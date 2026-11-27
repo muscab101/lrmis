@@ -2030,7 +2030,7 @@
       "document_removed": "Document removed"
     },
     "pin": {
-      "hint": "Click the map to drop a pin at the property.",
+      "hint": "Move the map until the pin sits on the house. You can also tap the house.",
       "useGps": "Use my location",
       "gpsUnavailable": "This device has no GPS.",
       "gpsDenied": "Location permission was denied.",
@@ -2044,7 +2044,17 @@
       "capturedAt": "Location captured {date}.",
       "lowAccuracyFlag": "Low accuracy",
       "nearby": "Possible double registration: {n, plural, one {# record} other {# records}} within 10 m:",
-      "savedOffline": "No connection. This entry is kept on this device and will be sent when the connection is back. Keep this page open."
+      "savedOffline": "No connection. This entry is kept on this device and will be sent when the connection is back. Keep this page open.",
+      "lookingRoof": "Looking for the roof…",
+      "roofFound": "House found ({m2} m² roof): the pin is in its middle.",
+      "notThisRoof": "Not this building",
+      "roofSource": "Building outlines: Google Open Buildings",
+      "boxUsed": "The land is drawn from the width and length: {w} m × {l} m. Change them below and the shape follows; turn it to face the street if needed.",
+      "boxNeedsSize": "Type the width and length below to draw the land around the pin.",
+      "turn": "Turn the box",
+      "turnLeft": "Turn left 15°",
+      "turnRight": "Turn right 15°",
+      "cornersInstead": "Draw corners instead"
     },
     "types": {
       "new_registration": "New registration",
@@ -2844,7 +2854,8 @@
       "houseTypeGroup_compound": "Compound (several houses on one land)",
       "landType": "Land type",
       "upperStoreys": "Upper storeys",
-      "upperStoreysEditHint": "Storeys above the ground floor (0 if none). Each one is billed at the Upper Floors price on the same invoice."
+      "upperStoreysEditHint": "Storeys above the ground floor (0 if none). Each one is billed at the Upper Floors price on the same invoice.",
+      "sizeFromRoof": "Width {w} m and length {l} m taken from the roof. Change them if the plot is bigger than the house."
     },
     "emptyDraftTitle": "No land waiting for registration",
     "emptyDraftBody": "Land added in the field, and land on an open application, appears here until it is registered.",

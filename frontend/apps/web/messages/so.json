@@ -2030,7 +2030,7 @@
       "document_removed": "Dukumenti la saaray"
     },
     "pin": {
-      "hint": "Guji khariidadda si aad calaamad ugu dhigto meesha hantida.",
+      "hint": "Dhaqaaji khariidadda ilaa biinku ka dul dhaco guriga. Sidoo kale guriga waad taaban kartaa.",
       "useGps": "Isticmaal goobtayda",
       "gpsUnavailable": "Qalabkan GPS ma laha.",
       "gpsDenied": "Ogolaanshaha goobta waa la diiday.",
@@ -2044,7 +2044,17 @@
       "capturedAt": "Goobta waxaa la qabtay {date}.",
       "lowAccuracyFlag": "Saxnaan hoose",
       "nearby": "Laga yaabo diiwaangelin labanlaab ah: {n, plural, one {# diiwaan} other {# diiwaan}} 10 m gudahood:",
-      "savedOffline": "Xiriir ma jiro. Diiwaankan wuxuu ku kaydsan yahay qalabkan, waxaana la diri doonaa marka xiriirku soo noqdo. Bogga ha xirin."
+      "savedOffline": "Xiriir ma jiro. Diiwaankan wuxuu ku kaydsan yahay qalabkan, waxaana la diri doonaa marka xiriirku soo noqdo. Bogga ha xirin.",
+      "lookingRoof": "Saqafka ayaa la raadinayaa…",
+      "roofFound": "Guri waa la helay (saqaf {m2} m²): biinku wuxuu ku jiraa bartamihiisa.",
+      "notThisRoof": "Dhismahan maaha",
+      "roofSource": "Xadadka dhismayaasha: Google Open Buildings",
+      "boxUsed": "Dhulka waxaa laga sawiray ballaca iyo dhererka: {w} m × {l} m. Hoos ka beddel, qaabkuna wuu raacayaa; u leexi si uu waddada u eego haddii loo baahdo.",
+      "boxNeedsSize": "Hoos ku qor ballaca iyo dhererka si dhulka loogu sawiro biinka hareerihiisa.",
+      "turn": "Leexi sanduuqa",
+      "turnLeft": "Bidix u leexi 15°",
+      "turnRight": "Midig u leexi 15°",
+      "cornersInstead": "Beddelkeeda geesaha sawir"
     },
     "types": {
       "new_registration": "Diiwaangelin cusub",
@@ -2844,7 +2854,8 @@
       "houseTypeGroup_compound": "Xero (guryo badan oo hal dhul ku yaal)",
       "landType": "Nooca dhulka",
       "upperStoreys": "Dabaqyada sare",
-      "upperStoreysEditHint": "Dabaqyada ka sarreeya dabaqa hoose (0 haddii aysan jirin). Mid kasta waxaa lagu biilaa qiimaha Dabaqyada sare isla biilka."
+      "upperStoreysEditHint": "Dabaqyada ka sarreeya dabaqa hoose (0 haddii aysan jirin). Mid kasta waxaa lagu biilaa qiimaha Dabaqyada sare isla biilka.",
+      "sizeFromRoof": "Ballaca {w} m iyo dhererka {l} m waxaa laga qaaday saqafka. Beddel haddii dhulku ka weyn yahay guriga."
     },
     "emptyDraftTitle": "Dhul sugaya diiwaangelin ma jiro",
     "emptyDraftBody": "Dhulka goobta lagu daray iyo dhulka codsi furan leh halkan ayuu ka muuqdaa ilaa la diiwaangeliyo.",

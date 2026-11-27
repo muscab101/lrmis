@@ -2,10 +2,11 @@
 
 import { Button } from "@dhulka/ui/button";
 import { toast } from "@dhulka/ui/toaster";
-import maplibregl, { type GeoJSONSource } from "maplibre-gl";
-import { Crosshair, Loader2, Scan } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import type { GeoJSONSource, MapLibreEvent, Map as MlMap } from "maplibre-gl";
+import { Building2, Crosshair, Loader2, RotateCcw, RotateCw, Scan, X } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type BuildingOutline, buildingAtAction } from "@/app/[locale]/(staff)/parcels/actions";
 import { addCornerLayers, CornerPointer, cornerFeatures } from "@/components/map/corner-pointer";
 import { DhulkaMap, type DhulkaMapHandle } from "@/components/map/dhulka-map";
 
@@ -13,7 +14,7 @@ export interface Pin {
   lon: number;
   lat: number;
   accuracy?: number | null;
-  /** "gps" from the device, "manual" when clicked or dragged on the map. */
+  /** "gps" from the device, "manual" when the map was moved under the pin. */
   method?: "gps" | "manual" | null;
 }
 
@@ -28,23 +29,31 @@ interface Props {
   /** Optional outline to show (the chosen neighbourhood). */
   outline?: GeoJSON.Geometry | null;
   outlineBbox?: [number, number, number, number] | null;
-  /** Offer 4-corner drawing (map.draw_corners): the pin then goes to the middle of the 4 corners. */
+  /**
+   * May give the land its shape (map.draw_corners): the roof under the pin, else a box of width × length around the
+   * pin, or the 4 corners drawn by hand. The pin is always the middle of the shape.
+   */
   corners?: boolean;
-  /** The 4-corner shape drawn (null when cleared), so the land can keep it as its boundary. */
+  /** The plot's width and length (m) from the form, for the box around the pin. */
+  size?: { width: number; length: number } | null;
+  /** The land's shape (null when there is none), so the land keeps it as its boundary. */
   onShape?: (shape: GeoJSON.Polygon | null) => void;
+  /** A roof was found under the pin: its width and length (m), for the form to fill in. */
+  onRoofSize?: (size: { width: number; length: number }) => void;
 }
 
-const CORNERS_SRC = "pin-corners";
+type Pt = [number, number];
+const SHAPE_SRC = "pin-shape";
 
 /** The middle of a shape (its centre of area), so the pin sits inside the land even when it is not a neat square. */
-function middleOf(p: GeoJSON.Polygon): [number, number] {
+function middleOf(p: GeoJSON.Polygon): Pt {
   const ring = p.coordinates[0]!;
   let a = 0;
   let x = 0;
   let y = 0;
   for (let i = 0; i < ring.length - 1; i++) {
-    const [x0, y0] = ring[i] as [number, number];
-    const [x1, y1] = ring[i + 1] as [number, number];
+    const [x0, y0] = ring[i] as Pt;
+    const [x1, y1] = ring[i + 1] as Pt;
     const c = x0 * y1 - x1 * y0;
     a += c;
     x += (x0 + x1) * c;
@@ -57,54 +66,167 @@ function middleOf(p: GeoJSON.Polygon): [number, number] {
   return [x / (3 * a), y / (3 * a)];
 }
 
-/** Drop a pin by clicking the map, or use the device GPS. */
-export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false, onShape }: Props) {
+/** A width × length box around a middle point, turned by `angle` degrees (0 = width runs east–west). */
+export function boxAround(centre: Pt, width: number, length: number, angle: number): GeoJSON.Polygon {
+  const [lon, lat] = centre;
+  const r = (angle * Math.PI) / 180;
+  const mLon = 111_320 * Math.cos((lat * Math.PI) / 180);
+  const mLat = 110_540;
+  const corner = (x: number, y: number): Pt => {
+    const dx = x * Math.cos(r) - y * Math.sin(r);
+    const dy = x * Math.sin(r) + y * Math.cos(r);
+    return [+(lon + dx / mLon).toFixed(7), +(lat + dy / mLat).toFixed(7)];
+  };
+  const w = width / 2;
+  const l = length / 2;
+  const ring = [corner(-w, -l), corner(w, -l), corner(w, l), corner(-w, l)];
+  return { type: "Polygon", coordinates: [[...ring, ring[0]!]] };
+}
+
+/** Is the point inside the shape (its outer ring)? */
+function inside(pt: Pt, p: GeoJSON.Polygon): boolean {
+  const ring = p.coordinates[0]!;
+  let hit = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i] as Pt;
+    const [xj, yj] = ring[j] as Pt;
+    if (yi > pt[1] !== yj > pt[1] && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+/**
+ * The pin stays in the middle of the map: move the map until it sits on the house. With shapes on, the system looks for
+ * the roof under the pin and moves the pin to that roof's middle; with no roof it draws a box of the plot's width ×
+ * length around the pin, which can be turned to face the street. The 4 corners can still be drawn by hand.
+ */
+export function PinPicker({ value, onChange, disabled = false, outline, outlineBbox, corners = false, size = null, onShape, onRoofSize }: Props) {
   const t = useTranslations("applications.pin");
   const tm = useTranslations("map.corners");
-  // 4-corner drawing: the centre pointer is out; the last shape drawn stays on the map.
-  // With 4-corner drawing on, the form opens straight into it: the pointer is out until the 4 corners are in.
-  const [cornering, setCornering] = useState(corners && !disabled);
-  const [shape, setShape] = useState<GeoJSON.Polygon | null>(null);
+  const format = useFormatter();
   const mapRef = useRef<DhulkaMapHandle>(null);
-  const marker = useRef<maplibregl.Marker | null>(null);
+  const [cornering, setCornering] = useState(false);
+  // A shape drawn by hand from 4 corners: it wins over the roof and the box until the pin leaves it.
+  const [drawn, setDrawn] = useState<GeoJSON.Polygon | null>(null);
+  const [roof, setRoof] = useState<BuildingOutline | null>(null);
+  const [looking, setLooking] = useState(false);
+  const notThis = useRef(new Set<number>());
+  const lastRoof = useRef<number | null>(null);
+  const [angle, setAngle] = useState(0);
   const [locating, setLocating] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const onRoofSizeRef = useRef(onRoofSize);
+  onRoofSizeRef.current = onRoofSize;
 
-  // Keep the marker in sync with the value.
+  const map = useCallback((): MlMap | null => mapRef.current?.getMap() ?? null, []);
+  /** Move the map without it counting as the user moving the pin. */
+  const moveTo = useCallback(
+    (centre: Pt, zoom?: number) => map()?.easeTo({ center: centre, ...(zoom ? { zoom } : {}), duration: 400 }, { auto: true }),
+    [map],
+  );
+
+  const box = useMemo(
+    () => (value && size && size.width > 0 && size.length > 0 ? boxAround([value.lon, value.lat], size.width, size.length, angle) : null),
+    [value, size, angle],
+  );
+  // The land is always drawn from the width and length typed in the form (or 4 corners drawn by hand). A roof found
+  // under the pin only gives the middle, the direction and the first width and length.
+  const shape: GeoJSON.Polygon | null = corners ? (drawn ?? box) : null;
+  const shapeKind = !corners ? null : drawn ? "drawn" : box ? "box" : null;
+  const onRoof = corners && !drawn && roof !== null;
+
+  // The form keeps the shape as the land's boundary.
+  const shapeKey = JSON.stringify(shape);
   useEffect(() => {
-    const map = mapRef.current?.getMap();
-    if (!map) return;
-    if (!value) {
-      marker.current?.remove();
-      marker.current = null;
-      return;
-    }
-    if (!marker.current) {
-      marker.current = new maplibregl.Marker({ color: "#4189dd", draggable: !disabled })
-        .setLngLat([value.lon, value.lat])
-        .addTo(map);
-      marker.current.on("dragend", () => {
-        const p = marker.current!.getLngLat();
-        onChange({ lon: p.lng, lat: p.lat, accuracy: null, method: "manual" });
-      });
-    } else {
-      marker.current.setLngLat([value.lon, value.lat]);
-    }
-  }, [value, disabled, onChange]);
+    onShape?.(shape);
+    // Only when the shape itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapeKey]);
 
-  // Show the chosen neighbourhood and go to it, once the map has loaded (it may still be loading on a fresh page).
+  // Draw it on the map: the sides with their lengths, the corners numbered.
+  useEffect(() => {
+    const m = map();
+    if (!m) return;
+    const paint = () => {
+      addCornerLayers(m, SHAPE_SRC, onRoof ? "#0f9d58" : "#1d5fc2");
+      const pts = shape ? (shape.coordinates[0]!.slice(0, -1) as Pt[]) : [];
+      (m.getSource(SHAPE_SRC) as GeoJSONSource | undefined)?.setData(cornerFeatures(pts, null, true));
+    };
+    if (m.isStyleLoaded()) paint();
+    else m.once("load", paint);
+    // Redraw only when the shape or its kind changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, shapeKey, onRoof]);
+
+  /** Look for the roof under the pin; found: the pin goes to its middle. */
+  const lookup = useRef(0);
+  const findRoof = useCallback(
+    async (pt: Pt) => {
+      if (!corners) return;
+      const ticket = ++lookup.current;
+      setLooking(true);
+      const r = await buildingAtAction({ lon: pt[0], lat: pt[1] });
+      if (ticket !== lookup.current) return;
+      setLooking(false);
+      const b = r.ok ? r.data : null;
+      if (!b || notThis.current.has(b.id)) {
+        setRoof(null);
+        return;
+      }
+      setRoof(b);
+      onChangeRef.current({ lon: b.centre[0], lat: b.centre[1], accuracy: null, method: "manual" });
+      moveTo(b.centre);
+      // A new roof: its size goes into the form (once, so the surveyor's own changes stay), and a box drawn later
+      // faces the same way as the roof.
+      if (lastRoof.current !== b.id) {
+        lastRoof.current = b.id;
+        if (b.width_m && b.length_m) onRoofSizeRef.current?.({ width: b.width_m, length: b.length_m });
+        if (b.angle != null) setAngle(b.angle);
+      }
+    },
+    [corners, moveTo],
+  );
+
+  // The user moved the map (or clicked a spot): the pin is where the middle of the map now is.
+  useEffect(() => {
+    let stopped = false;
+    let m: MlMap | null = null;
+    const moved = (e: MapLibreEvent & { auto?: boolean }) => {
+      if (stopped || !m || disabled || cornering || e.auto) return;
+      const c = m.getCenter();
+      const pt: Pt = [c.lng, c.lat];
+      onChangeRef.current({ lon: pt[0], lat: pt[1], accuracy: null, method: "manual" });
+      setDrawn((d) => (d && !inside(pt, d) ? null : d));
+      void findRoof(pt);
+    };
+    const wait = (tries: number) => {
+      if (stopped) return;
+      m = map();
+      if (!m) return void (tries < 100 && setTimeout(() => wait(tries + 1), 100));
+      m.on("moveend", moved);
+    };
+    wait(0);
+    return () => {
+      stopped = true;
+      m?.off("moveend", moved);
+    };
+  }, [map, disabled, cornering, findRoof]);
+
+  // Show the chosen neighbourhood and go to it (or to the pin), once the map has loaded.
   useEffect(() => {
     let cancelled = false;
     const show = () => {
       if (cancelled) return;
       mapRef.current?.setHighlight(outline ?? null);
-      if (value) mapRef.current?.flyTo([value.lon, value.lat], 17);
-      else if (outlineBbox) mapRef.current?.fitBounds(outlineBbox, 16);
+      const m = map();
+      if (value) moveTo([value.lon, value.lat], 18);
+      else if (outlineBbox && m) m.fitBounds(outlineBbox, { maxZoom: 16, padding: 24, duration: 0 }, { auto: true });
     };
-    // Go now, and again when the first load finishes in case the style wasn't ready yet.
     const h = setTimeout(() => {
       show();
-      mapRef.current?.getMap()?.once("load", show);
+      map()?.once("load", show);
     }, 50);
     return () => {
       cancelled = true;
@@ -114,22 +236,13 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outline, outlineBbox]);
 
-  // The 4-corner shape on the map, under the pin: its 4 sides as lines, each with its length, and the corners numbered.
-  useEffect(() => {
-    const map = mapRef.current?.getMap();
-    if (!map || !map.isStyleLoaded()) return;
-    addCornerLayers(map, CORNERS_SRC, "#1d5fc2");
-    const corners = shape ? (shape.coordinates[0]!.slice(0, -1) as [number, number][]) : [];
-    (map.getSource(CORNERS_SRC) as GeoJSONSource | undefined)?.setData(cornerFeatures(corners, null, true));
-  }, [shape]);
-
   /** The 4 corners are in: the pin goes to their middle. */
   function cornersDone(p: GeoJSON.Polygon, reordered: boolean) {
     setCornering(false);
-    setShape(p);
-    onShape?.(p);
+    setDrawn(p);
     const [lon, lat] = middleOf(p);
     onChange({ lon, lat, accuracy: null, method: "manual" });
+    moveTo([lon, lat]);
     if (reordered) toast.warning(tm("crossed"));
     else toast.success(tm("pinDone"));
   }
@@ -154,7 +267,8 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     const accept = (pos: GeolocationPosition) => {
       const pin = { lon: pos.coords.longitude, lat: pos.coords.latitude, accuracy: Math.round(pos.coords.accuracy), method: "gps" as const };
       onChange(pin);
-      mapRef.current?.flyTo([pin.lon, pin.lat], 18);
+      setDrawn(null);
+      moveTo([pin.lon, pin.lat], 18);
     };
     watch.current = navigator.geolocation.watchPosition(
       (pos) => {
@@ -163,7 +277,10 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
           best = pos;
           accept(pos);
         }
-        if (pos.coords.accuracy <= GOOD_ACCURACY_M || Date.now() - started > GPS_WAIT_MS) stopGps();
+        if (pos.coords.accuracy <= GOOD_ACCURACY_M || Date.now() - started > GPS_WAIT_MS) {
+          stopGps();
+          if (best) void findRoof([best.coords.longitude, best.coords.latitude]);
+        }
       },
       () => {
         stopGps();
@@ -174,23 +291,94 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
     window.setTimeout(() => watch.current !== null && stopGps(), GPS_WAIT_MS + 1000);
   }
 
+  const turn = (by: number) => setAngle((a) => (((a + by) % 180) + 180) % 180);
+
   return (
     <div className="space-y-2">
-      <div className="relative h-72 overflow-hidden rounded-md border sm:h-80">
+      <div className="relative h-80 overflow-hidden rounded-md border sm:h-96">
         <DhulkaMap
           ref={mapRef}
           className="absolute inset-0"
-          initialView={value ? { center: [value.lon, value.lat], zoom: 17 } : undefined}
+          initialView={value ? { center: [value.lon, value.lat], zoom: 18 } : undefined}
           base="satellite"
           visible={{ facilities: false, streets: false }}
           parcels
-          onFeatureClick={(_, lngLat) => !disabled && !cornering && onChange({ lon: lngLat.lng, lat: lngLat.lat, accuracy: null, method: "manual" })}
+          // A click moves that spot to the middle, under the pin.
+          onFeatureClick={(_, lngLat) => !disabled && !cornering && map()?.easeTo({ center: lngLat, duration: 300 })}
         />
-        {cornering && <CornerPointer getMap={() => mapRef.current?.getMap()} onDone={cornersDone} onCancel={() => setCornering(false)} />}
+        {/* The pin, always in the middle: its tip is the exact spot. */}
+        {!cornering && (
+          <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full" aria-hidden>
+            <svg width="34" height="44" viewBox="0 0 34 44" className="drop-shadow-md">
+              <path d="M17 43C17 43 32 26.5 32 16.5C32 8 25.3 1.5 17 1.5C8.7 1.5 2 8 2 16.5C2 26.5 17 43 17 43Z" fill={onRoof ? "#0f9d58" : "#4189dd"} stroke="#fff" strokeWidth="2.5" />
+              <circle cx="17" cy="16.5" r="5.5" fill="#fff" />
+            </svg>
+          </div>
+        )}
+        {cornering && <CornerPointer getMap={map} onDone={cornersDone} onCancel={() => setCornering(false)} />}
         {!value && !disabled && !cornering && (
           <div className="pointer-events-none absolute inset-x-3 top-3 rounded-sm bg-card-solid/95 px-3 py-2 text-xs shadow">{t("hint")}</div>
         )}
+        {looking && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-sm bg-card-solid/95 px-2 py-1 text-xs shadow">
+            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            {t("lookingRoof")}
+          </div>
+        )}
+        {/* Turn the box to face the street. */}
+        {shapeKind === "box" && !disabled && (
+          <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-md bg-card-solid/95 p-1 shadow">
+            <Button type="button" size="icon-sm" variant="ghost" aria-label={t("turnLeft")} title={t("turnLeft")} onClick={() => turn(-15)}>
+              <RotateCcw aria-hidden />
+            </Button>
+            <input
+              type="range"
+              min={0}
+              max={179}
+              value={angle}
+              aria-label={t("turn")}
+              onChange={(e) => setAngle(Number(e.target.value))}
+              className="w-28 accent-primary"
+            />
+            <Button type="button" size="icon-sm" variant="ghost" aria-label={t("turnRight")} title={t("turnRight")} onClick={() => turn(15)}>
+              <RotateCw aria-hidden />
+            </Button>
+            <span className="w-9 text-center font-mono text-xs tabular-nums">{angle}°</span>
+          </div>
+        )}
       </div>
+
+      {/* What the land's shape is now, and how to change it. */}
+      {corners && !cornering && value && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-xs">
+          {onRoof && roof && (
+            <>
+              <Building2 className="size-4 text-success" aria-hidden />
+              <span className="font-medium">{t("roofFound", { m2: format.number(roof.area_m2, { maximumFractionDigits: 0 }) })}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7"
+                onClick={() => {
+                  notThis.current.add(roof.id);
+                  setRoof(null);
+                }}
+              >
+                <X aria-hidden />
+                {t("notThisRoof")}
+              </Button>
+              <span className="ms-auto text-muted-foreground">{t("roofSource")}</span>
+            </>
+          )}
+          {shapeKind === "box" && size && (
+            <span className={onRoof ? "basis-full" : undefined}>{t("boxUsed", { w: format.number(size.width), l: format.number(size.length) })}</span>
+          )}
+          {shapeKind === "drawn" && <span>{tm("done")}</span>}
+          {shapeKind === null && <span className="text-muted-foreground">{t("boxNeedsSize")}</span>}
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         {!disabled && (
           <Button type="button" variant="outline" size="sm" onClick={locating ? stopGps : useGps}>
@@ -198,7 +386,7 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
             {locating ? t("gpsStop", { m: live ?? "…" }) : value?.method === "gps" ? t("gpsAgain") : t("useGps")}
           </Button>
         )}
-        {/* No choice to make: the corners start by themselves; once drawn (or closed) they can be drawn again. */}
+        {/* For odd shapes: draw the 4 corners by hand. */}
         {corners && !disabled && !cornering && (
           <Button
             type="button"
@@ -206,13 +394,12 @@ export function PinPicker({ value, onChange, disabled = false, outline, outlineB
             size="sm"
             onClick={() => {
               stopGps();
-              setShape(null);
-              onShape?.(null);
+              setDrawn(null);
               setCornering(true);
             }}
           >
             <Scan aria-hidden />
-            {tm("again")}
+            {drawn ? tm("again") : t("cornersInstead")}
           </Button>
         )}
         {value && (

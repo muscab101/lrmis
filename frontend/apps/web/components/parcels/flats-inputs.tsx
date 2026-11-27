@@ -119,7 +119,8 @@ export function FlatsInputs({
 
   return (
     <div className="space-y-4 rounded-md border p-4">
-      {/* No "who owns the building" question: a building is one owner, one land and one invoice (upper storeys included). */}
+      {/* No "who owns the building" question: the building type decides. A storey building is one owner, one land and
+          one invoice (upper storeys included); an apartment is laid out by floors and flats, each flat with its own owner. */}
       {one && (
         <div className="max-w-sm">
           <Field id="upperStoreys" label={t("upperStoreys")} hint={t("upperStoreysHint")}>

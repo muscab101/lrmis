@@ -21,7 +21,8 @@
     "db:push": "supabase db push --include-seed",
     "db:types": "supabase gen types typescript --linked --schema public > packages/core/src/database.types.ts",
     "import-legacy": "tsx scripts/import-legacy.ts",
-    "load-test": "k6 run tests/load/public.js"
+    "load-test": "k6 run tests/load/public.js",
+    "import-open-buildings": "tsx scripts/import-open-buildings.ts"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.118.0",

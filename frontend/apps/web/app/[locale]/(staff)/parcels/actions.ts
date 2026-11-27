@@ -696,3 +696,24 @@ export const cancelRemapAction = defineAction("parcels.remap_cancel", z.object({
   revalidatePath("/[locale]/surveys", "layout");
   return null;
 });
+
+export interface BuildingOutline {
+  id: number;
+  outline: GeoJSON.Polygon;
+  /** [lon, lat] of the roof's middle. */
+  centre: [number, number];
+  area_m2: number;
+  /** The roof's size: the sides of the smallest rectangle around it (m), the shorter one being the width. */
+  width_m: number | null;
+  length_m: number | null;
+  /** Direction of the width side, degrees from east (0–179). */
+  angle: number | null;
+  confidence: number | null;
+}
+
+/** The roof under the pin (or within 3 m), so the pin can go to its middle and the roof become the land's outline. */
+export const buildingAtAction = defineAction(
+  "parcels.building_at",
+  z.object({ lon: z.number().min(-180).max(180), lat: z.number().min(-90).max(90) }),
+  async (v, ctx) => unwrap(await ctx.supabase.rpc("building_at", { p_lon: v.lon, p_lat: v.lat }), "building") as BuildingOutline | null,
+);
