@@ -52,10 +52,10 @@ beforeAll(async () => {
 });
 
 describe("cashier: to collect", () => {
-  it("lists the unpaid bills in the cashier's district (registered and partial land), with a pay link", async () => {
+  it("lists the unpaid bills of registered land in the cashier's district, with a pay link (partial land is left out, 0298)", async () => {
     const rows = await asUser(db, cashier, (tx) => tx.query<{ pun: string; house_no: string; balance: string; owners: string; pay_path: string }>(`select * from public.cashier_to_collect()`));
-    // Partial land pays too now (it registers by itself once paid).
-    expect(rows.rows.map((r) => r.house_no).sort()).toEqual(["01", "03"]);
+    // District cashiers only deal with registered land: house 03 is partial.
+    expect(rows.rows.map((r) => r.house_no).sort()).toEqual(["01"]);
     const one = rows.rows.find((r) => r.house_no === "01")!;
     expect(one).toMatchObject({ pun: "BNHDN01201", owners: "Cali Xasan" });
     expect(Number(one.balance)).toBe(30);

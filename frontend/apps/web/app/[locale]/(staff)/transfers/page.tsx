@@ -8,6 +8,7 @@ import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
 import { ParcelLegalCard } from "@/components/legal/parcel-legal";
+import { TransferTabs } from "@/components/legal/transfer-tabs";
 import { legalCounts, listTransfers, parcelLegal, type RequestStatus } from "@/lib/server/legal";
 import { getParcel } from "@/lib/server/parcels";
 import { createClient } from "@/lib/supabase/server";
@@ -48,7 +49,9 @@ export default async function TransfersPage({ params, searchParams }: { params: 
 
   return (
     <>
-      <PageHeader title={t("transfersTitle")} description={t("transfersSubtitle")} />
+      <PageHeader title={t("transfersTitle")} description={t("transfersSubtitle")}>
+        <TransferTabs active="work" />
+      </PageHeader>
       <Card className="mb-5">
         <CardContent className="pt-5">
           <form className="flex flex-wrap items-end gap-2" role="search">

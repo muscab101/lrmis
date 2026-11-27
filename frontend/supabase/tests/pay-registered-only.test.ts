@@ -23,6 +23,9 @@ const bill = async (parcel: string, district: string, n: string) => {
 };
 const take = (parcel: string, invoice: string | null, amount = 12) =>
   asUser(db, admin, (tx) => tx.query(`select public.cashier_take_payment($1, $2)`, [shift, { parcel_id: parcel, invoice_id: invoice, amount, currency: "USD", method: "cash" }]));
+/** Paid another way than the cashier's desk (e.g. online by staff): the money is recorded as the providers do. */
+const paidOnline = (parcel: string, invoice: string, amount = 12) =>
+  db.query(`select private.record_payment(jsonb_build_object('parcel_id', $1::text, 'invoice_id', $2::text, 'method', 'mobile_money', 'provider', 'test', 'amount', $3::numeric))`, [parcel, invoice, amount]);
 const land = (id: string) => scalar<{ status: string; pun: string | null }>(db, `select jsonb_build_object('status', status, 'pun', pun) from public.parcels where id = $1`, [id]);
 
 beforeAll(async () => {
@@ -54,15 +57,19 @@ beforeAll(async () => {
 });
 
 describe("partial land pays, and registers by itself once its bills are paid", () => {
+  it("the district cashier's desk doesn't take money for partial land (0298)", async () => {
+    await expect(take(part, partBill, 5)).rejects.toThrow(/^CONFLICT: cashier_partial/);
+  });
+
   it("part of the bill paid: the land stays partial", async () => {
-    await take(part, partBill, 5);
+    await paidOnline(part, partBill, 5);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).toBe("partially_paid");
     expect((await land(part)).status).toBe("draft");
   });
 
   it("paid in full: the land is registered with a PUN, and its owner with it", async () => {
     await completeLand(db);
-    await take(part, partBill, 7);
+    await paidOnline(part, partBill, 7);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [partBill])).toBe("paid");
     const l = await land(part);
     expect(l.status).toBe("registered");
@@ -71,7 +78,7 @@ describe("partial land pays, and registers by itself once its bills are paid", (
   });
 
   it("land that can't be registered (no owner) keeps the payment and stays partial, with the reason kept", async () => {
-    await take(lonely, lonelyBill);
+    await paidOnline(lonely, lonelyBill);
     expect(await scalar<string>(db, `select status from public.invoices where id = $1`, [lonelyBill])).toBe("paid");
     expect((await land(lonely)).status).toBe("draft");
     expect(await scalar<number>(db, `select count(*)::int from public.parcel_history where parcel_id = $1 and action = 'auto_register_failed'`, [lonely])).toBe(1);

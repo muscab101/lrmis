@@ -14,6 +14,7 @@ import { createTransferAction } from "@/app/[locale]/(staff)/transfers/actions";
 import { FormDialog } from "@/components/forms/form-dialog";
 import { PartyForm } from "@/components/owners/party-form";
 import { DocIcon, formatBytes, uploadTransferFiles } from "@/components/legal/transfer-documents";
+import { TRANSFER_DOC_ACCEPT } from "@/lib/transfer-files";
 import { useErrorMessage, useValidationMessage } from "@/lib/client/errors";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { TransferTypeChoice } from "@/lib/server/legal";
@@ -199,6 +200,7 @@ export function TransferWizard({
                   ref={fileInput}
                   type="file"
                   multiple
+                  accept={TRANSFER_DOC_ACCEPT}
                   className="hidden"
                   onChange={(e) => {
                     const picked = Array.from(e.target.files ?? []);

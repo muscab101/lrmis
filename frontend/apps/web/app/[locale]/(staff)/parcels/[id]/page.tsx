@@ -25,6 +25,7 @@ import { ParcelValuation } from "@/components/valuation/parcel-valuation";
 import { ParcelInvoices } from "@/components/billing/parcel-invoices";
 import { ParcelCertificate } from "@/components/documents/parcel-certificate";
 import { TransferHistory } from "@/components/legal/transfer-history";
+import { OwnershipHistory } from "@/components/legal/ownership-history";
 import { fullHouseNo } from "@/lib/house-no";
 import { PartialRebill } from "@/components/parcels/partial-rebill";
 import type { BillCheck } from "@/app/[locale]/(staff)/parcels/actions";
@@ -449,6 +450,11 @@ export default async function ParcelPage({ params }: { params: Promise<{ locale:
             </ol>
           </CardContent>
         </Card>
+        {!holdsUnits && (
+          <div className="md:col-span-2">
+            <OwnershipHistory parcelId={p.id} />
+          </div>
+        )}
         {viewer.can("transfers.view") && p.pun && !holdsUnits && (
           <div className="md:col-span-2">
             <TransferHistory parcelId={p.id} />

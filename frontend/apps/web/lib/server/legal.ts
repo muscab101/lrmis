@@ -23,10 +23,15 @@ export interface TransferRow {
   /** The transfer type chosen (Valuation → Transfer types); older transfers may have none. */
   type: { name_so: string; name_en: string } | null;
   duty_invoice: { id: string; number: string; status: string; balance: number; total: number } | null;
+  /** While submitted: under review, or waiting for more documents (0296). */
+  review_status?: "under_review" | "needs_documents" | null;
+  review_note?: string | null;
+  decided_by?: string | null;
+  reviewed_by?: string | null;
 }
 
 const TRANSFER_COLS =
-  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decided_at, decision_note, note, parcel:parcels(id, pun), type:transfer_types(name_so, name_en), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
+  "id, number, kind, status, declared_value, from_owners, to_owners, created_at, created_by, submitted_at, decided_at, decided_by, decision_note, note, review_status, review_note, reviewed_by, parcel:parcels(id, pun), type:transfer_types(name_so, name_en), duty_invoice:invoices!transfers_duty_invoice_id_fkey(id, number, status, balance, total)";
 
 export async function listTransfers(status: RequestStatus | "open" | "any", parcelId?: string) {
   const supabase = await createClient();

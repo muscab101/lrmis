@@ -5,8 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 export const TRANSFER_DOCS_BUCKET = "transfer-documents";
 /** Largest file staff may attach to a transfer (50 MB, the storage limit). */
 export const TRANSFER_DOC_MAX = 50 * 1024 * 1024;
-/** Any file may be attached (documents, photos, video, audio…) except programs that could run on a computer. */
-export const TRANSFER_DOC_BLOCKED_EXT = ["exe", "msi", "bat", "cmd", "com", "scr", "pif", "vbs", "vbe", "js", "jse", "wsf", "wsh", "ps1", "psm1", "sh", "jar", "apk", "app", "dll", "sys", "lnk", "reg", "hta", "cpl", "html", "htm", "svg", "xhtml"];
+/** The files a transfer takes (the database checks the same list): documents, photos, video and audio. */
+export { TRANSFER_DOC_EXT } from "@/lib/transfer-files";
 
 export interface TransferDocument {
   id: string;
@@ -15,6 +15,10 @@ export interface TransferDocument {
   size_bytes: number;
   uploaded_at: string;
   url: string | null;
+  category: string;
+  description: string | null;
+  uploaded_by: string | null;
+  uploader: string | null;
 }
 
 /** A transfer's documents with short-lived download links. Only documents the caller may see are listed. */
@@ -22,16 +26,23 @@ export async function listTransferDocuments(transferId: string): Promise<Transfe
   const supabase = await createClient();
   const { data } = await supabase
     .from("transfer_documents")
-    .select("id, file_name, mime_type, size_bytes, uploaded_at, storage_path")
+    .select("id, file_name, mime_type, size_bytes, uploaded_at, storage_path, category, description, uploaded_by")
     .eq("transfer_id", transferId)
     .order("uploaded_at");
-  const rows = (data ?? []) as (Omit<TransferDocument, "url"> & { storage_path: string })[];
+  const rows = (data ?? []) as (Omit<TransferDocument, "url" | "uploader"> & { storage_path: string })[];
   if (rows.length === 0) return [];
   const admin = await createAdminClient();
   const { data: signed } = await admin.storage.from(TRANSFER_DOCS_BUCKET).createSignedUrls(
     rows.map((r) => r.storage_path),
-    3600,
+    // Short-lived: the files are only shown on the page, never handed out.
+    900,
   );
   const byPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
-  return rows.map(({ storage_path, ...r }) => ({ ...r, url: byPath.get(storage_path) ?? null }));
+  const ids = [...new Set(rows.map((r) => r.uploaded_by).filter((x): x is string => !!x))];
+  const names = ids.length ? (((await supabase.rpc("staff_display_names", { p_user_ids: ids })).data ?? []) as { user_id: string; full_name: string }[]) : [];
+  return rows.map(({ storage_path, ...r }) => ({
+    ...r,
+    url: byPath.get(storage_path) ?? null,
+    uploader: names.find((n) => n.user_id === r.uploaded_by)?.full_name ?? null,
+  }));
 }

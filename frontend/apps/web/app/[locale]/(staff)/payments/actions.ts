@@ -50,6 +50,8 @@ export const findParcelAction = defineAction(
     // PUN, invoice number or application number.
     const out = await parcelForCashier(pun);
     if (!out) throw new AppFailure("NOT_FOUND", undefined, { pun: ["validation.pun_not_found"] });
+    // District cashiers only collect for registered land (0298): partial land is registered first.
+    if (["draft", "surveyed", "verified"].includes(out.parcel.status)) throw new AppFailure("CONFLICT", { detail: "cashier_partial" });
     return out;
   },
 );

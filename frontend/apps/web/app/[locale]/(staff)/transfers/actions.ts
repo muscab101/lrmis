@@ -5,7 +5,8 @@ import { z } from "zod";
 import { AppFailure, defineAction, unwrap } from "@/lib/server/action";
 import { normalizePun } from "@/lib/pun";
 import { log } from "@/lib/server/log";
-import { TRANSFER_DOCS_BUCKET, TRANSFER_DOC_BLOCKED_EXT, TRANSFER_DOC_MAX } from "@/lib/server/transfer-documents";
+import { TRANSFER_DOCS_BUCKET, TRANSFER_DOC_MAX } from "@/lib/server/transfer-documents";
+import { TRANSFER_DOC_CATEGORIES, TRANSFER_DOC_EXT } from "@/lib/transfer-files";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "validation.date");
@@ -80,7 +81,7 @@ export const prepareTransferDocumentAction = defineAction(
     if (v.size > TRANSFER_DOC_MAX) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_too_big"] });
     const dot = v.name.lastIndexOf(".");
     const ext = dot > 0 ? v.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) : "";
-    if (TRANSFER_DOC_BLOCKED_EXT.includes(ext)) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_type"] });
+    if (!(TRANSFER_DOC_EXT as readonly string[]).includes(ext)) throw new AppFailure("VALIDATION", undefined, { documents: ["validation.document_type"] });
     const path = `${v.transferId}/${crypto.randomUUID()}${ext ? `.${ext}` : ""}`;
     const { data, error } = await (await createAdminClient()).storage.from(TRANSFER_DOCS_BUCKET).createSignedUploadUrl(path);
     if (error || !data) throw new Error(`transfer document upload link: ${error?.message ?? "none"}`);
@@ -91,10 +92,26 @@ export const prepareTransferDocumentAction = defineAction(
 /** Step 2: record the uploaded file on the transfer (the file is removed again if that fails). */
 export const recordTransferDocumentAction = defineAction(
   "transfers.document_add",
-  z.object({ transferId: id, path: z.string().max(300), name: z.string().trim().min(1).max(255), mime: z.string().max(150).default(""), size: z.number().int().positive() }),
+  z.object({
+    transferId: id,
+    path: z.string().max(300),
+    name: z.string().trim().min(1).max(255),
+    mime: z.string().max(150).default(""),
+    size: z.number().int().positive(),
+    category: z.enum(TRANSFER_DOC_CATEGORIES).default("other"),
+    description: z.string().trim().max(300).default(""),
+  }),
   async (v, ctx) => {
     const admin = await createAdminClient();
-    const res = await ctx.supabase.rpc("transfer_document_add", { p_transfer: v.transferId, p_path: v.path, p_name: v.name, p_mime: v.mime || "application/octet-stream", p_size: v.size });
+    const res = await ctx.supabase.rpc("transfer_document_add", {
+      p_transfer: v.transferId,
+      p_path: v.path,
+      p_name: v.name,
+      p_mime: v.mime || "application/octet-stream",
+      p_size: v.size,
+      p_category: v.category,
+      p_description: v.description || null,
+    });
     if (res.error) {
       if (v.path.startsWith(`${v.transferId}/`)) {
         const rm = await admin.storage.from(TRANSFER_DOCS_BUCKET).remove([v.path]);
@@ -104,6 +121,20 @@ export const recordTransferDocumentAction = defineAction(
     }
     return done({ id: res.data as string });
   },
+);
+
+/** Review a submitted transfer: start the review, or ask for more documents (saying what is needed). */
+export const reviewTransferAction = defineAction(
+  "transfers.review",
+  z.object({ id, action: z.enum(["start", "request_documents"]), note }),
+  async (v, ctx) => rpc(ctx, "transfer_review", { p_id: v.id, p_action: v.action, p_note: v.note }),
+);
+
+/** Approve or reject a transfer from its page (the same decision as the Approvals page; rejecting needs a reason). */
+export const decideTransferAction = defineAction(
+  "transfers.decide",
+  z.object({ id, approve: z.boolean(), note }),
+  async (v, ctx) => rpc(ctx, "approval_decide", { p_kind: "transfer", p_id: v.id, p_approve: v.approve, p_note: v.note, p_extra: {} }),
 );
 
 /** Remove a document from a transfer that is still a draft. */
@@ -196,3 +227,13 @@ export const createLeaseAction = defineAction(
 export const endLeaseAction = defineAction("parcels.end_lease", z.object({ id, terminate: z.boolean(), note }), async (v, ctx) =>
   rpc(ctx, "lease_end", { p_id: v.id, p_terminate: v.terminate, p_note: v.note }),
 );
+
+/** A fresh short-lived link to view one transfer file (only files the user may see; links are never handed out to keep). */
+export const transferDocumentUrlAction = defineAction("transfers.document_url", z.object({ id }), async (v, ctx) => {
+  const { data } = await ctx.supabase.from("transfer_documents").select("storage_path").eq("id", v.id).maybeSingle();
+  if (!data) throw new AppFailure("NOT_FOUND", { detail: "document" });
+  const admin = await createAdminClient();
+  const { data: signed, error } = await admin.storage.from(TRANSFER_DOCS_BUCKET).createSignedUrl((data as { storage_path: string }).storage_path, 900);
+  if (error || !signed) throw new Error(`transfer document link: ${error?.message ?? "none"}`);
+  return signed.signedUrl;
+});
