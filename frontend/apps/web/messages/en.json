@@ -7644,7 +7644,8 @@
     "subtitle": "Apartment buildings and compounds in your districts: their flats or houses, how many are registered, and what they still owe.",
     "kinds": {
       "flats": "Apartment buildings",
-      "compound": "Compounds"
+      "compound": "Compounds",
+      "single": "One owner"
     },
     "all": "All",
     "owing": "Still owing",
@@ -7677,7 +7678,14 @@
     "noUnits": "No flats or houses added yet",
     "count": "{count, plural, =1 {1 building} other {# buildings}}",
     "actions": "Actions",
-    "viewFlats": "See the flats"
+    "viewFlats": "See the flats",
+    "type": "Type",
+    "storeys": "Upper storeys",
+    "types": {
+      "apartment": "Apartment",
+      "storey": "Storey building"
+    },
+    "singleEmpty": "No apartments or storey buildings owned by one owner match."
   },
   "managers": {
     "title": "Managers",

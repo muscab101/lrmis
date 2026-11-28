@@ -11,14 +11,16 @@ import { segClass, segGroupClass } from "@/components/shell/tabs";
 import { ParcelsTabs } from "@/components/shell/section-tabs";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
-import { listApartments } from "@/lib/server/apartments";
+import { listApartments, listSingleBuildings } from "@/lib/server/apartments";
+import { Pager } from "@/components/admin/pager";
+import { fullHouseNo } from "@/lib/house-no";
 
 export async function generateMetadata() {
   const t = await getTranslations("apartments");
   return { title: t("title") };
 }
 
-const KINDS = ["flats", "compound"] as const;
+const KINDS = ["flats", "single", "compound"] as const;
 
 /** Apartments: every flats building (or compound), how many flats it has, how many are registered, and what it owes. */
 export default async function ApartmentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -33,7 +35,9 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
   const kind = (KINDS as readonly string[]).includes(sp.kind ?? "") ? (sp.kind as (typeof KINDS)[number]) : "flats";
   const q = (sp.q ?? "").slice(0, 40);
   const owing = sp.owing === "1";
-  const rows = await listApartments({ layout: kind, q, owing });
+  const page = Math.max(1, Number(sp.page) || 1);
+  const single = kind === "single" ? await listSingleBuildings({ q, owing, page, size: 50 }) : null;
+  const rows = kind === "single" ? [] : await listApartments({ layout: kind, q, owing });
   const usd = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const name = (x: { name_so: string; name_en: string } | null) => (x ? (lang === "so" ? x.name_so : x.name_en) : "");
   const href = (k: string, o: boolean) => `/apartments?${new URLSearchParams({ kind: k, ...(o ? { owing: "1" } : {}), ...(q ? { q } : {}) })}`;
@@ -62,10 +66,64 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
                 </Link>
               ))}
             </span>
-            <span className="text-muted-foreground text-xs">{t("count", { count: rows.length })}</span>
+            <span className="text-muted-foreground text-xs">{t("count", { count: single ? single.total : rows.length })}</span>
           </span>
         </AutoSubmitForm>
-        {rows.length === 0 ? (
+        {single ? (
+          single.rows.length === 0 ? (
+            <EmptyState icon={<Building2 />} title={t("emptyTitle")} description={t("singleEmpty")} />
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("building")}</TableHead>
+                    <TableHead>{t("type")}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t("place")}</TableHead>
+                    <TableHead>{t("owner")}</TableHead>
+                    <TableHead className="text-end">{t("storeys")}</TableHead>
+                    <TableHead className="text-end">{t("owed")}</TableHead>
+                    <TableHead className="text-end">{t("actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {single.rows.map((b) => (
+                    <TableRow key={b.id}>
+                      <TableCell>
+                        <Link href={`/parcels/${b.id}`} className="font-medium hover:text-primary">
+                          <Mono>{b.pun ?? "—"}</Mono>
+                        </Link>
+                        {b.house_no && <div className="text-xs text-muted-foreground">{fullHouseNo(b.neighbourhood?.code, b.house_no)}</div>}
+                      </TableCell>
+                      <TableCell className="text-sm">{t(`types.${b.property_type}`)}</TableCell>
+                      <TableCell className="hidden text-sm md:table-cell">
+                        {name(b.neighbourhood)}
+                        <div className="text-xs text-muted-foreground">{name(b.district)}</div>
+                      </TableCell>
+                      <TableCell className="max-w-56 truncate text-sm">{b.owners}</TableCell>
+                      <TableCell className="text-end text-sm tabular-nums">{b.upper_storeys}</TableCell>
+                      <TableCell className={`text-end text-sm tabular-nums ${b.owed > 0 ? "" : "text-muted-foreground"}`}>{b.owed > 0 ? usd(b.owed) : t("paid")}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-end">
+                          <Button asChild variant="ghost" size="icon-sm">
+                            <Link href={`/parcels/${b.id}`} aria-label={t("openLand")} title={t("openLand")}>
+                              <Info aria-hidden />
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <Pager
+                page={page}
+                pages={Math.max(1, Math.ceil(single.total / 50))}
+                href={(p) => `/apartments?${new URLSearchParams({ kind, page: String(p), ...(owing ? { owing: "1" } : {}), ...(q ? { q } : {}) })}`}
+              />
+            </>
+          )
+        ) : rows.length === 0 ? (
           <EmptyState icon={<Building2 />} title={t("emptyTitle")} description={t("emptyBody")} />
         ) : (
           <Table>

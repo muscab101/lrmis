@@ -7644,7 +7644,8 @@
     "subtitle": "Dhismayaasha dabaqyada iyo xeryaha degmooyinkaaga: guryahooda, inta la diiwaangeliyay, iyo inta weli lagu leeyahay.",
     "kinds": {
       "flats": "Dhismayaasha dabaqyada",
-      "compound": "Xeryo"
+      "compound": "Xeryo",
+      "single": "Hal milkiile"
     },
     "all": "Dhammaan",
     "owing": "Weli lagu leeyahay",
@@ -7677,7 +7678,14 @@
     "noUnits": "Weli guryo lama darin",
     "count": "{count, plural, =1 {1 dhisme} other {# dhisme}}",
     "actions": "Ficilada",
-    "viewFlats": "Arag guryaha"
+    "viewFlats": "Arag guryaha",
+    "type": "Nooca",
+    "storeys": "Dabaqyada sare",
+    "types": {
+      "apartment": "Abaartamaan",
+      "storey": "Dhisme dabaqyo leh"
+    },
+    "singleEmpty": "Ma jiraan abaartamaan ama dhismayaal dabaqyo leh oo hal milkiile leeyahay oo u dhigma."
   },
   "managers": {
     "title": "Maamulayaasha",

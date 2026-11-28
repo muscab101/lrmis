@@ -179,3 +179,66 @@ export async function buildingExtras(buildingId: string) {
     legacyName: row && !row.manager && row.manager_name ? { name: row.manager_name, phone: row.manager_phone } : null,
   };
 }
+
+export interface SingleBuildingRow {
+  id: string;
+  pun: string | null;
+  house_no: string | null;
+  property_type: "apartment" | "storey";
+  upper_storeys: number;
+  status: string;
+  neighbourhood: Named;
+  district: Named;
+  owners: string;
+  owed: number;
+}
+
+/** Apartments and storey buildings owned whole by one owner (no flats): with their storeys, owner and what they owe. */
+export async function listSingleBuildings(opts: { q: string; owing: boolean; type?: "apartment" | "storey"; page: number; size: number }) {
+  const supabase = await createClient();
+  let req = supabase
+    .from("parcels")
+    .select(
+      "id, pun, house_no, property_type, upper_storeys, status, neighbourhood:neighbourhoods(code, name_so, name_en), district:districts(name_so, name_en), owners:parcel_owners(valid_to, party:parties(full_name))",
+      { count: "exact" },
+    )
+    .is("deleted_at", null)
+    .eq("layout", "house")
+    .is("parent_id", null)
+    .in("property_type", opts.type ? [opts.type] : ["apartment", "storey"]);
+  const q = opts.q.replace(/[%,()]/g, " ").trim();
+  if (q) req = req.or(`pun.ilike.%${q}%,house_no.ilike.%${q}%`);
+  if (opts.owing) {
+    // Only those with an open bill: find them first.
+    const { data: open } = await supabase
+      .from("invoices")
+      .select("parcel_id, parcel:parcels!inner(property_type, layout, parent_id)")
+      .in("status", OPEN_BILL)
+      .gt("balance", 0)
+      .in("parcel.property_type", opts.type ? [opts.type] : ["apartment", "storey"])
+      .eq("parcel.layout", "house")
+      .limit(5000);
+    const ids = [...new Set(((open ?? []) as { parcel_id: string }[]).map((r) => r.parcel_id))];
+    req = req.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+  }
+  const res = await req
+    .order("upper_storeys", { ascending: false })
+    .order("pun")
+    .range((opts.page - 1) * opts.size, opts.page * opts.size - 1);
+  type Raw = Omit<SingleBuildingRow, "owners" | "owed"> & { owners: { valid_to: string | null; party: { full_name: string } | null }[] };
+  const rows = (unwrap(res, "buildings") ?? []) as unknown as Raw[];
+  const ids = rows.map((r) => r.id);
+  const { data: bills } = ids.length
+    ? await supabase.from("invoices").select("parcel_id, balance").in("parcel_id", ids).in("status", OPEN_BILL)
+    : { data: [] };
+  const owedBy = new Map<string, number>();
+  for (const b of (bills ?? []) as { parcel_id: string; balance: number }[]) owedBy.set(b.parcel_id, (owedBy.get(b.parcel_id) ?? 0) + Number(b.balance));
+  return {
+    total: res.count ?? 0,
+    rows: rows.map(({ owners, ...r }) => ({
+      ...r,
+      owners: owners.filter((o) => !o.valid_to && o.party).map((o) => o.party!.full_name).join(", ") || "—",
+      owed: owedBy.get(r.id) ?? 0,
+    })),
+  };
+}
