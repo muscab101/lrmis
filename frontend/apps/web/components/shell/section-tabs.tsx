@@ -53,11 +53,7 @@ export async function ParcelsTabs({
 }) {
   const t = await getTranslations("parcels");
   const tn = await getTranslations("nav.items");
-  const supabase = await createClient();
-  const [counts, flats] = await Promise.all([
-    parcelStageCounts(),
-    supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("layout", "flats"),
-  ]);
+  const counts = await parcelStageCounts();
   const href = (stage: string) => `/parcels?${new URLSearchParams({ stage, ...query })}`;
   return (
     <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={t("stages")}>
@@ -71,7 +67,7 @@ export async function ParcelsTabs({
       )}
       {viewer.can("apartments.view") && (
         <Link href="/apartments" aria-current={active === "apartments" ? "page" : undefined} className={tabClass(active === "apartments")}>
-          {tn("apartments")} <TabCount n={flats.count ?? 0} />
+          {tn("apartments")} <TabCount n={counts.flats} />
         </Link>
       )}
     </nav>

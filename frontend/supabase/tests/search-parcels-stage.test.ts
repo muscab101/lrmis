@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { asUser, bootstrapSuperAdmin, createDb, scalar, square } from "./harness";
+import { as, asUser, bootstrapSuperAdmin, createDb, scalar, square } from "./harness";
 
 let db: PGlite;
 let admin: string;
@@ -58,5 +58,40 @@ describe("Parcels list tabs (0258)", () => {
 
   it("the old two-argument call still works", async () => {
     expect((await rows(`select id from public.search_parcels('', 20)`)).length).toBe(20);
+  });
+});
+
+describe("Search finds land every way, quickly (0304)", () => {
+  beforeAll(async () => {
+    const owner = await scalar<string>(db, `insert into public.parties (kind, full_name, phone) values ('person', 'Xaawo Samatar Dirie', '+252611111111') returning id`);
+    await db.query(`insert into public.parcel_owners (parcel_id, party_id, role, share_pct) select id, $1, 'owner', 100 from public.parcels where pun = 'P12'`, [owner]);
+    await db.query(`update public.parcels set house_no = '77', govt_receipt_no = 'GR-9911' where pun = 'P15'`);
+  });
+
+  it("by owner name (any part of it), PUN, account, house number, bill and receipt", async () => {
+    expect(await rows(`select pun, owners from public.search_parcels('samatar', 100)`)).toEqual([{ pun: "P12", owners: "Xaawo Samatar Dirie" }]);
+    expect(await rows(`select pun from public.search_parcels('P119', 100)`)).toEqual([{ pun: "P119" }]);
+    expect(await rows(`select pun from public.search_parcels('A119', 100)`)).toEqual([{ pun: "P119" }]);
+    expect(await rows(`select pun from public.search_parcels('77', 100) where pun = 'P15'`)).toEqual([{ pun: "P15" }]);
+    expect(await rows(`select pun from public.search_parcels('INV-S-1', 100)`)).toEqual([{ pun: "P7" }]);
+    expect(await rows(`select pun from public.search_parcels('GR-9911', 100)`)).toEqual([{ pun: "P15" }]);
+    expect(await rows(`select pun from public.search_parcels('nobody here', 100)`)).toEqual([]);
+  });
+
+  it("words and a tab together", async () => {
+    expect(await rows(`select pun from public.search_parcels('samatar', 100, 'paid')`)).toEqual([{ pun: "P12" }]);
+    expect(await rows(`select pun from public.search_parcels('samatar', 100, 'owing')`)).toEqual([]);
+  });
+});
+
+describe("Parcels tab numbers in one read (0307)", () => {
+  it("match the separate counts", async () => {
+    const c = await asUser(db, admin, (tx) => scalar<Record<string, number>>(tx, `select public.parcel_stage_counts()`));
+    const owing = await asUser(db, admin, (tx) => scalar<string>(tx, `select public.parcel_owing_count()::text`));
+    expect(c).toEqual({ draft: 1, registered: 120, owing: Number(owing), demolished: 0, flats: 0 });
+  });
+
+  it("is for signed-in staff only", async () => {
+    await expect(as(db, "anon", {}, (tx) => tx.query(`select public.parcel_stage_counts()`))).rejects.toThrow(/permission denied/);
   });
 });

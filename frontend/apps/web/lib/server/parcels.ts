@@ -52,8 +52,6 @@ export const PARCEL_TABS = ["draft", "registered"] as const;
 /** Inside Registered: all, paid (nothing owed), not paid, and the demolished archive. */
 export const REGISTERED_SPLITS = ["all", "paid", "owing", "demolished"] as const;
 export type ParcelStage = (typeof PARCEL_STAGES)[number];
-/** Not registered yet: partial registration, still worked on through its application. */
-const PARTIAL = "(draft,surveyed,verified)";
 
 export async function searchParcels(q: string, stage: ParcelStage = "all", neighbourhoodId: string | null = null) {
   const supabase = await createClient();
@@ -297,20 +295,19 @@ async function describeHistory(supabase: Awaited<ReturnType<typeof createClient>
 }
 
 /** Parcel counts for the stage tabs (RLS: only districts the viewer can see). */
-export async function parcelStageCounts(): Promise<Record<ParcelStage, number>> {
+/**
+ * Every Parcels tab's number, read in one pass (public.parcel_stage_counts, as the viewer) and shared by the page and
+ * its tabs for the request. Paid = registered − owing; apartment buildings for the Apartments tab.
+ */
+export const parcelStageCounts = cache(async (): Promise<Record<ParcelStage, number> & { flats: number }> => {
   const supabase = await createClient();
-  const base = () => supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("layout", "house").neq("status", "archived");
-  // Registered land owing: from its open bills (RLS keeps both to the viewer's districts and registered-land access).
-  const [draft, registered, owingRows, demolished] = await Promise.all([
-    base().in("status", ["draft", "surveyed", "verified"]),
-    base().not("status", "in", PARTIAL),
-    supabase.rpc("parcel_owing_count"),
-    supabase.from("parcels").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("building_state", "demolished").neq("status", "archived"),
-  ]);
-  const owing = Number(owingRows.data ?? 0);
-  const reg = registered.count ?? 0;
-  return { draft: draft.count ?? 0, registered: reg, paid: Math.max(reg - owing, 0), owing, demolished: demolished.count ?? 0, all: (draft.count ?? 0) + reg };
-}
+  const res = await supabase.rpc("parcel_stage_counts");
+  const c = (unwrap(res, "parcel_stage_counts") ?? {}) as Partial<Record<"draft" | "registered" | "owing" | "demolished" | "flats", number>>;
+  const draft = Number(c.draft ?? 0);
+  const reg = Number(c.registered ?? 0);
+  const owing = Number(c.owing ?? 0);
+  return { draft, registered: reg, paid: Math.max(reg - owing, 0), owing, demolished: Number(c.demolished ?? 0), all: draft + reg, flats: Number(c.flats ?? 0) };
+});
 
 export interface NeighbourhoodStatusRow {
   id: string;
