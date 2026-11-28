@@ -7644,8 +7644,9 @@
     "subtitle": "Dhismayaasha dabaqyada iyo xeryaha degmooyinkaaga: guryahooda, inta la diiwaangeliyay, iyo inta weli lagu leeyahay.",
     "kinds": {
       "flats": "Dhismayaasha dabaqyada",
-      "compound": "Xeryo",
-      "single": "Hal milkiile"
+      "apartment": "Abaartamaan (hal milkiile)",
+      "storey": "Dhismayaal dabaqyo leh",
+      "compound": "Xeryo"
     },
     "all": "Dhammaan",
     "owing": "Weli lagu leeyahay",
@@ -7685,7 +7686,8 @@
       "apartment": "Abaartamaan",
       "storey": "Dhisme dabaqyo leh"
     },
-    "singleEmpty": "Ma jiraan abaartamaan ama dhismayaal dabaqyo leh oo hal milkiile leeyahay oo u dhigma."
+    "singleEmpty": "Ma jiraan dhismayaal noocan ah oo u dhigma.",
+    "kindLabel": "Nooca dhismaha"
   },
   "managers": {
     "title": "Maamulayaasha",

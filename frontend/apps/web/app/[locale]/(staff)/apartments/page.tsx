@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Building2, Info } from "lucide-react";
 import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { AutoSubmitForm } from "@/components/forms/auto-submit-form";
-import { segClass, segGroupClass } from "@/components/shell/tabs";
 import { ParcelsTabs } from "@/components/shell/section-tabs";
 import { Link } from "@/i18n/navigation";
 import { requirePermission } from "@/lib/server/auth";
@@ -20,7 +19,8 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-const KINDS = ["flats", "single", "compound"] as const;
+/** Apartment buildings split into flats · apartments with one owner · storey buildings with one owner · compounds. */
+const KINDS = ["flats", "apartment", "storey", "compound"] as const;
 
 /** Apartments: every flats building (or compound), how many flats it has, how many are registered, and what it owes. */
 export default async function ApartmentsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string>> }) {
@@ -32,15 +32,17 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
   const format = await getFormatter();
   const lang = await getLocale();
   const sp = await searchParams;
-  const kind = (KINDS as readonly string[]).includes(sp.kind ?? "") ? (sp.kind as (typeof KINDS)[number]) : "flats";
+  // The old "single" tab (both types together) now opens Apartments.
+  const asked = sp.kind === "single" ? "apartment" : (sp.kind ?? "");
+  const kind = (KINDS as readonly string[]).includes(asked) ? (asked as (typeof KINDS)[number]) : "flats";
   const q = (sp.q ?? "").slice(0, 40);
   const owing = sp.owing === "1";
   const page = Math.max(1, Number(sp.page) || 1);
-  const single = kind === "single" ? await listSingleBuildings({ q, owing, page, size: 50 }) : null;
-  const rows = kind === "single" ? [] : await listApartments({ layout: kind, q, owing });
+  const oneOwner = kind === "apartment" || kind === "storey";
+  const single = oneOwner ? await listSingleBuildings({ q, owing, type: kind, page, size: 50 }) : null;
+  const rows = kind === "flats" || kind === "compound" ? await listApartments({ layout: kind, q, owing }) : [];
   const usd = (n: number) => format.number(n, { style: "currency", currency: "USD" });
   const name = (x: { name_so: string; name_en: string } | null) => (x ? (lang === "so" ? x.name_so : x.name_en) : "");
-  const href = (k: string, o: boolean) => `/apartments?${new URLSearchParams({ kind: k, ...(o ? { owing: "1" } : {}), ...(q ? { q } : {}) })}`;
 
   return (
     <>
@@ -49,25 +51,21 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
         <ParcelsTabs viewer={viewer} active="apartments" />
       </PageHeader>
       <Card className="overflow-hidden">
-        {/* Search and "All / Still owing" (a dropdown): both apply at once. */}
+        {/* Search, "All / Still owing" and the building type (dropdowns): all apply at once. */}
         <AutoSubmitForm className="flex flex-wrap items-center gap-3 border-b p-3">
-          <input type="hidden" name="kind" value={kind} />
           <Input name="q" defaultValue={q} placeholder={t("search")} aria-label={t("search")} className="max-w-md" />
           <NativeSelect name="owing" defaultValue={owing ? "1" : ""} aria-label={t("owingLabel")} className="w-auto min-w-40">
             <option value="">{t("all")}</option>
             <option value="1">{t("owing")}</option>
           </NativeSelect>
-          {/* Apartment buildings / Compounds, on the search row's right. */}
-          <span className="ms-auto flex flex-wrap items-center gap-3">
-            <span className={segGroupClass} role="group" aria-label={t("title")}>
-              {KINDS.map((k) => (
-                <Link key={k} href={href(k, owing)} aria-current={kind === k ? "page" : undefined} className={segClass(kind === k)}>
-                  {t(`kinds.${k}`)}
-                </Link>
-              ))}
-            </span>
-            <span className="text-muted-foreground text-xs">{t("count", { count: single ? single.total : rows.length })}</span>
-          </span>
+          <NativeSelect name="kind" defaultValue={kind} aria-label={t("kindLabel")} className="w-auto min-w-52">
+            {KINDS.map((k) => (
+              <option key={k} value={k}>
+                {t(`kinds.${k}`)}
+              </option>
+            ))}
+          </NativeSelect>
+          <span className="text-muted-foreground ms-auto text-xs">{t("count", { count: single ? single.total : rows.length })}</span>
         </AutoSubmitForm>
         {single ? (
           single.rows.length === 0 ? (
@@ -78,7 +76,6 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("building")}</TableHead>
-                    <TableHead>{t("type")}</TableHead>
                     <TableHead className="hidden md:table-cell">{t("place")}</TableHead>
                     <TableHead>{t("owner")}</TableHead>
                     <TableHead className="text-end">{t("storeys")}</TableHead>
@@ -95,7 +92,6 @@ export default async function ApartmentsPage({ params, searchParams }: { params:
                         </Link>
                         {b.house_no && <div className="text-xs text-muted-foreground">{fullHouseNo(b.neighbourhood?.code, b.house_no)}</div>}
                       </TableCell>
-                      <TableCell className="text-sm">{t(`types.${b.property_type}`)}</TableCell>
                       <TableCell className="hidden text-sm md:table-cell">
                         {name(b.neighbourhood)}
                         <div className="text-xs text-muted-foreground">{name(b.district)}</div>
